@@ -26,6 +26,7 @@ class DefaultExploreContent extends StatefulWidget {
     this.recommendedLimit = 8,
     this.recentlyJoinedLimit = 20,
     this.candidateLimit = 60,
+    this.allGolfersLimit = 30,
   });
 
   final String currentUserId;
@@ -33,6 +34,7 @@ class DefaultExploreContent extends StatefulWidget {
   final int recommendedLimit;
   final int recentlyJoinedLimit;
   final int candidateLimit;
+  final int allGolfersLimit;
 
   @override
   State<DefaultExploreContent> createState() => _DefaultExploreContentState();
@@ -76,33 +78,74 @@ class _DefaultExploreContentState extends State<DefaultExploreContent> {
         return StreamBuilder<List<UsersRecord>>(
           stream: userProvider.queryCandidateUsers(limit: widget.candidateLimit),
           initialData: cachedCandidates,
-          builder: (context, snapshot) {
-            if (!snapshot.hasData) {
+          builder: (context, candidatesSnapshot) {
+            if (!candidatesSnapshot.hasData) {
               return Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   _buildSectionHeader('RECOMMENDED FOR YOU', 0, AppColors.gold),
                   _buildSectionLoading(),
                   SizedBox(height: AppSpacing.lg),
-                  _buildRecentlyJoinedSection(const <String>{}, 0),
+                  _buildSectionHeader('RECENTLY JOINED', 0, AppColors.gold),
+                  _buildSectionLoading(),
                 ],
               );
             }
 
+            final candidates = candidatesSnapshot.data!;
             final recommendations = _buildRecommendations(
               vibeSnapshot.data!,
-              snapshot.data!,
+              candidates,
             );
             final recommendedIds =
                 recommendations.map((user) => user.reference.id).toSet();
 
-            return Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                _buildRecommendedSection(recommendations),
-                SizedBox(height: AppSpacing.lg),
-                _buildRecentlyJoinedSection(recommendedIds),
-              ],
+            // Nest StreamBuilder for Recently Joined to capture IDs for ALL GOLFERS
+            final cachedRecent = userProvider.getCachedRecentlyJoinedUsers(
+              limit: widget.recentlyJoinedLimit + recommendedIds.length,
+            );
+
+            return StreamBuilder<List<UsersRecord>>(
+              stream: userProvider.queryRecentlyJoinedUsers(
+                limit: widget.recentlyJoinedLimit + recommendedIds.length,
+              ),
+              initialData: cachedRecent,
+              builder: (context, recentSnapshot) {
+                final recentlyJoined = recentSnapshot.hasData
+                    ? recentSnapshot.data!
+                        .where((user) =>
+                            user.reference.id != widget.currentUserId &&
+                            !recommendedIds.contains(user.reference.id))
+                        .take(widget.recentlyJoinedLimit)
+                        .toList()
+                    : <UsersRecord>[];
+
+                final recentlyJoinedIds =
+                    recentlyJoined.map((user) => user.reference.id).toSet();
+
+                // ALL GOLFERS: candidates minus recommended and recently joined
+                final excludeIds = {...recommendedIds, ...recentlyJoinedIds};
+                final allGolfers = candidates
+                    .where((user) =>
+                        user.reference.id != widget.currentUserId &&
+                        !excludeIds.contains(user.reference.id))
+                    .take(widget.allGolfersLimit)
+                    .toList();
+
+                return Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _buildRecommendedSection(recommendations),
+                    SizedBox(height: AppSpacing.lg),
+                    _buildRecentlyJoinedSectionContent(
+                      recentlyJoined,
+                      !recentSnapshot.hasData,
+                    ),
+                    SizedBox(height: AppSpacing.lg),
+                    _buildAllGolfersSection(allGolfers),
+                  ],
+                );
+              },
             );
           },
         );
@@ -232,6 +275,75 @@ class _DefaultExploreContentState extends State<DefaultExploreContent> {
     );
   }
 
+  Widget _buildRecentlyJoinedSectionContent(
+    List<UsersRecord> recentlyJoined,
+    bool isLoading,
+  ) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _buildSectionHeader('RECENTLY JOINED', recentlyJoined.length, AppColors.gold),
+        if (isLoading)
+          _buildSectionLoading()
+        else if (recentlyJoined.isEmpty)
+          _buildSectionEmpty('No new golfers to show.')
+        else
+          ListView.separated(
+            padding: EdgeInsets.fromLTRB(
+              0,
+              AppSpacing.xs,
+              0,
+              0,
+            ),
+            primary: false,
+            shrinkWrap: true,
+            physics: NeverScrollableScrollPhysics(),
+            scrollDirection: Axis.vertical,
+            itemCount: recentlyJoined.length,
+            separatorBuilder: (_, __) => SizedBox(height: 0),
+            itemBuilder: (context, index) {
+              final user = recentlyJoined[index];
+              return widget.itemBuilder(context, user);
+            },
+          ),
+      ],
+    );
+  }
+
+  Widget _buildAllGolfersSection(List<UsersRecord> allGolfers) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _buildSectionHeader(
+          'ALL GOLFERS',
+          allGolfers.length,
+          AppColors.textSecondary,
+        ),
+        if (allGolfers.isEmpty)
+          _buildSectionEmpty('No additional golfers to show.')
+        else
+          ListView.separated(
+            padding: EdgeInsets.fromLTRB(
+              0,
+              AppSpacing.xs,
+              0,
+              AppSpacing.xxl,
+            ),
+            primary: false,
+            shrinkWrap: true,
+            physics: NeverScrollableScrollPhysics(),
+            scrollDirection: Axis.vertical,
+            itemCount: allGolfers.length,
+            separatorBuilder: (_, __) => SizedBox(height: 0),
+            itemBuilder: (context, index) {
+              final user = allGolfers[index];
+              return widget.itemBuilder(context, user);
+            },
+          ),
+      ],
+    );
+  }
+
   List<UsersRecord> _buildRecommendations(
     VibeProfile myVibes,
     List<UsersRecord> candidates,
@@ -251,11 +363,17 @@ class _DefaultExploreContentState extends State<DefaultExploreContent> {
         if (result.recommendation == VibeRecommendation.notRecommended) {
           continue;
         }
-        final score = result.finalScorePercent.round();
+        // Mutual fit floor - filter out dead-end matches
+        if (result.finalScorePercent < 40.0) {
+          continue;
+        }
+        // Weighted blend: 60% Your Fit + 40% Mutual Fit
+        final weightedScore =
+            (result.myFitPercent * 0.6) + (result.finalScorePercent * 0.4);
         recommendations.add(
           _ScoredUser(
             user: user,
-            score: score,
+            weightedScore: weightedScore,
             recommendation: result.recommendation,
           ),
         );
@@ -270,7 +388,7 @@ class _DefaultExploreContentState extends State<DefaultExploreContent> {
       if (rankA != rankB) {
         return rankA.compareTo(rankB);
       }
-      final scoreCompare = b.score.compareTo(a.score);
+      final scoreCompare = b.weightedScore.compareTo(a.weightedScore);
       if (scoreCompare != 0) {
         return scoreCompare;
       }
@@ -320,11 +438,11 @@ class _DefaultExploreContentState extends State<DefaultExploreContent> {
 class _ScoredUser {
   const _ScoredUser({
     required this.user,
-    required this.score,
+    required this.weightedScore,
     required this.recommendation,
   });
 
   final UsersRecord user;
-  final int score;
+  final double weightedScore; // 60% myFit + 40% mutual
   final VibeRecommendation recommendation;
 }

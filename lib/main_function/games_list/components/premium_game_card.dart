@@ -14,7 +14,8 @@ import '/utils/app_util.dart';
 import '/main_function/game_joined_detailed/game_joined_detailed_widget.dart';
 import '/main_function/join_game_detailed/join_game_detailed_widget.dart';
 import '/main_function/games_list/components/flexible_availability_summary.dart';
-import '/main_function/games_list/games_list_widget.dart' show CancelledGameHandling;
+import '/main_function/games_list/games_list_widget.dart'
+    show CancelledGameHandling;
 import '/models/game.dart';
 import '/models/player_eligibility.dart';
 import '/providers/profile_provider.dart';
@@ -61,7 +62,8 @@ class _PremiumGameCardState extends State<PremiumGameCard>
     super.initState();
 
     // Cap stagger at max items
-    final effectiveIndex = widget.animationIndex.clamp(0, MotionTokens.staggerMaxItems - 1);
+    final effectiveIndex =
+        widget.animationIndex.clamp(0, MotionTokens.staggerMaxItems - 1);
     final staggerDelay = MotionTokens.staggerDelay * effectiveIndex;
 
     _controller = AnimationController(
@@ -109,8 +111,8 @@ class _PremiumGameCardState extends State<PremiumGameCard>
     final game = widget.game;
     final currentUserReference = widget.currentUserReference;
     final isLocked = widget.isLocked;
-    final isOwner = currentUserReference != null &&
-        game.userRef == currentUserReference;
+    final isOwner =
+        currentUserReference != null && game.userRef == currentUserReference;
     final isUserGame = currentUserReference != null &&
         (game.userRef == currentUserReference ||
             game.joinedPlayers.contains(currentUserReference));
@@ -337,7 +339,8 @@ class _PremiumGameCardState extends State<PremiumGameCard>
               ),
             ),
           ),
-        ] else if (widget.game.playerEligibility == PlayerEligibility.menOnly) ...[
+        ] else if (widget.game.playerEligibility ==
+            PlayerEligibility.menOnly) ...[
           SizedBox(width: AppSpacing.xs),
           Opacity(
             opacity: isUserGame ? 0.65 : 1.0,
@@ -363,51 +366,36 @@ class _PremiumGameCardState extends State<PremiumGameCard>
         // Member discount badge
         if (widget.game.memberDiscount == 'Yes') ...[
           SizedBox(width: AppSpacing.xs),
-          Flexible(
-            child: Opacity(
-              opacity: isUserGame ? 0.65 : 1.0,
-              child: Container(
-                padding: EdgeInsets.symmetric(
-                  horizontal: AppSpacing.sm,
-                  vertical: AppSpacing.xxs,
-                ),
-                decoration: BoxDecoration(
-                  color: AppColors.green.withValues(alpha: 0.15),
-                  borderRadius: BorderRadius.circular(AppBorderRadius.md),
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    AppIcon(
-                      icon: AppPhosphorIcons.memberDiscount,
-                      color: AppColors.green,
-                      size: AppIconSize.xs,
-                    ),
-                    SizedBox(width: 4),
-                    Flexible(
-                      child: Text(
-                        'Discount',
-                        style: AppTypography.labelSmall.copyWith(
-                          color: AppColors.green,
-                          fontWeight: FontWeight.w600,
-                        ),
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ),
-                  ],
-                ),
+          Opacity(
+            opacity: isUserGame ? 0.65 : 1.0,
+            child: Container(
+              padding: EdgeInsets.symmetric(
+                horizontal: AppSpacing.sm,
+                vertical: AppSpacing.xxs,
+              ),
+              decoration: BoxDecoration(
+                color: AppColors.green.withValues(alpha: 0.15),
+                borderRadius: BorderRadius.circular(AppBorderRadius.md),
+              ),
+              child: AppIcon(
+                icon: AppPhosphorIcons.memberDiscount,
+                color: AppColors.green,
+                size: AppIconSize.xs,
               ),
             ),
           ),
         ],
         Spacer(),
-        // Status badges
-        _buildStatusBadge(
-          isCancelled: isCancelled,
-          isExpired: isExpired,
-          isOwner: isOwner,
-          isUserGame: isUserGame,
-        ),
+        // Add Friend button for locked games (top right)
+        if (isLocked && widget.onAddFriend != null) _buildAddFriendButton(),
+        // Status badges for non-locked games
+        if (!isLocked)
+          _buildStatusBadge(
+            isCancelled: isCancelled,
+            isExpired: isExpired,
+            isOwner: isOwner,
+            isUserGame: isUserGame,
+          ),
       ],
     );
   }
@@ -519,6 +507,65 @@ class _PremiumGameCardState extends State<PremiumGameCard>
     return SizedBox.shrink();
   }
 
+  /// Builds the Add Friend button for locked games
+  Widget _buildAddFriendButton() {
+    if (widget.hasPendingFriendRequest) {
+      // Show "Pending" state
+      return Container(
+        padding: EdgeInsets.symmetric(
+          horizontal: AppSpacing.sm,
+          vertical: AppSpacing.xxs,
+        ),
+        decoration: BoxDecoration(
+          color: AppColors.glassSurface,
+          borderRadius: BorderRadius.circular(AppBorderRadius.chip),
+          border: Border.all(color: AppColors.navyLight),
+        ),
+        child: Text(
+          'Pending',
+          style: AppTypography.labelSmall.copyWith(
+            color: AppColors.textMuted,
+            fontWeight: FontWeight.w500,
+          ),
+        ),
+      );
+    }
+
+    // Show "+ Add Friend" button
+    return GestureDetector(
+      onTap: widget.onAddFriend,
+      child: Container(
+        padding: EdgeInsets.symmetric(
+          horizontal: AppSpacing.sm,
+          vertical: AppSpacing.xxs,
+        ),
+        decoration: BoxDecoration(
+          color: AppColors.green.withValues(alpha: 0.15),
+          borderRadius: BorderRadius.circular(AppBorderRadius.chip),
+          border: Border.all(color: AppColors.green.withValues(alpha: 0.3)),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            AppIcon(
+              icon: AppPhosphorIcons.addPlayer,
+              size: AppIconSize.xs,
+              color: AppColors.green,
+            ),
+            SizedBox(width: 4),
+            Text(
+              'Add Friend',
+              style: AppTypography.labelSmall.copyWith(
+                color: AppColors.green,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   Widget _buildCourseSection({
     required bool isUserGame,
     required bool isLocked,
@@ -549,12 +596,15 @@ class _PremiumGameCardState extends State<PremiumGameCard>
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 AppExpandableText(
-                  text: widget.game.coursePlay.isEmpty ? 'Course TBD' : widget.game.coursePlay,
+                  text: widget.game.coursePlay.isEmpty
+                      ? 'Course TBD'
+                      : widget.game.coursePlay,
                   style: AppTypography.titleSmall.copyWith(
                     color: AppColors.textPrimary,
                     fontWeight: FontWeight.w600,
-                    fontStyle:
-                        widget.game.coursePlay.isEmpty ? FontStyle.italic : FontStyle.normal,
+                    fontStyle: widget.game.coursePlay.isEmpty
+                        ? FontStyle.italic
+                        : FontStyle.normal,
                   ),
                   maxLines: 1,
                 ),

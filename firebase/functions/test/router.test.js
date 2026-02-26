@@ -6,7 +6,7 @@
  * Covers all pipeline branches:
  *   Step 1 — Dedup
  *   Step 2 — Delivery cap
- *   Step 3 — Preference check (pushEnabled, trustCategories, game_alerts, critical bypass)
+ *   Step 3 — Preference check (pushEnabled, trustCategories, game_alerts, social_alerts, critical bypass)
  *   Step 4 — Quiet hours (overnight windows, CRITICAL priority bypass, imminent cancellation, quietHoursBypass)
  *   Step 5 — In-app notification (always written past gates; never written on drops)
  *   Step 6 — Device token resolution (no devices, missing token, single device)
@@ -456,6 +456,119 @@ describe('routeNotification — Step 3: game_alerts check', () => {
 
     const result = await routeNotification(
       makeEvent({ eventType: 'game_spot_opened', data: { game_date: 'Sat', course_name: 'X', spots_remaining: '1', game_id: 'g1' } }),
+      mockDb,
+    );
+
+    expect(result.result).not.toBe('preference_disabled');
+  });
+
+});
+
+describe('routeNotification — Step 3: social_alerts check', () => {
+
+  function makeUserDocWithSocialAlerts(socialAlertsEnabled) {
+    return {
+      notification_prefs: {
+        push_enabled: true,
+        social_alerts: { enabled: socialAlertsEnabled },
+      },
+    };
+  }
+
+  test('friend_request_received, social_alerts.enabled=true: proceeds (trustCategories irrelevant)', async () => {
+    // Even if all trustCategories are disabled, friend_request_received uses social_alerts
+    getUserPreferences.mockResolvedValue(
+      makePrefs({ trustCategories: { postRound: false, trustAlerts: false, badges: false } }),
+    );
+    mockDb = makeMockDb({
+      userDocData: makeUserDocWithSocialAlerts(true),
+      deviceDocs: [DEVICE_1],
+    });
+
+    const result = await routeNotification(
+      makeEvent({ eventType: 'friend_request_received', data: { sender_name: 'Alice', sender_id: 'user_123' } }),
+      mockDb,
+    );
+
+    expect(result.result).not.toBe('preference_disabled');
+    expect(buildInAppNotification).toHaveBeenCalled();
+  });
+
+  test('friend_request_received, social_alerts.enabled=false: preference_disabled', async () => {
+    mockDb = makeMockDb({ userDocData: makeUserDocWithSocialAlerts(false), deviceDocs: [DEVICE_1] });
+
+    const result = await routeNotification(
+      makeEvent({ eventType: 'friend_request_received', data: { sender_name: 'Alice', sender_id: 'user_123' } }),
+      mockDb,
+    );
+
+    expect(result.result).toBe('preference_disabled');
+    expect(buildInAppNotification).not.toHaveBeenCalled();
+  });
+
+  test('friend_request_accepted, social_alerts.enabled=true: proceeds', async () => {
+    mockDb = makeMockDb({
+      userDocData: makeUserDocWithSocialAlerts(true),
+      deviceDocs: [DEVICE_1],
+    });
+
+    const result = await routeNotification(
+      makeEvent({ eventType: 'friend_request_accepted', data: { acceptor_name: 'Bob', acceptor_id: 'user_456' } }),
+      mockDb,
+    );
+
+    expect(result.result).not.toBe('preference_disabled');
+    expect(buildInAppNotification).toHaveBeenCalled();
+  });
+
+  test('friend_request_accepted, social_alerts.enabled=false: preference_disabled', async () => {
+    mockDb = makeMockDb({ userDocData: makeUserDocWithSocialAlerts(false), deviceDocs: [DEVICE_1] });
+
+    const result = await routeNotification(
+      makeEvent({ eventType: 'friend_request_accepted', data: { acceptor_name: 'Bob', acceptor_id: 'user_456' } }),
+      mockDb,
+    );
+
+    expect(result.result).toBe('preference_disabled');
+    expect(buildInAppNotification).not.toHaveBeenCalled();
+  });
+
+  test('friend_request_received, social_alerts field absent: defaults to enabled (not dropped)', async () => {
+    mockDb = makeMockDb({
+      userDocData: { notification_prefs: { push_enabled: true } }, // no social_alerts field
+      deviceDocs: [DEVICE_1],
+    });
+
+    const result = await routeNotification(
+      makeEvent({ eventType: 'friend_request_received', data: { sender_name: 'Alice', sender_id: 'user_123' } }),
+      mockDb,
+    );
+
+    expect(result.result).not.toBe('preference_disabled');
+  });
+
+  test('friend_request_accepted, social_alerts field absent: defaults to enabled', async () => {
+    mockDb = makeMockDb({
+      userDocData: { notification_prefs: { push_enabled: true } }, // no social_alerts field
+      deviceDocs: [DEVICE_1],
+    });
+
+    const result = await routeNotification(
+      makeEvent({ eventType: 'friend_request_accepted', data: { acceptor_name: 'Bob', acceptor_id: 'user_456' } }),
+      mockDb,
+    );
+
+    expect(result.result).not.toBe('preference_disabled');
+  });
+
+  test('friend_request_received, user doc does not exist: defaults to enabled', async () => {
+    mockDb = makeMockDb({
+      userDocData: null, // user doc doesn't exist
+      deviceDocs: [DEVICE_1],
+    });
+
+    const result = await routeNotification(
+      makeEvent({ eventType: 'friend_request_received', data: { sender_name: 'Alice', sender_id: 'user_123' } }),
       mockDb,
     );
 

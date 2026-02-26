@@ -172,20 +172,22 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) => GoRouter(
           name: 'Golfers',
           path: '/golfers',
           redirect: _buildRedirect(appStateNotifier, requireAuth: true),
-          pageBuilder: (context, state) => _buildPageWithTransition(
-            context,
-            state,
-            appStateNotifier,
-            _isEmptyStateParams(state)
-                ? NavBarPage(
-                    initialPage: 'Golfers',
-                    page: TabFriendsWidget(),
-                  )
-                : NavBarPage(
-                    initialPage: 'Golfers',
-                    page: TabFriendsWidget(),
-                  ),
-          ),
+          pageBuilder: (context, state) {
+            final extra = state.extra;
+            String? initialSegment;
+            if (extra is Map<String, dynamic>) {
+              initialSegment = extra['initialSegment'] as String?;
+            }
+            return _buildPageWithTransition(
+              context,
+              state,
+              appStateNotifier,
+              NavBarPage(
+                initialPage: 'Golfers',
+                page: TabFriendsWidget(initialSegment: initialSegment),
+              ),
+            );
+          },
         ),
         GoRoute(
           name: JoinGameDetailedWidget.routeName,
@@ -481,20 +483,22 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) => GoRouter(
           name: TabFriendsWidget.routeName,
           path: TabFriendsWidget.routePath,
           redirect: _buildRedirect(appStateNotifier, requireAuth: true),
-          pageBuilder: (context, state) => _buildPageWithTransition(
-            context,
-            state,
-            appStateNotifier,
-            _isEmptyStateParams(state)
-                ? NavBarPage(
-                    initialPage: 'Golfers',
-                    page: TabFriendsWidget(),
-                  )
-                : NavBarPage(
-                    initialPage: 'Golfers',
-                    page: TabFriendsWidget(),
-                  ),
-          ),
+          pageBuilder: (context, state) {
+            final extra = state.extra;
+            String? initialSegment;
+            if (extra is Map<String, dynamic>) {
+              initialSegment = extra['initialSegment'] as String?;
+            }
+            return _buildPageWithTransition(
+              context,
+              state,
+              appStateNotifier,
+              NavBarPage(
+                initialPage: 'Golfers',
+                page: TabFriendsWidget(initialSegment: initialSegment),
+              ),
+            );
+          },
         ),
         GoRoute(
           name: GameJoinedDetailedWidget.routeName,

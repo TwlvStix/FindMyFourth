@@ -142,6 +142,29 @@ function matchesAny(values, target) {
 }
 
 /**
+ * Check if user is eligible for game based on gender restrictions
+ * @param {string|null} userGender - User's gender ('Male' or 'Female')
+ * @param {string|null} playerEligibility - Game's eligibility ('open_to_all', 'women_only', 'men_only')
+ * @returns {boolean} Whether user can join this game
+ */
+function isUserEligibleByGender(userGender, playerEligibility) {
+  // open_to_all or no restriction - everyone can join
+  if (!playerEligibility || playerEligibility === "open_to_all") {
+    return true;
+  }
+  // women_only - only Female users
+  if (playerEligibility === "women_only") {
+    return userGender === "Female";
+  }
+  // men_only - only Male users
+  if (playerEligibility === "men_only") {
+    return userGender === "Male";
+  }
+  // Unknown eligibility value - default to allowing
+  return true;
+}
+
+/**
  * Get user notification preferences from user document
  */
 function getUserNotificationPrefs(userData) {
@@ -231,6 +254,7 @@ exports.sendGameCreatedNotifications = functions
       stakes: gameData.style_game,
       format: gameData.game_type,
       handicap: gameData.scoring,
+      eligibility: gameData.player_eligibility,
     });
 
     try {
@@ -281,6 +305,15 @@ exports.sendGameCreatedNotifications = functions
         }
 
         const userData = userSnap.data() || {};
+
+        // Check if user is eligible based on gender restrictions
+        const userGender = userData.gender || null;
+        const playerEligibility = gameData.player_eligibility || "open_to_all";
+        if (!isUserEligibleByGender(userGender, playerEligibility)) {
+          console.log(`[GameAlerts] User ${userId} (${userGender || "no gender"}) not eligible for ${playerEligibility} game, skipping`);
+          continue;
+        }
+
         const prefs = getUserNotificationPrefs(userData);
 
         // Check if push notifications are enabled
@@ -447,4 +480,10 @@ exports.sendGameCreatedNotifications = functions
     }
   });
 
-module.exports = exports;
+// Export for testing
+module.exports = {
+  ...exports,
+  // Test helpers
+  isUserEligibleByGender,
+  doesAlertSubMatchGame,
+};

@@ -124,7 +124,6 @@ class _GamesListWidgetState extends State<GamesListWidget> {
   bool _didInitDependencies = false;
   List<Game>? _cachedGames;
   GameListFilters _filters = GameListFilters();
-  bool _showLockedGames = false;
 
   // Cache for the last computed filter metadata (not state - updated during build)
   GameFilterMeta _lastFilterMeta = const GameFilterMeta(
@@ -912,221 +911,203 @@ class _GamesListWidgetState extends State<GamesListWidget> {
                                 ),
                               ),
                             // ════════════════════════════════════════════════════
-                            // Scheduled Games List
+                            // Global Empty State (only when ALL sections empty)
                             // ════════════════════════════════════════════════════
-                            SliverPadding(
-                              padding: EdgeInsets.only(
-                                top: flexibleGames.isEmpty ? AppSpacing.md : 0,
-                                // Only add large bottom padding if no locked games section follows
-                                bottom: lockedGames.isEmpty
-                                    ? MediaQuery.of(context).padding.bottom + 128.0
-                                    : AppSpacing.md,
-                              ),
-                              sliver: scheduledGames.isEmpty
-                                  ? SliverToBoxAdapter(
-                                      child: Padding(
-                                        padding: EdgeInsets.symmetric(
-                                          vertical: AppSpacing.xl,
-                                        ),
-                                        child: Column(
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.center,
-                                          children: [
-                                            if (_filters.hasActiveFilters) ...[
-                                              AppEmptyStatePremium(
-                                                icon: AppPhosphorIcons.searchOff,
-                                                title: 'No games match these filters',
-                                                message: 'Try adjusting or clearing your filters.',
-                                              ),
-                                              SizedBox(height: AppSpacing.lg),
-                                              SizedBox(
-                                                width: 220,
-                                                child: AppButtonEnhanced(
-                                                  text: 'Clear filters',
-                                                  variant: AppButtonVariant
-                                                      .secondary,
-                                                  size: AppButtonSize.medium,
-                                                  onPressed: () {
-                                                    if (mounted) {
-                                                      setState(() {
-                                                        _filters =
-                                                            GameListFilters();
-                                                      });
-                                                    }
-                                                  },
-                                                ),
-                                              ),
-                                            ] else if (lockedGames
-                                                .isNotEmpty) ...[
-                                              AppEmptyStatePremium(
-                                                icon: AppPhosphorIcons.lock,
-                                                title: 'No joinable games right now',
-                                                message: 'There are friends-only games you can view below.',
-                                              ),
-                                              SizedBox(height: AppSpacing.lg),
-                                              SizedBox(
-                                                width: 220,
-                                                child: AppButtonEnhanced(
-                                                  text: _showLockedGames
-                                                      ? 'Hide locked games'
-                                                      : 'Show locked games',
-                                                  variant: AppButtonVariant
-                                                      .secondary,
-                                                  size: AppButtonSize.medium,
-                                                  onPressed: () {
-                                                    if (mounted) {
-                                                      setState(() {
-                                                        _showLockedGames =
-                                                            !_showLockedGames;
-                                                      });
-                                                    }
-                                                  },
-                                                ),
-                                              ),
-                                            ] else if (flexibleGames.isNotEmpty) ...[
-                                              // Show soft message when there are flexible games but no scheduled
-                                              AppEmptyStatePremium(
-                                                icon: AppPhosphorIcons.calendarCheck,
-                                                title: 'No confirmed games yet',
-                                                message: 'Check out the flexible games above.',
-                                              ),
-                                            ] else ...[
-                                              AppEmptyStatePremium(
-                                                assetPath: AppIcons.games,
-                                                title: 'No Games Yet',
-                                                message: 'Be the first to create a game.',
-                                              ),
-                                              SizedBox(height: AppSpacing.lg),
-                                              SizedBox(
-                                                width: 220,
-                                                child: AppButtonEnhanced(
-                                                  text: 'Create a game',
-                                                  variant:
-                                                      AppButtonVariant.primary,
-                                                  size: AppButtonSize.medium,
-                                                  onPressed: () {
-                                                    context.pushNamed(
-                                                      CreateGameWidget
-                                                          .routeName,
-                                                      extra: <String, dynamic>{
-                                                        kTransitionInfoKey:
-                                                            TransitionStandards
-                                                                .detailTransition,
-                                                      },
-                                                    );
-                                                  },
-                                                ),
-                                              ),
-                                            ],
-                                          ],
-                                        ),
-                                      ),
-                                    )
-                                  : SliverList(
-                                      delegate: SliverChildBuilderDelegate(
-                                        (context, index) {
-                                          final containerVarItem =
-                                              scheduledGames[index];
-                                          final isLast =
-                                              index == scheduledGames.length - 1;
-                                          return Padding(
-                                            padding: EdgeInsets.only(
-                                              bottom:
-                                                  isLast ? 0.0 : AppSpacing.sm,
-                                            ),
-                                            child: PremiumGameCard(
-                                              game: containerVarItem,
-                                              currentUserReference: currentUserReference,
-                                              getCancelledHandling: _getCancelledHandling,
-                                              onCancelledGameTap: _showCancelledGameOptions,
-                                              onFriendsOnlyTap: _showFriendsOnlyDialog,
-                                              animationIndex: index,
-                                              staggerDelay: Duration(milliseconds: 24 * index),
-                                            ),
-                                          );
-                                        },
-                                        childCount: scheduledGames.length,
-                                      ),
-                                    ),
-                            ),
-                            if (lockedGames.isNotEmpty)
+                            if (flexibleGames.isEmpty && scheduledGames.isEmpty && lockedGames.isEmpty)
                               SliverToBoxAdapter(
                                 child: Padding(
-                                  padding: EdgeInsets.fromLTRB(
-                                    AppSpacing.sm,
-                                    4.0,
-                                    AppSpacing.sm,
-                                    AppSpacing.sm,
+                                  padding: EdgeInsets.only(
+                                    top: AppSpacing.xl,
+                                    bottom: MediaQuery.of(context).padding.bottom + 128.0,
                                   ),
-                                  child: Container(
-                                    padding: EdgeInsets.all(AppSpacing.md),
-                                    decoration: BoxDecoration(
-                                      color: AppColors.navy.withValues(alpha:0.2),
-                                      borderRadius: BorderRadius.circular(AppBorderRadius.lg),
-                                      border: Border.all(
-                                        color: AppColors.glassSurface,
+                                  child: Column(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      AppEmptyStatePremium(
+                                        assetPath: AppIcons.games,
+                                        title: 'No Games Yet',
+                                        message: 'Join or create a game to get started.',
                                       ),
-                                    ),
-                                    child: Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                        Row(
-                                          children: [
-                                            Container(
-                                              width: 32,
-                                              height: 32,
-                                              decoration: BoxDecoration(
-                                                color: AppColors.glassSurface,
-                                                borderRadius:
-                                                    BorderRadius.circular(AppBorderRadius.sm),
-                                              ),
-                                              child: AppIcon(
-                                                icon: AppPhosphorIcons.lock,
-                                                color: AppColors.textPrimary,
-                                                size: AppIconSize.button,
-                                              ),
-                                            ),
-                                            SizedBox(width: AppSpacing.sm),
-                                            Expanded(
-                                              child: Text(
-                                                'Friends-only games',
-                                                style: AppTypography.titleSmall
-                                                    .copyWith(
-                                                  color: AppColors.textPrimary,
-                                                  fontWeight: FontWeight.w600,
-                                                ),
-                                              ),
-                                            ),
-                                            AppButtonEnhanced(
-                                              text: _showLockedGames ? 'Hide' : 'Show',
-                                              variant: AppButtonVariant.ghost,
-                                              size: AppButtonSize.small,
-                                              onPressed: () {
-                                                if (mounted) {
-                                                  setState(() {
-                                                    _showLockedGames = !_showLockedGames;
-                                                  });
-                                                }
+                                      SizedBox(height: AppSpacing.lg),
+                                      SizedBox(
+                                        width: 220,
+                                        child: AppButtonEnhanced(
+                                          text: 'Create a game',
+                                          variant: AppButtonVariant.primary,
+                                          size: AppButtonSize.medium,
+                                          onPressed: () {
+                                            context.pushNamed(
+                                              CreateGameWidget.routeName,
+                                              extra: <String, dynamic>{
+                                                kTransitionInfoKey:
+                                                    TransitionStandards.detailTransition,
                                               },
-                                            ),
-                                          ],
+                                            );
+                                          },
                                         ),
-                                        SizedBox(height: AppSpacing.xs),
-                                        Text(
-                                          'Become friends with the host to join.',
-                                          style:
-                                              AppTypography.bodySmall.copyWith(
-                                            color:
-                                                AppColors.glassTextSecondary,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
+                                      ),
+                                    ],
                                   ),
                                 ),
                               ),
-                            if (_showLockedGames && lockedGames.isNotEmpty)
+                            // ════════════════════════════════════════════════════
+                            // Fixed Games Section Header
+                            // ════════════════════════════════════════════════════
+                            if (scheduledGames.isNotEmpty)
+                              SliverToBoxAdapter(
+                                child: Padding(
+                                  padding: EdgeInsets.only(
+                                    left: AppSpacing.md,
+                                    right: AppSpacing.md,
+                                    top: flexibleGames.isEmpty ? AppSpacing.md : 0,
+                                    bottom: AppSpacing.sm,
+                                  ),
+                                  child: Row(
+                                    children: [
+                                      Container(
+                                        width: 8,
+                                        height: 8,
+                                        decoration: BoxDecoration(
+                                          color: AppColors.green,
+                                          shape: BoxShape.circle,
+                                        ),
+                                      ),
+                                      SizedBox(width: AppSpacing.xs),
+                                      Text(
+                                        'Fixed Games',
+                                        style: AppTypography.titleSmall.copyWith(
+                                          color: AppColors.textPrimary,
+                                          fontWeight: FontWeight.w600,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            // ════════════════════════════════════════════════════
+                            // Scheduled Games List
+                            // ════════════════════════════════════════════════════
+                            if (scheduledGames.isNotEmpty)
+                              SliverPadding(
+                                padding: EdgeInsets.only(
+                                  top: 0,
+                                  // Only add large bottom padding if no locked games section follows
+                                  bottom: lockedGames.isEmpty
+                                      ? MediaQuery.of(context).padding.bottom + 128.0
+                                      : AppSpacing.md,
+                                ),
+                                sliver: SliverList(
+                                  delegate: SliverChildBuilderDelegate(
+                                    (context, index) {
+                                      final containerVarItem =
+                                          scheduledGames[index];
+                                      final isLast =
+                                          index == scheduledGames.length - 1;
+                                      return Padding(
+                                        padding: EdgeInsets.only(
+                                          bottom:
+                                              isLast ? 0.0 : AppSpacing.sm,
+                                        ),
+                                        child: PremiumGameCard(
+                                          game: containerVarItem,
+                                          currentUserReference: currentUserReference,
+                                          getCancelledHandling: _getCancelledHandling,
+                                          onCancelledGameTap: _showCancelledGameOptions,
+                                          onFriendsOnlyTap: _showFriendsOnlyDialog,
+                                          animationIndex: index,
+                                          staggerDelay: Duration(milliseconds: 24 * index),
+                                        ),
+                                      );
+                                    },
+                                    childCount: scheduledGames.length,
+                                  ),
+                                ),
+                              ),
+                            // ════════════════════════════════════════════════════
+                            // Friends-Only Games Section Header
+                            // ════════════════════════════════════════════════════
+                            if (lockedGames.isNotEmpty)
+                              SliverToBoxAdapter(
+                                child: Padding(
+                                  padding: EdgeInsets.only(
+                                    left: AppSpacing.md,
+                                    right: AppSpacing.md,
+                                    top: AppSpacing.md,
+                                    bottom: AppSpacing.sm,
+                                  ),
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Row(
+                                        children: [
+                                          // Green dot prefix
+                                          Container(
+                                            width: 8,
+                                            height: 8,
+                                            decoration: BoxDecoration(
+                                              color: AppColors.green,
+                                              shape: BoxShape.circle,
+                                            ),
+                                          ),
+                                          SizedBox(width: AppSpacing.xs),
+                                          // Title
+                                          Text(
+                                            'Friends-Only Games',
+                                            style: AppTypography.titleSmall.copyWith(
+                                              color: AppColors.textPrimary,
+                                              fontWeight: FontWeight.w600,
+                                            ),
+                                          ),
+                                          SizedBox(width: AppSpacing.xxs),
+                                          // Small lock icon after title
+                                          AppIcon(
+                                            icon: AppPhosphorIcons.lock,
+                                            size: AppIconSize.xs,
+                                            color: AppColors.textMuted,
+                                          ),
+                                          const Spacer(),
+                                          // Hide/Show toggle
+                                          GestureDetector(
+                                            onTap: () {
+                                              AppState().hideFriendsOnlyGames =
+                                                  !AppState().hideFriendsOnlyGames;
+                                              if (mounted) {
+                                                setState(() {});
+                                              }
+                                            },
+                                            behavior: HitTestBehavior.opaque,
+                                            child: Padding(
+                                              padding: EdgeInsets.symmetric(
+                                                vertical: AppSpacing.xxs,
+                                                horizontal: AppSpacing.xs,
+                                              ),
+                                              child: Text(
+                                                AppState().hideFriendsOnlyGames ? 'Show' : 'Hide',
+                                                style: AppTypography.labelSmall.copyWith(
+                                                  color: AppColors.textSecondary,
+                                                  fontWeight: FontWeight.w500,
+                                                ),
+                                              ),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                      SizedBox(height: AppSpacing.xxs),
+                                      // Subtitle (muted caption)
+                                      Text(
+                                        'Become friends with the host to join.',
+                                        style: AppTypography.labelSmall.copyWith(
+                                          color: AppColors.textMuted,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            // ════════════════════════════════════════════════════
+                            // Friends-Only Games List
+                            // ════════════════════════════════════════════════════
+                            if (!AppState().hideFriendsOnlyGames && lockedGames.isNotEmpty)
                               Consumer<UserProvider>(
                                 builder: (context, userProvider, _) {
                                   return SliverPadding(

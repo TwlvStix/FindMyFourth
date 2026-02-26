@@ -494,6 +494,13 @@ class UserProvider extends ChangeNotifier {
 
       if (sent) {
         _addPendingOutgoingRequest(targetUserRef.id);
+
+        // Fire-and-forget notification to recipient
+        final currentUserName = _currentUser?.displayName ?? 'A golfer';
+        _friendService.notifyFriendRequestSent(
+          recipientUserId: targetUserRef.id,
+          senderName: currentUserName,
+        );
       }
     } catch (e) {
       AppLog.d('❌ UserProvider.sendFriendRequest error: $e');
@@ -510,6 +517,13 @@ class UserProvider extends ChangeNotifier {
       await _friendService.acceptFriendRequest(
         currentUserId: authUser.uid,
         requesterRef: requesterRef,
+      );
+
+      // Fire-and-forget notification to requester
+      final currentUserName = _currentUser?.displayName ?? 'A golfer';
+      _friendService.notifyFriendRequestAccepted(
+        requesterUserId: requesterRef.id,
+        acceptorName: currentUserName,
       );
     } catch (e) {
       AppLog.d('❌ UserProvider.acceptFriendRequest error: $e');

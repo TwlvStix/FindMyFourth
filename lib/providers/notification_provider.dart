@@ -340,6 +340,22 @@ class NotificationProvider extends ChangeNotifier {
     await updatePreferences(newPrefs);
   }
 
+  /// Update social alerts settings.
+  Future<void> updateSocialAlerts({bool? enabled}) async {
+    final newSocialAlerts = _prefs.socialAlerts.copyWith(enabled: enabled);
+
+    var newPrefs = _prefs.copyWith(socialAlerts: newSocialAlerts);
+
+    // Recalculate active profile
+    final detectedProfile = newPrefs.detectActiveProfile();
+    newPrefs = newPrefs.copyWith(
+      activeProfile: detectedProfile,
+      clearActiveProfile: detectedProfile == null,
+    );
+
+    await updatePreferences(newPrefs);
+  }
+
   @override
   void dispose() {
     _connectivitySub?.cancel();

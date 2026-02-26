@@ -369,6 +369,46 @@ async function onSpotOpened(playerUserIds, gameId, courseName, gameDate, spotsRe
   }));
 }
 
+// ── Social hooks ──────────────────────────────────────────────────────────────
+
+/**
+ * Called when a user receives a friend request.
+ * Notifies the recipient immediately.
+ *
+ * @param {string} recipientUserId - User receiving the request
+ * @param {string} senderUserId    - User sending the request
+ * @param {string} senderName      - Display name of sender
+ * @param {FirebaseFirestore.Firestore} [db]
+ */
+async function onFriendRequestReceived(recipientUserId, senderUserId, senderName, db) {
+  return routeNotification({
+    eventId:         randomUUID(),
+    eventType:       'friend_request_received',
+    recipientUserId: recipientUserId,
+    sourceId:        `friend_request_${senderUserId}_${recipientUserId}`,
+    data:            { sender_name: senderName, sender_id: senderUserId },
+  }, db);
+}
+
+/**
+ * Called when a friend request is accepted.
+ * Notifies the original requester.
+ *
+ * @param {string} recipientUserId - Original requester receiving the notification
+ * @param {string} acceptorUserId  - User who accepted the request
+ * @param {string} acceptorName    - Display name of acceptor
+ * @param {FirebaseFirestore.Firestore} [db]
+ */
+async function onFriendRequestAccepted(recipientUserId, acceptorUserId, acceptorName, db) {
+  return routeNotification({
+    eventId:         randomUUID(),
+    eventType:       'friend_request_accepted',
+    recipientUserId: recipientUserId,
+    sourceId:        `friend_accept_${acceptorUserId}_${recipientUserId}`,
+    data:            { acceptor_name: acceptorName, acceptor_id: acceptorUserId },
+  }, db);
+}
+
 // ── Exports ───────────────────────────────────────────────────────────────────
 
 module.exports = {
@@ -383,4 +423,6 @@ module.exports = {
   onDisputeResolved,
   onBadgeEarned,
   onSpotOpened,
+  onFriendRequestReceived,
+  onFriendRequestAccepted,
 };

@@ -88,7 +88,27 @@ class _PremiumFriendCardState extends State<PremiumFriendCard>
       CurvedAnimation(parent: _scaleController, curve: MotionTokens.curveEnter),
     );
 
-    // Calculate vibe match if both profiles exist
+    _calculateVibeMatch();
+  }
+
+  @override
+  void didUpdateWidget(PremiumFriendCard oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    // Recalculate vibe match if user data changed
+    if (oldWidget.user.reference.id != widget.user.reference.id ||
+        oldWidget.user.vibeProfile != widget.user.vibeProfile ||
+        oldWidget.currentUser?.vibeProfile != widget.currentUser?.vibeProfile) {
+      _calculateVibeMatch();
+    }
+  }
+
+  @override
+  void dispose() {
+    _scaleController.dispose();
+    super.dispose();
+  }
+
+  void _calculateVibeMatch() {
     if (widget.currentUser != null &&
         widget.currentUser!.vibeProfile.isNotEmpty &&
         widget.user.vibeProfile.isNotEmpty) {
@@ -98,16 +118,11 @@ class _PremiumFriendCardState extends State<PremiumFriendCard>
         final theirProfile = VibeProfile.fromFirestore(widget.user.vibeProfile);
         _vibeMatch = VibeMatcher.score(myProfile, theirProfile);
       } catch (e) {
-        // Vibe calculation failed, leave as null
         _vibeMatch = null;
       }
+    } else {
+      _vibeMatch = null;
     }
-  }
-
-  @override
-  void dispose() {
-    _scaleController.dispose();
-    super.dispose();
   }
 
   void _onTapDown(TapDownDetails details) {
@@ -287,7 +302,7 @@ class _PremiumFriendCardState extends State<PremiumFriendCard>
   Widget _buildVibeBadge() {
     if (_vibeMatch == null) return SizedBox.shrink();
 
-    final score = _vibeMatch!.finalScorePercent.round();
+    final score = _vibeMatch!.myFitPercent.round();
 
     return Container(
       padding: EdgeInsets.symmetric(horizontal: AppSpacing.xs, vertical: AppSpacing.xxs),

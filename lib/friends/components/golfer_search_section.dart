@@ -413,14 +413,19 @@ class _GolferSearchSectionState extends State<GolferSearchSection> {
   }
 
   Widget _buildSearchResults(String inputTerm) {
-    final debouncedTerm = _debouncedTerm.trim();
-    final readyForSearch = debouncedTerm == inputTerm;
+    // When using external search, parent handles debouncing - skip internal debounce check
+    final useExternalDebounce = widget.externalSearchTerm != null;
 
-    if (!readyForSearch) {
-      return _buildLoading();
+    if (!useExternalDebounce) {
+      final debouncedTerm = _debouncedTerm.trim();
+      final readyForSearch = debouncedTerm == inputTerm;
+
+      if (!readyForSearch) {
+        return _buildLoading();
+      }
     }
 
-    final searchTerm = debouncedTerm.toLowerCase();
+    final searchTerm = inputTerm.toLowerCase();
     if (kDebugMode) {
       debugPrint(
         '🔍 Golfer search: query="$searchTerm" length=${searchTerm.length}',

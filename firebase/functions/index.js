@@ -1822,8 +1822,69 @@ exports.trustQuietHoursCleanup = functions
     console.log('[trustQuietHoursCleanup]', result);
   });
 
+// Social Notifications — Friend Requests
+const { onFriendRequestReceived, onFriendRequestAccepted } = require('./notifications/trust/hooks');
+
+/**
+ * Sends a push notification when a friend request is sent.
+ * Called by Flutter after successfully adding to friend_requests array.
+ */
+exports.notifyFriendRequestSent = functions
+  .region('us-west2')
+  .https.onCall(async (data, context) => {
+    if (!context.auth) {
+      throw new functions.https.HttpsError('unauthenticated', 'Must be authenticated');
+    }
+
+    const { recipientUserId, senderName } = data;
+    if (!recipientUserId || !senderName) {
+      throw new functions.https.HttpsError('invalid-argument', 'Missing required fields: recipientUserId, senderName');
+    }
+
+    try {
+      const result = await onFriendRequestReceived(
+        recipientUserId,
+        context.auth.uid,
+        senderName,
+      );
+      return { success: true, result: result.result };
+    } catch (error) {
+      console.error('notifyFriendRequestSent error:', error);
+      throw new functions.https.HttpsError('internal', error.message);
+    }
+  });
+
+/**
+ * Sends a push notification when a friend request is accepted.
+ * Called by Flutter after successfully accepting a friend request.
+ */
+exports.notifyFriendRequestAccepted = functions
+  .region('us-west2')
+  .https.onCall(async (data, context) => {
+    if (!context.auth) {
+      throw new functions.https.HttpsError('unauthenticated', 'Must be authenticated');
+    }
+
+    const { requesterUserId, acceptorName } = data;
+    if (!requesterUserId || !acceptorName) {
+      throw new functions.https.HttpsError('invalid-argument', 'Missing required fields: requesterUserId, acceptorName');
+    }
+
+    try {
+      const result = await onFriendRequestAccepted(
+        requesterUserId,
+        context.auth.uid,
+        acceptorName,
+      );
+      return { success: true, result: result.result };
+    } catch (error) {
+      console.error('notifyFriendRequestAccepted error:', error);
+      throw new functions.https.HttpsError('internal', error.message);
+    }
+  });
+
 // Welcome email — restored from main (accidentally dropped in checkpoint branch)
-const sgMail = require("@sendgrid/mail");
+// Note: sgMail already declared at top of file
 
 exports.onUserCreated = functions
   .region("us-west2")

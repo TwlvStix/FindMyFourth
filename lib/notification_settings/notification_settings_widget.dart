@@ -17,6 +17,7 @@ import '/notification_settings/components/game_alerts_content.dart';
 import '/notification_settings/components/chat_content.dart';
 import '/notification_settings/components/trust_content.dart';
 import '/notification_settings/components/quiet_hours_content.dart';
+import '/notification_settings/components/social_alerts_content.dart';
 
 class NotificationSettingsWidget extends StatefulWidget {
   const NotificationSettingsWidget({super.key});
@@ -206,6 +207,7 @@ class _NotificationSettingsWidgetState
     final cards = [
       _buildGameAlertsCard(prefs),
       _buildChatMessagesCard(prefs),
+      _buildSocialCard(prefs),
       _buildTrustCard(prefs),
       _buildQuietHoursCard(prefs),
     ];
@@ -268,6 +270,23 @@ class _NotificationSettingsWidgetState
     );
   }
 
+  Widget _buildSocialCard(NotificationPreferences prefs) {
+    return NotificationCategoryCard(
+      title: 'Social',
+      summary: prefs.socialAlerts.enabled ? 'On' : 'Off',
+      icon: AppPhosphorIcons.golfers,
+      isEnabled: prefs.socialAlerts.enabled,
+      isExpanded: _expandedIndex == 2,
+      onToggle: () {
+        context.notificationProvider
+            .updateSocialAlerts(enabled: !prefs.socialAlerts.enabled);
+        _showUpdateConfirmation();
+      },
+      onTap: () => _toggleExpanded(2),
+      expandedContent: const SocialAlertsContent(),
+    );
+  }
+
   Widget _buildTrustCard(NotificationPreferences prefs) {
     final isEnabled = _isTrustEnabled(prefs);
     return NotificationCategoryCard(
@@ -275,13 +294,13 @@ class _NotificationSettingsWidgetState
       summary: _getTrustSummary(prefs),
       icon: AppPhosphorIcons.trust,
       isEnabled: isEnabled,
-      isExpanded: _expandedIndex == 2,
+      isExpanded: _expandedIndex == 3,
       onToggle: () {
         context.notificationProvider
             .updateTrustCategories(enabled: !prefs.trustCategories.enabled);
         _showUpdateConfirmation();
       },
-      onTap: () => _toggleExpanded(2),
+      onTap: () => _toggleExpanded(3),
       expandedContent: const TrustContent(),
     );
   }
@@ -292,13 +311,13 @@ class _NotificationSettingsWidgetState
       summary: _getQuietHoursSummary(prefs),
       icon: AppPhosphorIcons.moon,
       isEnabled: prefs.quietHours.enabled,
-      isExpanded: _expandedIndex == 3,
+      isExpanded: _expandedIndex == 4,
       onToggle: () {
         context.notificationProvider
             .updateQuietHours(enabled: !prefs.quietHours.enabled);
         _showUpdateConfirmation();
       },
-      onTap: () => _toggleExpanded(3),
+      onTap: () => _toggleExpanded(4),
       expandedContent: const QuietHoursContent(),
     );
   }

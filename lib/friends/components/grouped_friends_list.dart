@@ -6,6 +6,7 @@ import '/backend/backend.dart';
 import '/core/design_tokens/spacing.dart';
 import '/core/design_tokens/colors.dart';
 import '/core/design_tokens/app_phosphor_icons.dart';
+import '/core/widgets/app_empty_state.dart';
 import '/friends/components/premium_friend_card.dart';
 import '/friends/components/friend_section_header.dart';
 import '/friends/components/swipeable_friend_card.dart';
@@ -44,6 +45,7 @@ class _GroupedFriendsListState extends State<GroupedFriendsList> {
   bool allFriendsCollapsed = false;
   bool favoritesCollapsed = false;
   bool _profilesWarmed = false;
+  bool _isLoading = true;
 
   @override
   void initState() {
@@ -60,6 +62,7 @@ class _GroupedFriendsListState extends State<GroupedFriendsList> {
         oldWidget.friendRefs.map((r) => r.id).toSet(),
         widget.friendRefs.map((r) => r.id).toSet())) {
       _profilesWarmed = false;
+      _isLoading = true;
       _warmFriendProfiles();
     }
   }
@@ -72,13 +75,26 @@ class _GroupedFriendsListState extends State<GroupedFriendsList> {
     if (_profilesWarmed) return;
 
     final friendUids = widget.friendRefs.map((ref) => ref.id).toSet();
-    if (friendUids.isEmpty) return;
+    if (friendUids.isEmpty) {
+      // No friends to warm - mark loading complete
+      if (mounted && _isLoading) {
+        setState(() => _isLoading = false);
+      }
+      return;
+    }
 
     _profilesWarmed = true;
 
-    WidgetsBinding.instance.addPostFrameCallback((_) {
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
       if (!mounted) return;
-      context.read<ProfileProvider>().warmProfiles(friendUids);
+      try {
+        await context.read<ProfileProvider>().warmProfiles(friendUids);
+      } finally {
+        // Always mark loading complete, even if warming fails
+        if (mounted) {
+          setState(() => _isLoading = false);
+        }
+      }
     });
   }
 
@@ -94,13 +110,23 @@ class _GroupedFriendsListState extends State<GroupedFriendsList> {
             .whereType<UsersRecord>()
             .toList();
 
-        // Show loading if profiles aren't cached yet
-        if (allFriends.isEmpty && widget.friendRefs.isNotEmpty) {
+        // Show loading spinner while warming profiles
+        if (_isLoading && allFriends.isEmpty && widget.friendRefs.isNotEmpty) {
           return Center(
             child: SpinKitWanderingCubes(
               color: AppColors.navy,
               size: 50.0,
             ),
+          );
+        }
+
+        // Show empty state if loading finished but no profiles could be loaded
+        // (e.g., friend references point to deleted/non-existent user documents)
+        if (!_isLoading && allFriends.isEmpty && widget.friendRefs.isNotEmpty) {
+          return AppEmptyState(
+            icon: AppPhosphorIcons.users,
+            title: 'Unable to load friends',
+            message: 'Pull down to refresh',
           );
         }
 

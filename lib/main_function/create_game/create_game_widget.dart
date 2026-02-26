@@ -1127,9 +1127,13 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
                     _flexibleTimesOfDay = {'anytime'};
                   }
                 } else {
-                  // Adding - remove Anytime if present
+                  // Adding - remove Anytime if present and add selection
                   _flexibleTimesOfDay.remove('anytime');
                   _flexibleTimesOfDay.add(value);
+                  // If all 3 specific times selected, auto-switch to Anytime
+                  if (_flexibleTimesOfDay.containsAll({'morning', 'afternoon', 'twilight'})) {
+                    _flexibleTimesOfDay = {'anytime'};
+                  }
                 }
               }
             });

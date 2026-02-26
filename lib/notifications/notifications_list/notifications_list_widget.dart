@@ -301,6 +301,11 @@ class _NotificationsListWidgetState extends State<NotificationsListWidget> {
     return const {'badge_earned', 'badge_progress'}.contains(type);
   }
 
+  bool _isSocialNotification(String type) {
+    return const {'friend_request_received', 'friend_request_accepted'}
+        .contains(type);
+  }
+
   PhosphorIconData _iconForType(String type) {
     if (type == 'chat_message') return AppPhosphorIcons.chat;
     if (_isGameNotification(type)) return AppPhosphorIcons.games;
@@ -323,6 +328,8 @@ class _NotificationsListWidgetState extends State<NotificationsListWidget> {
           : AppPhosphorIcons.warning;
     }
     if (_isBadgeNotification(type)) return AppPhosphorIcons.badge;
+    if (type == 'friend_request_received') return AppPhosphorIcons.addPlayer;
+    if (type == 'friend_request_accepted') return AppPhosphorIcons.golfers;
     return AppPhosphorIcons.notifications;
   }
 
@@ -332,6 +339,7 @@ class _NotificationsListWidgetState extends State<NotificationsListWidget> {
     if (type == 'dispute_resolved_upheld') return AppColors.error;
     if (_isTrustAccountNotification(type)) return AppColors.error;
     if (_isBadgeNotification(type)) return AppColors.gold;
+    if (_isSocialNotification(type)) return AppColors.green;
     return AppColors.navyDark;
   }
 
@@ -438,6 +446,26 @@ class _NotificationsListWidgetState extends State<NotificationsListWidget> {
     }
     if (_isBadgeNotification(type)) {
       context.pushNamed('MainProfile');
+      return;
+    }
+    if (type == 'friend_request_received') {
+      context.pushNamed(
+        'Golfers',
+        extra: <String, dynamic>{
+          'initialSegment': 'requests',
+          kTransitionInfoKey: TransitionStandards.detailTransition,
+        },
+      );
+      return;
+    }
+    if (type == 'friend_request_accepted') {
+      context.pushNamed(
+        'Golfers',
+        extra: <String, dynamic>{
+          'initialSegment': 'friends',
+          kTransitionInfoKey: TransitionStandards.detailTransition,
+        },
+      );
       return;
     }
   }

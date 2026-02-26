@@ -3,7 +3,6 @@ import '/core/design_tokens/colors.dart';
 import '/core/design_tokens/spacing.dart';
 import '/core/design_tokens/typography.dart';
 import '/core/design_tokens/icon_size.dart';
-import '/core/design_tokens/border_radius.dart';
 import '/core/design_tokens/app_phosphor_icons.dart';
 import '/core/widgets/app_icon.dart';
 import '/models/game.dart';
@@ -62,23 +61,10 @@ class FlexibleAvailabilitySummary extends StatelessWidget {
     return Row(
       children: [
         if (showIcon) ...[
-          // Green gradient calendar icon
-          Container(
-            width: 36,
-            height: 36,
-            decoration: BoxDecoration(
-              gradient: const LinearGradient(
-                colors: [AppColors.green, AppColors.greenLight],
-              ),
-              borderRadius: BorderRadius.circular(AppBorderRadius.sm),
-            ),
-            child: Center(
-              child: AppIcon(
-                icon: AppPhosphorIcons.calendarCheck,
-                color: AppColors.pure,
-                size: AppIconSize.button,
-              ),
-            ),
+          AppIcon(
+            icon: AppPhosphorIcons.calendarCheck,
+            color: AppColors.textSecondary,
+            size: AppIconSize.listItem,
           ),
           SizedBox(width: AppSpacing.sm),
         ],

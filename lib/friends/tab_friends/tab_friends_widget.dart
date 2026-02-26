@@ -28,7 +28,11 @@ import '/friends/components/golfer_segmented_control.dart';
 import '/friends/components/section_label_row.dart';
 
 class TabFriendsWidget extends StatefulWidget {
-  const TabFriendsWidget({super.key});
+  const TabFriendsWidget({super.key, this.initialSegment});
+
+  /// Optional initial segment to show when the screen opens.
+  /// Used for deep linking from notifications (e.g., 'requests' or 'friends').
+  final String? initialSegment;
 
   static String routeName = 'Tab_Friends';
   static String routePath = '/tabFriends';
@@ -233,6 +237,23 @@ class _TabFriendsWidgetState extends State<TabFriendsWidget> {
   @override
   void initState() {
     super.initState();
+
+    // Apply initial segment from deep link if provided
+    if (widget.initialSegment != null) {
+      switch (widget.initialSegment) {
+        case 'requests':
+          _currentSegment = GolferSegment.requests;
+          break;
+        case 'friends':
+          _currentSegment = GolferSegment.friends;
+          break;
+        case 'discover':
+        default:
+          _currentSegment = GolferSegment.discover;
+          break;
+      }
+    }
+
     // Search controller listener
     _searchController.addListener(() {
       _onSearchChanged(_searchController.text);

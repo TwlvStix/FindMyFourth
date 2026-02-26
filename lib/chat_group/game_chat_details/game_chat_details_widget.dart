@@ -501,6 +501,7 @@ class _GameChatDetailsWidgetState extends State<GameChatDetailsWidget>
         size: AppIconSize.md,
       ),
       tooltip: 'More options',
+      color: AppColors.navy,
       onSelected: (String value) {
         if (value == 'delete') {
           _showDeleteConfirmation();
@@ -711,7 +712,8 @@ class _GameChatDetailsWidgetState extends State<GameChatDetailsWidget>
               ListTile(
                 leading: AppIcon(icon: AppPhosphorIcons.imageGallery,
                     color: AppColors.textPrimary, size: AppIconSize.md),
-                title: const Text('Photo Library'),
+                title: Text('Photo Library',
+                    style: AppTypography.bodyMedium.copyWith(color: AppColors.textPrimary)),
                 onTap: () {
                   Navigator.of(sheetCtx).pop();
                   _pickAndSendImage(ImageSource.gallery);
@@ -720,7 +722,8 @@ class _GameChatDetailsWidgetState extends State<GameChatDetailsWidget>
               ListTile(
                 leading: AppIcon(icon: AppPhosphorIcons.camera,
                     color: AppColors.textPrimary, size: AppIconSize.md),
-                title: const Text('Take Photo'),
+                title: Text('Take Photo',
+                    style: AppTypography.bodyMedium.copyWith(color: AppColors.textPrimary)),
                 onTap: () {
                   Navigator.of(sheetCtx).pop();
                   _pickAndSendImage(ImageSource.camera);

@@ -54,6 +54,7 @@ class NotificationPreferences {
     required this.digestMode,
     required this.mutedThreads,
     required this.trustCategories,
+    required this.socialAlerts,
     this.activeProfile,
   });
 
@@ -68,6 +69,7 @@ class NotificationPreferences {
 
   final List<String> mutedThreads;
   final NotificationTrustCategories trustCategories;
+  final NotificationSocialAlerts socialAlerts;
 
   /// Currently active notification profile, or null if using custom settings.
   final NotificationProfile? activeProfile;
@@ -81,6 +83,7 @@ class NotificationPreferences {
       digestMode: 'instant',
       mutedThreads: const [],
       trustCategories: NotificationTrustCategories.defaults(),
+      socialAlerts: NotificationSocialAlerts.defaults(),
       activeProfile: NotificationProfile.allIn,
     );
   }
@@ -93,6 +96,7 @@ class NotificationPreferences {
     String? digestMode,
     List<String>? mutedThreads,
     NotificationTrustCategories? trustCategories,
+    NotificationSocialAlerts? socialAlerts,
     NotificationProfile? activeProfile,
     bool clearActiveProfile = false,
   }) {
@@ -104,6 +108,7 @@ class NotificationPreferences {
       digestMode: digestMode ?? this.digestMode,
       mutedThreads: mutedThreads ?? this.mutedThreads,
       trustCategories: trustCategories ?? this.trustCategories,
+      socialAlerts: socialAlerts ?? this.socialAlerts,
       activeProfile: clearActiveProfile ? null : (activeProfile ?? this.activeProfile),
     );
   }
@@ -114,6 +119,7 @@ class NotificationPreferences {
     final chatAlertsMap = _mapValue(data, 'chat_alerts');
     final quietHoursMap = _mapValue(data, 'quiet_hours');
     final trustCategoriesMap = _mapValue(data, 'trust_categories');
+    final socialAlertsMap = _mapValue(data, 'social_alerts');
 
     // Get global digestMode for backwards-compat fallback
     final digestMode = _stringValue(data, 'digest_mode', 'instant');
@@ -135,6 +141,7 @@ class NotificationPreferences {
         trustCategoriesMap,
         fallbackDigestMode: digestMode,
       ),
+      socialAlerts: NotificationSocialAlerts.fromMap(socialAlertsMap),
       activeProfile: NotificationProfile.fromFirestore(
         data['active_profile'] as String?,
       ),
@@ -150,6 +157,7 @@ class NotificationPreferences {
       'digest_mode': digestMode,
       'muted_threads': mutedThreads,
       'trust_categories': trustCategories.toFirestore(),
+      'social_alerts': socialAlerts.toFirestore(),
       'active_profile': activeProfile?.toFirestore(),
     });
   }
@@ -230,6 +238,7 @@ class NotificationPreferences {
             badges: true,
             deliveryFrequency: DeliveryFrequency.instant,
           ),
+          socialAlerts: NotificationSocialAlerts(enabled: true),
           activeProfile: NotificationProfile.allIn,
         );
 
@@ -255,6 +264,7 @@ class NotificationPreferences {
             badges: true,
             deliveryFrequency: DeliveryFrequency.daily,
           ),
+          socialAlerts: NotificationSocialAlerts(enabled: true),
           activeProfile: NotificationProfile.gameDay,
         );
 
@@ -280,6 +290,7 @@ class NotificationPreferences {
             badges: true,
             deliveryFrequency: DeliveryFrequency.instant,
           ),
+          socialAlerts: NotificationSocialAlerts(enabled: true),
           activeProfile: NotificationProfile.essentials,
         );
 
@@ -305,6 +316,7 @@ class NotificationPreferences {
             badges: true,
             deliveryFrequency: DeliveryFrequency.instant,
           ),
+          socialAlerts: NotificationSocialAlerts(enabled: false),
           activeProfile: NotificationProfile.quiet,
         );
     }
@@ -604,5 +616,30 @@ class NotificationTrustCategories {
       'badges': badges,
       'delivery_frequency': deliveryFrequency.toFirestore(),
     };
+  }
+}
+
+class NotificationSocialAlerts {
+  NotificationSocialAlerts({required this.enabled});
+
+  final bool enabled;
+
+  static NotificationSocialAlerts defaults() {
+    return NotificationSocialAlerts(enabled: true);
+  }
+
+  NotificationSocialAlerts copyWith({bool? enabled}) {
+    return NotificationSocialAlerts(enabled: enabled ?? this.enabled);
+  }
+
+  static NotificationSocialAlerts fromMap(Map<String, dynamic>? map) {
+    final data = map == null ? <String, dynamic>{} : Map<String, dynamic>.from(map);
+    return NotificationSocialAlerts(
+      enabled: NotificationPreferences._boolValue(data, 'enabled', true),
+    );
+  }
+
+  Map<String, dynamic> toFirestore() {
+    return {'enabled': enabled};
   }
 }

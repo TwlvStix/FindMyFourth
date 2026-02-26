@@ -3,7 +3,7 @@
 /**
  * Trust System Notification Event Registry
  *
- * Defines all 15 Trust System notification types, their configurations,
+ * Defines all 17 Trust System notification types, their configurations,
  * message templates, and priority mappings for the push notification router.
  *
  * Convention: event type values use snake_case to match existing types
@@ -28,6 +28,8 @@ const TrustEventType = Object.freeze({
   BADGE_PROGRESS:         'badge_progress',
   GAME_SPOT_OPENED:       'game_spot_opened',
   GAME_CANCELLED:         'game_cancelled',
+  FRIEND_REQUEST_RECEIVED:'friend_request_received',
+  FRIEND_REQUEST_ACCEPTED:'friend_request_accepted',
 });
 
 const NotificationPriority = Object.freeze({
@@ -42,6 +44,7 @@ const TrustCategory = Object.freeze({
   TRUST_ALERTS: 'trust_alerts',
   BADGES:       'badges',
   GAMES:        'games',
+  SOCIAL:       'social',
 });
 
 // ── Priority → FCM Delivery Config ───────────────────────────────────────────
@@ -337,6 +340,38 @@ const EVENT_REGISTRY = Object.freeze({
     threadId:         'game_{game_id}',
     androidChannelId: 'important',
     icon:             'sports_golf',
+  },
+
+  // ── Social ────────────────────────────────────────────────────────────────
+
+  [TrustEventType.FRIEND_REQUEST_RECEIVED]: {
+    priority:        NotificationPriority.DEFAULT,
+    category:        TrustCategory.SOCIAL,
+    maxDeliveries:   1,
+    timing:          'immediate',
+    template: {
+      title: 'New friend request',
+      body:  '{sender_name} wants to connect with you.',
+    },
+    deepLink:         'findmyfourth://golfers/requests',
+    threadId:         'social',
+    androidChannelId: 'default',
+    icon:             'person_add',
+  },
+
+  [TrustEventType.FRIEND_REQUEST_ACCEPTED]: {
+    priority:        NotificationPriority.DEFAULT,
+    category:        TrustCategory.SOCIAL,
+    maxDeliveries:   1,
+    timing:          'immediate',
+    template: {
+      title: 'Friend request accepted',
+      body:  '{acceptor_name} is now connected with you.',
+    },
+    deepLink:         'findmyfourth://golfers/friends',
+    threadId:         'social',
+    androidChannelId: 'default',
+    icon:             'check_circle',
   },
 });
 

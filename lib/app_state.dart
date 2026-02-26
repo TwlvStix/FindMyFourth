@@ -48,6 +48,9 @@ class AppState extends ChangeNotifier {
         }
       }
     });
+    _safeInit(() {
+      _hideFriendsOnlyGames = prefs.getBool('hideFriendsOnlyGames') ?? false;
+    });
   }
 
   void update(VoidCallback callback) {
@@ -91,6 +94,13 @@ class AppState extends ChangeNotifier {
       'cancelledGameHideAtByPath',
       jsonEncode(_cancelledGameHideAtByPath),
     );
+  }
+
+  bool _hideFriendsOnlyGames = false;
+  bool get hideFriendsOnlyGames => _hideFriendsOnlyGames;
+  set hideFriendsOnlyGames(bool value) {
+    _hideFriendsOnlyGames = value;
+    prefs.setBool('hideFriendsOnlyGames', value);
   }
 }
 

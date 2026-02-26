@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:cloud_functions/cloud_functions.dart';
 import '/core/utils/app_log.dart';
 
 /// FriendService provides centralized access to friend-related Firestore operations
@@ -173,6 +174,46 @@ class FriendService {
       AppLog.d('❌ FriendService.cancelFriendRequest error: ${e.code} - ${e.message}');
       AppLog.d('❌ FriendService.cancelFriendRequest stackTrace: $stackTrace');
       rethrow;
+    }
+  }
+
+  // ── Notification Methods ────────────────────────────────────────────────────
+
+  /// Send push notification to the recipient when a friend request is sent.
+  /// Non-blocking: errors are logged but not thrown.
+  Future<void> notifyFriendRequestSent({
+    required String recipientUserId,
+    required String senderName,
+  }) async {
+    try {
+      final callable = FirebaseFunctions.instanceFor(region: 'us-west2')
+          .httpsCallable('notifyFriendRequestSent');
+      await callable.call({
+        'recipientUserId': recipientUserId,
+        'senderName': senderName,
+      });
+      AppLog.d('✅ FriendService: Friend request notification sent');
+    } catch (e) {
+      AppLog.d('❌ FriendService.notifyFriendRequestSent error: $e');
+    }
+  }
+
+  /// Send push notification to the requester when their friend request is accepted.
+  /// Non-blocking: errors are logged but not thrown.
+  Future<void> notifyFriendRequestAccepted({
+    required String requesterUserId,
+    required String acceptorName,
+  }) async {
+    try {
+      final callable = FirebaseFunctions.instanceFor(region: 'us-west2')
+          .httpsCallable('notifyFriendRequestAccepted');
+      await callable.call({
+        'requesterUserId': requesterUserId,
+        'acceptorName': acceptorName,
+      });
+      AppLog.d('✅ FriendService: Friend accepted notification sent');
+    } catch (e) {
+      AppLog.d('❌ FriendService.notifyFriendRequestAccepted error: $e');
     }
   }
 }

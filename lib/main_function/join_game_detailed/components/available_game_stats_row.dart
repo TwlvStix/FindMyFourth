@@ -52,18 +52,10 @@ class AvailableGameStatsRow extends StatelessWidget {
               ),
               child: Row(
                 children: [
-                  Container(
-                    width: 36,
-                    height: 36,
-                    decoration: BoxDecoration(
-                      gradient: const LinearGradient(
-                        colors: [AppColors.green, AppColors.greenLight],
-                      ),
-                      borderRadius: BorderRadius.circular(AppBorderRadius.sm),
-                    ),
-                    child: Center(
-                      child: AppIcon(icon: AppPhosphorIcons.calendarCheck, color: AppColors.pure, size: AppIconSize.button),
-                    ),
+                  AppIcon(
+                    icon: AppPhosphorIcons.calendarCheck,
+                    color: AppColors.textSecondary,
+                    size: AppIconSize.listItem,
                   ),
                   SizedBox(width: AppSpacing.sm),
                   Expanded(

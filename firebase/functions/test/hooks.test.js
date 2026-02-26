@@ -4,17 +4,19 @@
  * Trust System Notification Hooks — Unit Tests
  *
  * Covers every hook:
- *   onGameConfirmed          — 4 scheduled jobs (2-player), 5 (3-player), host excluded from player_fallback
- *   onHostCheckinCompleted   — cancel game jobs + schedule player_rate_due
- *   onGameCancelled          — cancel game jobs + immediate game_cancelled fan-out
- *   onStrikeIssued           — immediate strike_issued
- *   onCooldownStarted        — immediate cooldown_started
- *   onRestrictionStarted     — immediate restriction_started + scheduled restriction_ended
- *   onSuspensionStarted      — immediate suspension_started
- *   onNoShowFlagged          — immediate no_show_flagged
- *   onDisputeResolved        — immediate dispute_resolved
- *   onBadgeEarned            — immediate badge_earned (numeric coercion)
- *   onSpotOpened             — immediate game_spot_opened fan-out
+ *   onGameConfirmed             — 4 scheduled jobs (2-player), 5 (3-player), host excluded from player_fallback
+ *   onHostCheckinCompleted      — cancel game jobs + schedule player_rate_due
+ *   onGameCancelled             — cancel game jobs + immediate game_cancelled fan-out
+ *   onStrikeIssued              — immediate strike_issued
+ *   onCooldownStarted           — immediate cooldown_started
+ *   onRestrictionStarted        — immediate restriction_started + scheduled restriction_ended
+ *   onSuspensionStarted         — immediate suspension_started
+ *   onNoShowFlagged             — immediate no_show_flagged
+ *   onDisputeResolved           — immediate dispute_resolved
+ *   onBadgeEarned               — immediate badge_earned (numeric coercion)
+ *   onSpotOpened                — immediate game_spot_opened fan-out
+ *   onFriendRequestReceived     — immediate friend_request_received
+ *   onFriendRequestAccepted     — immediate friend_request_accepted
  *
  * Run: npx jest test/hooks.test.js --verbose
  */
@@ -60,6 +62,8 @@ const {
   onDisputeResolved,
   onBadgeEarned,
   onSpotOpened,
+  onFriendRequestReceived,
+  onFriendRequestAccepted,
 } = require('../notifications/trust/hooks');
 
 // ── Constants ─────────────────────────────────────────────────────────────────
@@ -591,6 +595,142 @@ describe('onSpotOpened', () => {
     const { routeNotification } = require('../notifications/trust/router');
     await onSpotOpened([PLAYER_1], GAME_ID, COURSE_NAME, GAME_DATE, 1);
     expect(routeNotification).toHaveBeenCalledTimes(1);
+  });
+
+});
+
+// ════════════════════════════════════════════════════════════════════════════
+// onFriendRequestReceived
+// ════════════════════════════════════════════════════════════════════════════
+
+describe('onFriendRequestReceived', () => {
+
+  const RECIPIENT_ID = 'user_recipient_123';
+  const SENDER_ID    = 'user_sender_456';
+  const SENDER_NAME  = 'Alice';
+
+  test('calls routeNotification with friend_request_received eventType', async () => {
+    const { routeNotification } = require('../notifications/trust/router');
+    await onFriendRequestReceived(RECIPIENT_ID, SENDER_ID, SENDER_NAME);
+
+    expect(routeNotification).toHaveBeenCalledTimes(1);
+    const event = routeNotification.mock.calls[0][0];
+    expect(event.eventType).toBe('friend_request_received');
+  });
+
+  test('sends to the correct recipient', async () => {
+    const { routeNotification } = require('../notifications/trust/router');
+    await onFriendRequestReceived(RECIPIENT_ID, SENDER_ID, SENDER_NAME);
+
+    const event = routeNotification.mock.calls[0][0];
+    expect(event.recipientUserId).toBe(RECIPIENT_ID);
+  });
+
+  test('includes sender_name and sender_id in data', async () => {
+    const { routeNotification } = require('../notifications/trust/router');
+    await onFriendRequestReceived(RECIPIENT_ID, SENDER_ID, SENDER_NAME);
+
+    const event = routeNotification.mock.calls[0][0];
+    expect(event.data.sender_name).toBe(SENDER_NAME);
+    expect(event.data.sender_id).toBe(SENDER_ID);
+  });
+
+  test('generates unique sourceId for dedup: friend_request_{senderId}_{recipientId}', async () => {
+    const { routeNotification } = require('../notifications/trust/router');
+    await onFriendRequestReceived(RECIPIENT_ID, SENDER_ID, SENDER_NAME);
+
+    const event = routeNotification.mock.calls[0][0];
+    expect(event.sourceId).toBe(`friend_request_${SENDER_ID}_${RECIPIENT_ID}`);
+  });
+
+  test('returns routeNotification result', async () => {
+    const { routeNotification } = require('../notifications/trust/router');
+    routeNotification.mockResolvedValue({ result: 'sent', sentCount: 1 });
+
+    const result = await onFriendRequestReceived(RECIPIENT_ID, SENDER_ID, SENDER_NAME);
+
+    expect(result.result).toBe('sent');
+    expect(result.sentCount).toBe(1);
+  });
+
+  test('passes db parameter through to routeNotification', async () => {
+    const { routeNotification } = require('../notifications/trust/router');
+    const mockDb = { collection: jest.fn() };
+
+    await onFriendRequestReceived(RECIPIENT_ID, SENDER_ID, SENDER_NAME, mockDb);
+
+    expect(routeNotification).toHaveBeenCalledWith(
+      expect.any(Object),
+      mockDb,
+    );
+  });
+
+});
+
+// ════════════════════════════════════════════════════════════════════════════
+// onFriendRequestAccepted
+// ════════════════════════════════════════════════════════════════════════════
+
+describe('onFriendRequestAccepted', () => {
+
+  const REQUESTER_ID  = 'user_requester_123';
+  const ACCEPTOR_ID   = 'user_acceptor_456';
+  const ACCEPTOR_NAME = 'Bob';
+
+  test('calls routeNotification with friend_request_accepted eventType', async () => {
+    const { routeNotification } = require('../notifications/trust/router');
+    await onFriendRequestAccepted(REQUESTER_ID, ACCEPTOR_ID, ACCEPTOR_NAME);
+
+    expect(routeNotification).toHaveBeenCalledTimes(1);
+    const event = routeNotification.mock.calls[0][0];
+    expect(event.eventType).toBe('friend_request_accepted');
+  });
+
+  test('sends to the original requester (not the acceptor)', async () => {
+    const { routeNotification } = require('../notifications/trust/router');
+    await onFriendRequestAccepted(REQUESTER_ID, ACCEPTOR_ID, ACCEPTOR_NAME);
+
+    const event = routeNotification.mock.calls[0][0];
+    expect(event.recipientUserId).toBe(REQUESTER_ID);
+  });
+
+  test('includes acceptor_name and acceptor_id in data', async () => {
+    const { routeNotification } = require('../notifications/trust/router');
+    await onFriendRequestAccepted(REQUESTER_ID, ACCEPTOR_ID, ACCEPTOR_NAME);
+
+    const event = routeNotification.mock.calls[0][0];
+    expect(event.data.acceptor_name).toBe(ACCEPTOR_NAME);
+    expect(event.data.acceptor_id).toBe(ACCEPTOR_ID);
+  });
+
+  test('generates unique sourceId for dedup: friend_accept_{acceptorId}_{requesterId}', async () => {
+    const { routeNotification } = require('../notifications/trust/router');
+    await onFriendRequestAccepted(REQUESTER_ID, ACCEPTOR_ID, ACCEPTOR_NAME);
+
+    const event = routeNotification.mock.calls[0][0];
+    expect(event.sourceId).toBe(`friend_accept_${ACCEPTOR_ID}_${REQUESTER_ID}`);
+  });
+
+  test('returns routeNotification result', async () => {
+    const { routeNotification } = require('../notifications/trust/router');
+    routeNotification.mockResolvedValue({ result: 'sent', sentCount: 1 });
+
+    const result = await onFriendRequestAccepted(REQUESTER_ID, ACCEPTOR_ID, ACCEPTOR_NAME);
+
+    expect(result.result).toBe('sent');
+    expect(result.sentCount).toBe(1);
+  });
+
+  test('passes db parameter through to routeNotification', async () => {
+    const { routeNotification } = require('../notifications/trust/router');
+    const mockDb = { collection: jest.fn() };
+
+    await onFriendRequestAccepted(REQUESTER_ID, ACCEPTOR_ID, ACCEPTOR_NAME, mockDb);
+
+    expect(routeNotification).toHaveBeenCalledWith(
+      expect.any(Object),
+      mockDb,
+    );
   });
 
 });

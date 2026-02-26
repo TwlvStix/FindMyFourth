@@ -276,18 +276,47 @@ class _Slide1FindYourGame extends StatelessWidget {
           // Image Area - flex: 1
           Expanded(
             child: Center(
-              child: AnimatedBuilder(
-                animation: controller,
-                builder: (context, child) {
-                  return Transform.translate(
-                    offset: Offset(0, cardAnimation.value),
-                    child: Opacity(
-                      opacity: fadeAnimation.value,
-                      child: child,
-                    ),
-                  );
-                },
-                child: _GameDetailCard(),
+              child: Padding(
+                padding: const EdgeInsets.all(20),
+                child: AnimatedBuilder(
+                  animation: controller,
+                  builder: (context, child) {
+                    return Transform.translate(
+                      offset: Offset(0, cardAnimation.value),
+                      child: Opacity(
+                        opacity: fadeAnimation.value,
+                        child: child,
+                      ),
+                    );
+                  },
+                  child: LayoutBuilder(
+                    builder: (context, constraints) {
+                      return Container(
+                        constraints: BoxConstraints(
+                          maxWidth: constraints.maxWidth * 0.8,
+                          maxHeight: constraints.maxHeight,
+                        ),
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(AppBorderRadius.xl),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withValues(alpha: 0.12),
+                              blurRadius: 40,
+                              offset: const Offset(0, 12),
+                            ),
+                          ],
+                        ),
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(AppBorderRadius.xl),
+                          child: Image.asset(
+                            'assets/images/Slide #1 - GameDetailed.png',
+                            fit: BoxFit.contain,
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                ),
               ),
             ),
           ),
@@ -297,13 +326,16 @@ class _Slide1FindYourGame extends StatelessWidget {
             'Find the Game You Actually Want to Play',
             style: AppTypography.headlineMedium.copyWith(
                   fontWeight: FontWeight.bold,
+                  color: AppColors.textPrimary,
                 ),
             textAlign: TextAlign.center,
           ),
           SizedBox(height: AppSpacing.md),
           Text(
             'Choose your format, stakes, and vibe - before you show up.',
-            style: AppTypography.bodyLarge,
+            style: AppTypography.bodyLarge.copyWith(
+                  color: AppColors.textSecondary,
+                ),
             textAlign: TextAlign.center,
           ),
           SizedBox(height: AppSpacing.xl),
@@ -323,497 +355,6 @@ class _Slide1FindYourGame extends StatelessWidget {
           SizedBox(height: AppSpacing.md),
         ],
       ),
-    );
-  }
-}
-
-class _GameDetailCard extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      constraints: const BoxConstraints(maxWidth: 320, maxHeight: 520),
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [AppColors.navyDark, AppColors.navy],
-        ),
-        borderRadius: BorderRadius.circular(AppBorderRadius.xl),
-        boxShadow: [
-          BoxShadow(
-            color: AppColors.overlayDark,
-            blurRadius: 40,
-            offset: const Offset(0, 12),
-          ),
-        ],
-      ),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(AppBorderRadius.xl),
-        child: SingleChildScrollView(
-          physics: const NeverScrollableScrollPhysics(),
-          child: Padding(
-            padding: const EdgeInsets.all(20),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                // 1. Group Vibe Match Section
-                _VibeMatchSection(),
-                const SizedBox(height: 20),
-
-                // 2. Game Details Header
-                _SectionHeader(title: 'Game Details'),
-                const SizedBox(height: 12),
-
-                // 3. Game Detail Grid
-                _GameDetailsGrid(),
-                const SizedBox(height: 16),
-
-                // 4. Players Section
-                _PlayersSection(),
-                const SizedBox(height: 16),
-
-                // 5. Join Game Button
-                Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.symmetric(vertical: 14),
-                  decoration: BoxDecoration(
-                    color: AppColors.sand,
-                    borderRadius: BorderRadius.circular(AppBorderRadius.lg),
-                  ),
-                  child: Text(
-                    'Join Game',
-                    textAlign: TextAlign.center,
-                    style: AppTypography.labelLarge.copyWith(
-                      fontWeight: FontWeight.bold,
-                      color: AppColors.navyDark,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _VibeMatchSection extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha:0.08),
-        borderRadius: BorderRadius.circular(AppBorderRadius.lg),
-      ),
-      child: Column(
-        children: [
-          Row(
-            children: [
-              // Left side - icon and text
-              Container(
-                width: 24,
-                height: 24,
-                decoration: BoxDecoration(
-                  color: AppColors.gold,
-                  shape: BoxShape.circle,
-                ),
-                child: Icon(
-                  AppPhosphorIcons.course,
-                  size: AppIconSize.xs,
-                  color: AppColors.pure,
-                ),
-              ),
-              const SizedBox(width: 10),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Group Vibe Match',
-                      style: AppTypography.labelMedium.copyWith(
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white,
-                      ),
-                    ),
-                    const SizedBox(height: 2),
-                    Text(
-                      'Based on your preferences',
-                      style: AppTypography.caption.copyWith(
-                        fontSize: 11,
-                        color: AppColors.glassTextSecondary,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              // Right side - percentage badge
-              Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                decoration: BoxDecoration(
-                  color: AppColors.gold,
-                  borderRadius: BorderRadius.circular(AppBorderRadius.md),
-                ),
-                child: Text(
-                  '85%',
-                  style: AppTypography.labelMedium.copyWith(
-                    fontWeight: FontWeight.bold,
-                    color: AppColors.navyDark,
-                  ),
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 10),
-          // View Detailed Breakdown link
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(
-                AppPhosphorIcons.vibeMatch,
-                size: AppIconSize.xs,
-                color: AppColors.glassTextSecondary,
-              ),
-              const SizedBox(width: 6),
-              Text(
-                'View Detailed Breakdown >',
-                style: AppTypography.bodySmall.copyWith(
-                  fontSize: 13,
-                  color: AppColors.glassTextSecondary,
-                ),
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _SectionHeader extends StatelessWidget {
-  final String title;
-
-  const _SectionHeader({required this.title});
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      children: [
-        Container(
-          width: 3,
-          height: 20,
-          decoration: BoxDecoration(
-            color: AppColors.gold,
-            borderRadius: BorderRadius.circular(AppBorderRadius.xxs),
-          ),
-        ),
-        const SizedBox(width: 8),
-        Text(
-          title,
-          style: AppTypography.titleMedium.copyWith(
-            fontWeight: FontWeight.bold,
-            color: Colors.white,
-          ),
-        ),
-      ],
-    );
-  }
-}
-
-class _GameDetailsGrid extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      children: [
-        // Row 1
-        Row(
-          children: [
-            Expanded(
-              child: _DetailCell(
-                icon: AppPhosphorIcons.betting,
-                label: 'Betting',
-                value: '\$2 Vegas',
-              ),
-            ),
-            const SizedBox(width: 10),
-            Expanded(
-              child: _DetailCell(
-                icon: AppPhosphorIcons.ruleStyle,
-                label: 'Rule Style',
-                value: 'Competitive',
-              ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 10),
-        // Row 2
-        Row(
-          children: [
-            Expanded(
-              child: _DetailCell(
-                icon: AppPhosphorIcons.gameType,
-                label: 'Game Type',
-                value: 'Match Play',
-              ),
-            ),
-            const SizedBox(width: 10),
-            Expanded(
-              child: _DetailCell(
-                icon: AppPhosphorIcons.scoring,
-                label: 'Scoring',
-                value: 'Gross',
-              ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 10),
-        // Row 3
-        Row(
-          children: [
-            Expanded(
-              child: _DetailCell(
-                icon: AppPhosphorIcons.memberDiscount,
-                label: 'Member Disc.',
-                value: 'Yes',
-              ),
-            ),
-            const SizedBox(width: 10),
-            Expanded(
-              child: _DetailCell(
-                icon: AppPhosphorIcons.people,
-                label: 'Friends Only',
-                value: 'Public',
-              ),
-            ),
-          ],
-        ),
-      ],
-    );
-  }
-}
-
-class _DetailCell extends StatelessWidget {
-  final IconData icon;
-  final String label;
-  final String value;
-
-  const _DetailCell({
-    required this.icon,
-    required this.label,
-    required this.value,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(10),
-      decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha:0.08),
-        borderRadius: BorderRadius.circular(AppBorderRadius.md),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Container(
-            width: 28,
-            height: 28,
-            decoration: BoxDecoration(
-              color: AppColors.gold,
-              shape: BoxShape.circle,
-            ),
-            child: Icon(
-              icon,
-              size: AppIconSize.xs,
-              color: AppColors.navyDark,
-            ),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            label,
-            style: AppTypography.caption.copyWith(
-              fontSize: 11,
-              color: AppColors.glassTextSecondary,
-            ),
-          ),
-          const SizedBox(height: 2),
-          Text(
-            value,
-            style: AppTypography.labelMedium.copyWith(
-              fontWeight: FontWeight.bold,
-              color: Colors.white,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _PlayersSection extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        // Header with count badge
-        Row(
-          children: [
-            Text(
-              'Players',
-              style: AppTypography.labelLarge.copyWith(
-                fontWeight: FontWeight.bold,
-                color: Colors.white,
-              ),
-            ),
-            const SizedBox(width: 8),
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-              decoration: BoxDecoration(
-                color: AppColors.gold.withValues(alpha:0.2),
-                borderRadius: BorderRadius.circular(AppBorderRadius.md),
-              ),
-              child: Text(
-                '3/4',
-                style: AppTypography.labelSmall.copyWith(
-                  fontWeight: FontWeight.bold,
-                  color: AppColors.gold,
-                ),
-              ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 10),
-        // Players list
-        _PlayerRow(
-          name: 'Ryan M.',
-          initial: 'R',
-          vibeMatch: '85%',
-          color: AppColors.navy,
-        ),
-        const SizedBox(height: 8),
-        _PlayerRow(
-          name: 'Jake T.',
-          initial: 'J',
-          vibeMatch: '82%',
-          color: AppColors.greenLight,
-        ),
-        const SizedBox(height: 8),
-        _PlayerRow(
-          name: 'Dan K.',
-          initial: 'D',
-          vibeMatch: '78%',
-          color: AppColors.greenLight,
-        ),
-        const SizedBox(height: 8),
-        // Open spot indicator
-        Container(
-          padding: const EdgeInsets.symmetric(vertical: 8),
-          decoration: BoxDecoration(
-            border: Border.all(
-              color: AppColors.glassBorder,
-              width: 1.5,
-              style: BorderStyle.solid,
-            ),
-            borderRadius: BorderRadius.circular(AppBorderRadius.sm),
-          ),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(
-                AppPhosphorIcons.plusCircle,
-                size: AppIconSize.button,
-                color: AppColors.glassTextSecondary,
-              ),
-              const SizedBox(width: 8),
-              Text(
-                '+1 spot open',
-                style: AppTypography.bodySmall.copyWith(
-                  fontSize: 13,
-                  color: AppColors.glassTextSecondary,
-                ),
-              ),
-            ],
-          ),
-        ),
-      ],
-    );
-  }
-}
-
-class _PlayerRow extends StatelessWidget {
-  final String name;
-  final String initial;
-  final String vibeMatch;
-  final Color color;
-
-  const _PlayerRow({
-    required this.name,
-    required this.initial,
-    required this.vibeMatch,
-    required this.color,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      children: [
-        // Avatar
-        Container(
-          width: 36,
-          height: 36,
-          decoration: BoxDecoration(
-            color: color,
-            shape: BoxShape.circle,
-          ),
-          child: Center(
-            child: Text(
-              initial,
-              style: AppTypography.labelMedium.copyWith(
-                fontWeight: FontWeight.bold,
-                color: Colors.white,
-              ),
-            ),
-          ),
-        ),
-        const SizedBox(width: 10),
-        // Name
-        Expanded(
-          child: Text(
-            name,
-            style: AppTypography.bodySmall.copyWith(
-              fontSize: 13,
-              fontWeight: FontWeight.w500,
-              color: Colors.white,
-            ),
-          ),
-        ),
-        // Vibe match badge
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-          decoration: BoxDecoration(
-            color: AppColors.gold.withValues(alpha:0.15),
-            borderRadius: BorderRadius.circular(AppBorderRadius.sm),
-          ),
-          child: Text(
-            vibeMatch,
-            style: AppTypography.caption.copyWith(
-              fontSize: 11,
-              fontWeight: FontWeight.bold,
-              color: AppColors.gold,
-            ),
-          ),
-        ),
-        const SizedBox(width: 6),
-        // Checkmark
-        Icon(
-          AppPhosphorIcons.success,
-          size: AppIconSize.xs,
-          color: AppColors.success,
-        ),
-      ],
     );
   }
 }
@@ -900,13 +441,16 @@ class _Slide2RightGroup extends StatelessWidget {
             'Golf Is Better When the Group Is Right',
             style: AppTypography.headlineMedium.copyWith(
                   fontWeight: FontWeight.bold,
+                  color: AppColors.textPrimary,
                 ),
             textAlign: TextAlign.center,
           ),
           SizedBox(height: AppSpacing.md),
           Text(
             'Match with players who value the same kind of round you do.',
-            style: AppTypography.bodyLarge,
+            style: AppTypography.bodyLarge.copyWith(
+                  color: AppColors.textSecondary,
+                ),
             textAlign: TextAlign.center,
           ),
           SizedBox(height: AppSpacing.xl),
@@ -1042,13 +586,16 @@ class _Slide3GetAlerted extends StatelessWidget {
             'The Right Game Finds You',
             style: AppTypography.headlineMedium.copyWith(
                   fontWeight: FontWeight.bold,
+                  color: AppColors.textPrimary,
                 ),
             textAlign: TextAlign.center,
           ),
           SizedBox(height: AppSpacing.md),
           Text(
             'Set your format, stakes, and vibe. When your game drops, you\'ll be the first to know — not the last to see it already full.',
-            style: AppTypography.bodyLarge,
+            style: AppTypography.bodyLarge.copyWith(
+                  color: AppColors.textSecondary,
+                ),
             textAlign: TextAlign.center,
           ),
           SizedBox(height: AppSpacing.xl),
@@ -1198,13 +745,16 @@ class _Slide4FillFoursome extends StatelessWidget {
             'Buddy Bailed? You are Covered.',
             style: AppTypography.headlineMedium.copyWith(
                   fontWeight: FontWeight.bold,
+                  color: AppColors.textPrimary,
                 ),
             textAlign: TextAlign.center,
           ),
           SizedBox(height: AppSpacing.md),
           Text(
             'Post your open spot and fill it fast with someone who actually fits your game.',
-            style: AppTypography.bodyLarge,
+            style: AppTypography.bodyLarge.copyWith(
+                  color: AppColors.textSecondary,
+                ),
             textAlign: TextAlign.center,
           ),
           SizedBox(height: AppSpacing.xl),
@@ -1217,7 +767,7 @@ class _Slide4FillFoursome extends StatelessWidget {
           AppButtonEnhanced(
             text: 'Build Your Profile',
             onPressed: onFinish,
-            variant: AppButtonVariant.premium,
+            variant: AppButtonVariant.primary,
             size: AppButtonSize.large,
             fullWidth: true,
           ),

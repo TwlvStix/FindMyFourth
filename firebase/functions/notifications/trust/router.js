@@ -50,6 +50,15 @@ const GAME_ALERT_TYPES = new Set([
   TrustEventType.GAME_CANCELLED,
 ]);
 
+/**
+ * These event types use notification_prefs.social_alerts.enabled for their
+ * preference gate, separate from trust categories.
+ */
+const SOCIAL_ALERT_TYPES = new Set([
+  TrustEventType.FRIEND_REQUEST_RECEIVED,
+  TrustEventType.FRIEND_REQUEST_ACCEPTED,
+]);
+
 const MS_IN_24H = 24 * 60 * 60 * 1000;
 const MS_IN_4H  =  4 * 60 * 60 * 1000;
 
@@ -231,6 +240,20 @@ async function routeNotification(event, db) {
       if (!gameAlertsEnabled) {
         await logCol.add(buildLogDoc(event, 'preference_disabled'));
         logger.logNotificationEvent(event, 'preference_disabled', { dropReason: 'category muted' });
+        return { result: 'preference_disabled' };
+      }
+    } else if (SOCIAL_ALERT_TYPES.has(event.eventType)) {
+      // friend_request_received / friend_request_accepted use social_alerts.enabled
+      const userDoc      = await db.collection('users').doc(event.recipientUserId).get();
+      const rawPrefs     = (userDoc.exists && userDoc.data().notification_prefs) || {};
+      const socialAlerts = (rawPrefs.social_alerts && typeof rawPrefs.social_alerts === 'object')
+        ? rawPrefs.social_alerts
+        : {};
+      const socialEnabled = typeof socialAlerts.enabled === 'boolean' ? socialAlerts.enabled : true;
+
+      if (!socialEnabled) {
+        await logCol.add(buildLogDoc(event, 'preference_disabled'));
+        logger.logNotificationEvent(event, 'preference_disabled', { dropReason: 'social_alerts disabled' });
         return { result: 'preference_disabled' };
       }
     } else {
