@@ -15,6 +15,8 @@ class VibeSpectrumBar extends StatelessWidget {
     required this.myValue,
     required this.theirValue,
     required this.category,
+    this.myIsDealbreaker = false,
+    this.theirIsDealbreaker = false,
   });
 
   /// Current user's preference value (0-5)
@@ -25,6 +27,12 @@ class VibeSpectrumBar extends StatelessWidget {
 
   /// The category (for potential future use)
   final VibeCategory category;
+
+  /// Whether current user marked this category as a dealbreaker
+  final bool myIsDealbreaker;
+
+  /// Whether matched user marked this category as a dealbreaker
+  final bool theirIsDealbreaker;
 
   /// Horizontal padding to prevent edge clipping
   static const double _horizontalPadding = 22.0;
@@ -86,24 +94,28 @@ class VibeSpectrumBar extends StatelessWidget {
                     spectrumWidth: spectrumWidth,
                   )
                 else ...[
-                  // "You" marker
+                  // "You" marker - red if dealbreaker, else green
                   _buildMarker(
                     dotLeft: myDotLeft,
                     dotCenter: myDotCenter,
                     label: 'You',
-                    color: PremiumVibePageStyles.youDotColor,
+                    color: myIsDealbreaker
+                        ? PremiumVibePageStyles.dealbreakerDotColor
+                        : PremiumVibePageStyles.youDotColor,
                     spectrumWidth: spectrumWidth,
                     // Offset vertically if dots are close and "You" is on left
                     verticalOffset:
                         dotsAreClose && myValue <= theirValue ? -8 : 0,
                   ),
 
-                  // "Them" marker
+                  // "Them" marker - red if dealbreaker, else gray
                   _buildMarker(
                     dotLeft: theirDotLeft,
                     dotCenter: theirDotCenter,
                     label: 'Them',
-                    color: PremiumVibePageStyles.themDotColor,
+                    color: theirIsDealbreaker
+                        ? PremiumVibePageStyles.dealbreakerDotColor
+                        : PremiumVibePageStyles.themDotColor,
                     spectrumWidth: spectrumWidth,
                     // Offset vertically if dots are close and "Them" is on right
                     verticalOffset: dotsAreClose && theirValue > myValue ? -8 : 0,

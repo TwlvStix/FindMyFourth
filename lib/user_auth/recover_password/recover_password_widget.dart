@@ -7,7 +7,6 @@ import '/core/design_tokens/border_radius.dart';
 import '/core/design_tokens/spacing.dart';
 import '/core/design_tokens/colors.dart';
 import '/core/design_tokens/typography.dart';
-import '/core/design_tokens/elevation.dart';
 import '/core/widgets/app_text.dart';
 import '/user_auth/sign_in/sign_in_widget.dart';
 import 'package:flutter/material.dart';
@@ -48,8 +47,6 @@ class _RecoverPasswordWidgetState extends State<RecoverPasswordWidget> {
     super.initState();
     enterEmailTextController = TextEditingController();
     enterEmailFocusNode = FocusNode();
-
-    // ✅ PERFORMANCE: Removed empty post-frame setState (no-op rebuild)
   }
 
   @override
@@ -69,165 +66,133 @@ class _RecoverPasswordWidgetState extends State<RecoverPasswordWidget> {
       },
       child: Scaffold(
         key: scaffoldKey,
-        backgroundColor: AppColors.navyDark,
-        appBar: AppBar(
-          backgroundColor: AppColors.navyDark,
-          automaticallyImplyLeading: false,
-          leading: PremiumBackButton(
-            onTap: _returnToSignIn,
-          ),
-          title: AppText.screenTitle(
-            'Recover Password',
-            color: AppColors.textPrimary,
-            textAlign: TextAlign.center,
-          ),
-          actions: [],
-          centerTitle: true,
-          elevation: 10.0,
-        ),
-        body: FairwayBackgroundLight(
-          child: SafeArea(
-            top: true,
-            child: Column(
-              mainAxisSize: MainAxisSize.max,
-              children: [
-                Row(
+        body: FairwayBackgroundClubhouse(
+          showOrganic: true,
+          child: SizedBox.expand(
+            child: SafeArea(
+              child: SingleChildScrollView(
+                child: Padding(
+                  padding: EdgeInsets.symmetric(horizontal: AppSpacing.xl),
+                  child: Column(
                   mainAxisSize: MainAxisSize.max,
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Expanded(
-                      child: Padding(
-                        padding: EdgeInsets.only(
-                            top: AppSpacing.md,
-                        ),
-                      child: Container(
-                        width: 100.0,
-                        height: 100.0,
-                        decoration: BoxDecoration(
-                          color: AppColors.navyDark,
-                        ),
-                        child: Padding(
-                          padding: EdgeInsets.only(
-                              left: AppSpacing.md,
-                              top: AppSpacing.md,
-                              right: AppSpacing.md,
-                          ),
-                          child: AppText.body(
-                            'We will send you an email with a link to reset your password, please enter the email associated with your account below. ',
-                          ),
-                        ),
-                      ),
+                    SizedBox(height: AppSpacing.sm),
+                    // Back button in body (like sign-in has no AppBar)
+                    PremiumBackButton(onTap: _returnToSignIn),
+                    SizedBox(height: AppSpacing.lg),
+                    // Title in body
+                    AppText.screenTitle(
+                      'Recover Password',
+                      color: AppColors.textPrimary,
                     ),
-                  ),
-                ],
-              ),
-              Row(
-                mainAxisSize: MainAxisSize.max,
-                children: [
-                  Expanded(
-                    child: Padding(
-                      padding: AppSpacing.horizontalMd,
-                      child: Container(
-                        width: 100.0,
-                        height: 75.0,
-                        decoration: BoxDecoration(
-                          color: AppColors.navyDark,
-                          boxShadow: [AppElevation.md],
-                          borderRadius: BorderRadius.circular(AppBorderRadius.xxl),
+                    SizedBox(height: AppSpacing.xs),
+                    AppText.bodySmall(
+                      'Enter the email associated with your account and we\'ll send you a link to reset your password.',
+                      color: AppColors.textSecondary,
+                    ),
+                    SizedBox(height: AppSpacing.lg),
+                    TextFormField(
+                      controller: enterEmailTextController,
+                      focusNode: enterEmailFocusNode,
+                      autofocus: true,
+                      autofillHints: const [AutofillHints.email],
+                      obscureText: false,
+                      decoration: InputDecoration(
+                        labelText: 'Email',
+                        labelStyle: AppTypography.labelLarge.copyWith(
+                          color: AppColors.textSecondary,
                         ),
-                        child: Align(
-                          alignment: AlignmentDirectional(-1.0, 0.0),
-                          child: Padding(
-                            padding: AppSpacing.horizontalMd,
-                            child: TextFormField(
-                              controller: enterEmailTextController,
-                              focusNode: enterEmailFocusNode,
-                              autofocus: true,
-                              obscureText: false,
-                              decoration: InputDecoration(
-                                labelText: 'Enter Email Here',
-                                labelStyle: AppTypography.bodyLarge.copyWith(
-                                  color: AppColors.pure,
-                                  fontWeight: FontWeight.w500,
-                                ),
-                                enabledBorder: InputBorder.none,
-                                focusedBorder: InputBorder.none,
-                                errorBorder: InputBorder.none,
-                                focusedErrorBorder: InputBorder.none,
+                        enabledBorder: OutlineInputBorder(
+                          borderSide: BorderSide(
+                            color: AppColors.inputBorderIdle,
+                            width: 1.5,
+                          ),
+                          borderRadius: BorderRadius.circular(AppBorderRadius.md),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderSide: BorderSide(
+                            color: AppColors.inputBorderFocused,
+                            width: 2.0,
+                          ),
+                          borderRadius: BorderRadius.circular(AppBorderRadius.md),
+                        ),
+                        errorBorder: OutlineInputBorder(
+                          borderSide: BorderSide(
+                            color: AppColors.error,
+                            width: 2.0,
+                          ),
+                          borderRadius: BorderRadius.circular(AppBorderRadius.md),
+                        ),
+                        focusedErrorBorder: OutlineInputBorder(
+                          borderSide: BorderSide(
+                            color: AppColors.error,
+                            width: 2.0,
+                          ),
+                          borderRadius: BorderRadius.circular(AppBorderRadius.md),
+                        ),
+                        filled: true,
+                        fillColor: AppColors.inputBackground,
+                      ),
+                      style: AppTypography.bodyLarge.copyWith(
+                        color: AppColors.textPrimary,
+                      ),
+                      keyboardType: TextInputType.emailAddress,
+                      cursorColor: AppColors.green,
+                      validator: enterEmailTextControllerValidator?.asValidator(context),
+                    ),
+                    SizedBox(height: AppSpacing.lg),
+                    AppButtonEnhanced(
+                      onPressed: () async {
+                        if (enterEmailTextController!.text.isEmpty) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text(
+                                'Email required!',
                               ),
-                              style: AppTypography.bodyLarge.copyWith(
-                                color: AppColors.pure,
-                                fontWeight: FontWeight.w500,
-                              ),
-                              textAlign: TextAlign.start,
-                              keyboardType: TextInputType.emailAddress,
-                              validator: enterEmailTextControllerValidator
-                                  .asValidator(context),
                             ),
-                          ),
+                          );
+                          return;
+                        }
+                        final didSend = await authManager.resetPassword(
+                          email: enterEmailTextController!.text,
+                          context: context,
+                        );
+                        if (didSend && mounted) {
+                          setState(() => emailSent = true);
+                        }
+                      },
+                      text: 'Send Link',
+                      variant: AppButtonVariant.primary,
+                      size: AppButtonSize.large,
+                      fullWidth: true,
+                    ),
+                    if (emailSent)
+                      Padding(
+                        padding: EdgeInsets.only(top: AppSpacing.md),
+                        child: AppText.body(
+                          'Check your email for the reset link. You can return to sign in once you receive it.',
+                          color: AppColors.success,
+                          textAlign: TextAlign.center,
                         ),
                       ),
+                    SizedBox(height: AppSpacing.md),
+                    Center(
+                      child: AppButtonEnhanced(
+                        text: 'Back to Sign In',
+                        variant: AppButtonVariant.ghost,
+                        size: AppButtonSize.medium,
+                        onPressed: _returnToSignIn,
+                      ),
                     ),
-                  ),
-                ],
-              ),
-              Padding(
-                padding: EdgeInsets.only(
-                    top: AppSpacing.md,
-                ),
-                child: AppButtonEnhanced(
-                  onPressed: () async {
-                    if (enterEmailTextController.text.isEmpty) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text(
-                            'Email required!',
-                          ),
-                        ),
-                      );
-                      return;
-                    }
-                    final didSend = await authManager.resetPassword(
-                      email: enterEmailTextController.text,
-                      context: context,
-                    );
-                    if (didSend && mounted) {
-                      setState(() => emailSent = true);
-                    }
-                  },
-                  text: 'Send Link',
-                  variant: AppButtonVariant.primary,
-                  size: AppButtonSize.large,
+                  ],
                 ),
               ),
-              if (emailSent)
-                Padding(
-                  padding: EdgeInsets.only(
-                      left: AppSpacing.lg,
-                      top: AppSpacing.sm,
-                      right: AppSpacing.lg,
-                  ),
-                  child: AppText.body(
-                    'Check your email for the reset link. You can return to sign in once you receive it.',
-                    color: AppColors.pure,
-                    textAlign: TextAlign.center,
-                  ),
-                ),
-              Padding(
-                padding: EdgeInsets.only(
-                    top: AppSpacing.xs,
-                ),
-                child: AppButtonEnhanced(
-                  text: 'Back to Sign In',
-                  variant: AppButtonVariant.ghost,
-                  size: AppButtonSize.medium,
-                  onPressed: _returnToSignIn,
-                ),
-              ),
-            ],
             ),
           ),
         ),
       ),
+    ),
     );
   }
 }

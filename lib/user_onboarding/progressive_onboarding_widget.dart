@@ -824,6 +824,16 @@ class _ProgressiveOnboardingWidgetState
                 stepSize: 1,
                 minimum: -5,
                 maximum: 54,
+                editable: true,
+                formatValue: (count) => count < 0 ? '+${count.abs()}' : count.toString(),
+                parseValue: (text) {
+                  final trimmed = text.trim();
+                  if (trimmed.startsWith('+')) {
+                    final num = int.tryParse(trimmed.substring(1));
+                    return num != null ? -num : null;
+                  }
+                  return int.tryParse(trimmed);
+                },
               ),
             ),
           ),

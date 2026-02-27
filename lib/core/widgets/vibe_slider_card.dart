@@ -6,6 +6,7 @@ import '/core/design_tokens/colors.dart';
 import '/core/design_tokens/spacing.dart';
 import '/core/design_tokens/typography.dart';
 import '/core/widgets/app_card.dart';
+import '/core/widgets/vibe_slider_theme.dart';
 import '/models/vibe_profile.dart';
 
 class VibeSliderCard extends StatefulWidget {
@@ -183,6 +184,9 @@ class _VibeSliderCardState extends State<VibeSliderCard> {
               showValueIndicator: ShowValueIndicator.never,
               thumbShape: const RoundSliderThumbShape(
                 enabledThumbRadius: 9,
+              ),
+              trackShape: TickedSliderTrackShape(
+                tickColor: AppColors.stone.withValues(alpha: 0.4),
               ),
             ),
             child: Slider(

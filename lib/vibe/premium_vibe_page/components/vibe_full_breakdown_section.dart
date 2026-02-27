@@ -105,6 +105,8 @@ class VibeFullBreakdownSection extends StatelessWidget {
                       myValue: myPref.value,
                       theirValue: theirPref.value,
                       category: category,
+                      myIsDealbreaker: myPref.dealbreaker,
+                      theirIsDealbreaker: theirPref.dealbreaker,
                     ),
                   ],
                 ),

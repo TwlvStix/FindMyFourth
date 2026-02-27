@@ -11,6 +11,7 @@ class VibeTuning {
 
   static const double minScore = 0.0;
   static const double maxScore = 100.0;
+  static const double displayScoreFloor = 5.0;
 
   static const double defaultMultNone = 1.0;
   static const double defaultMultOne = 0.15;

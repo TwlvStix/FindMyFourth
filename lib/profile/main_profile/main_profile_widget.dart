@@ -525,7 +525,10 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                         label: 'Friends',
                         iconGradient: [AppColors.gold, AppColors.goldLight],
                         onTap: () {
-                          _pushNamed(TabFriendsWidget.routeName);
+                          _pushNamed(
+                            TabFriendsWidget.routeName,
+                            extra: <String, dynamic>{'initialSegment': 'friends'},
+                          );
                         },
                       );
                     },

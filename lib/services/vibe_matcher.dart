@@ -460,12 +460,12 @@ class VibeMatcher {
 
     final myFitDisplay = hardBlockResult.isHardBlocked
         ? (myFitPercent - dealbreakerPenalty)
-            .clamp(VibeTuning.minScore, VibeTuning.maxScore)
+            .clamp(VibeTuning.displayScoreFloor, VibeTuning.maxScore)
             .toDouble()
         : myFitPercent;
     final theirFitDisplay = hardBlockResult.isHardBlocked
         ? (theirFitPercent - dealbreakerPenalty)
-            .clamp(VibeTuning.minScore, VibeTuning.maxScore)
+            .clamp(VibeTuning.displayScoreFloor, VibeTuning.maxScore)
             .toDouble()
         : theirFitPercent;
 
@@ -477,7 +477,7 @@ class VibeMatcher {
 
     final displayScore = hardBlockResult.isHardBlocked
         ? (finalScorePercent - dealbreakerPenalty)
-            .clamp(VibeTuning.minScore, VibeTuning.maxScore)
+            .clamp(VibeTuning.displayScoreFloor, VibeTuning.maxScore)
             .toDouble()
         : finalScorePercent;
 

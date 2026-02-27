@@ -580,6 +580,17 @@ class _GameChatDetailsWidgetState extends State<GameChatDetailsWidget>
             visibleAfter: _visibleAfter,
           );
 
+      // Also mark related chat_message notifications as read (non-blocking).
+      // This syncs notification read status when user reads the chat directly.
+      context
+          .read<ChatProvider>()
+          .markChatNotificationsAsRead(chatId: widget.chatId, uid: currentUserId)
+          .catchError((error, stackTrace) {
+        context
+            .read<ChatProvider>()
+            .logError('markChatNotificationsAsRead failed', error, stackTrace);
+      });
+
       if (kDebugMode) {
         debugPrint(
             '✅ UI: _markChatSeen complete - ${stats['unreadCount']} unread messages, '

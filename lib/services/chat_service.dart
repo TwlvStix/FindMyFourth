@@ -400,6 +400,53 @@ class ChatService {
     });
   }
 
+  /// Marks all chat_message notifications for this chat as read.
+  /// Called when user opens and reads the chat directly (not via notification tap).
+  /// This syncs notification read status with chat read status.
+  Future<void> markChatNotificationsAsRead({
+    required String chatId,
+    required String uid,
+  }) async {
+    try {
+      // Query unread chat_message notifications, then filter client-side by threadId.
+      // This avoids needing a composite Firestore index on (type, data.threadId, read).
+      final querySnapshot = await _firestore
+          .collection('users')
+          .doc(uid)
+          .collection('notifications')
+          .where('type', isEqualTo: 'chat_message')
+          .where('read', isEqualTo: false)
+          .get();
+
+      // Client-side filter for matching chatId
+      final matchingDocs = querySnapshot.docs.where((doc) {
+        final data = doc.data();
+        final nestedData = data['data'];
+        if (nestedData is Map) {
+          final threadId = nestedData['threadId'];
+          return threadId == chatId;
+        }
+        return false;
+      }).toList();
+
+      if (matchingDocs.isEmpty) return;
+
+      // Batch update all to read: true
+      final batch = _firestore.batch();
+      for (final doc in matchingDocs) {
+        batch.update(doc.reference, {'read': true});
+      }
+      await batch.commit();
+
+      AppLog.d(
+          '✅ ChatService.markChatNotificationsAsRead: marked ${matchingDocs.length} notifications as read for chat $chatId');
+    } on FirebaseException catch (e) {
+      AppLog.d(
+          '❌ ChatService.markChatNotificationsAsRead error: ${e.code} - ${e.message}');
+      rethrow;
+    }
+  }
+
   Future<void> deleteChat({
     required String chatId,
     required String uid,

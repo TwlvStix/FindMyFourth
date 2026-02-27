@@ -989,6 +989,16 @@ class _CreateProfileWidgetState extends State<CreateProfileWidget>
                                         stepSize: 1,
                                         minimum: -5,
                                         maximum: 54,
+                                        editable: true,
+                                        formatValue: formatHandicap,
+                                        parseValue: (text) {
+                                          final trimmed = text.trim();
+                                          if (trimmed.startsWith('+')) {
+                                            final num = int.tryParse(trimmed.substring(1));
+                                            return num != null ? -num : null;
+                                          }
+                                          return int.tryParse(trimmed);
+                                        },
                                       ),
                                     ],
                                   ),

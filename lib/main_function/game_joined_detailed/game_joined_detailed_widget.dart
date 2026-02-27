@@ -24,7 +24,7 @@ import '/core/design_tokens/border_radius.dart';
 import '/core/widgets/app_button_enhanced.dart';
 import '/core/widgets/cancelled_game_banner.dart';
 import '/core/widgets/app_icon_button.dart';
-import '/core/widgets/app_info_card.dart';
+import '/core/widgets/game_details_section.dart';
 import '/core/widgets/premium_section_header.dart';
 import '/main_function/games_joined/games_joined_widget.dart';
 import '/main_function/games_list/games_list_widget.dart';
@@ -646,58 +646,8 @@ class _GameJoinedDetailedWidgetState extends State<GameJoinedDetailedWidget>
                           PremiumSectionHeader(title: 'Game Details'),
                           SizedBox(height: AppSpacing.sm),
 
-                          // Premium Info Grid
-                          Builder(builder: (context) {
-                            final isFun = gameJoinedDetailedGamesRecord.isFunGame;
-                            String funOr(String val) =>
-                                isFun && val.isEmpty ? 'Just for Fun' : val;
-                            return GridView.count(
-                              crossAxisCount: 2,
-                              shrinkWrap: true,
-                              physics: NeverScrollableScrollPhysics(),
-                              padding: EdgeInsets.zero,
-                              crossAxisSpacing: AppSpacing.sm,
-                              mainAxisSpacing: AppSpacing.sm,
-                              childAspectRatio: 3.0,
-                              children: [
-                                AppInfoCard(
-                                  icon: AppPhosphorIcons.betting,
-                                  label: 'Betting',
-                                  value: funOr(gameJoinedDetailedGamesRecord.styleGame),
-                                  isHighlighted: isFun && gameJoinedDetailedGamesRecord.styleGame.isEmpty,
-                                ),
-                                AppInfoCard(
-                                  icon: AppPhosphorIcons.ruleStyle,
-                                  label: 'Rule Style',
-                                  value: funOr(gameJoinedDetailedGamesRecord.rulesSetting),
-                                  isHighlighted: isFun && gameJoinedDetailedGamesRecord.rulesSetting.isEmpty,
-                                ),
-                                AppInfoCard(
-                                  icon: AppPhosphorIcons.gameType,
-                                  label: 'Game Type',
-                                  value: funOr(gameJoinedDetailedGamesRecord.gameType),
-                                  isHighlighted: isFun && gameJoinedDetailedGamesRecord.gameType.isEmpty,
-                                ),
-                                AppInfoCard(
-                                  icon: AppPhosphorIcons.scoring,
-                                  label: 'Scoring',
-                                  value: funOr(gameJoinedDetailedGamesRecord.scoring),
-                                  isHighlighted: isFun && gameJoinedDetailedGamesRecord.scoring.isEmpty,
-                                ),
-                                AppInfoCard(
-                                  icon: AppPhosphorIcons.memberDiscount,
-                                  label: 'Member Discount',
-                                  value: funOr(gameJoinedDetailedGamesRecord.memberDiscount),
-                                  isHighlighted: isFun && gameJoinedDetailedGamesRecord.memberDiscount.isEmpty,
-                                ),
-                                AppInfoCard(
-                                  icon: AppPhosphorIcons.friendsOnly,
-                                  label: 'Friends Only',
-                                  value: gameJoinedDetailedGamesRecord.friendGame,
-                                ),
-                              ],
-                            );
-                          }),
+                          // Game Details Section
+                          GameDetailsSection(game: gameJoinedDetailedGamesRecord),
                           SizedBox(height: AppSpacing.lg),
 
                           // Players Section Header with gradient accent

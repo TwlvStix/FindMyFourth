@@ -104,6 +104,9 @@ class PremiumVibePageStyles {
   /// Dealbreaker icon color
   static const Color dealbreakerIconColor = AppColors.error;
 
+  /// Dealbreaker dot color for spectrum bars
+  static const Color dealbreakerDotColor = AppColors.error;
+
   /// "You" spectrum dot color - green accent
   static const Color youDotColor = AppColors.green;
 

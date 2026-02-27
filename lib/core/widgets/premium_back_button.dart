@@ -60,7 +60,7 @@ class PremiumBackButton extends StatelessWidget {
             ),
           ),
           child: AppIcon(
-            icon: AppPhosphorIcons.back,
+            icon: AppPhosphorIcons.chevronLeft,
             color: Colors.white,
             size: AppIconSize.lg,
           ),

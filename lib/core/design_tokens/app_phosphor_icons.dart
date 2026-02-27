@@ -121,6 +121,9 @@ class AppPhosphorIcons {
   /// Friends only — lock
   static const friendsOnly = PhosphorIconsRegular.lockSimple;
 
+  /// Fun game / just for fun — smiley (casual, friendly vibe)
+  static const funGame = PhosphorIconsRegular.smiley;
+
   /// Confirm — check circle
   static const confirm = PhosphorIconsRegular.checkCircle;
 

@@ -13,7 +13,7 @@ import '/main_function/game_joined_detailed/components/group_vibe_summary.dart';
 import '/main_function/game_joined_detailed/components/premium_app_bar.dart';
 import '/core/widgets/trust/restriction_banner.dart';
 import '/core/widgets/cancelled_game_banner.dart';
-import '/core/widgets/app_info_card.dart';
+import '/core/widgets/game_details_section.dart';
 import '/core/widgets/premium_section_header.dart';
 import '/utils/app_util.dart';
 import '/core/utils/firebase_error_utils.dart';
@@ -808,62 +808,8 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget>
                             PremiumSectionHeader(title: 'Game Details'),
                             SizedBox(height: AppSpacing.sm),
 
-                            // Premium Info Grid
-                            Builder(builder: (context) {
-                              final isFun = joinGameDetailedGamesRecord.isFunGame;
-                              String funOr(String val) =>
-                                  isFun && val.isEmpty ? 'Just for Fun' : val;
-                              return GridView.count(
-                                crossAxisCount: 2,
-                                shrinkWrap: true,
-                                physics: NeverScrollableScrollPhysics(),
-                                padding: EdgeInsets.zero,
-                                crossAxisSpacing: AppSpacing.sm,
-                                mainAxisSpacing: AppSpacing.sm,
-                                childAspectRatio: 3.0,
-                                children: [
-                                  AppInfoCard(
-                                    icon: AppPhosphorIcons.betting,
-                                    label: 'Betting',
-                                    value: funOr(joinGameDetailedGamesRecord.styleGame),
-                                  ),
-                                  AppInfoCard(
-                                    icon: AppPhosphorIcons.ruleStyle,
-                                    label: 'Rule Style',
-                                    value: funOr(joinGameDetailedGamesRecord.rulesSetting),
-                                  ),
-                                  AppInfoCard(
-                                    icon: AppPhosphorIcons.gameType,
-                                    label: 'Game Type',
-                                    value: funOr(joinGameDetailedGamesRecord.gameType),
-                                  ),
-                                  AppInfoCard(
-                                    icon: AppPhosphorIcons.scoring,
-                                    label: 'Scoring',
-                                    value: funOr(joinGameDetailedGamesRecord.scoring),
-                                  ),
-                                  AppInfoCard(
-                                    icon: AppPhosphorIcons.memberDiscount,
-                                    label: 'Member Discount',
-                                    value: funOr(joinGameDetailedGamesRecord.memberDiscount),
-                                  ),
-                                  AppInfoCard(
-                                    icon: AppPhosphorIcons.friendsOnly,
-                                    label: 'Friends Only',
-                                    value: joinGameDetailedGamesRecord.friendGame,
-                                  ),
-                                  // Player eligibility info card
-                                  if (joinGameDetailedGamesRecord.playerEligibility != PlayerEligibility.openToAll)
-                                    AppInfoCard(
-                                      icon: AppPhosphorIcons.golfers,
-                                      label: 'Who Can Join',
-                                      value: joinGameDetailedGamesRecord.playerEligibility == PlayerEligibility.womenOnly
-                                          ? 'Women Only'
-                                          : 'Men Only',
-                                    ),
-                                ],
-                              );
-                            }),
+                            // Game Details Section
+                            GameDetailsSection(game: joinGameDetailedGamesRecord),
                             SizedBox(height: AppSpacing.lg),
 
                             // Players Section Header with gradient accent
@@ -1188,20 +1134,16 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget>
                                   : 'This game is open to men only';
                             }
 
-                            return Align(
-                          alignment: AlignmentDirectional(0.0, 0.0),
-                          child: Padding(
-                            padding: EdgeInsets.only(
-                                bottom: AppSpacing.xs),
-                            child: Column(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                SizedBox(
-                              width: 300.0,
-                              child: AppButtonEnhanced(
+                            return Padding(
+                          padding: EdgeInsets.fromLTRB(AppSpacing.md, 0, AppSpacing.md, AppSpacing.xs),
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              AppButtonEnhanced(
                                 text: 'Join Game',
                                 variant: AppButtonVariant.primary,
                                 size: AppButtonSize.large,
+                                fullWidth: true,
                                 enabled: !isDisabled,
                                 onPressed: isDisabled ? null : () async {
                                   // Check permission before attempting join
@@ -1371,7 +1313,6 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget>
                                     );
                                   },
                                 ),
-                              ),
                                 // Eligibility explanation text
                                 if (eligibilityText != null) ...[
                                   SizedBox(height: AppSpacing.xs),
@@ -1383,10 +1324,9 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget>
                                     textAlign: TextAlign.center,
                                   ),
                                 ],
-                              ],
-                            ),
-                            ),
-                          );
+                            ],
+                          ),
+                        );
                           },
                         ),
                       ],

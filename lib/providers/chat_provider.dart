@@ -273,6 +273,15 @@ class ChatProvider extends ChangeNotifier {
     }
   }
 
+  /// Marks all chat_message notifications for this chat as read.
+  /// Called when user opens and reads the chat directly (not via notification tap).
+  Future<void> markChatNotificationsAsRead({
+    required String chatId,
+    required String uid,
+  }) async {
+    await _service.markChatNotificationsAsRead(chatId: chatId, uid: uid);
+  }
+
   Future<void> deleteChat({
     required String chatId,
     required String uid,
