@@ -5,7 +5,6 @@ import 'package:flutter/services.dart';
 
 import '/core/design_tokens/app_phosphor_icons.dart';
 import '/core/design_tokens/colors.dart';
-import '/core/motion/motion_helpers.dart';
 import '/core/motion/motion_tokens.dart';
 import '/core/design_tokens/spacing.dart';
 import '/core/design_tokens/typography.dart';
@@ -14,17 +13,16 @@ import '/core/design_tokens/border_radius.dart';
 import '/core/widgets/app_button_enhanced.dart';
 import '/core/widgets/app_icon.dart';
 import '/core/widgets/app_card.dart';
-import '/core/widgets/vibe_toggle.dart';
 import '/core/widgets/vibe_slider_theme.dart';
 import '/models/vibe_profile.dart';
 
-/// Clean, scannable vibe category slider used exclusively on Edit Vibes page
+/// Clean, scannable vibe category slider used on Edit Vibes and Onboarding
 ///
 /// Design principles:
 /// - One-line unique description per category (no repeated copy)
 /// - Clean slider with clear endpoint labels
 /// - Live selection badge shows current choice
-/// - Minimal dealbreaker toggle (no verbose helper text)
+/// - Smart dealbreaker prompt only at extreme values (0 or 5)
 class VibeCategorySlider extends StatefulWidget {
   const VibeCategorySlider({
     super.key,
@@ -51,10 +49,13 @@ class VibeCategorySlider extends StatefulWidget {
 
 class _VibeCategorySliderState extends State<VibeCategorySlider> {
   Timer? _debounceTimer;
+  Timer? _dealbreakerPromptTimer;
   int? _pendingCommitValue;
   int _currentValue = VibePreference.defaultValue;
   bool _currentDealbreaker = false;
   bool _didChange = false;
+  bool _showDealbreakerPrompt = false;
+  bool _dealbreakerConfirmed = false;
 
   @override
   void initState() {
@@ -74,12 +75,195 @@ class _VibeCategorySliderState extends State<VibeCategorySlider> {
   @override
   void dispose() {
     _debounceTimer?.cancel();
+    _dealbreakerPromptTimer?.cancel();
     super.dispose();
   }
 
   void _syncFromPref() {
     _currentValue = widget.pref.value;
     _currentDealbreaker = widget.pref.dealbreaker;
+    // If loading a profile that already has a dealbreaker at an extreme,
+    // mark it as confirmed so we don't re-prompt
+    _dealbreakerConfirmed = widget.pref.dealbreaker &&
+        (_currentValue == VibePreference.minValue ||
+            _currentValue == VibePreference.maxValue);
+  }
+
+  /// Check if the current value is an extreme (0 or 5)
+  bool get _isExtremeValue =>
+      _currentValue == VibePreference.minValue ||
+      _currentValue == VibePreference.maxValue;
+
+  /// Called after slider value changes. Starts or cancels the prompt timer.
+  void _evaluateDealbreakerPrompt() {
+    _dealbreakerPromptTimer?.cancel();
+
+    if (_isExtremeValue) {
+      // If already confirmed as dealbreaker at this extreme, don't re-prompt
+      if (_dealbreakerConfirmed && _currentDealbreaker) return;
+
+      // Wait 400ms before showing prompt (user might still be sliding)
+      _dealbreakerPromptTimer = Timer(const Duration(milliseconds: 400), () {
+        if (mounted && _isExtremeValue) {
+          setState(() {
+            _showDealbreakerPrompt = true;
+          });
+        }
+      });
+    } else {
+      // Moved away from extreme — hide prompt and clear dealbreaker
+      if (_showDealbreakerPrompt || _currentDealbreaker) {
+        setState(() {
+          _showDealbreakerPrompt = false;
+          _dealbreakerConfirmed = false;
+        });
+        if (_currentDealbreaker) {
+          _currentDealbreaker = false;
+          widget.onDealbreakerChanged(false);
+        }
+      }
+    }
+  }
+
+  /// User tapped "Yes, it's a must"
+  void _confirmDealbreaker() {
+    HapticFeedback.mediumImpact();
+    setState(() {
+      _currentDealbreaker = true;
+      _dealbreakerConfirmed = true;
+      _showDealbreakerPrompt = false;
+    });
+    widget.onDealbreakerChanged(true);
+  }
+
+  /// User tapped "No, just a preference"
+  void _declineDealbreaker() {
+    setState(() {
+      _showDealbreakerPrompt = false;
+      _dealbreakerConfirmed = false;
+      _currentDealbreaker = false;
+    });
+    widget.onDealbreakerChanged(false);
+  }
+
+  /// Inline prompt asking if this extreme preference is a dealbreaker
+  Widget _buildDealbreakerPrompt() {
+    final category = widget.category;
+    final isMin = _currentValue == VibePreference.minValue;
+    final promptText = _dealbreakerPromptText(category, isMin);
+
+    return Padding(
+      padding: const EdgeInsets.only(top: AppSpacing.sm),
+      child: Container(
+        padding: const EdgeInsets.all(AppSpacing.sm),
+        decoration: BoxDecoration(
+          color: AppColorsDark.gold.withValues(alpha: 0.08),
+          borderRadius: BorderRadius.circular(AppBorderRadius.sm),
+          border: Border.all(
+            color: AppColorsDark.gold.withValues(alpha: 0.25),
+          ),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              promptText,
+              style: AppTypography.bodySmall.copyWith(
+                color: AppColorsDark.textSecondary,
+                height: 1.4,
+              ),
+            ),
+            const SizedBox(height: AppSpacing.sm),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                AppButtonEnhanced(
+                  text: "Yes, it's a must",
+                  variant: AppButtonVariant.primary,
+                  size: AppButtonSize.small,
+                  onPressed: _confirmDealbreaker,
+                ),
+                const SizedBox(height: AppSpacing.xs),
+                AppButtonEnhanced(
+                  text: 'No, just a preference',
+                  variant: AppButtonVariant.ghostDark,
+                  size: AppButtonSize.small,
+                  onPressed: _declineDealbreaker,
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  /// Compact badge shown after user confirms a dealbreaker
+  Widget _buildDealbreakerBadge() {
+    return Padding(
+      padding: const EdgeInsets.only(top: AppSpacing.sm),
+      child: Container(
+        padding: const EdgeInsets.symmetric(
+          horizontal: AppSpacing.sm,
+          vertical: AppSpacing.xs,
+        ),
+        decoration: BoxDecoration(
+          color: AppColorsDark.gold.withValues(alpha: 0.1),
+          borderRadius: BorderRadius.circular(AppBorderRadius.sm),
+          border: Border.all(
+            color: AppColorsDark.gold.withValues(alpha: 0.3),
+          ),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            AppIcon(
+              icon: AppPhosphorIcons.blocked,
+              color: AppColorsDark.gold,
+              size: AppIconSize.sm,
+            ),
+            const SizedBox(width: AppSpacing.xs),
+            Text(
+              'Dealbreaker set',
+              style: AppTypography.labelMedium.copyWith(
+                color: AppColorsDark.gold,
+                fontWeight: AppTypography.medium,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  /// Context-aware prompt text based on category and slider position
+  String _dealbreakerPromptText(VibeCategory category, bool isMin) {
+    switch (category) {
+      case VibeCategory.drinking:
+        return isMin
+            ? 'You strongly prefer no drinking around you. Is this a dealbreaker?'
+            : 'You love a group that drinks. Is this a dealbreaker?';
+      case VibeCategory.music:
+        return isMin
+            ? 'You prefer no music on the course. Is this a dealbreaker?'
+            : 'Music is a big part of your round. Is this a dealbreaker?';
+      case VibeCategory.chat:
+        return isMin
+            ? 'You prefer a very quiet round. Is this a dealbreaker?'
+            : 'You love a talkative group. Is this a dealbreaker?';
+      case VibeCategory.pace:
+        return isMin
+            ? 'You prefer a very relaxed pace. Is this a dealbreaker?'
+            : 'You need a fast-paced round. Is this a dealbreaker?';
+      case VibeCategory.money:
+        return isMin
+            ? 'You prefer no gambling or side games. Is this a dealbreaker?'
+            : 'You love having money on the line. Is this a dealbreaker?';
+      case VibeCategory.competitive:
+        return isMin
+            ? 'You prefer zero competitive pressure. Is this a dealbreaker?'
+            : 'You play at tournament-level intensity. Is this a dealbreaker?';
+    }
   }
 
   void _scheduleValueUpdate(int value) {
@@ -130,6 +314,7 @@ class _VibeCategorySliderState extends State<VibeCategorySlider> {
     });
     widget.onValueChanged(updatedValue);
     _scheduleValueUpdate(updatedValue);
+    _evaluateDealbreakerPrompt();
   }
 
   void _handleValueChangeEnd(double raw) {
@@ -141,68 +326,7 @@ class _VibeCategorySliderState extends State<VibeCategorySlider> {
       _flushValueUpdate(updatedValue);
     }
     _didChange = false;
-  }
-
-  void _handleDealbreakerChanged(bool value) {
-    setState(() {
-      _currentDealbreaker = value;
-    });
-    widget.onDealbreakerChanged(value);
-  }
-
-  void _showDealbreakerInfo(BuildContext context) {
-    showAppDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        backgroundColor: AppColorsDark.navy,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(AppBorderRadius.lg),
-        ),
-        title: Row(
-          children: [
-            AppIcon(
-              icon: AppPhosphorIcons.blocked,
-              color: AppColorsDark.gold,
-              size: AppIconSize.md,
-            ),
-            const SizedBox(width: AppSpacing.sm),
-            Text(
-              'Dealbreakers',
-              style: AppTypography.titleMedium.copyWith(
-                color: AppColorsDark.textPrimary,
-              ),
-            ),
-          ],
-        ),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              "When you mark something as a dealbreaker, we'll warn you before you join a group with players who have very different preferences.",
-              style: AppTypography.bodyMedium.copyWith(
-                color: AppColorsDark.textSecondary,
-              ),
-            ),
-            const SizedBox(height: AppSpacing.md),
-            Text(
-              "Use this for preferences that truly matter to your experience. It helps ensure you're matched with compatible groups.",
-              style: AppTypography.bodySmall.copyWith(
-                color: AppColorsDark.textMuted,
-              ),
-            ),
-          ],
-        ),
-        actions: [
-          AppButtonEnhanced(
-            text: 'Got it',
-            variant: AppButtonVariant.ghost,
-            size: AppButtonSize.small,
-            onPressed: () => Navigator.of(context).pop(),
-          ),
-        ],
-      ),
-    );
+    _evaluateDealbreakerPrompt();
   }
 
   @override
@@ -303,57 +427,16 @@ class _VibeCategorySliderState extends State<VibeCategorySlider> {
               ],
             ),
           ),
-          const SizedBox(height: AppSpacing.md),
-
-          // Compact dealbreaker row with highlight when active
-          Container(
-            padding: EdgeInsets.symmetric(
-              horizontal: AppSpacing.sm,
-              vertical: AppSpacing.xs,
-            ),
-            decoration: BoxDecoration(
-              color: _currentDealbreaker
-                  ? AppColorsDark.gold.withValues(alpha: 0.1)
-                  : Colors.transparent,
-              borderRadius: BorderRadius.circular(AppBorderRadius.sm),
-              border: _currentDealbreaker
-                  ? Border.all(
-                      color: AppColorsDark.gold.withValues(alpha: 0.3),
-                    )
-                  : null,
-            ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Row(
-                  children: [
-                    Text(
-                      'Dealbreaker',
-                      style: AppTypography.labelLarge.copyWith(
-                        color: _currentDealbreaker
-                            ? AppColorsDark.gold
-                            : AppColorsDark.textSecondary,
-                        fontWeight: AppTypography.medium,
-                      ),
-                    ),
-                    const SizedBox(width: AppSpacing.xs),
-                    GestureDetector(
-                      onTap: () => _showDealbreakerInfo(context),
-                      child: AppIcon(
-                        icon: AppPhosphorIcons.info,
-                        size: AppIconSize.sm,
-                        color: AppColorsDark.textMuted,
-                      ),
-                    ),
-                  ],
-                ),
-                VibeToggle(
-                  value: _currentDealbreaker,
-                  onChanged: _handleDealbreakerChanged,
-                  activeColor: AppColorsDark.gold,
-                ),
-              ],
-            ),
+          // Smart dealbreaker prompt — only appears at extreme values (0 or 5)
+          AnimatedSize(
+            duration: const Duration(milliseconds: 250),
+            curve: Curves.easeInOut,
+            alignment: Alignment.topCenter,
+            child: _showDealbreakerPrompt
+                ? _buildDealbreakerPrompt()
+                : _dealbreakerConfirmed && _currentDealbreaker
+                    ? _buildDealbreakerBadge()
+                    : const SizedBox.shrink(),
           ),
         ],
       ),

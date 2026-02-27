@@ -231,7 +231,7 @@ Prefixed with `app_` and built on design tokens. Key widgets: `app_button_enhanc
 
 **Voice**: Quiet confidence — clear, composed, trustworthy. Not playful, loud, or pretentious. Semi-formal, no slang, no corporate buzzwords.
 
-**Rules**: No emoji in system messages/errors/trust flows. No exclamation marks in system flows. No ALL CAPS. Sentence case. Button labels: max 3 words, clear action verbs ("Request spot", not "Let's play"). Use constants from `app_copy.dart` for common messages.
+**Rules**: No emoji in system messages/errors/trust flows. No exclamation marks in system flows. No ALL CAPS. Sentence case. Button labels: max 4 words, clear action verbs ("Request spot", not "Let's play"). Use constants from `app_copy.dart` for common messages.
 
 **Tone examples**: "You're confirmed for this round." not "Awesome! You're in 🎉". "We couldn't load this round." not "Uh oh! Something went wrong."
 

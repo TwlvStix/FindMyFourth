@@ -42,6 +42,17 @@ class _VibeOnboardingWidgetState extends State<VibeOnboardingWidget> {
     VibeCategory.competitive,
   ];
 
+  /// Order for the priority selection grid — heaviest weights first
+  /// so users see the most impactful categories at the top.
+  final List<VibeCategory> _priorityGridOrder = const [
+    VibeCategory.pace,
+    VibeCategory.competitive,
+    VibeCategory.drinking,
+    VibeCategory.chat,
+    VibeCategory.money,
+    VibeCategory.music,
+  ];
+
   VibeProfile _profile = VibeProfile.defaults();
   Map<VibeCategory, VibeImportance> _importance = {
     for (final category in VibeCategory.values)
@@ -55,9 +66,6 @@ class _VibeOnboardingWidgetState extends State<VibeOnboardingWidget> {
   int get _topCount =>
       _importance.values.where((value) => value == VibeImportance.top).length;
 
-  int get _bottomCount => _importance.values
-      .where((value) => value == VibeImportance.bottom)
-      .length;
 
   @override
   void initState() {
@@ -153,41 +161,107 @@ class _VibeOnboardingWidgetState extends State<VibeOnboardingWidget> {
     }
   }
 
-  void _setImportance(VibeCategory category, VibeImportance next) {
+  void _setImportance(VibeCategory category) {
     final current = _importance[category] ?? VibeImportance.normal;
-    if (current == next) {
+
+    if (current == VibeImportance.top) {
+      // Tapping a selected card deselects it
       setState(() {
         _importance = Map<VibeCategory, VibeImportance>.from(_importance)
           ..[category] = VibeImportance.normal;
       });
+      HapticFeedback.selectionClick();
       return;
     }
+
+    // If already have 2 top, deselect the oldest one to make room
+    if (_topCount >= 2) {
+      final firstTop = _categories.firstWhere(
+        (c) => c != category && _importance[c] == VibeImportance.top,
+        orElse: () => category,
+      );
+      setState(() {
+        final updated = Map<VibeCategory, VibeImportance>.from(_importance);
+        if (firstTop != category) {
+          updated[firstTop] = VibeImportance.normal;
+        }
+        updated[category] = VibeImportance.top;
+        _importance = updated;
+      });
+    } else {
+      setState(() {
+        _importance = Map<VibeCategory, VibeImportance>.from(_importance)
+          ..[category] = VibeImportance.top;
+      });
+    }
+    HapticFeedback.selectionClick();
+  }
+
+  /// Auto-infer top 2 priorities from dealbreakers first, then slider positions.
+  /// Dealbreaker categories always take priority over distance-from-center.
+  void _autoInferImportance() {
+    final center = (VibePreference.minValue + VibePreference.maxValue) / 2;
+    final distances = <VibeCategory, double>{};
+    final dealbreakers = <VibeCategory>[];
+
+    for (final category in _categories) {
+      final pref = _profile.preferenceFor(category);
+      distances[category] = (pref.value - center).abs();
+      if (pref.dealbreaker) {
+        dealbreakers.add(category);
+      }
+    }
+
+    // Sort dealbreakers by their position in the grid order
+    dealbreakers.sort((a, b) =>
+        _priorityGridOrder.indexOf(a).compareTo(_priorityGridOrder.indexOf(b)));
+
+    // Sort non-dealbreaker categories by distance descending
+    final nonDealbreakers = _categories
+        .where((c) => !dealbreakers.contains(c))
+        .toList()
+      ..sort((a, b) => (distances[b] ?? 0).compareTo(distances[a] ?? 0));
+
+    // Build priority list: dealbreakers first (by grid order), then by distance
+    final priorityOrder = [...dealbreakers, ...nonDealbreakers];
+
+    final inferred = Map<VibeCategory, VibeImportance>.from(_importance);
+    for (final category in _categories) {
+      inferred[category] = VibeImportance.normal;
+    }
+
+    // Assign top 2
+    for (var i = 0; i < 2 && i < priorityOrder.length; i++) {
+      inferred[priorityOrder[i]] = VibeImportance.top;
+    }
+
     setState(() {
-      final updated = Map<VibeCategory, VibeImportance>.from(_importance);
-      if (next == VibeImportance.top && _topCount >= 2) {
-        // Auto-clear another top to allow this selection
-        final otherTop = _categories.firstWhere(
-          (entry) => entry != category && updated[entry] == VibeImportance.top,
-          orElse: () => category,
-        );
-        if (otherTop != category) {
-          updated[otherTop] = VibeImportance.normal;
-        }
-      }
-      if (next == VibeImportance.bottom && _bottomCount >= 1) {
-        // Auto-clear the existing bottom to allow this selection
-        final otherBottom = _categories.firstWhere(
-          (entry) =>
-              entry != category && updated[entry] == VibeImportance.bottom,
-          orElse: () => category,
-        );
-        if (otherBottom != category) {
-          updated[otherBottom] = VibeImportance.normal;
-        }
-      }
-      updated[category] = next;
-      _importance = updated;
+      _importance = inferred;
     });
+  }
+
+  /// Pre-selects categories with dealbreakers as top priorities.
+  /// Called when the priorities page first becomes visible.
+  /// Respects the max of 2 top priorities — if more than 2 dealbreakers
+  /// exist, only the first 2 (by grid order) are pre-selected.
+  void _initializePrioritiesFromDealbreakers() {
+    final updated = Map<VibeCategory, VibeImportance>.from(_importance);
+    var topCount = updated.values.where((v) => v == VibeImportance.top).length;
+
+    for (final category in _priorityGridOrder) {
+      if (topCount >= 2) break;
+      final pref = _profile.preferenceFor(category);
+      if (pref.dealbreaker && updated[category] != VibeImportance.top) {
+        updated[category] = VibeImportance.top;
+        topCount++;
+      }
+    }
+
+    if (updated != _importance) {
+      setState(() {
+        _importance = updated;
+      });
+    }
   }
 
   void _nextStep() {
@@ -216,19 +290,16 @@ class _VibeOnboardingWidgetState extends State<VibeOnboardingWidget> {
       return;
     }
 
-    // Validate priorities
-    if (_topCount != 2) {
-      showSnackbar(context, 'Please pick exactly 2 top priorities.');
-      return;
+    // If user hasn't picked 2 top priorities, auto-infer
+    if (_topCount < 2) {
+      _autoInferImportance();
     }
 
     setState(() {
       _isCompleting = true;
     });
     try {
-      // Save importance first
       await _repository.updateImportance(_importance);
-      // Then confirm vibes
       await _repository.confirmVibes(profile: _profile);
       _goToNext();
     } catch (_) {
@@ -287,7 +358,6 @@ class _VibeOnboardingWidgetState extends State<VibeOnboardingWidget> {
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Icon container
                   Container(
                     width: 44,
                     height: 44,
@@ -326,6 +396,17 @@ class _VibeOnboardingWidgetState extends State<VibeOnboardingWidget> {
                             fontWeight: AppTypography.bold,
                           ),
                         ),
+                        if (archetypeMatch.isWarden &&
+                            archetypeMatch.baseArchetype != null) ...[
+                          Text(
+                            '(${archetypeMatch.baseArchetype!.name})',
+                            style: AppTypography.labelSmall.copyWith(
+                              color: AppColorsDark.textPrimary
+                                  .withValues(alpha: 0.6),
+                              fontWeight: AppTypography.semiBold,
+                            ),
+                          ),
+                        ],
                         const SizedBox(height: AppSpacing.xxs),
                         AnimatedCrossFade(
                           duration: MotionTokens.microInteraction,
@@ -364,51 +445,48 @@ class _VibeOnboardingWidgetState extends State<VibeOnboardingWidget> {
             ),
           ),
           const SizedBox(height: AppSpacing.lg),
-          // Header
+
+          // Header — scenario-based framing
           Text(
-            'What makes or breaks your round?',
+            'What matters most to your round?',
             style: AppTypography.headlineSmall.copyWith(
               color: AppColorsDark.textPrimary,
             ),
           ),
           const SizedBox(height: AppSpacing.xs),
           Text(
-            'Pick the 2 things that matter most. Optional: pick 1 that matters least.',
+            'Pick the 2 that you care about most. We\'ll weigh them heavier when matching you.',
             style: AppTypography.bodySmall.copyWith(
               color: AppColorsDark.textSecondary,
             ),
           ),
           const SizedBox(height: AppSpacing.md),
 
-          // Count pills
-          Row(
-            children: [
-              _buildCountPill(
-                label: 'Top',
-                count: _topCount,
-                max: 2,
-                color: AppColorsDark.green,
-                background: AppColorsDark.green.withValues(alpha: 0.15),
-              ),
-              const SizedBox(width: AppSpacing.sm),
-              _buildCountPill(
-                label: 'Bottom',
-                count: _bottomCount,
-                max: 1,
-                color: AppColorsDark.gold,
-                background: AppColorsDark.gold.withValues(alpha: 0.15),
-              ),
-            ],
+          // Selection count indicator (single pill, no Row wrapper)
+          _buildCountPill(
+            label: 'Selected',
+            count: _topCount,
+            max: 2,
+            color: AppColorsDark.green,
+            background: AppColorsDark.green.withValues(alpha: 0.15),
           ),
           const SizedBox(height: AppSpacing.lg),
 
-          // Category cards
-          ..._categories.map(
-            (category) => Padding(
-              padding: const EdgeInsets.only(bottom: AppSpacing.sm),
-              child: _buildImportanceCard(category),
+          // 2-column grid of category cards
+          _buildPriorityGrid(),
+
+          const SizedBox(height: AppSpacing.md),
+
+          // Soft nudge if they haven't picked 2 yet
+          if (_topCount < 2)
+            Text(
+              "Can't decide? No worries — we'll figure it out from your preferences.",
+              style: AppTypography.bodySmall.copyWith(
+                color: AppColorsDark.textMuted,
+                fontStyle: FontStyle.italic,
+              ),
             ),
-          ),
+
           const SizedBox(height: AppSpacing.xxl),
         ],
       ),
@@ -456,141 +534,195 @@ class _VibeOnboardingWidgetState extends State<VibeOnboardingWidget> {
     );
   }
 
-  Widget _buildImportanceCard(VibeCategory category) {
-    final importance = _importance[category] ?? VibeImportance.normal;
-    final title = _categoryTitles[category] ?? VibeLabels.titleFor(category);
+  Widget _buildPriorityGrid() {
+    // Build pairs for 2-column layout using priority order
+    final List<Widget> rows = [];
+    for (var i = 0; i < _priorityGridOrder.length; i += 2) {
+      final first = _priorityGridOrder[i];
+      final second = i + 1 < _priorityGridOrder.length ? _priorityGridOrder[i + 1] : null;
 
-    final isTop = importance == VibeImportance.top;
-    final isBottom = importance == VibeImportance.bottom;
-    final background = isTop
-        ? AppColorsDark.green.withValues(alpha: 0.15)
-        : isBottom
-            ? AppColorsDark.gold.withValues(alpha: 0.15)
-            : AppColorsDark.navyLight.withValues(alpha: 0.3);
-    final borderColor = isTop
-        ? AppColorsDark.green
-        : isBottom
-            ? AppColorsDark.gold
-            : AppColorsDark.glassBorder;
-    final label = isTop
-        ? 'Top priority'
-        : isBottom
-            ? 'Least important'
-            : 'Normal';
-    final titleColor =
-        isTop || isBottom ? AppColorsDark.textPrimary : AppColorsDark.textSecondary;
-
-    return Container(
-      padding: const EdgeInsets.all(AppSpacing.md),
-      decoration: BoxDecoration(
-        color: background,
-        borderRadius: BorderRadius.circular(AppBorderRadius.lg),
-        border: Border.all(color: borderColor.withValues(alpha:0.5)),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
+      rows.add(
+        Padding(
+          padding: const EdgeInsets.only(bottom: AppSpacing.sm),
+          child: Row(
             children: [
               Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      title,
-                      style: AppTypography.bodyMedium.copyWith(
-                        color: titleColor,
-                        fontWeight: AppTypography.semiBold,
-                      ),
+                child: _buildPriorityCard(first),
+              ),
+              const SizedBox(width: AppSpacing.sm),
+              if (second != null)
+                Expanded(
+                  child: _buildPriorityCard(second),
+                )
+              else
+                const Expanded(child: SizedBox()),
+            ],
+          ),
+        ),
+      );
+    }
+
+    return Column(children: rows);
+  }
+
+  Widget _buildPriorityCard(VibeCategory category) {
+    final isSelected = _importance[category] == VibeImportance.top;
+    final isDealbreaker = _profile.preferenceFor(category).dealbreaker;
+    final title = _categoryTitles[category] ?? VibeLabels.titleFor(category);
+    final value = _profile.preferenceFor(category).value;
+    final valueLabel = _shortValueLabel(category, value);
+
+    return GestureDetector(
+      onTap: () => _setImportance(category),
+      child: AnimatedContainer(
+        duration: MotionTokens.contentReveal,
+        curve: Curves.easeInOut,
+        padding: const EdgeInsets.all(AppSpacing.md),
+        decoration: BoxDecoration(
+          color: isSelected
+              ? AppColorsDark.green.withValues(alpha: 0.15)
+              : AppColorsDark.navyLight.withValues(alpha: 0.3),
+          borderRadius: BorderRadius.circular(AppBorderRadius.lg),
+          border: Border.all(
+            color: isSelected
+                ? AppColorsDark.green
+                : AppColorsDark.glassBorder,
+            width: isSelected ? 1.5 : 1,
+          ),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Expanded(
+                  child: Text(
+                    title,
+                    style: AppTypography.bodyMedium.copyWith(
+                      color: isSelected
+                          ? AppColorsDark.textPrimary
+                          : AppColorsDark.textSecondary,
+                      fontWeight: AppTypography.semiBold,
                     ),
-                    const SizedBox(height: AppSpacing.xxs),
-                    Text(
-                      label,
-                      style: AppTypography.labelSmall.copyWith(
-                        color: isTop || isBottom
-                            ? AppColorsDark.textSecondary
-                            : AppColorsDark.textMuted,
-                        letterSpacing: AppTypography.letterSpacingNormal,
-                      ),
-                    ),
-                  ],
+                  ),
                 ),
+                if (isSelected)
+                  AppIcon(
+                    icon: AppPhosphorIcons.success,
+                    color: AppColorsDark.green,
+                    size: AppIconSize.sm,
+                  ),
+              ],
+            ),
+            const SizedBox(height: AppSpacing.xs),
+            Container(
+              padding: const EdgeInsets.symmetric(
+                horizontal: AppSpacing.sm,
+                vertical: AppSpacing.xxs,
               ),
-              AppIcon(
-                icon: isTop
-                    ? AppPhosphorIcons.arrowUp
-                    : isBottom
-                        ? AppPhosphorIcons.arrowDown
-                        : AppPhosphorIcons.circle,
-                color: isTop || isBottom
-                    ? AppColorsDark.textPrimary
-                    : AppColorsDark.textMuted,
-                size: AppIconSize.md,
+              decoration: BoxDecoration(
+                color: isSelected
+                    ? AppColorsDark.green.withValues(alpha: 0.1)
+                    : AppColorsDark.navyLight.withValues(alpha: 0.5),
+                borderRadius: BorderRadius.circular(AppBorderRadius.sm),
+              ),
+              child: Text(
+                valueLabel,
+                style: AppTypography.labelSmall.copyWith(
+                  color: isSelected
+                      ? AppColorsDark.textPrimary
+                      : AppColorsDark.textMuted,
+                  letterSpacing: AppTypography.letterSpacingNormal,
+                ),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+            // Dealbreaker badge — shown when user set a dealbreaker on slider page
+            if (isDealbreaker) ...[
+              const SizedBox(height: AppSpacing.xs),
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  AppIcon(
+                    icon: AppPhosphorIcons.blocked,
+                    color: AppColorsDark.gold,
+                    size: AppIconSize.xs,
+                  ),
+                  const SizedBox(width: 4),
+                  Text(
+                    'Dealbreaker',
+                    style: AppTypography.labelSmall.copyWith(
+                      color: AppColorsDark.gold,
+                      fontWeight: AppTypography.medium,
+                    ),
+                  ),
+                ],
               ),
             ],
-          ),
-          const SizedBox(height: AppSpacing.sm),
-          Wrap(
-            spacing: AppSpacing.sm,
-            runSpacing: AppSpacing.xs,
-            children: [
-              _buildSelectorChip(
-                label: 'Matters most',
-                selected: isTop,
-                color: AppColorsDark.green,
-                onTap: () => _setImportance(category, VibeImportance.top),
-              ),
-              _buildSelectorChip(
-                label: 'Does not matter',
-                selected: isBottom,
-                color: AppColorsDark.gold,
-                onTap: () => _setImportance(category, VibeImportance.bottom),
-              ),
-            ],
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
 
-  Widget _buildSelectorChip({
-    required String label,
-    required bool selected,
-    required Color color,
-    required VoidCallback onTap,
-  }) {
-    final textColor =
-        selected ? AppColorsDark.textPrimary : AppColorsDark.textSecondary;
-    final bgColor =
-        selected ? color : AppColorsDark.navyLight.withValues(alpha: 0.5);
+  /// Short label summarizing the user's chosen value for display on priority cards.
+  /// Uses the short endpoint-style labels, not the full sentence descriptions.
+  String _shortValueLabel(VibeCategory category, int value) {
+    // Map to short descriptors
+    const labels = <VibeCategory, Map<int, String>>{
+      VibeCategory.pace: {
+        0: 'Very relaxed',
+        1: 'Easygoing',
+        2: 'Reasonable',
+        3: 'Steady',
+        4: 'Fast',
+        5: 'Very fast',
+      },
+      VibeCategory.competitive: {
+        0: 'Very casual',
+        1: 'Light',
+        2: 'Friendly',
+        3: 'Structured',
+        4: 'Highly competitive',
+        5: 'Tournament intensity',
+      },
+      VibeCategory.drinking: {
+        0: 'None',
+        1: 'Very limited',
+        2: 'Occasional',
+        3: 'A couple is fine',
+        4: 'Regular',
+        5: 'Love it',
+      },
+      VibeCategory.chat: {
+        0: 'Very quiet',
+        1: 'Mostly quiet',
+        2: 'Light chat',
+        3: 'Balanced',
+        4: 'Very social',
+        5: 'Constant',
+      },
+      VibeCategory.money: {
+        0: 'None',
+        1: 'Very low stakes',
+        2: 'Occasional',
+        3: 'Casual games',
+        4: 'Regular action',
+        5: 'Love gambling',
+      },
+      VibeCategory.music: {
+        0: 'Silence',
+        1: 'Rare, low volume',
+        2: 'Occasional',
+        3: 'Usually fine',
+        4: 'Most of the round',
+        5: 'Always on',
+      },
+    };
 
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(AppBorderRadius.full),
-      child: Container(
-        padding: const EdgeInsets.symmetric(
-          horizontal: AppSpacing.sm,
-          vertical: AppSpacing.xs,
-        ),
-        decoration: BoxDecoration(
-          color: bgColor,
-          borderRadius: BorderRadius.circular(AppBorderRadius.full),
-          border: Border.all(
-            color: selected ? color : AppColorsDark.glassBorder,
-            width: selected ? 1.5 : 1,
-          ),
-        ),
-        child: Text(
-          label,
-          style: AppTypography.labelSmall.copyWith(
-            color: textColor,
-            letterSpacing: AppTypography.letterSpacingNormal,
-            fontWeight:
-                selected ? AppTypography.semiBold : AppTypography.regular,
-          ),
-        ),
-      ),
-    );
+    return labels[category]?[value] ?? 'Set';
   }
 
   static const Map<VibeCategory, String> _categoryTitles = {
@@ -677,6 +809,10 @@ class _VibeOnboardingWidgetState extends State<VibeOnboardingWidget> {
                           setState(() {
                             _currentIndex = index;
                           });
+                          // When user reaches the priorities page, pre-select dealbreaker categories
+                          if (index == _categories.length) {
+                            _initializePrioritiesFromDealbreakers();
+                          }
                         },
                         itemBuilder: (context, index) {
                           // Last page is priorities
