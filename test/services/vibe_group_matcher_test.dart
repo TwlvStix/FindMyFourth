@@ -4,6 +4,7 @@ import 'package:find_my_fourth/models/vibe_profile.dart';
 import 'package:find_my_fourth/services/vibe_group_matcher.dart';
 import 'package:find_my_fourth/services/vibe_matcher.dart';
 import 'package:find_my_fourth/vibe/vibe_match_types.dart';
+import 'package:find_my_fourth/vibe/vibe_tuning.dart';
 
 VibeProfile _profileWithValues(Map<VibeCategory, int> values) {
   final prefs = <VibeCategory, VibePreference>{
@@ -56,7 +57,7 @@ VibeProfile _profileWithOverrides({
 
 void main() {
   group('GroupVibeMatcher', () {
-    test('computes group average and weighted fit', () {
+    test('computes group average and blended fit (60% myFit + 40% theirFit)', () {
       final mine = _profileWithValues({
         for (final category in VibeCategory.values) category: 4,
         VibeCategory.pace: 5,
@@ -78,18 +79,23 @@ void main() {
         ],
       );
 
+      // Group average should be computed from other members only
       expect(result.groupAverages[VibeCategory.pace], closeTo(2.0, 0.01));
-      final pairABase = VibeMatcher.score(mine, otherA).baseScorePercent;
-      final pairBBase = VibeMatcher.score(mine, otherB).baseScorePercent;
-      final pairCBase = VibeMatcher.score(otherA, otherB).baseScorePercent;
-      final expectedBase = (pairABase + pairBBase + pairCBase) / 3;
-      final pairAPenalty = VibeMatcher.score(mine, otherA).softRiskPenalty01;
-      final pairBPenalty = VibeMatcher.score(mine, otherB).softRiskPenalty01;
-      final pairCPenalty = VibeMatcher.score(otherA, otherB).softRiskPenalty01;
-      final expectedPenalty = (pairAPenalty + pairBPenalty + pairCPenalty) / 3;
-      final expectedFinal = expectedBase * (1 - expectedPenalty);
-      expect(result.baseScorePercent, closeTo(expectedBase, 0.01));
-      expect(result.finalScorePercent, closeTo(expectedFinal, 0.01));
+
+      // Each member's display score is blended: 60% myFit + 40% theirFit
+      final matchA = VibeMatcher.score(mine, otherA);
+      final matchB = VibeMatcher.score(mine, otherB);
+      final displayA = VibeTuning.groupMyFitWeight * matchA.myFitPercent +
+          VibeTuning.groupMutualFitWeight * matchA.theirFitPercent;
+      final displayB = VibeTuning.groupMyFitWeight * matchB.myFitPercent +
+          VibeTuning.groupMutualFitWeight * matchB.theirFitPercent;
+      final expectedYourFit = (displayA + displayB) / 2;
+
+      // baseScorePercent equals yourFitScore (the blended average)
+      expect(result.baseScorePercent, closeTo(expectedYourFit, 0.01));
+      expect(result.yourFitScore, closeTo(expectedYourFit, 0.01));
+
+      // Without cohesion issues or hard blocks, final score equals yourFitScore
       expect(result.groupFitScore, closeTo(result.finalScorePercent, 0.01));
     });
 

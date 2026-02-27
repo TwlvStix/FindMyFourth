@@ -14,6 +14,10 @@ const firestore = admin.firestore();
 const trustSystem = require("./trust_system");
 const confirmationFlow = require("./confirmation_flow");
 const trustProfileModule = require("./trust_profile");
+const {
+  scheduleFlexibleNudges,
+  cancelFlexibleNudges,
+} = require("./notifications/flexible_nudge");
 
 // Behavioral Dataset modules
 const { createRound, addParticipant, finalizeGroup } = require("./src/booking");
@@ -1836,6 +1840,44 @@ exports.processScheduledTrustNotification = functions
   .region('us-west2')
   .runWith({ timeoutSeconds: 60, memory: '256MB' })
   .https.onRequest(trustNotificationScheduler.processScheduledTrustNotificationHandler);
+
+// Flexible Game Nudge System
+// Schedules nudges when 2+ players join a flexible game, cancels when time confirmed
+exports.onFlexibleGameUpdate = functions
+  .region('us-west2')
+  .runWith({ timeoutSeconds: 60, memory: '256MB' })
+  .firestore.document('games/{gameId}')
+  .onUpdate(async (change, context) => {
+    const before = change.before.data();
+    const after = change.after.data();
+    const gameId = context.params.gameId;
+
+    // Only process flexible games
+    if (after.schedule_type !== 'flexible') {
+      // Case 2: schedule_type changed FROM flexible to confirmed
+      // Cancel any pending nudges
+      if (before.schedule_type === 'flexible') {
+        console.log(`[FlexibleNudge] Game ${gameId} confirmed — cancelling nudges`);
+        await cancelFlexibleNudges(gameId);
+      }
+      return null;
+    }
+
+    // Extract joined player counts
+    const beforeJoined = extractJoinedUids(before.joined_players || []);
+    const afterJoined = extractJoinedUids(after.joined_players || []);
+
+    // Case 1: Player count went from <2 to >=2 → schedule nudges
+    if (beforeJoined.length < 2 && afterJoined.length >= 2) {
+      // Check that no confirmed date exists
+      if (!after.date) {
+        console.log(`[FlexibleNudge] Game ${gameId} reached 2+ players — scheduling nudges`);
+        await scheduleFlexibleNudges(gameId, after);
+      }
+    }
+
+    return null;
+  });
 
 // Trust Background Workers — Session 10
 const trustWorkers = require('./notifications/trust/workers');

@@ -27,6 +27,12 @@ class VibeTuning {
   static const double confidenceMediumThreshold = 0.6;
   static const double groupCohesionPenaltyFactor = 0.85;
 
+  // ── Group-level fit blending ──────────────────────────────────
+  // Weight given to your one-sided fit (how you'll enjoy them)
+  static const double groupMyFitWeight = 0.60;
+  // Weight given to their one-sided fit (how they'll enjoy you)
+  static const double groupMutualFitWeight = 0.40;
+
   // ── Phase 1 tuning changes ──────────────────────────────────
 
   /// Was 2.0 → now 1.0

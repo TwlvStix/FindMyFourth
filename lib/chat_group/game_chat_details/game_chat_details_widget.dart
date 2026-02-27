@@ -26,6 +26,7 @@ import '/core/design_tokens/border_radius.dart';
 import '/core/design_tokens/app_phosphor_icons.dart';
 import '/core/widgets/app_button_enhanced.dart';
 import '/core/widgets/app_icon.dart';
+import '/core/widgets/app_popup_menu.dart';
 import '/core/widgets/app_text.dart';
 import '/core/widgets/fairway_background.dart';
 import '/core/widgets/premium_back_button.dart';
@@ -493,41 +494,23 @@ class _GameChatDetailsWidgetState extends State<GameChatDetailsWidget>
     }
   }
 
-  PopupMenuButton<String> _buildDeleteMenu() {
-    return PopupMenuButton<String>(
-      icon: AppIcon(
-        icon: AppPhosphorIcons.more,
-        color: AppColors.textPrimary,
-        size: AppIconSize.md,
-      ),
+  Widget _buildDeleteMenu() {
+    return AppPopupMenu(
+      icon: AppPhosphorIcons.more,
       tooltip: 'More options',
-      color: AppColors.navy,
-      onSelected: (String value) {
+      items: [
+        AppPopupMenuItem(
+          label: 'Delete Chat',
+          value: 'delete',
+          icon: AppPhosphorIcons.trash,
+          isDestructive: true,
+        ),
+      ],
+      onSelected: (value) {
         if (value == 'delete') {
           _showDeleteConfirmation();
         }
       },
-      itemBuilder: (BuildContext context) => [
-        PopupMenuItem<String>(
-          value: 'delete',
-          child: Row(
-            children: [
-              AppIcon(
-                icon: AppPhosphorIcons.trash,
-                color: AppColors.error,
-                size: AppIconSize.button,
-              ),
-              SizedBox(width: 12.0),
-              Text(
-                'Delete Chat',
-                style: AppTypography.bodyMedium.copyWith(
-                  color: AppColors.error,
-                ),
-              ),
-            ],
-          ),
-        ),
-      ],
     );
   }
 

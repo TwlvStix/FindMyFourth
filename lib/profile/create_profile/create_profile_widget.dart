@@ -728,6 +728,44 @@ class _CreateProfileWidgetState extends State<CreateProfileWidget>
                                                   dialogTheme: DialogThemeData(
                                                     backgroundColor: AppColors.navy,
                                                   ),
+                                                  // Text theme for year picker text elements
+                                                  textTheme: Theme.of(context).textTheme.apply(
+                                                    bodyColor: AppColors.textPrimary,
+                                                    displayColor: AppColors.textPrimary,
+                                                  ),
+                                                  // Input decoration for manual date entry mode
+                                                  inputDecorationTheme: InputDecorationTheme(
+                                                    labelStyle: TextStyle(color: AppColors.textPrimary),
+                                                    hintStyle: TextStyle(color: AppColors.textMuted),
+                                                    floatingLabelStyle: TextStyle(color: AppColors.green),
+                                                    enabledBorder: UnderlineInputBorder(
+                                                      borderSide: BorderSide(color: AppColors.textMuted),
+                                                    ),
+                                                    focusedBorder: UnderlineInputBorder(
+                                                      borderSide: BorderSide(color: AppColors.green),
+                                                    ),
+                                                  ),
+                                                  // DatePicker-specific theme for year picker
+                                                  datePickerTheme: DatePickerThemeData(
+                                                    backgroundColor: AppColors.navy,
+                                                    headerBackgroundColor: AppColors.navy,
+                                                    headerForegroundColor: AppColors.textPrimary,
+                                                    yearStyle: TextStyle(color: AppColors.textPrimary),
+                                                    yearForegroundColor: WidgetStateProperty.all(AppColors.textPrimary),
+                                                    yearBackgroundColor: WidgetStateProperty.resolveWith((states) {
+                                                      if (states.contains(WidgetState.selected)) {
+                                                        return AppColors.green;
+                                                      }
+                                                      return Colors.transparent;
+                                                    }),
+                                                    dayForegroundColor: WidgetStateProperty.all(AppColors.textPrimary),
+                                                    dayBackgroundColor: WidgetStateProperty.resolveWith((states) {
+                                                      if (states.contains(WidgetState.selected)) {
+                                                        return AppColors.green;
+                                                      }
+                                                      return Colors.transparent;
+                                                    }),
+                                                  ),
                                                 ),
                                                 child: child!,
                                               );

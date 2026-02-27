@@ -245,10 +245,38 @@ async function processScheduledTrustNotificationHandler(req, res) {
       }
     }
   }
+
+  if (conditionCheck === 'flexible_game_still_active') {
+    const gameSnap = await db.collection('games').doc(event.sourceId).get();
+    if (gameSnap.exists) {
+      const gameData = gameSnap.data();
+      // Game must still be flexible (not confirmed) with 2+ players
+      const isStillFlexible = gameData.schedule_type === 'flexible';
+      const hasEnoughPlayers = (gameData.joined_players?.length || 0) >= 2;
+      const isNotCancelled = gameData.status !== 'cancelled';
+
+      if (!isStillFlexible || !hasEnoughPlayers || !isNotCancelled) {
+        console.log(`[Scheduler] Job ${jobId} condition not met (flexible=${isStillFlexible}, players=${hasEnoughPlayers}, notCancelled=${isNotCancelled}) — cancelling`);
+        await docRef.update({
+          status:      'CANCELLED',
+          cancelledAt: admin.firestore.FieldValue.serverTimestamp(),
+        });
+        return res.status(200).send('CONDITION_NOT_MET');
+      }
+    }
+  }
   // conditionCheck === 'always' falls through to delivery
 
   // 5. Route notification through the full pipeline
-  await routeNotification(event, db);
+  // Flexible nudge events have their own handler with built-in condition re-checking
+  const FLEXIBLE_NUDGE_EVENT_TYPES = ['flexible_nudge_soft', 'flexible_nudge_urgent'];
+  if (FLEXIBLE_NUDGE_EVENT_TYPES.includes(event.eventType)) {
+    // Late require to avoid circular dependency (flexible_nudge imports from scheduler)
+    const { processFlexibleNudge } = require('../flexible_nudge');
+    await processFlexibleNudge(event, db);
+  } else {
+    await routeNotification(event, db);
+  }
 
   // 6. Mark executed
   await docRef.update({

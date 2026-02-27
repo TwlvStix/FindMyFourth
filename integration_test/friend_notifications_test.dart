@@ -20,12 +20,10 @@
 /// running on a simulator/emulator.
 library;
 
-import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 // Uncomment when integration_test is added to pubspec.yaml:
 // import 'package:integration_test/integration_test.dart';
 
-import 'package:find_my_fourth/services/notification_service.dart';
 import 'package:find_my_fourth/services/fake_notification_service.dart';
 
 // For full integration testing, uncomment and adapt:
@@ -209,4 +207,3 @@ void main() {
 ///
 /// Then in your navigation handler, listen to [notificationService.onNotificationTapped]
 /// and use GoRouter to navigate based on the notification's route/tab data.
-void _documentationExample() {}

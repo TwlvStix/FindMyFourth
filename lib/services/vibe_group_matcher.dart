@@ -151,8 +151,9 @@ class GroupVibeMatcher {
 
     for (final member in others) {
       final matchResult = VibeMatcher.score(mine, member.profile);
-      // Use myFitPercent (your perspective) as the display score
-      final displayScore = matchResult.myFitPercent;
+      // Blend your fit (60%) with their fit (40%) for balanced group scoring
+      final displayScore = VibeTuning.groupMyFitWeight * matchResult.myFitPercent +
+          VibeTuning.groupMutualFitWeight * matchResult.theirFitPercent;
       yourFitSum += displayScore;
       memberResults.add(GroupVibeMemberResult(
         member: member,
