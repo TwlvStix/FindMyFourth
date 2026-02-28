@@ -768,7 +768,7 @@ T? _deserializeParam<T>(
     type,
     isList,
     collectionNamePath: collectionNamePath,
-  );
+  ) as T?;
 }
 
 bool _isEmptyStateParams(GoRouterState state) {

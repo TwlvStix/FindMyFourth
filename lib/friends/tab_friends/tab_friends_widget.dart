@@ -74,7 +74,7 @@ class _TabFriendsWidgetState extends State<TabFriendsWidget> {
   void insertAtIndexInFriendList(int index, DocumentReference item) =>
       friendList.insert(index, item);
   void updateFriendListAtIndex(
-          int index, Function(DocumentReference) updateFn) =>
+          int index, DocumentReference Function(DocumentReference) updateFn) =>
       friendList[index] = updateFn(friendList[index]);
 
   // Favorite friends tracking

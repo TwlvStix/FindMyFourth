@@ -51,7 +51,7 @@ class _PlayerListWidgetState extends State<PlayerListWidget> {
   void insertAtIndexInPlayersJoined(int index, DocumentReference item) =>
       playersJoined.insert(index, item);
   void updatePlayersJoinedAtIndex(
-          int index, Function(DocumentReference) updateFn) =>
+          int index, DocumentReference Function(DocumentReference) updateFn) =>
       playersJoined[index] = updateFn(playersJoined[index]);
 
   List<String> playersJoinedUID = [];
@@ -61,7 +61,7 @@ class _PlayerListWidgetState extends State<PlayerListWidget> {
       playersJoinedUID.removeAt(index);
   void insertAtIndexInPlayersJoinedUID(int index, String item) =>
       playersJoinedUID.insert(index, item);
-  void updatePlayersJoinedUIDAtIndex(int index, Function(String) updateFn) =>
+  void updatePlayersJoinedUIDAtIndex(int index, String Function(String) updateFn) =>
       playersJoinedUID[index] = updateFn(playersJoinedUID[index]);
 
   final formKey = GlobalKey<FormState>();
@@ -805,8 +805,8 @@ class _PlayerListWidgetState extends State<PlayerListWidget> {
 
     // ── Filled slot — player info ───────────────────────────────────────
     final bool isGuest = playerData['isGuest'] == true;
-    final String name = playerData['name'] ?? 'Player';
-    final String? photoUrl = playerData['photoUrl'];
+    final String name = (playerData['name'] as String?) ?? 'Player';
+    final String? photoUrl = playerData['photoUrl'] as String?;
 
     return Container(
       padding: EdgeInsets.symmetric(horizontal: AppSpacing.md, vertical: AppSpacing.sm + 2),
@@ -1241,7 +1241,7 @@ class _PlayerListWidgetState extends State<PlayerListWidget> {
                                                   <String>[];
 
                                               for (final slotData in _playerSlots.values) {
-                                                final uid = slotData['uid'];
+                                                final uid = slotData['uid'] as String?;
                                                 final isGuest = slotData['isGuest'] == true;
 
                                                 if (isGuest) {

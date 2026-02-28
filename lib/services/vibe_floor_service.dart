@@ -104,7 +104,7 @@ class VibeFloorService {
 
     // 0. Check if game requires vibe match
     final gameDoc = await _firestore.collection('games').doc(gameId).get();
-    final requireVibeMatch = gameDoc.data()?['require_vibe_match'] ?? true;
+    final bool requireVibeMatch = (gameDoc.data()?['require_vibe_match'] as bool?) ?? true;
 
     if (!requireVibeMatch) {
       AppLog.d('✅ VibeFloorService: Game does not require vibe match — auto-join');

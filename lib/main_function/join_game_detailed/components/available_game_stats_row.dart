@@ -34,7 +34,8 @@ class AvailableGameStatsRow extends StatelessWidget {
   }
 
   Widget _buildFixedGameLayout() {
-    final spotsLeft = game.maxPlayers - (game.joinedPlayers.length + game.guestPlayers.length);
+    final spotsLeft = game.maxPlayers -
+        (game.joinedPlayers.length + game.guestPlayers.length);
     final isFull = spotsLeft <= 0;
 
     return IntrinsicHeight(
@@ -101,7 +102,10 @@ class AvailableGameStatsRow extends StatelessWidget {
                         width: 36,
                         height: 36,
                         child: Center(
-                          child: AppIcon(icon: AppPhosphorIcons.groups, color: AppColors.textSecondary, size: AppIconSize.listItem),
+                          child: AppIcon(
+                              icon: AppPhosphorIcons.groups,
+                              color: AppColors.textSecondary,
+                              size: AppIconSize.listItem),
                         ),
                       )
                     : spotsLeft == 1
@@ -112,17 +116,24 @@ class AvailableGameStatsRow extends StatelessWidget {
                               gradient: const LinearGradient(
                                 colors: [AppColors.green, AppColors.greenLight],
                               ),
-                              borderRadius: BorderRadius.circular(AppBorderRadius.sm),
+                              borderRadius:
+                                  BorderRadius.circular(AppBorderRadius.sm),
                             ),
                             child: Center(
-                              child: AppIcon(icon: AppPhosphorIcons.addPlayer, color: AppColors.pure, size: AppIconSize.button),
+                              child: AppIcon(
+                                  icon: AppPhosphorIcons.addPlayer,
+                                  color: AppColors.pure,
+                                  size: AppIconSize.button),
                             ),
                           )
                         : SizedBox(
                             width: 36,
                             height: 36,
                             child: Center(
-                              child: AppIcon(icon: AppPhosphorIcons.addPlayer, color: AppColors.textSecondary, size: AppIconSize.listItem),
+                              child: AppIcon(
+                                  icon: AppPhosphorIcons.addPlayer,
+                                  color: AppColors.textSecondary,
+                                  size: AppIconSize.listItem),
                             ),
                           ),
                 SizedBox(width: AppSpacing.sm),
@@ -133,7 +144,9 @@ class AvailableGameStatsRow extends StatelessWidget {
                     Text(
                       isFull ? 'Full' : '$spotsLeft Spots',
                       style: AppTypography.titleSmall.copyWith(
-                        color: spotsLeft == 1 ? AppColors.green : AppColors.textPrimary,
+                        color: spotsLeft == 1
+                            ? AppColors.green
+                            : AppColors.textPrimary,
                         fontWeight: FontWeight.w600,
                       ),
                     ),

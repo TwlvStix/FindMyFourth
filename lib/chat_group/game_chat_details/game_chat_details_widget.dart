@@ -586,7 +586,7 @@ class _GameChatDetailsWidgetState extends State<GameChatDetailsWidget>
       context
           .read<ChatProvider>()
           .markChatNotificationsAsRead(chatId: widget.chatId, uid: currentUserId)
-          .catchError((error, stackTrace) {
+          .catchError((Object error, StackTrace stackTrace) {
         context
             .read<ChatProvider>()
             .logError('markChatNotificationsAsRead failed', error, stackTrace);

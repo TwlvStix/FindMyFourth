@@ -341,7 +341,7 @@ class VibeMatcher {
     // Decision layers: hard blocks mark not recommended, soft risks apply penalties.
     final hardBlockResult = evaluateHardBlocks(mine, theirs);
     final isRecommended = !hardBlockResult.isHardBlocked;
-    final cappedScore = null;
+    const double? cappedScore = null;
     final topDifferences = _topDifferences(
       differences,
       perCategory,

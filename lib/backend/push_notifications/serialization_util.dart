@@ -127,26 +127,26 @@ T? getParameter<T>(Map<String, dynamic> data, String paramName) {
     final param = data[paramName];
     switch (T) {
       case String:
-        return param;
+        return param as T;
       case double:
-        return param.toDouble();
+        return (param as num).toDouble() as T;
       case DateTime:
-        return DateTime.fromMillisecondsSinceEpoch(param) as T;
+        return DateTime.fromMillisecondsSinceEpoch(param as int) as T;
       case DateTimeRange:
-        return dateTimeRangeFromString(param) as T;
+        return dateTimeRangeFromString(param as String) as T;
       case LatLng:
-        return latLngFromString(param) as T;
+        return latLngFromString(param as String?) as T;
       case Color:
-        return fromCssColor(param) as T;
+        return fromCssColor(param as String) as T;
       case Place:
-        return placeFromString(param) as T;
+        return placeFromString(param as String) as T;
       case UploadedFile:
-        return uploadedFileFromString(param) as T;
+        return uploadedFileFromString(param as String) as T;
     }
     if (param is String) {
       return FirebaseFirestore.instance.doc(param) as T;
     }
-    return param;
+    return param as T;
   } catch (e) {
     AppLog.d('Error parsing parameter "$paramName": $e');
     return null;
@@ -162,7 +162,7 @@ Future<T?> getDocumentParameter<T>(
     return Future.value(null);
   }
   return FirebaseFirestore.instance
-      .doc(data[paramName])
+      .doc(data[paramName] as String)
       .get()
       .then((s) => recordBuilder(s));
 }

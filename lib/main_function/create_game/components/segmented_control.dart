@@ -60,7 +60,7 @@ class SegmentedControl extends StatelessWidget {
                 child: GestureDetector(
                   onTap: () {
                     HapticFeedback.lightImpact();
-                    onChanged(option['value']);
+                    onChanged(option['value'] as String);
                   },
                   child: AnimatedContainer(
                     duration: ReducedMotionService.adjust(MotionTokens.microInteraction),

@@ -477,7 +477,7 @@ class FriendFilters {
   bool matchesUser(dynamic user) {
     // Handicap filter
     if (handicapRange != null) {
-      final handicap = user.handicap ?? 0;
+      final int handicap = (user.handicap as int?) ?? 0;
       switch (handicapRange!) {
         case HandicapRange.low:
           if (handicap < 0 || handicap > 10) return false;
@@ -495,7 +495,7 @@ class FriendFilters {
     if (vibeRange != null) {
       final currentUser = currentUserDocument;
       final myVibes = currentUser?.vibeProfile ?? const <String, dynamic>{};
-      final theirVibes = user.vibeProfile ?? const <String, dynamic>{};
+      final theirVibes = (user.vibeProfile as Map<String, dynamic>?) ?? const <String, dynamic>{};
       if (currentUser == null || myVibes.isEmpty || theirVibes.isEmpty) {
         return false;
       }
@@ -520,7 +520,7 @@ class FriendFilters {
 
     // Home course filter
     if (homeCourse != null && homeCourse!.isNotEmpty) {
-      final userCourse = (user.homeCourse ?? '').toLowerCase();
+      final userCourse = ((user.homeCourse as String?) ?? '').toLowerCase();
       if (!userCourse.contains(homeCourse!.toLowerCase())) {
         return false;
       }
@@ -528,7 +528,7 @@ class FriendFilters {
 
     // Golf Canada number filter
     if (hasGolfCanadaNumber) {
-      final gcn = user.golfCanadaNumber ?? '';
+      final gcn = (user.golfCanadaNumber as String?) ?? '';
       if (gcn.isEmpty) return false;
     }
 

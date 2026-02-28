@@ -50,7 +50,7 @@ Future<bool> deleteAccount() async {
         .httpsCallable('deleteAccount', options: HttpsCallableOptions())
         .call({'idToken': token});
     final data =
-        response.data is Map ? Map<String, dynamic>.from(response.data) : {};
+        response.data is Map ? Map<String, dynamic>.from(response.data as Map) : {};
     AppLog.d('deleteAccount response: $data');
     return data['ok'] == true;
   } on FirebaseFunctionsException catch (e) {

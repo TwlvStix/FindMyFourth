@@ -3,7 +3,6 @@ import 'dart:ui';
 
 import 'package:provider/provider.dart';
 import 'package:flutter/material.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_native_splash/flutter_native_splash.dart';
@@ -15,6 +14,7 @@ import 'auth/firebase_auth/auth_util.dart';
 
 import 'backend/firebase/firebase_config.dart';
 import '/core/config/build_flags.dart';
+import '/core/bootstrap/app_bootstrap_coordinator.dart';
 import '/core/app_theme.dart';
 import '/core/design_tokens/colors.dart';
 import '/core/design_tokens/typography.dart';
@@ -201,7 +201,7 @@ class _MyAppState extends State<MyApp> {
 
   late AppStateNotifier _appStateNotifier;
   late GoRouter _router;
-  Timer? _splashFallbackTimer;
+  late AppBootstrapCoordinator _bootstrapCoordinator;
   bool _nativeSplashRemoved = false;
   bool _startupRevealTriggered = false;
   bool _startupOverlayVisible = true;
@@ -219,13 +219,9 @@ class _MyAppState extends State<MyApp> {
       _router.routerDelegate.currentConfiguration.matches
           .map((e) => getRoute(e))
           .toList();
-  late Stream<BaseAuthUser> userStream;
-  bool _initialAuthHandled = false;
 
   final authUserSub = authenticatedUserStream.listen((_) {});
   final privateDataSub = privateUserDataStream.listen((_) {});
-  late StreamSubscription<BaseAuthUser> _userStreamSub;
-  late StreamSubscription<dynamic> _jwtTokenSub;
 
   void _removeNativeSplashIfNeeded() {
     if (_nativeSplashRemoved) {
@@ -276,103 +272,33 @@ class _MyAppState extends State<MyApp> {
     debugPrint('🚀 APP: Initializing app state');
     _appStateNotifier = AppStateNotifier.instance;
     _router = createRouter(_appStateNotifier);
-    userStream = findMyFourthFirebaseUserStream();
 
-    debugPrint('👂 APP: Setting up auth stream listener');
-    _userStreamSub = userStream.listen((user) {
-      debugPrint('👤 APP: Auth stream emitted user: ${user.uid ?? "null"}');
-
-      debugPrint('📝 APP: Calling update() first');
-      _appStateNotifier.update(user);
-      debugPrint(
-          '📊 APP: update() completed, authStateReady=${_appStateNotifier.authStateReady}');
-
-      final newUid = user.loggedIn ? user.uid : null;
-      debugPrint('🔔 APP: Delegating notification lifecycle for uid=$newUid');
-      unawaited(_notificationOrchestrationService.onUserChanged(newUid));
-
-      if (!_initialAuthHandled) {
-        _initialAuthHandled = true;
-        _splashFallbackTimer?.cancel();
-        debugPrint('✅ APP: Removing native splash and forcing navigation');
-        _removeNativeSplashIfNeeded();
-
-        // Force GoRouter to refresh by navigating to the appropriate route
-        WidgetsBinding.instance.addPostFrameCallback((_) {
-          if (mounted) {
-            debugPrint(
-                '🚀 APP: Post-frame callback - navigating to ${_appStateNotifier.loggedIn ? "home" : "sign in"}');
-            _navigateFromStartup();
-          }
-        });
-      }
-    }, onError: (error, stackTrace) {
-      debugPrint('❌ APP: Auth stream error: $error');
-      if (!_initialAuthHandled) {
-        _initialAuthHandled = true;
-        _splashFallbackTimer?.cancel();
-        _appStateNotifier.update(
-          FindMyFourthFirebaseUser(FirebaseAuth.instance.currentUser),
-        );
-        debugPrint('✅ APP: Removing native splash (from error handler)');
-        _removeNativeSplashIfNeeded();
-
-        WidgetsBinding.instance.addPostFrameCallback((_) {
-          if (mounted) {
-            debugPrint(
-                '🚀 APP: Error handler - navigating to ${_appStateNotifier.loggedIn ? "home" : "sign in"}');
-            _navigateFromStartup();
-          }
-        });
-      }
-    });
-
-    _jwtTokenSub = jwtTokenStream.listen(
-      (_) {},
-      onError: (error, stackTrace) {
-        debugPrint('⚠️ APP: JWT token stream error: $error');
-        if (!kIsWeb) {
-          FirebaseCrashlytics.instance.recordError(
-            error,
-            stackTrace,
-            reason: 'JWT token stream listener error',
-            fatal: false,
-          );
+    _bootstrapCoordinator = AppBootstrapCoordinator(
+      appStateNotifier: _appStateNotifier,
+      notificationOrchestrationService: _notificationOrchestrationService,
+      userStream: findMyFourthFirebaseUserStream(),
+      jwtTokenStream: jwtTokenStream,
+      removeNativeSplash: _removeNativeSplashIfNeeded,
+      navigateFromStartup: () {
+        if (!mounted) {
+          return;
         }
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (mounted) {
+            _navigateFromStartup();
+          }
+        });
       },
     );
-
-    debugPrint('⏱️  APP: Starting 3-second fallback timer');
-    _splashFallbackTimer = Timer(const Duration(seconds: 3), () {
-      debugPrint(
-          '⏰ APP: Fallback timer triggered, _initialAuthHandled=$_initialAuthHandled, mounted=$mounted');
-      if (mounted && !_initialAuthHandled) {
-        _initialAuthHandled = true;
-        _appStateNotifier.update(
-          FindMyFourthFirebaseUser(FirebaseAuth.instance.currentUser),
-        );
-        debugPrint('✅ APP: Removing native splash (from fallback timer)');
-        _removeNativeSplashIfNeeded();
-
-        WidgetsBinding.instance.addPostFrameCallback((_) {
-          if (mounted) {
-            debugPrint(
-                '🚀 APP: Fallback timer - navigating to ${_appStateNotifier.loggedIn ? "home" : "sign in"}');
-            _navigateFromStartup();
-          }
-        });
-      }
-    });
+    _bootstrapCoordinator.start();
   }
 
   @override
   void dispose() {
     authUserSub.cancel();
     privateDataSub.cancel();
-    _userStreamSub.cancel();
-    _jwtTokenSub.cancel();
+    _bootstrapCoordinator.dispose();
     _notificationOrchestrationService.dispose();
-    _splashFallbackTimer?.cancel();
     _removeNativeSplashIfNeeded();
     super.dispose();
   }

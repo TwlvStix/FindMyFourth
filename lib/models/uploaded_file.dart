@@ -45,7 +45,7 @@ class UploadedFile {
     };
     return UploadedFile(
       name: data['name'] as String,
-      bytes: Uint8List.fromList(data['bytes'].cast<int>().toList()),
+      bytes: Uint8List.fromList((data['bytes'] as List).cast<int>().toList()),
       height: data['height'] as double?,
       width: data['width'] as double?,
       blurHash: data['blurHash'] as String?,
