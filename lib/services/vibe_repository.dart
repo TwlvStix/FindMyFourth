@@ -216,4 +216,13 @@ class VibeRepository {
   Future<void> setDefaults() async {
     await saveProfile(VibeProfile.defaults());
   }
+
+  /// Fetch vibe profile for any user by their ID
+  ///
+  /// Returns [VibeProfile.defaults()] if the user document doesn't exist
+  /// or has no vibe_profile field.
+  Future<VibeProfile> getVibeProfileForUser(String userId) async {
+    final doc = await _firestore.collection('users').doc(userId).get();
+    return profileFromSnapshot(doc);
+  }
 }

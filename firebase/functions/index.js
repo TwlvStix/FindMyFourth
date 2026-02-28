@@ -1904,6 +1904,14 @@ exports.trustQuietHoursCleanup = functions
 // Social Notifications — Friend Requests
 const { onFriendRequestReceived, onFriendRequestAccepted } = require('./notifications/trust/hooks');
 
+// Join Request Notifications — Vibe Floor
+const {
+  onJoinRequestReceived,
+  onJoinRequestApproved,
+  onJoinRequestDeclined,
+  onRoundFilledBeforeApproval,
+} = require('./join_request_notifications');
+
 /**
  * Sends a push notification when a friend request is sent.
  * Called by Flutter after successfully adding to friend_requests array.
@@ -1958,6 +1966,153 @@ exports.notifyFriendRequestAccepted = functions
       return { success: true, result: result.result };
     } catch (error) {
       console.error('notifyFriendRequestAccepted error:', error);
+      throw new functions.https.HttpsError('internal', error.message);
+    }
+  });
+
+// Join Request Notifications — Vibe Floor
+
+/**
+ * Sends a push notification to the game owner when a join request is submitted.
+ * Called by Flutter after successfully creating a join request.
+ */
+exports.notifyNewJoinRequest = functions
+  .region('us-west2')
+  .https.onCall(async (data, context) => {
+    if (!context.auth) {
+      throw new functions.https.HttpsError('unauthenticated', 'Must be authenticated');
+    }
+
+    const { gameId, ownerId, requesterName } = data;
+    if (!gameId || !ownerId || !requesterName) {
+      throw new functions.https.HttpsError('invalid-argument', 'Missing required fields: gameId, ownerId, requesterName');
+    }
+
+    try {
+      const result = await onJoinRequestReceived(
+        ownerId,
+        context.auth.uid,
+        requesterName,
+        gameId,
+      );
+      return { success: true, result: result.result };
+    } catch (error) {
+      console.error('notifyNewJoinRequest error:', error);
+      throw new functions.https.HttpsError('internal', error.message);
+    }
+  });
+
+/**
+ * Sends a push notification to the player when their join request is approved.
+ * Called by Flutter after successfully approving a join request.
+ */
+exports.notifyJoinRequestApproved = functions
+  .region('us-west2')
+  .https.onCall(async (data, context) => {
+    if (!context.auth) {
+      throw new functions.https.HttpsError('unauthenticated', 'Must be authenticated');
+    }
+
+    const { gameId, playerId } = data;
+    if (!gameId || !playerId) {
+      throw new functions.https.HttpsError('invalid-argument', 'Missing required fields: gameId, playerId');
+    }
+
+    try {
+      // Fetch owner name and game name for the notification
+      const gameDoc = await firestore.collection('games').doc(gameId).get();
+      if (!gameDoc.exists) {
+        throw new Error('Game not found');
+      }
+      const gameData = gameDoc.data() || {};
+      const gameName = gameData.name_game || 'a round';
+
+      const ownerRef = gameData.userRef;
+      let ownerName = 'The host';
+      if (ownerRef) {
+        const ownerDoc = await firestore.collection('users').doc(ownerRef.id).get();
+        if (ownerDoc.exists) {
+          const ownerData = ownerDoc.data() || {};
+          ownerName = ownerData.first_name || ownerData.display_name || 'The host';
+        }
+      }
+
+      const result = await onJoinRequestApproved(
+        playerId,
+        context.auth.uid,
+        ownerName,
+        gameId,
+        gameName,
+      );
+      return { success: true, result: result.result };
+    } catch (error) {
+      console.error('notifyJoinRequestApproved error:', error);
+      throw new functions.https.HttpsError('internal', error.message);
+    }
+  });
+
+/**
+ * Sends a push notification to the player when their join request is declined.
+ * Called by Flutter after successfully declining a join request.
+ */
+exports.notifyJoinRequestDeclined = functions
+  .region('us-west2')
+  .https.onCall(async (data, context) => {
+    if (!context.auth) {
+      throw new functions.https.HttpsError('unauthenticated', 'Must be authenticated');
+    }
+
+    const { gameId, playerId } = data;
+    if (!gameId || !playerId) {
+      throw new functions.https.HttpsError('invalid-argument', 'Missing required fields: gameId, playerId');
+    }
+
+    try {
+      // Fetch game name for the notification
+      const gameDoc = await firestore.collection('games').doc(gameId).get();
+      const gameName = gameDoc.exists ? (gameDoc.data()?.name_game || 'a round') : 'a round';
+
+      const result = await onJoinRequestDeclined(
+        playerId,
+        gameId,
+        gameName,
+      );
+      return { success: true, result: result.result };
+    } catch (error) {
+      console.error('notifyJoinRequestDeclined error:', error);
+      throw new functions.https.HttpsError('internal', error.message);
+    }
+  });
+
+/**
+ * Sends a push notification to the player when the round fills before their request was approved.
+ * Called by Flutter when approval fails due to the round being full.
+ */
+exports.notifyRoundFilledBeforeApproval = functions
+  .region('us-west2')
+  .https.onCall(async (data, context) => {
+    if (!context.auth) {
+      throw new functions.https.HttpsError('unauthenticated', 'Must be authenticated');
+    }
+
+    const { gameId, playerId } = data;
+    if (!gameId || !playerId) {
+      throw new functions.https.HttpsError('invalid-argument', 'Missing required fields: gameId, playerId');
+    }
+
+    try {
+      // Fetch game name for the notification
+      const gameDoc = await firestore.collection('games').doc(gameId).get();
+      const gameName = gameDoc.exists ? (gameDoc.data()?.name_game || 'This round') : 'This round';
+
+      const result = await onRoundFilledBeforeApproval(
+        playerId,
+        gameId,
+        gameName,
+      );
+      return { success: true, result: result.result };
+    } catch (error) {
+      console.error('notifyRoundFilledBeforeApproval error:', error);
       throw new functions.https.HttpsError('internal', error.message);
     }
   });

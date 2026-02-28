@@ -1,14 +1,21 @@
 import '/backend/backend.dart';
 import '/backend/schema/trust_profile.dart';
+import '/core/content/app_copy.dart';
+import '/core/exceptions/app_exceptions.dart';
+import '/core/utils/app_log.dart';
 import '/core/widgets/fairway_background.dart';
 import '/core/widgets/trust/luxury_player_card.dart';
+import '/core/widgets/collapsed_join_request_row.dart';
+import '/core/widgets/vibe_join_request_card.dart';
 import '/core/widgets/app_premium_dialog.dart';
 import '/core/motion/motion_helpers.dart';
 import '/core/motion/motion_tokens.dart';
 import '/core/motion/reduced_motion.dart';
+import '/models/join_request.dart';
 import '/utils/app_util.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
+import '/providers/join_request_provider.dart';
 import '/providers/provider_extensions.dart';
 import '/providers/game_provider.dart';
 import '/providers/profile_provider.dart';
@@ -85,6 +92,15 @@ class _GameJoinedDetailedWidgetState extends State<GameJoinedDetailedWidget>
   // Animation state - triggers once when content loads
   bool _hasAnimated = false;
 
+  // Owner-facing: pending join requests for this game
+  List<JoinRequest> _pendingRequests = [];
+  bool _isLoadingPendingRequests = false;
+  String? _lastLoadedPendingGameId;
+  // Cache owner's vibe profile for all request cards
+  VibeProfile? _ownerVibeProfile;
+  // Track which request is currently expanded (accordion pattern)
+  String? _expandedRequestId;
+
   @override
   void initState() {
     super.initState();
@@ -94,6 +110,126 @@ class _GameJoinedDetailedWidgetState extends State<GameJoinedDetailedWidget>
   @override
   void dispose() {
     super.dispose();
+  }
+
+  // ═══════════════════════════════════════════════════════════════════════════
+  // PENDING REQUESTS (OWNER VIEW)
+  // ═══════════════════════════════════════════════════════════════════════════
+
+  void _ensurePendingRequestsLoaded(String gameId, String ownerId) {
+    // Skip if already loaded for this game
+    if (_lastLoadedPendingGameId == gameId || _isLoadingPendingRequests) {
+      return;
+    }
+    _lastLoadedPendingGameId = gameId;
+    _isLoadingPendingRequests = true;
+
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      if (!mounted) return;
+
+      try {
+        // Load pending requests and owner's vibe profile in parallel
+        final results = await Future.wait([
+          context.read<JoinRequestProvider>().getPendingRequestsForGame(gameId, ownerId),
+          _vibeRepository.getVibeProfileForUser(ownerId),
+        ]);
+
+        if (mounted) {
+          final requests = results[0] as List<JoinRequest>;
+          // Sort by createdAt ascending (oldest first)
+          requests.sort((a, b) => a.createdAt.compareTo(b.createdAt));
+
+          setState(() {
+            _pendingRequests = requests;
+            _ownerVibeProfile = results[1] as VibeProfile;
+            _isLoadingPendingRequests = false;
+            // Auto-expand first request
+            if (_pendingRequests.isNotEmpty) {
+              _expandedRequestId = _pendingRequests.first.id;
+            }
+          });
+          AppLog.d('📖 Loaded ${_pendingRequests.length} pending join requests');
+        }
+      } catch (e) {
+        AppLog.d('❌ Error loading pending join requests: $e');
+        // Silently fail - owner can still view the game
+        if (mounted) {
+          setState(() => _isLoadingPendingRequests = false);
+        }
+      }
+    });
+  }
+
+  /// Handle approve action for a join request
+  Future<void> _handleApproveRequest(JoinRequest request, String? chatId) async {
+    try {
+      await context.read<JoinRequestProvider>().approveJoinRequest(
+            gameId: request.gameId,
+            requestId: request.id,
+            requesterId: request.requesterId,
+            chatId: chatId,
+          );
+
+      // Refresh game data to show new player
+      if (mounted) {
+        context.gameProvider.invalidateAvailableGamesCache();
+      }
+    } on GameOperationException catch (e) {
+      if (e.code == 'game-full' && mounted) {
+        showSnackbar(context, AppVibeFloorCopy.roundFullError);
+        // Notify player the round filled
+        context.read<JoinRequestProvider>().notifyRoundFilledBeforeApproval(
+              request.gameId,
+              request.requesterId,
+            );
+      }
+    } catch (e) {
+      if (mounted) {
+        showSnackbar(context, 'Failed to approve request. Please try again.');
+      }
+    }
+  }
+
+  /// Handle decline action for a join request
+  Future<void> _handleDeclineRequest(JoinRequest request) async {
+    try {
+      await context.read<JoinRequestProvider>().declineJoinRequest(
+            gameId: request.gameId,
+            requestId: request.id,
+            requesterId: request.requesterId,
+          );
+    } catch (e) {
+      if (mounted) {
+        showSnackbar(context, 'Failed to decline request. Please try again.');
+      }
+    }
+  }
+
+  void _removeRequestFromList(String requestId) {
+    if (!mounted) return;
+
+    setState(() {
+      _pendingRequests.removeWhere((r) => r.id == requestId);
+
+      // Auto-expand next request if the removed one was expanded
+      if (_expandedRequestId == requestId) {
+        if (_pendingRequests.isNotEmpty) {
+          // Requests are already sorted by createdAt, expand first remaining
+          _expandedRequestId = _pendingRequests.first.id;
+        } else {
+          _expandedRequestId = null;
+        }
+      }
+    });
+  }
+
+  /// Switch to expand a different request (accordion behavior)
+  void _expandRequest(String requestId) {
+    if (_expandedRequestId != requestId) {
+      setState(() {
+        _expandedRequestId = requestId;
+      });
+    }
   }
 
   void _ensureGroupVibeMatch(
@@ -346,6 +482,15 @@ class _GameJoinedDetailedWidgetState extends State<GameJoinedDetailedWidget>
         final gameJoinedDetailedGamesRecord = Game.fromRecord(gamesRecord);
         final isCancelled = gameJoinedDetailedGamesRecord.isCancelledStatus;
         _ensureGroupVibeMatch(gameJoinedDetailedGamesRecord, currentUserRef);
+
+        // Load pending join requests if user is the game owner
+        if (gameJoinedDetailedGamesRecord.userRef == currentUserRef &&
+            currentUserRef != null) {
+          _ensurePendingRequestsLoaded(
+            gameJoinedDetailedGamesRecord.reference.id,
+            currentUserRef.id,
+          );
+        }
 
         // Trigger entrance animations once when content first loads
         if (!_hasAnimated) {
@@ -649,6 +794,15 @@ class _GameJoinedDetailedWidgetState extends State<GameJoinedDetailedWidget>
                           // Game Details Section
                           GameDetailsSection(game: gameJoinedDetailedGamesRecord),
                           SizedBox(height: AppSpacing.lg),
+
+                          // Pending requests section (owner only)
+                          Builder(builder: (context) {
+                            final isOwner = gameJoinedDetailedGamesRecord.userRef == currentUserRef;
+                            if (isOwner) {
+                              return _buildPendingRequestsSection(gameJoinedDetailedGamesRecord);
+                            }
+                            return const SizedBox.shrink();
+                          }),
 
                           // Players Section Header with gradient accent
                           PremiumSectionHeader(
@@ -1823,5 +1977,198 @@ class _GameJoinedDetailedWidgetState extends State<GameJoinedDetailedWidget>
         );
       }
     }
+  }
+
+  // ═══════════════════════════════════════════════════════════════════════════
+  // PENDING REQUESTS SECTION (OWNER VIEW)
+  // ═══════════════════════════════════════════════════════════════════════════
+
+  Widget _buildPendingRequestsSection(Game game) {
+    if (_pendingRequests.isEmpty || _ownerVibeProfile == null) {
+      return const SizedBox.shrink();
+    }
+
+    // Ensure _expandedRequestId is valid (requests already sorted by createdAt)
+    final hasValidExpanded =
+        _pendingRequests.any((r) => r.id == _expandedRequestId);
+    if (!hasValidExpanded && _pendingRequests.isNotEmpty) {
+      _expandedRequestId = _pendingRequests.first.id;
+    }
+
+    // Collect requester IDs for batch fetching
+    final requesterIds = _pendingRequests.map((r) => r.requesterId).toList();
+
+    return Padding(
+      padding: EdgeInsets.symmetric(horizontal: AppSpacing.md),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Section header with styled count
+          PremiumSectionHeader(
+            title: 'Pending requests',
+            trailing: Text.rich(
+              TextSpan(
+                children: [
+                  TextSpan(
+                    text: '(',
+                    style: AppTypography.titleMedium.copyWith(
+                      color: AppColors.textPrimary,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  TextSpan(
+                    text: '${_pendingRequests.length}',
+                    style: AppTypography.titleMedium.copyWith(
+                      color: AppColors.gold,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  TextSpan(
+                    text: ')',
+                    style: AppTypography.titleMedium.copyWith(
+                      color: AppColors.textPrimary,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          SizedBox(height: AppSpacing.sm),
+
+          // Fetch profiles and render accordion
+          FutureBuilder<Map<String, UsersRecord>>(
+            future: context.read<ProfileProvider>().batchGetProfiles(requesterIds),
+            builder: (context, profilesSnapshot) {
+              if (!profilesSnapshot.hasData) {
+                return Padding(
+                  padding: EdgeInsets.symmetric(vertical: AppSpacing.md),
+                  child: Center(
+                    child: SizedBox(
+                      width: 24,
+                      height: 24,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        color: AppColors.green,
+                      ),
+                    ),
+                  ),
+                );
+              }
+
+              final profileMap = profilesSnapshot.data!;
+
+              return Column(
+                children: _pendingRequests.map((request) {
+                  final requesterProfile = profileMap[request.requesterId];
+                  if (requesterProfile == null) {
+                    return const SizedBox.shrink();
+                  }
+
+                  final isExpanded = request.id == _expandedRequestId;
+
+                  // Build expanded card or collapsed row with animation
+                  return AnimatedSize(
+                    duration: ReducedMotionService.adjust(
+                      MotionTokens.contentReveal,
+                    ),
+                    curve: MotionTokens.curveEnter,
+                    alignment: Alignment.topCenter,
+                    child: isExpanded
+                        ? _buildExpandedRequestCard(
+                            request,
+                            requesterProfile,
+                            game,
+                          )
+                        : _buildCollapsedRequestRow(request, requesterProfile),
+                  );
+                }).toList(),
+              );
+            },
+          ),
+          SizedBox(height: AppSpacing.md),
+        ],
+      ),
+    );
+  }
+
+  /// Builds the fully expanded join request card with vibe info and buttons
+  Widget _buildExpandedRequestCard(
+    JoinRequest request,
+    UsersRecord requesterProfile,
+    Game game,
+  ) {
+    return FutureBuilder<VibeProfile>(
+      future: _vibeRepository.getVibeProfileForUser(request.requesterId),
+      builder: (context, vibeSnapshot) {
+        if (!vibeSnapshot.hasData) {
+          // Loading placeholder for expanded card
+          return Padding(
+            padding: EdgeInsets.only(bottom: AppSpacing.sm),
+            child: Container(
+              height: 120,
+              decoration: BoxDecoration(
+                color: AppColors.navy,
+                borderRadius: BorderRadius.circular(AppBorderRadius.card),
+                border: Border.all(color: AppColors.navyLight),
+              ),
+              child: Center(
+                child: SizedBox(
+                  width: 20,
+                  height: 20,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2,
+                    color: AppColors.textMuted,
+                  ),
+                ),
+              ),
+            ),
+          );
+        }
+
+        final requesterVibeProfile = vibeSnapshot.data!;
+        // Calculate match from owner's perspective
+        final matchResult = VibeMatcher.score(
+          _ownerVibeProfile!,
+          requesterVibeProfile,
+        );
+
+        return AnimatedOpacity(
+          duration: MotionTokens.contentReveal,
+          opacity: 1.0,
+          child: Padding(
+            padding: EdgeInsets.only(bottom: AppSpacing.sm),
+            child: VibeJoinRequestCard(
+              request: request,
+              requesterProfile: requesterProfile,
+              ownerVibeProfile: _ownerVibeProfile!,
+              requesterVibeProfile: requesterVibeProfile,
+              matchResult: matchResult,
+              onApprove: () => _handleApproveRequest(
+                request,
+                game.chatRef?.id,
+              ),
+              onDecline: () => _handleDeclineRequest(request),
+              onRemoved: () => _removeRequestFromList(request.id),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  /// Builds a collapsed row for a join request (accordion pattern)
+  Widget _buildCollapsedRequestRow(
+    JoinRequest request,
+    UsersRecord requesterProfile,
+  ) {
+    return AnimatedOpacity(
+      duration: MotionTokens.contentReveal,
+      opacity: 1.0,
+      child: CollapsedJoinRequestRow(
+        requesterProfile: requesterProfile,
+        onTap: () => _expandRequest(request.id),
+      ),
+    );
   }
 }

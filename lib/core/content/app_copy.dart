@@ -311,6 +311,18 @@ class AppNotifications {
   static const String newRequest = 'You have a new join request.';
   static const String requestDeclined = 'Your request was declined.';
 
+  // Join request notifications (vibe floor)
+  static const String joinRequestReceivedPrefix = 'Requesting to join';
+  static const String joinRequestApprovedTitle = 'You\'re in';
+  static String joinRequestApprovedBody(String ownerName, String gameName) =>
+      '$ownerName approved your request for $gameName';
+  static const String joinRequestDeclinedBody =
+      'Your request wasn\'t approved this time';
+  static const String roundFilledBeforeApproval =
+      'This round filled before your request was reviewed';
+  static const String joinRequestExpiredBody =
+      'This round has passed. Your request was not reviewed in time.';
+
   // Social notifications
   static const String newFriendRequest = 'You have a new friend request.';
   static const String friendRequestAccepted =
@@ -513,4 +525,77 @@ class AppHelperText {
   static const String messageHint = 'Type a message';
   static const String notesHint = 'Add any additional details for players';
   static const String bioHint = 'Tell others about yourself';
+}
+
+// =============================================================================
+// VIBE FLOOR
+// =============================================================================
+
+/// Copy for vibe floor bottom sheet and join button states
+class AppVibeFloorCopy {
+  AppVibeFloorCopy._();
+
+  // Bottom sheet - mismatch state
+  static const String mismatchTitle = 'Approval needed';
+  static String mismatchBody(String ownerName) =>
+      'This round\'s play style differs from yours in a few areas. $ownerName will review your request.';
+  static const String requestToJoinButton = 'Request to join';
+  static const String notNowButton = 'Not now';
+
+  // Bottom sheet - confirmation state
+  static const String requestSentTitle = 'Request sent';
+  static String requestSentBody(String ownerName) =>
+      '$ownerName has been notified. You\'ll receive a notification if approved.';
+  static const String doneButton = 'Done';
+
+  // Join button states
+  static const String joinRoundButton = 'Join round';
+  static const String requestPendingButton = 'Request pending';
+  static const String requestDeclinedButton = 'Request declined';
+  static const String requestDeclinedSubtitle =
+      'The owner is looking for a different play style this round.';
+
+  // Game creation toggle
+  static const String requireVibeMatchLabel = 'Require vibe match';
+  static const String requireVibeMatchDescription =
+      'Players with a different play style will need your approval';
+
+  // Request card states (owner view)
+  static const String pendingRequestsHeader = 'Pending requests';
+  static const String howStylesCompare = 'How your styles compare';
+  static String approvedNotification(String playerName) =>
+      'Approved — $playerName has been notified';
+  static const String declinedStatus = 'Declined';
+
+  // Error states
+  static const String roundFullError = 'This round is now full';
+
+  // Request expired state
+  static const String requestExpiredButton = 'Round has passed';
+}
+
+// =============================================================================
+// VIBE EDIT
+// =============================================================================
+
+/// Copy for vibe profile edit cooldown
+class AppVibeEditCopy {
+  AppVibeEditCopy._();
+
+  // Cooldown banner (shown in EditVibesWidget when in cooldown)
+  static String cooldownBannerMessage(String date) =>
+      'Your vibe profile can be updated on $date.';
+  static const String cooldownBannerSubtitle =
+      'Vibe profiles can be updated every 30 days to keep matchmaking accurate.';
+
+  // Cooldown button text
+  static String cooldownButtonText(String date) => 'Edit available $date';
+
+  // Confirmation dialog (shown before confirming vibe changes)
+  static const String confirmDialogTitle = 'Lock in your vibes?';
+  static const String confirmDialogBody =
+      'Once confirmed, your vibe preferences will be locked for 30 days. '
+      'Make sure your settings reflect how you really want to play.';
+  static const String confirmDialogAction = 'Confirm vibes';
+  static const String confirmDialogCancel = 'Review changes';
 }

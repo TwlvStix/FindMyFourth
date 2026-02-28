@@ -106,6 +106,9 @@ class AppPhosphorIcons {
   /// Tee time — clock
   static const teeTime = PhosphorIconsRegular.clock;
 
+  /// Clock — generic time indicator (cooldowns, timestamps)
+  static const clock = PhosphorIconsRegular.clock;
+
   /// Course — location pin
   static const course = PhosphorIconsRegular.mapPin;
 

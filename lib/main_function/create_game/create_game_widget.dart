@@ -98,6 +98,9 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
   // Player Eligibility (who can join based on gender)
   String _playerEligibility = 'open_to_all'; // 'open_to_all' | 'women_only' | 'men_only'
 
+  // Vibe Floor - require approval for players below vibe match threshold
+  bool _requireVibeMatch = true;
+
   // Games multi-select (max 3)
   final Set<String> _selectedGames = {};
   final TextEditingController _otherGameController = TextEditingController();
@@ -287,6 +290,9 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
         if (draft['playerEligibility'] != null) {
           _playerEligibility = draft['playerEligibility'] as String;
         }
+        if (draft['requireVibeMatch'] != null) {
+          _requireVibeMatch = draft['requireVibeMatch'] as bool;
+        }
 
         _hasDraft = true;
       }
@@ -319,6 +325,7 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
         'flexibleTimeOfDay': _flexibleTimesOfDay.join(','), // Store as comma-separated
         'isJustForFun': _isJustForFun,
         'playerEligibility': _playerEligibility,
+        'requireVibeMatch': _requireVibeMatch,
       };
 
       final prefs = await SharedPreferences.getInstance();
@@ -549,6 +556,7 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
           'is_fun_game': _isJustForFun,
           'schedule_type': _scheduleType,
           'player_eligibility': _playerEligibility,
+          'require_vibe_match': _requireVibeMatch,
           if (_scheduleType == 'flexible') ...{
             'flexible_week': _flexibleWeek,
             'flexible_days': _selectedDays.toList(),
@@ -1636,8 +1644,30 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
                                             );
                                           },
                                         ),
+                                        // Vibe Floor Toggle
                                         _buildAnimatedSection(
                                           sectionIndex: 4,
+                                          child: Padding(
+                                            padding: EdgeInsets.only(
+                                              top: AppSpacing.md,
+                                            ),
+                                            child: ToggleSwitch(
+                                              label: 'Require vibe match',
+                                              description:
+                                                  'Players with a different play style will need your approval',
+                                              value: _requireVibeMatch,
+                                              onChanged: (val) {
+                                                if (mounted) {
+                                                  setState(
+                                                      () => _requireVibeMatch = val);
+                                                  _saveDraft();
+                                                }
+                                              },
+                                            ),
+                                          ),
+                                        ),
+                                        _buildAnimatedSection(
+                                          sectionIndex: 5,
                                           child: SectionHeader(
                                             phosphorIcon: AppPhosphorIcons.course,
                                             title: 'Course',

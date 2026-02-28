@@ -5,7 +5,9 @@ import '/backend/api_requests/game_service.dart';
 import '/backend/backend.dart';
 import '/core/request_manager.dart';
 import '/core/utils/app_log.dart';
+import '/models/join_game_result.dart';
 import '/services/chat_service.dart';
+import '/services/vibe_floor_service.dart';
 
 /// GameProvider manages global game state and provides cached access to game data
 ///
@@ -19,9 +21,14 @@ import '/services/chat_service.dart';
 /// - Access via Provider.of<GameProvider>(context)
 /// - Or use Consumer<GameProvider> for reactive updates
 class GameProvider extends ChangeNotifier {
-  GameProvider({GameService? service}) : _service = service ?? GameService();
+  GameProvider({
+    GameService? service,
+    VibeFloorService? vibeFloorService,
+  })  : _service = service ?? GameService(),
+        _vibeFloorService = vibeFloorService ?? VibeFloorService();
 
   final GameService _service;
+  final VibeFloorService _vibeFloorService;
 
   // ========================================
   // STATE FIELDS
@@ -227,11 +234,53 @@ class GameProvider extends ChangeNotifier {
   // GAME MUTATIONS (WITH CACHE INVALIDATION)
   // ========================================
 
-  /// Join a game
+  /// Join a game with vibe floor eligibility check
   ///
-  /// Invalidates game cache and refreshes data
-  Future<void> joinGame(String gameId, String userId, {String? userGender}) async {
+  /// When [ownerId] is provided, performs a vibe floor check before joining:
+  /// - Friends always auto-join
+  /// - Players above the vibe floor auto-join
+  /// - Players below the floor receive [JoinGameResult.requiresApproval]
+  ///
+  /// Returns [JoinGameEligibilityData] indicating the outcome:
+  /// - [JoinGameResult.joined]: Successfully joined the game
+  /// - [JoinGameResult.requiresApproval]: Player needs owner approval (includes profile data)
+  /// - [JoinGameResult.alreadyRequested]: Player already has a pending request
+  ///
+  /// When [ownerId] is null, skips vibe floor check (legacy behavior).
+  Future<JoinGameEligibilityData> joinGame(
+    String gameId,
+    String userId, {
+    String? userGender,
+    String? ownerId,
+  }) async {
     try {
+      // Perform vibe floor check if ownerId is provided
+      if (ownerId != null) {
+        final eligibility = await _vibeFloorService.evaluateJoinEligibility(
+          gameId: gameId,
+          playerId: userId,
+          ownerId: ownerId,
+        );
+
+        if (eligibility.needsApproval) {
+          AppLog.d('🚦 GameProvider.joinGame: Player requires approval (score: ${eligibility.vibeScore}, floor: ${eligibility.vibeFloor})');
+          return JoinGameEligibilityData(
+            result: JoinGameResult.requiresApproval,
+            matchResult: eligibility.matchResult,
+            ownerProfile: eligibility.ownerProfile,
+            playerProfile: eligibility.playerProfile,
+            vibeScore: eligibility.vibeScore,
+            vibeFloor: eligibility.vibeFloor,
+          );
+        }
+
+        if (eligibility.hasExistingRequest) {
+          AppLog.d('🚦 GameProvider.joinGame: Player already has pending request');
+          return JoinGameEligibilityData.alreadyRequested();
+        }
+      }
+
+      // Proceed with join
       await _service.joinGame(gameId, userId, userGender: userGender);
       await _ensureChatMembership(gameId, userId);
       // Invalidate game cache to force refresh
@@ -240,6 +289,7 @@ class GameProvider extends ChangeNotifier {
       invalidateUserGamesCache(userId);
       // Refresh the game data
       await getGame(gameId);
+      return JoinGameEligibilityData.joined();
     } catch (e) {
       AppLog.d('❌ GameProvider.joinGame error: $e');
       rethrow;

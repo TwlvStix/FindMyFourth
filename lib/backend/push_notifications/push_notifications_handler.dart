@@ -92,6 +92,25 @@ class _PushNotificationsHandlerState extends State<PushNotificationsHandler> {
         );
       }
     }
+    // Join request notifications (vibe floor)
+    if (type == 'join_request_new' ||
+        type == 'join_request_approved' ||
+        type == 'join_request_declined') {
+      final gameId = data['game_id'] ?? data['gameId'];
+      if (gameId is String && gameId.isNotEmpty) {
+        return _PushRoute(
+          pageName: 'JoinGameDetailed',
+          parameterData: {'gameRef': 'games/$gameId'},
+        );
+      }
+    }
+    if (type == 'join_request_round_filled') {
+      // Round is full, navigate to games list instead
+      return const _PushRoute(
+        pageName: 'GamesList',
+        parameterData: {},
+      );
+    }
     return null;
   }
 

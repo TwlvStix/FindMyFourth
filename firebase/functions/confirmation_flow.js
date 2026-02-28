@@ -38,6 +38,7 @@ const admin = require("firebase-admin");
 const trustProfile = require("./trust_profile");
 const { routeNotification } = require('./notifications/trust/router');
 const { onGameConfirmed, onHostCheckinCompleted } = require('./notifications/trust/hooks');
+const { onJoinRequestExpired } = require('./join_request_notifications');
 const { randomUUID } = require('crypto');
 const { CloudTasksClient } = require('@google-cloud/tasks');
 
@@ -527,6 +528,9 @@ async function _onGameStatusToPlayedHandler(change, context, db) {
     } catch (err) {
       console.error(`onGameStatusToPlayed: failed to schedule window close for game ${gameId}:`, err);
     }
+
+    // ── 5. Expire any pending join requests ─────────────────────────────
+    await _expirePendingJoinRequests(db, gameId, gameRef, courseName);
 
     console.log(
       `onGameStatusToPlayed: created round_jobs/${jobRef.id} and ` +
@@ -1678,6 +1682,81 @@ async function _closeConfirmationWindow(db, jobRef, job, nowTs) {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
+// JOIN REQUEST EXPIRATION
+// ─────────────────────────────────────────────────────────────────────────────
+
+/**
+ * Expires all pending join requests for a game when it transitions to 'played'.
+ * Called from _onGameStatusToPlayedHandler after creating round_jobs/round_records.
+ *
+ * Queries games/{gameId}/join_requests where status == 'pending',
+ * batch updates all to status = 'expired' with expired_at timestamp,
+ * and notifies each affected player.
+ *
+ * @param {FirebaseFirestore.Firestore} db
+ * @param {string} gameId
+ * @param {FirebaseFirestore.DocumentReference} gameRef
+ * @param {string} gameName - Name of the game for notifications
+ */
+async function _expirePendingJoinRequests(db, gameId, gameRef, gameName) {
+  try {
+    const pendingRequestsSnap = await db
+      .collection('games')
+      .doc(gameId)
+      .collection('join_requests')
+      .where('status', '==', 'pending')
+      .get();
+
+    if (pendingRequestsSnap.empty) {
+      return; // No pending requests to expire
+    }
+
+    const nowTs = admin.firestore.Timestamp.now();
+    const batch = db.batch();
+    const affectedPlayers = [];
+
+    for (const doc of pendingRequestsSnap.docs) {
+      const data = doc.data();
+      batch.update(doc.ref, {
+        status: 'expired',
+        expired_at: nowTs,
+      });
+
+      // Collect player info for notifications
+      const playerRef = data.player_ref;
+      if (playerRef && typeof playerRef.id === 'string') {
+        affectedPlayers.push({
+          userId: playerRef.id,
+          requestId: doc.id,
+        });
+      }
+    }
+
+    await batch.commit();
+
+    // Send notifications to affected players (non-blocking)
+    for (const player of affectedPlayers) {
+      try {
+        await onJoinRequestExpired(player.userId, gameId, gameName, db);
+      } catch (err) {
+        console.warn(
+          `_expirePendingJoinRequests: failed to notify player ${player.userId}:`, err
+        );
+      }
+    }
+
+    console.log(
+      `_expirePendingJoinRequests: expired ${affectedPlayers.length} pending request(s) for game ${gameId}`
+    );
+  } catch (err) {
+    // Non-fatal: log and continue
+    console.error(
+      `_expirePendingJoinRequests: error for game ${gameId}:`, err
+    );
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
 // VIBE SCORING (server-side, join-time only)
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -1895,4 +1974,7 @@ module.exports = {
   _resolvePendingNoShow,
   _finalizeRoundVerification,
   _evaluateFinalVerificationStatus,
+
+  // Vibe floor join request helpers exported for testing
+  _expirePendingJoinRequests,
 };

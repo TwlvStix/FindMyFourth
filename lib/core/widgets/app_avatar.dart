@@ -56,20 +56,22 @@ class AppAvatar extends StatelessWidget {
     final borderRadius = _getBorderRadius();
     final bgColor = backgroundColor ?? AppColors.navy;
 
+    final hasValidImage = imageUrl != null && imageUrl!.isNotEmpty;
+
     return Container(
       width: dimension,
       height: dimension,
       decoration: BoxDecoration(
-        color: imageUrl != null ? null : bgColor,
+        color: hasValidImage ? null : bgColor,
         borderRadius: borderRadius,
-        image: imageUrl != null
+        image: hasValidImage
             ? DecorationImage(
                 image: NetworkImage(imageUrl!),
                 fit: BoxFit.cover,
               )
             : null,
       ),
-      child: imageUrl == null && initials != null
+      child: !hasValidImage && initials != null
           ? Center(
               child: Text(
                 initials!,

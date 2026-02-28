@@ -1,5 +1,6 @@
 import '/backend/backend.dart';
 import '/backend/schema/trust_profile.dart';
+import '/core/content/app_copy.dart';
 import '/core/exceptions/app_exceptions.dart';
 import '/core/motion/motion_helpers.dart';
 import '/core/motion/motion_tokens.dart';
@@ -7,6 +8,7 @@ import '/core/motion/reduced_motion.dart';
 import '/core/widgets/app_premium_dialog.dart';
 import '/core/widgets/fairway_background.dart';
 import '/core/widgets/trust/luxury_player_card.dart';
+import '/core/widgets/vibe_floor_bottom_sheet.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import '/main_function/game_joined_detailed/components/player_match_chip.dart';
 import '/main_function/game_joined_detailed/components/group_vibe_summary.dart';
@@ -29,6 +31,8 @@ import '/core/widgets/app_icon.dart';
 import '/providers/trust_provider.dart';
 import '/providers/user_provider.dart';
 import '/models/game.dart';
+import '/models/join_game_result.dart';
+import '/models/join_request.dart';
 import '/models/player_eligibility.dart';
 import '/models/vibe_profile.dart';
 import '/services/game_eligibility_service.dart';
@@ -36,6 +40,7 @@ import '/vibe/vibe_recommendation_rank.dart';
 import '/providers/provider_extensions.dart';
 import '/providers/game_provider.dart';
 import '/providers/profile_provider.dart';
+import '/providers/join_request_provider.dart';
 import '/main_function/game_joined_detailed/game_joined_detailed_widget.dart';
 import '/services/vibe_group_matcher.dart';
 import '/services/vibe_repository.dart';
@@ -79,6 +84,11 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget>
   // Animation state - triggers once when content loads
   bool _hasAnimated = false;
 
+  // Join request state - tracks existing pending/denied requests
+  JoinRequest? _existingRequest;
+  bool _isCheckingRequest = true;
+  String? _lastCheckedGameId;
+
   @override
   void initState() {
     super.initState();
@@ -88,6 +98,60 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget>
   @override
   void dispose() {
     super.dispose();
+  }
+
+  /// Check for existing join request (pending or denied) on screen load
+  void _ensureExistingRequestChecked(String gameId, String userId) {
+    // Skip if already checked for this game
+    if (_lastCheckedGameId == gameId) return;
+    _lastCheckedGameId = gameId;
+
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      if (!mounted) return;
+
+      try {
+        final request = await context
+            .read<JoinRequestProvider>()
+            .getExistingRequestForGame(gameId, userId);
+
+        if (mounted) {
+          setState(() {
+            _existingRequest = request;
+            _isCheckingRequest = false;
+          });
+        }
+      } catch (e) {
+        // Silently fail - allow user to try joining
+        if (mounted) {
+          setState(() => _isCheckingRequest = false);
+        }
+      }
+    });
+  }
+
+  /// Get button text based on existing request status
+  String _getJoinButtonText() {
+    if (_existingRequest?.isPending == true) {
+      return AppVibeFloorCopy.requestPendingButton;
+    }
+    if (_existingRequest?.isDenied == true) {
+      return AppVibeFloorCopy.requestDeclinedButton;
+    }
+    if (_existingRequest?.isExpired == true) {
+      return AppVibeFloorCopy.requestExpiredButton;
+    }
+    return AppVibeFloorCopy.joinRoundButton;
+  }
+
+  /// Get button variant based on existing request status
+  AppButtonVariant _getJoinButtonVariant() {
+    if (_existingRequest != null) return AppButtonVariant.secondary;
+    return AppButtonVariant.primary;
+  }
+
+  /// Check if join button should be enabled
+  bool _isJoinButtonEnabled() {
+    return _existingRequest == null && !_isCheckingRequest;
   }
 
   void _ensureGroupVibeMatch(
@@ -604,6 +668,14 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget>
         final joinGameDetailedGamesRecord = Game.fromRecord(gamesRecord);
         final isCancelled = joinGameDetailedGamesRecord.isCancelledStatus;
         _ensureGroupVibeMatch(joinGameDetailedGamesRecord, currentUserRef);
+
+        // Check for existing join request (pending/denied)
+        if (currentUserRef != null) {
+          _ensureExistingRequestChecked(
+            joinGameDetailedGamesRecord.reference.id,
+            currentUserRef.id,
+          );
+        }
 
         // Trigger entrance animation once when content first loads
         if (!_hasAnimated) {
@@ -1134,18 +1206,21 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget>
                                   : 'This game is open to men only';
                             }
 
+                            // Determine button state based on existing request
+                            final buttonEnabled = _isJoinButtonEnabled() && !isDisabled;
+
                             return Padding(
                           padding: EdgeInsets.fromLTRB(AppSpacing.md, 0, AppSpacing.md, AppSpacing.xs),
                           child: Column(
                             mainAxisSize: MainAxisSize.min,
                             children: [
                               AppButtonEnhanced(
-                                text: 'Join Game',
-                                variant: AppButtonVariant.primary,
+                                text: _getJoinButtonText(),
+                                variant: _getJoinButtonVariant(),
                                 size: AppButtonSize.large,
                                 fullWidth: true,
-                                enabled: !isDisabled,
-                                onPressed: isDisabled ? null : () async {
+                                enabled: buttonEnabled,
+                                onPressed: !buttonEnabled ? null : () async {
                                   // Check permission before attempting join
                                   final friendGameValue =
                                       joinGameDetailedGamesRecord.friendGame.trim();
@@ -1210,12 +1285,77 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget>
                                   }
 
                                   try {
-                                    // Use GameProvider to join and invalidate caches
-                                    await context.read<GameProvider>().joinGame(
+                                    // Use GameProvider to join with vibe floor check
+                                    final ownerId = joinGameDetailedGamesRecord.userRef?.id;
+                                    final result = await context.read<GameProvider>().joinGame(
                                           joinGameDetailedGamesRecord.reference.id,
                                           currentUser.uid,
                                           userGender: userGender,
+                                          ownerId: ownerId,
                                         );
+
+                                    // Handle vibe floor results
+                                    if (result.result == JoinGameResult.requiresApproval) {
+                                      if (!mounted) return;
+
+                                      // Fetch owner's first name for personalized copy
+                                      String ownerFirstName = 'This player';
+                                      final ownerRef = joinGameDetailedGamesRecord.userRef;
+                                      if (ownerRef != null) {
+                                        try {
+                                          final ownerSnap = await ownerRef.get();
+                                          final ownerData = ownerSnap.data() as Map<String, dynamic>?;
+                                          final firstName = ownerData?['first_name'] as String?;
+                                          final displayName = ownerData?['display_name'] as String?;
+                                          ownerFirstName = firstName ??
+                                              displayName?.split(' ').first ??
+                                              'This player';
+                                        } catch (e) {
+                                          // Use default fallback
+                                        }
+                                      }
+
+                                      // Get current player's display name for notification
+                                      final playerName = context.userProvider.currentUser?.displayName ??
+                                          'A player';
+
+                                      // Show vibe floor bottom sheet - returns JoinRequest if submitted
+                                      final submittedRequest =
+                                          await showAppBottomSheet<JoinRequest?>(
+                                        context: context,
+                                        isScrollControlled: true,
+                                        backgroundColor: Colors.transparent,
+                                        builder: (context) => VibeFloorBottomSheet(
+                                          ownerFirstName: ownerFirstName,
+                                          playerName: playerName,
+                                          matchResult: result.matchResult!,
+                                          ownerProfile: result.ownerProfile!,
+                                          playerProfile: result.playerProfile!,
+                                          gameId: joinGameDetailedGamesRecord.reference.id,
+                                          playerId: currentUser.uid,
+                                          ownerId: ownerId!,
+                                          vibeScore: result.vibeScore!,
+                                          vibeFloor: result.vibeFloor!,
+                                        ),
+                                      );
+
+                                      // Update button state if request was submitted
+                                      if (submittedRequest != null && mounted) {
+                                        setState(() {
+                                          _existingRequest = submittedRequest;
+                                          _isCheckingRequest = false;
+                                        });
+                                      }
+                                      return;
+                                    }
+                                    if (result.result == JoinGameResult.alreadyRequested) {
+                                      if (!mounted) return;
+                                      showSnackbar(
+                                        context,
+                                        'You already have a pending request for this game.',
+                                      );
+                                      return;
+                                    }
                                   } on GameOperationException catch (error) {
                                     if (!mounted) {
                                       return;
@@ -1324,6 +1464,17 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget>
                                     textAlign: TextAlign.center,
                                   ),
                                 ],
+                                // Request declined subtitle
+                                if (_existingRequest?.isDenied == true) ...[
+                                  SizedBox(height: AppSpacing.xs),
+                                  Text(
+                                    AppVibeFloorCopy.requestDeclinedSubtitle,
+                                    style: AppTypography.labelSmall.copyWith(
+                                      color: AppColors.textMuted,
+                                    ),
+                                    textAlign: TextAlign.center,
+                                  ),
+                                ],
                             ],
                           ),
                         );
@@ -1342,6 +1493,8 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget>
 }
 
 
+  // ═══════════════════════════════════════════════════════════════════════════
+  // PENDING REQUESTS SECTION (OWNER-ONLY)
   // ═══════════════════════════════════════════════════════════════════════════
   // ANIMATED SECTION HELPER
   // ═══════════════════════════════════════════════════════════════════════════

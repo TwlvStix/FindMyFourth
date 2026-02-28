@@ -177,6 +177,38 @@ class FriendService {
     }
   }
 
+  // ── Query Methods ───────────────────────────────────────────────────────────
+
+  /// Check if two users are friends
+  ///
+  /// Returns true if userId2 appears in userId1's friends array.
+  /// This is a unidirectional check — in practice both users should have
+  /// each other in their friends lists, but this only checks one direction.
+  Future<bool> areFriends(String userId1, String userId2) async {
+    try {
+      final user1Doc = await _firestore.collection('users').doc(userId1).get();
+      if (!user1Doc.exists) return false;
+
+      final rawFriends = user1Doc.data()?['friends'];
+      if (rawFriends == null || rawFriends is! List) return false;
+
+      // Friends array can contain DocumentReferences or String IDs
+      return rawFriends.any((entry) {
+        if (entry is DocumentReference) {
+          return entry.id == userId2;
+        }
+        if (entry is String) {
+          // Could be a user ID or a path like "users/xyz"
+          return entry == userId2 || entry.endsWith('/$userId2');
+        }
+        return false;
+      });
+    } on FirebaseException catch (e) {
+      AppLog.d('❌ FriendService.areFriends error: ${e.code} - ${e.message}');
+      rethrow;
+    }
+  }
+
   // ── Notification Methods ────────────────────────────────────────────────────
 
   /// Send push notification to the recipient when a friend request is sent.

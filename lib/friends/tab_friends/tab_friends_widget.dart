@@ -104,12 +104,14 @@ class _TabFriendsWidgetState extends State<TabFriendsWidget> {
   List<DocumentReference>? _optimisticFriendsList;
 
   Future<void> _showFilterBottomSheet() async {
+    final topPadding = MediaQuery.of(context).padding.top;
     final result = await showModalBottomSheet<FriendFilters>(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
       builder: (context) => FriendFilterBottomSheet(
         currentFilters: friendFilters,
+        topPadding: topPadding,
       ),
     );
 

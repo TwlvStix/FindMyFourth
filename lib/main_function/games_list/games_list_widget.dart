@@ -491,6 +491,7 @@ class _GamesListWidgetState extends State<GamesListWidget> {
   }
 
   Future<void> _showFilterBottomSheet(GameFilterMeta filterMeta) async {
+    final topPadding = MediaQuery.of(context).padding.top;
     final result = await showModalBottomSheet<GameListFilters>(
       context: context,
       isScrollControlled: true,
@@ -503,6 +504,7 @@ class _GamesListWidgetState extends State<GamesListWidget> {
         availableHandicaps: filterMeta.availableHandicaps,
         availableCourses: filterMeta.availableCourses,
         availableEligibilities: filterMeta.availableEligibilities,
+        topPadding: topPadding,
       ),
     );
 

@@ -232,6 +232,16 @@ class UsersRecord extends FirestoreRecord {
   DateTime? get dateOfBirth => _dateOfBirth;
   bool hasDateOfBirth() => _dateOfBirth != null;
 
+  // "vibe_edit_count" field. Number of times user has confirmed vibe profile edits.
+  int? _vibeEditCount;
+  int get vibeEditCount => _vibeEditCount ?? 0;
+  bool hasVibeEditCount() => _vibeEditCount != null;
+
+  // "last_vibe_edit_at" field. Timestamp of most recent vibe profile confirmation.
+  DateTime? _lastVibeEditAt;
+  DateTime? get lastVibeEditAt => _lastVibeEditAt;
+  bool hasLastVibeEditAt() => _lastVibeEditAt != null;
+
   void _initializeFields() {
     _photoUrl = snapshotData['photo_url'] as String?;
     _createdTime = snapshotData['created_time'] as DateTime?;
@@ -314,6 +324,8 @@ class UsersRecord extends FirestoreRecord {
         castToType<int>(snapshotData['show_up_rate_denominator']);
     _gender = snapshotData['gender'] as String?;
     _dateOfBirth = snapshotData['date_of_birth'] as DateTime?;
+    _vibeEditCount = castToType<int>(snapshotData['vibe_edit_count']);
+    _lastVibeEditAt = snapshotData['last_vibe_edit_at'] as DateTime?;
   }
 
   static CollectionReference get collection =>
@@ -393,6 +405,8 @@ Map<String, dynamic> createUsersRecordData({
   int? showUpRateDenominator,
   String? gender,
   DateTime? dateOfBirth,
+  int? vibeEditCount,
+  DateTime? lastVibeEditAt,
 }) {
   final displayNameLower = displayName?.toLowerCase();
   final firestoreData = mapToFirestore(
@@ -442,6 +456,8 @@ Map<String, dynamic> createUsersRecordData({
       'show_up_rate_denominator': showUpRateDenominator,
       'gender': gender,
       'date_of_birth': dateOfBirth,
+      'vibe_edit_count': vibeEditCount,
+      'last_vibe_edit_at': lastVibeEditAt,
     }.withoutNulls,
   );
 
@@ -497,7 +513,9 @@ class UsersRecordDocumentEquality implements Equality<UsersRecord> {
         e1?.cancellationRate == e2?.cancellationRate &&
         e1?.showUpRateDenominator == e2?.showUpRateDenominator &&
         e1?.gender == e2?.gender &&
-        e1?.dateOfBirth == e2?.dateOfBirth;
+        e1?.dateOfBirth == e2?.dateOfBirth &&
+        e1?.vibeEditCount == e2?.vibeEditCount &&
+        e1?.lastVibeEditAt == e2?.lastVibeEditAt;
   }
 
   @override
@@ -544,6 +562,8 @@ class UsersRecordDocumentEquality implements Equality<UsersRecord> {
         e?.showUpRateDenominator,
         e?.gender,
         e?.dateOfBirth,
+        e?.vibeEditCount,
+        e?.lastVibeEditAt,
       ]);
 
   @override

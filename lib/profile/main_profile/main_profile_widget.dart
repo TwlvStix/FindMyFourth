@@ -8,7 +8,6 @@ import '/core/widgets/app_icon_button.dart';
 import '/core/widgets/app_premium_dialog.dart';
 import '/core/widgets/fairway_background.dart';
 import '/core/motion/motion_helpers.dart';
-import '/core/design_patterns/premium_ui_patterns.dart';
 import '/utils/app_util.dart';
 import '/friends/tab_friends/tab_friends_widget.dart';
 import '/notification_settings/notification_settings_widget.dart';
@@ -985,59 +984,26 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
             ),
             child: Column(
               children: [
-                currentUserReference == null
-                    ? _buildSettingsRow(
-                        context,
-                        phosphorIcon: AppPhosphorIcons.notifications,
-                        label: 'Notifications',
-                        onTap: () {
-                          HapticFeedback.lightImpact();
-                          _pushNamed(
-                            NotificationSettingsWidget.routeName,
-                            extra: <String, dynamic>{
-                              kTransitionInfoKey: TransitionInfo(
-                                hasTransition: true,
-                                transitionType: PageTransitionType.fade,
-                                enterDuration: Duration(milliseconds: 200),
-                                exitDuration: Duration(milliseconds: 170),
-                                scaleOnPush: true,
-                              ),
-                            },
-                          );
-                        },
-                      )
-                    : StreamBuilder<QuerySnapshot>(
-                        stream: currentUserReference!
-                            .collection('notifications')
-                            .where('read', isEqualTo: false)
-                            .snapshots(),
-                        builder: (context, snapshot) {
-                          final unreadCount = snapshot.data?.docs.length ?? 0;
-                          return _buildSettingsRow(
-                            context,
-                            phosphorIcon: AppPhosphorIcons.notifications,
-                            label: 'Notifications',
-                            trailing: unreadCount > 0
-                                ? NotificationBadge(count: unreadCount)
-                                : null,
-                            onTap: () {
-                              HapticFeedback.lightImpact();
-                              _pushNamed(
-                                NotificationSettingsWidget.routeName,
-                                extra: <String, dynamic>{
-                                  kTransitionInfoKey: TransitionInfo(
-                                    hasTransition: true,
-                                    transitionType: PageTransitionType.fade,
-                                    enterDuration: Duration(milliseconds: 200),
-                                    exitDuration: Duration(milliseconds: 170),
-                                    scaleOnPush: true,
-                                  ),
-                                },
-                              );
-                            },
-                          );
-                        },
-                      ),
+                _buildSettingsRow(
+                  context,
+                  phosphorIcon: AppPhosphorIcons.notifications,
+                  label: 'Notifications',
+                  onTap: () {
+                    HapticFeedback.lightImpact();
+                    _pushNamed(
+                      NotificationSettingsWidget.routeName,
+                      extra: <String, dynamic>{
+                        kTransitionInfoKey: TransitionInfo(
+                          hasTransition: true,
+                          transitionType: PageTransitionType.fade,
+                          enterDuration: Duration(milliseconds: 200),
+                          exitDuration: Duration(milliseconds: 170),
+                          scaleOnPush: true,
+                        ),
+                      },
+                    );
+                  },
+                ),
                 Divider(height: 1, color: AppColors.navyLight, indent: 56),
                 _buildSettingsRow(
                   context,

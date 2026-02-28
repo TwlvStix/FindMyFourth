@@ -227,6 +227,25 @@ service cloud.firestore {
         ]);
     }
 
+    // Allow game owner to add an approved player to the game chat
+    function canGameOwnerAddMember(oldData, newData) {
+      let changedKeys = newData.diff(oldData).changedKeys();
+      let oldMembers = chatMemberIds(oldData);
+      let newMembers = chatMemberIds(newData);
+      return isGameChat(oldData) &&
+        isGameOwnerForChat(oldData) &&
+        newMembers is list &&
+        newMembers.size() == oldMembers.size() + 1 &&
+        newMembers.hasAll(oldMembers) &&
+        changedKeys.hasOnly([
+          'memberIds',
+          'updatedAt',
+          'unreadCountByUser',
+          'memberJoinedAt'
+        ]) &&
+        canUpdateUnreadCount(oldData, newData);
+    }
+
     function canGameOwnerUpdateChatManagement(oldData, newData) {
       let changedKeys = newData.diff(oldData).changedKeys();
       return isGameChat(oldData) &&
@@ -585,6 +604,7 @@ service cloud.firestore {
         canSelfJoinGameChat(resource.data, request.resource.data) ||
         canSelfLeaveGameChat(resource.data, request.resource.data) ||
         canGameOwnerRemoveMember(resource.data, request.resource.data) ||
+        canGameOwnerAddMember(resource.data, request.resource.data) ||
         canGameOwnerUpdateChatManagement(resource.data, request.resource.data)
       );
 
@@ -639,6 +659,34 @@ service cloud.firestore {
         participantJoinAllowed() ||
         participantLeaveAllowed();
       allow delete: if false;
+
+      // Join Requests — vibe floor approval flow
+      // Requesters can create/read their own requests
+      // Game owners can read all requests and update status
+      match /join_requests/{requestId} {
+        // Create: any signed-in user can create a request for themselves
+        allow create: if isSignedIn() &&
+          request.resource.data.requesterId == request.auth.uid &&
+          request.resource.data.gameId == document &&
+          request.resource.data.status == 'pending';
+
+        // Read: requester can read their own, owner can read all for their game
+        allow read: if isSignedIn() && (
+          resource.data.requesterId == request.auth.uid ||
+          resource.data.ownerId == request.auth.uid
+        );
+
+        // Update: only owner can approve/deny (update status)
+        allow update: if isSignedIn() &&
+          resource.data.ownerId == request.auth.uid &&
+          request.resource.data.diff(resource.data).changedKeys()
+            .hasOnly(['status', 'respondedAt']);
+
+        // Delete: only requester can cancel their pending request
+        allow delete: if isSignedIn() &&
+          resource.data.requesterId == request.auth.uid &&
+          resource.data.status == 'pending';
+      }
     }
 
     match /friend_request/{document} {

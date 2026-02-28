@@ -1,3 +1,5 @@
+import '/auth/firebase_auth/auth_util.dart';
+import '/core/content/app_copy.dart';
 import '/core/design_tokens/app_phosphor_icons.dart';
 import '/core/design_tokens/colors.dart';
 import '/core/design_tokens/spacing.dart';
@@ -9,6 +11,7 @@ import '/core/design_patterns/premium_ui_patterns.dart';
 import '/core/motion/motion_tokens.dart';
 import '/core/widgets/app_icon.dart';
 import '/core/widgets/app_button_enhanced.dart';
+import '/core/widgets/app_premium_dialog.dart';
 import '/core/widgets/app_text.dart';
 import '/core/widgets/premium_back_button.dart';
 import '/core/widgets/fairway_background.dart';
@@ -16,6 +19,8 @@ import '/models/vibe_profile.dart';
 import '/profile/edit_vibe_importance/edit_vibe_importance_widget.dart';
 import '/profile/edit_vibes/vibe_category_slider.dart';
 import '/profile/main_profile/main_profile_widget.dart';
+import '/services/vibe_analytics_service.dart';
+import '/services/vibe_edit_cooldown_service.dart';
 import '/services/vibe_repository.dart';
 import '/utils/app_util.dart';
 import '/utils/vibe_archetypes.dart';
@@ -36,12 +41,15 @@ class EditVibesWidget extends StatefulWidget {
 class _EditVibesWidgetState extends State<EditVibesWidget> {
   final scaffoldKey = GlobalKey<ScaffoldState>();
   final VibeRepository _repository = VibeRepository();
+  final VibeEditCooldownService _cooldownService = VibeEditCooldownService();
+  final VibeAnalyticsService _analyticsService = VibeAnalyticsService();
 
   VibeProfile _profile = VibeProfile.defaults();
   VibeProfile _originalProfile = VibeProfile.defaults();
   bool _isLoading = true;
   bool _isConfirming = false;
   bool _archetypeExpanded = false;
+  VibeEditEligibilityResult? _cooldownEligibility;
 
   /// Check if user has made changes from the original profile
   bool get _hasChanges {
@@ -56,6 +64,17 @@ class _EditVibesWidgetState extends State<EditVibesWidget> {
     return false;
   }
 
+  /// Check if user is in cooldown period
+  bool get _isInCooldown =>
+      _cooldownEligibility != null && !_cooldownEligibility!.canEdit;
+
+  /// Format the next available edit date
+  String _formatCooldownDate() {
+    final nextDate = _cooldownEligibility?.nextEditAvailableAt;
+    if (nextDate == null) return '';
+    return DateFormat.yMMMd().format(nextDate);
+  }
+
   @override
   void initState() {
     super.initState();
@@ -67,13 +86,20 @@ class _EditVibesWidgetState extends State<EditVibesWidget> {
       _isLoading = true;
     });
     try {
-      final profile = await _repository.getMyVibesCached(forceRefresh: true);
+      final userId = currentUserUid;
+      final results = await Future.wait([
+        _repository.getMyVibesCached(forceRefresh: true),
+        if (userId.isNotEmpty) _cooldownService.canEditVibeProfile(userId),
+      ]);
       if (!mounted) {
         return;
       }
       setState(() {
-        _profile = profile;
-        _originalProfile = profile;
+        _profile = results[0] as VibeProfile;
+        _originalProfile = _profile;
+        if (results.length > 1) {
+          _cooldownEligibility = results[1] as VibeEditEligibilityResult;
+        }
       });
     } catch (error) {
       if (!mounted) {
@@ -116,6 +142,10 @@ class _EditVibesWidgetState extends State<EditVibesWidget> {
     VibeCategory category,
     int value,
   ) async {
+    // Don't persist changes during cooldown
+    if (_isInCooldown) {
+      return;
+    }
     try {
       await _repository.updateCategory(category, value);
     } catch (error) {
@@ -136,6 +166,10 @@ class _EditVibesWidgetState extends State<EditVibesWidget> {
       category,
       current.copyWith(dealbreaker: value, isDefault: false),
     );
+    // Don't persist changes during cooldown
+    if (_isInCooldown) {
+      return;
+    }
     try {
       await _repository.toggleDealbreaker(category, value);
     } catch (error) {
@@ -151,11 +185,48 @@ class _EditVibesWidgetState extends State<EditVibesWidget> {
     if (_isConfirming) {
       return;
     }
+
+    // Check cooldown - block if in cooldown
+    if (_cooldownEligibility?.canEdit == false) {
+      return;
+    }
+
+    // Show confirmation dialog warning about 30-day cooldown
+    final confirmed = await showPremiumDialog(
+      context: context,
+      variant: PremiumDialogVariant.confirmation,
+      icon: AppPhosphorIcons.clock,
+      title: AppVibeEditCopy.confirmDialogTitle,
+      body: AppVibeEditCopy.confirmDialogBody,
+      actionLabel: AppVibeEditCopy.confirmDialogAction,
+      cancelLabel: AppVibeEditCopy.confirmDialogCancel,
+    );
+
+    if (confirmed != true) {
+      return; // User cancelled
+    }
+
     setState(() {
       _isConfirming = true;
     });
     try {
       await _repository.confirmVibes();
+
+      // Record the edit for cooldown tracking and log analytics
+      final userId = currentUserUid;
+      if (userId.isNotEmpty) {
+        final wasFirstEdit = _cooldownEligibility?.isFirstEdit ?? true;
+        final editNumber = (_cooldownEligibility?.editCount ?? 0) + 1;
+
+        await _cooldownService.recordVibeEdit(userId);
+
+        // Fire-and-forget analytics
+        _analyticsService.logVibeProfileEdited(
+          editNumber: editNumber,
+          wasFirstEdit: wasFirstEdit,
+        );
+      }
+
       if (!mounted) {
         return;
       }
@@ -217,6 +288,61 @@ class _EditVibesWidgetState extends State<EditVibesWidget> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
+                        // Cooldown banner - shown when user is in edit cooldown
+                        if (_isInCooldown) ...[
+                          GlassCard(
+                            padding: const EdgeInsets.all(AppSpacing.md),
+                            opacity: 0.20,
+                            child: Row(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Container(
+                                  width: 40,
+                                  height: 40,
+                                  decoration: BoxDecoration(
+                                    color: AppColorsDark.navyLight,
+                                    borderRadius:
+                                        BorderRadius.circular(AppBorderRadius.md),
+                                    border: Border.all(
+                                      color: AppColorsDark.glassBorder,
+                                    ),
+                                  ),
+                                  child: Center(
+                                    child: AppIcon(
+                                      icon: AppPhosphorIcons.clock,
+                                      size: AppIconSize.button,
+                                      color: AppColorsDark.textSecondary,
+                                    ),
+                                  ),
+                                ),
+                                const SizedBox(width: AppSpacing.md),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        AppVibeEditCopy.cooldownBannerMessage(
+                                          _formatCooldownDate(),
+                                        ),
+                                        style: AppTypography.bodyMedium.copyWith(
+                                          color: AppColorsDark.textPrimary,
+                                        ),
+                                      ),
+                                      const SizedBox(height: AppSpacing.xxs),
+                                      Text(
+                                        AppVibeEditCopy.cooldownBannerSubtitle,
+                                        style: AppTypography.bodySmall.copyWith(
+                                          color: AppColorsDark.textSecondary,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          const SizedBox(height: AppSpacing.md),
+                        ],
                         // Vibe Archetype Display - tap to expand description
                         Builder(
                           builder: (context) {
@@ -501,22 +627,31 @@ class _EditVibesWidgetState extends State<EditVibesWidget> {
                           margin: const EdgeInsets.only(bottom: AppSpacing.lg),
                         ),
                         // Confirm button with glow when changes pending
+                        // Disabled when in cooldown or no changes
                         AnimatedContainer(
                           duration: MotionTokens.microInteraction,
                           decoration: BoxDecoration(
                             borderRadius:
                                 BorderRadius.circular(AppBorderRadius.lg),
-                            boxShadow: _hasChanges && !_isConfirming
-                                ? [AppElevation.glowGreen]
-                                : null,
+                            boxShadow:
+                                _hasChanges && !_isConfirming && !_isInCooldown
+                                    ? [AppElevation.glowGreen]
+                                    : null,
                           ),
                           child: AppButtonEnhanced(
-                            text: 'Confirm my vibes',
-                            leadingIcon: AppPhosphorIcons.successFill,
+                            text: _isInCooldown
+                                ? AppVibeEditCopy.cooldownButtonText(
+                                    _formatCooldownDate(),
+                                  )
+                                : 'Confirm my vibes',
+                            leadingIcon: _isInCooldown
+                                ? AppPhosphorIcons.clock
+                                : AppPhosphorIcons.successFill,
                             variant: AppButtonVariant.primary,
                             size: AppButtonSize.large,
                             fullWidth: true,
-                            enabled: _hasChanges && !_isConfirming,
+                            enabled:
+                                _hasChanges && !_isConfirming && !_isInCooldown,
                             onPressed: _confirmVibes,
                           ),
                         ),

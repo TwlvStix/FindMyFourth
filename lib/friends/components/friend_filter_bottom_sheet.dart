@@ -13,10 +13,12 @@ import '/services/vibe_matcher.dart';
 /// Filter bottom sheet for friends search
 class FriendFilterBottomSheet extends StatefulWidget {
   final FriendFilters currentFilters;
+  final double topPadding;
 
   const FriendFilterBottomSheet({
     super.key,
     required this.currentFilters,
+    this.topPadding = 0,
   });
 
   @override
@@ -49,6 +51,7 @@ class _FriendFilterBottomSheetState extends State<FriendFilterBottomSheet> {
         borderRadius: BorderRadius.vertical(top: Radius.circular(AppBorderRadius.xxl)),
       ),
       child: SafeArea(
+        top: false, // Handle top padding explicitly for safe area
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -56,7 +59,9 @@ class _FriendFilterBottomSheetState extends State<FriendFilterBottomSheet> {
             Container(
               width: 40,
               height: 4,
-              margin: EdgeInsets.only(top: AppSpacing.sm),
+              margin: EdgeInsets.only(
+                top: widget.topPadding + AppSpacing.sm,
+              ),
               decoration: BoxDecoration(
                 color: AppColors.greenLight,
                 borderRadius: BorderRadius.circular(AppBorderRadius.xxs),
@@ -95,11 +100,13 @@ class _FriendFilterBottomSheetState extends State<FriendFilterBottomSheet> {
                   ),
                   AppButtonEnhanced(
                     text: 'Clear All',
-                    variant: AppButtonVariant.ghost,
+                    variant: AppButtonVariant.ghostDark,
                     size: AppButtonSize.small,
+                    enabled: _filters.hasActiveFilters,
                     onPressed: () {
                       setState(() {
                         _filters = FriendFilters();
+                        _homeCourseController.clear();
                       });
                     },
                   ),

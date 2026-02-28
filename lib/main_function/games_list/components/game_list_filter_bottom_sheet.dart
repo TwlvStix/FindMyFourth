@@ -72,6 +72,7 @@ class GameListFilterBottomSheet extends StatefulWidget {
     required this.availableHandicaps,
     required this.availableCourses,
     required this.availableEligibilities,
+    this.topPadding = 0,
   });
 
   final GameListFilters currentFilters;
@@ -81,6 +82,7 @@ class GameListFilterBottomSheet extends StatefulWidget {
   final Set<String> availableHandicaps;
   final Set<String> availableCourses;
   final Set<String> availableEligibilities;
+  final double topPadding;
 
   @override
   State<GameListFilterBottomSheet> createState() =>
@@ -149,13 +151,16 @@ class _GameListFilterBottomSheetState
         borderRadius: BorderRadius.vertical(top: Radius.circular(AppBorderRadius.xxl)),
       ),
       child: SafeArea(
+        top: false, // Handle top padding explicitly for safe area
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             Container(
               width: 40,
               height: 4,
-              margin: EdgeInsets.only(top: AppSpacing.sm),
+              margin: EdgeInsets.only(
+                top: widget.topPadding + AppSpacing.sm,
+              ),
               decoration: BoxDecoration(
                 color: AppColors.greenLight,
                 borderRadius: BorderRadius.circular(AppBorderRadius.xxs),
@@ -190,8 +195,9 @@ class _GameListFilterBottomSheetState
                   ),
                   AppButtonEnhanced(
                     text: 'Clear All',
-                    variant: AppButtonVariant.ghost,
+                    variant: AppButtonVariant.ghostDark,
                     size: AppButtonSize.small,
+                    enabled: _filters.hasActiveFilters,
                     onPressed: () {
                       setState(() {
                         _filters = GameListFilters();

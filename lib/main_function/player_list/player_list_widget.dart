@@ -21,6 +21,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
+import '/core/widgets/premium_back_button.dart';
 
 class PlayerListWidget extends StatefulWidget {
   const PlayerListWidget({
@@ -978,6 +979,7 @@ class _PlayerListWidgetState extends State<PlayerListWidget> {
               elevation: 0.0,
               shadowColor: Colors.transparent,
               automaticallyImplyLeading: false,
+              leading: const PremiumBackButton(),
               title: Text(
                 'Add Your Group',
                 style: AppTypography.sectionHeader.copyWith(

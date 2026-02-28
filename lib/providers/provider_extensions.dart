@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'game_provider.dart';
+import 'join_request_provider.dart';
 import 'notification_provider.dart';
 import 'user_provider.dart';
 
@@ -26,6 +27,13 @@ extension ProviderExtensions on BuildContext {
   /// Access NotificationProvider and listen for changes
   NotificationProvider get watchNotificationProvider =>
       watch<NotificationProvider>();
+
+  /// Access JoinRequestProvider without listening for changes
+  JoinRequestProvider get joinRequestProvider => read<JoinRequestProvider>();
+
+  /// Access JoinRequestProvider and listen for changes
+  JoinRequestProvider get watchJoinRequestProvider =>
+      watch<JoinRequestProvider>();
 
   /// Select specific data from UserProvider
   /// Only rebuilds when the selected data changes

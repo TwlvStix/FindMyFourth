@@ -40,3 +40,9 @@ class NetworkException extends AppException {
   NetworkException(String message, {String? code, dynamic cause})
       : super(message, code: code, cause: cause);
 }
+
+/// Join request operation failures
+class JoinRequestException extends AppException {
+  JoinRequestException(String message, {String? code, dynamic cause})
+      : super(message, code: code, cause: cause);
+}
