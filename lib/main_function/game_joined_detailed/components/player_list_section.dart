@@ -38,7 +38,7 @@ class PlayerListSection extends StatefulWidget {
     required this.isOwner,
     this.onRemovePlayer,
     required this.onPlayerTap,
-    required this.onMatchChipTap,
+    this.onMatchChipTap,
   });
 
   final Game game;
@@ -56,12 +56,14 @@ class PlayerListSection extends StatefulWidget {
   })? onRemovePlayer;
 
   final void Function(DocumentReference userRef) onPlayerTap;
+
+  /// Called when vibe match chip is tapped. Null makes chips non-interactive.
   final void Function(
     DocumentReference userRef,
     String displayName,
     String photoUrl,
     GroupVibeMemberResult? memberMatch,
-  ) onMatchChipTap;
+  )? onMatchChipTap;
 
   @override
   State<PlayerListSection> createState() => _PlayerListSectionState();
@@ -199,12 +201,14 @@ class _PlayerListSectionState extends State<PlayerListSection> {
                           )
                       : null,
                   onTap: () => widget.onPlayerTap(userRef),
-                  onMatchChipTap: () => widget.onMatchChipTap(
-                    userRef,
-                    displayName,
-                    photoUrl,
-                    widget.memberMatchesById[playerRef.id],
-                  ),
+                  onMatchChipTap: widget.onMatchChipTap != null
+                      ? () => widget.onMatchChipTap!(
+                            userRef,
+                            displayName,
+                            photoUrl,
+                            widget.memberMatchesById[playerRef.id],
+                          )
+                      : null,
                 );
               }),
 
@@ -252,7 +256,7 @@ class _RegisteredPlayerCard extends StatelessWidget {
     required this.hasAnimated,
     this.onRemove,
     required this.onTap,
-    required this.onMatchChipTap,
+    this.onMatchChipTap,
   });
 
   final DocumentReference playerRef;
@@ -267,7 +271,7 @@ class _RegisteredPlayerCard extends StatelessWidget {
   final bool hasAnimated;
   final VoidCallback? onRemove;
   final VoidCallback onTap;
-  final VoidCallback onMatchChipTap;
+  final VoidCallback? onMatchChipTap;
 
   @override
   Widget build(BuildContext context) {

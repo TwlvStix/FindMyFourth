@@ -1,19 +1,17 @@
 import 'dart:async';
 
 import '/backend/backend.dart';
-import '/backend/schema/trust_profile.dart';
 import '/core/content/app_copy.dart';
 import '/core/exceptions/app_exceptions.dart';
+import '/core/motion/animation_helpers.dart';
 import '/core/motion/motion_helpers.dart';
 import '/core/motion/motion_tokens.dart';
 import '/core/motion/reduced_motion.dart';
 import '/core/utils/app_log.dart';
 import '/core/widgets/app_premium_dialog.dart';
 import '/core/widgets/fairway_background.dart';
-import '/core/widgets/trust/luxury_player_card.dart';
 import '/core/widgets/vibe_floor_bottom_sheet.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
-import '/main_function/game_joined_detailed/components/player_match_chip.dart';
 import '/main_function/game_joined_detailed/components/group_vibe_summary.dart';
 import '/main_function/game_joined_detailed/components/premium_app_bar.dart';
 import '/core/widgets/trust/restriction_banner.dart';
@@ -45,7 +43,7 @@ import '/providers/profile_provider.dart';
 import '/providers/join_request_provider.dart';
 import '/main_function/game_joined_detailed/game_joined_detailed_widget.dart';
 import '/services/vibe_group_matcher.dart';
-import 'package:firebase_auth/firebase_auth.dart';
+import '/auth/firebase_auth/auth_util.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
@@ -53,6 +51,7 @@ import 'package:provider/provider.dart';
 
 import '/providers/chat_provider.dart';
 import '/core/widgets/vibe/group_vibe_breakdown_sheet.dart';
+import '/main_function/game_joined_detailed/components/player_list_section.dart';
 import 'components/game_details_card.dart';
 import 'components/host_info_section.dart';
 import 'components/available_game_stats_row.dart';
@@ -180,18 +179,6 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget>
     }
   }
 
-  // Helper method to get player count
-  int _getPlayerCount(Game gameRecord) {
-    final joinedCount = gameRecord.joinedPlayers.length;
-    final guestCount =
-        gameRecord.guestPlayers.where((name) => name.trim().isNotEmpty).length;
-    // Include owner if not already in joined players
-    final owner = gameRecord.userRef;
-    final ownerCount =
-        (owner != null && !gameRecord.joinedPlayers.contains(owner)) ? 1 : 0;
-    return joinedCount + guestCount + ownerCount;
-  }
-
   @override
   Widget build(BuildContext context) {
     if (widget.gameRef == null) {
@@ -239,10 +226,7 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget>
         ),
       );
     }
-    final currentUser = FirebaseAuth.instance.currentUser;
-    final currentUserRef = currentUser == null
-        ? null
-        : FirebaseFirestore.instance.collection('users').doc(currentUser.uid);
+    final currentUserRef = currentUserReference;
 
     // Early return if gameRef is null (defensive programming)
     final gameRef = widget.gameRef;
@@ -606,8 +590,9 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget>
 
                         // Quick Stats Row (Date, Players, Spots)
                         // Content section 1 - Staggered reveal
-                        _buildAnimatedSection(
+                        buildAnimatedSection(
                           sectionIndex: 0,
+                          hasAnimated: _hasAnimated,
                           child: Padding(
                             padding:
                                 EdgeInsets.symmetric(horizontal: AppSpacing.md),
@@ -621,8 +606,9 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget>
 
                         // Group Vibe Summary
                         // Content section 2 - Staggered reveal
-                        _buildAnimatedSection(
+                        buildAnimatedSection(
                           sectionIndex: 1,
+                          hasAnimated: _hasAnimated,
                           child: Padding(
                             padding:
                                 EdgeInsets.symmetric(horizontal: AppSpacing.md),
@@ -645,8 +631,9 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget>
 
                         // Game Details Section
                         // Content section 3 - Staggered reveal
-                        _buildAnimatedSection(
+                        buildAnimatedSection(
                           sectionIndex: 2,
+                          hasAnimated: _hasAnimated,
                           child: Padding(
                             padding:
                                 EdgeInsets.symmetric(horizontal: AppSpacing.md),
@@ -678,7 +665,7 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget>
                                           AppBorderRadius.md),
                                     ),
                                     child: Text(
-                                      '${_getPlayerCount(joinGameDetailedGamesRecord)}/4',
+                                      '${joinGameDetailedGamesRecord.playerCount}/4',
                                       style: AppTypography.labelSmall.copyWith(
                                         color: AppColors.textPrimary,
                                         fontWeight: FontWeight.w600,
@@ -692,319 +679,22 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget>
                           ),
                         ),
                         // Players vertical cards
-                        // Content section 4 - Staggered reveal
-                        _buildAnimatedSection(
-                          sectionIndex: 3,
-                          child: Padding(
-                            padding:
-                                EdgeInsets.symmetric(horizontal: AppSpacing.md),
-                            child: Builder(
-                              builder: (context) {
-                                final groupPlayers = joinGameDetailedGamesRecord
-                                    .joinedPlayers
-                                    .toList();
-                                if (memberMatchesById.isNotEmpty &&
-                                    groupVibeCacheKey != null) {
-                                  groupPlayers.sort(
-                                    (a, b) =>
-                                        groupVibeProvider.compareMemberIds(
-                                      cacheKey: groupVibeCacheKey,
-                                      aId: a.id,
-                                      bId: b.id,
-                                    ),
-                                  );
-                                }
-                                final guestPlayers = joinGameDetailedGamesRecord
-                                    .guestPlayers
-                                    .where((name) => name.trim().isNotEmpty)
-                                    .toList();
-                                final gameOwner =
-                                    joinGameDetailedGamesRecord.userRef;
-                                if (gameOwner != null &&
-                                    !groupPlayers.contains(gameOwner)) {
-                                  groupPlayers.insert(0, gameOwner);
-                                }
-
-                                final playerIds = groupPlayers
-                                    .map((playerRef) => playerRef.id)
-                                    .toList();
-                                final profilesFuture = playerIds.isEmpty
-                                    ? Future.value(<String, UsersRecord>{})
-                                    : context
-                                        .read<ProfileProvider>()
-                                        .batchGetProfiles(playerIds);
-
-                                return FutureBuilder<Map<String, UsersRecord>>(
-                                  future: profilesFuture,
-                                  builder: (context, profilesSnapshot) {
-                                    final profileMap = profilesSnapshot.data ??
-                                        <String, UsersRecord>{};
-
-                                    return Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.stretch,
-                                      children: [
-                                        // Registered players - using LuxuryPlayerCard with trust badges
-                                        ...List.generate(groupPlayers.length,
-                                            (groupPlayersIndex) {
-                                          final groupPlayersItem =
-                                              groupPlayers[groupPlayersIndex];
-                                          final isOwner = gameOwner != null &&
-                                              groupPlayersItem == gameOwner;
-                                          final friendRecord =
-                                              profileMap[groupPlayersItem.id];
-                                          final displayName =
-                                              (friendRecord?.displayName ?? '')
-                                                      .trim()
-                                                      .isNotEmpty
-                                                  ? friendRecord!.displayName
-                                                  : 'Golfer';
-                                          final userRef =
-                                              friendRecord?.reference ??
-                                                  groupPlayersItem;
-                                          final photoUrl =
-                                              friendRecord?.photoUrl ?? '';
-
-                                          // Fetch trust profile for badge display
-                                          final trustProvider =
-                                              context.read<TrustProvider>();
-                                          // Stagger delay: 24ms per card, max 8 cards animated
-                                          final staggerIndex =
-                                              groupPlayersIndex <
-                                                      MotionTokens
-                                                          .staggerMaxItems
-                                                  ? groupPlayersIndex
-                                                  : MotionTokens
-                                                          .staggerMaxItems -
-                                                      1;
-                                          final staggerDelay =
-                                              ReducedMotionService.shouldStagger
-                                                  ? MotionTokens.staggerDelay *
-                                                      staggerIndex
-                                                  : Duration.zero;
-
-                                          return FutureBuilder<TrustProfile?>(
-                                            future:
-                                                trustProvider.fetchTrustProfile(
-                                                    groupPlayersItem.id),
-                                            builder: (context, trustSnapshot) {
-                                              final trustProfile =
-                                                  trustSnapshot.data;
-                                              return Padding(
-                                                padding: EdgeInsets.only(
-                                                  top: 8,
-                                                  bottom: AppSpacing.sm,
-                                                ),
-                                                child: LuxuryPlayerCard(
-                                                  name: displayName,
-                                                  avatarUrl: photoUrl,
-                                                  tier: trustProfile
-                                                          ?.currentBadge ??
-                                                      BadgeTier.newPlayer,
-                                                  isFavorite: isOwner,
-                                                  status: 'Ready',
-                                                  percentWidget:
-                                                      PlayerMatchChip(
-                                                    name: displayName,
-                                                    memberMatch:
-                                                        memberMatchesById[
-                                                            groupPlayersItem
-                                                                .id],
-                                                    onTap:
-                                                        null, // Non-member can't view detailed vibe page
-                                                  ),
-                                                  trailingWidget: AppIcon(
-                                                    icon:
-                                                        AppPhosphorIcons.joined,
-                                                    color:
-                                                        AppColors.textSecondary,
-                                                    size: AppIconSize.md,
-                                                  ),
-                                                  onTap: () {
-                                                    context.pushNamed(
-                                                      'ProfileUser',
-                                                      extra: <String, dynamic>{
-                                                        'userRef': userRef,
-                                                        kTransitionInfoKey:
-                                                            TransitionStandards
-                                                                .detailTransition,
-                                                      },
-                                                    );
-                                                  },
-                                                ),
-                                              )
-                                                  .animate(
-                                                      target:
-                                                          _hasAnimated ? 1 : 0)
-                                                  .fadeIn(
-                                                    delay: staggerDelay,
-                                                    duration:
-                                                        ReducedMotionService
-                                                            .adjust(
-                                                      MotionTokens
-                                                          .contentReveal,
-                                                    ),
-                                                    curve:
-                                                        MotionTokens.curveEnter,
-                                                  )
-                                                  .slideY(
-                                                    delay: staggerDelay,
-                                                    begin: 0.1,
-                                                    end: 0,
-                                                    duration:
-                                                        ReducedMotionService
-                                                            .adjust(
-                                                      MotionTokens
-                                                          .contentReveal,
-                                                    ),
-                                                    curve:
-                                                        MotionTokens.curveEnter,
-                                                  );
-                                            },
-                                          );
-                                        }),
-                                        // Guest players with stagger animation
-                                        ...guestPlayers
-                                            .asMap()
-                                            .entries
-                                            .map((entry) {
-                                          final guestIndex = entry.key;
-                                          final guestName = entry.value;
-                                          // Continue stagger from registered players count
-                                          final combinedIndex =
-                                              groupPlayers.length + guestIndex;
-                                          final staggerIndex = combinedIndex <
-                                                  MotionTokens.staggerMaxItems
-                                              ? combinedIndex
-                                              : MotionTokens.staggerMaxItems -
-                                                  1;
-                                          final staggerDelay =
-                                              ReducedMotionService.shouldStagger
-                                                  ? MotionTokens.staggerDelay *
-                                                      staggerIndex
-                                                  : Duration.zero;
-
-                                          return Padding(
-                                            padding: EdgeInsets.only(
-                                                bottom: AppSpacing.sm),
-                                            child: Container(
-                                              padding:
-                                                  EdgeInsets.all(AppSpacing.sm),
-                                              decoration: BoxDecoration(
-                                                color: AppColors.navy
-                                                    .withValues(alpha: 0.3),
-                                                borderRadius:
-                                                    BorderRadius.circular(
-                                                        AppBorderRadius.md),
-                                                border: Border.all(
-                                                  color: AppColors.navyLight
-                                                      .withValues(alpha: 0.3),
-                                                  width: 1,
-                                                ),
-                                              ),
-                                              child: Row(
-                                                children: [
-                                                  // Avatar placeholder
-                                                  Container(
-                                                    width: 48.0,
-                                                    height: 48.0,
-                                                    decoration: BoxDecoration(
-                                                      color: AppColors.navyLight
-                                                          .withValues(
-                                                              alpha: 0.5),
-                                                      shape: BoxShape.circle,
-                                                      border: Border.all(
-                                                        color: Colors.white
-                                                            .withValues(
-                                                                alpha: 0.3),
-                                                        width: 2.0,
-                                                      ),
-                                                    ),
-                                                    child: Center(
-                                                      child: Text(
-                                                        'G',
-                                                        style: AppTypography
-                                                            .titleMedium
-                                                            .copyWith(
-                                                          color: Colors.white,
-                                                          fontWeight:
-                                                              FontWeight.w600,
-                                                        ),
-                                                      ),
-                                                    ),
-                                                  ),
-                                                  SizedBox(
-                                                      width: AppSpacing.sm),
-                                                  // Name and guest label
-                                                  Expanded(
-                                                    child: Column(
-                                                      crossAxisAlignment:
-                                                          CrossAxisAlignment
-                                                              .start,
-                                                      mainAxisSize:
-                                                          MainAxisSize.min,
-                                                      children: [
-                                                        Text(
-                                                          guestName,
-                                                          style: AppTypography
-                                                              .bodyLarge
-                                                              .copyWith(
-                                                            color: Colors.white,
-                                                            fontWeight:
-                                                                FontWeight.w500,
-                                                          ),
-                                                          maxLines: 1,
-                                                          overflow: TextOverflow
-                                                              .ellipsis,
-                                                        ),
-                                                        SizedBox(
-                                                            height:
-                                                                AppSpacing.xxs),
-                                                        Text(
-                                                          'Guest',
-                                                          style: AppTypography
-                                                              .bodySmall
-                                                              .copyWith(
-                                                            color: Colors.white
-                                                                .withValues(
-                                                                    alpha: 0.7),
-                                                          ),
-                                                        ),
-                                                      ],
-                                                    ),
-                                                  ),
-                                                ],
-                                              ),
-                                            ),
-                                          )
-                                              .animate(
-                                                  target: _hasAnimated ? 1 : 0)
-                                              .fadeIn(
-                                                delay: staggerDelay,
-                                                duration:
-                                                    ReducedMotionService.adjust(
-                                                  MotionTokens.contentReveal,
-                                                ),
-                                                curve: MotionTokens.curveEnter,
-                                              )
-                                              .slideY(
-                                                delay: staggerDelay,
-                                                begin: 0.1,
-                                                end: 0,
-                                                duration:
-                                                    ReducedMotionService.adjust(
-                                                  MotionTokens.contentReveal,
-                                                ),
-                                                curve: MotionTokens.curveEnter,
-                                              );
-                                        }),
-                                      ],
-                                    );
-                                  },
-                                );
-                              },
-                            ),
+                        PlayerListSection(
+                          game: joinGameDetailedGamesRecord,
+                          memberMatchesById: memberMatchesById,
+                          groupVibeCacheKey: groupVibeCacheKey,
+                          hasAnimated: _hasAnimated,
+                          isOwner: false,
+                          onRemovePlayer: null,
+                          onPlayerTap: (userRef) => context.pushNamed(
+                            'ProfileUser',
+                            extra: <String, dynamic>{
+                              'userRef': userRef,
+                              kTransitionInfoKey:
+                                  TransitionStandards.detailTransition,
+                            },
                           ),
+                          onMatchChipTap: null,
                         ),
 
                         SizedBox(height: AppSpacing.md),
@@ -1183,9 +873,9 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget>
                                                 return;
                                               }
 
-                                              final currentUser = FirebaseAuth
-                                                  .instance.currentUser;
-                                              if (currentUser == null) {
+                                              final currentUserId =
+                                                  currentUserReference?.id;
+                                              if (currentUserId == null) {
                                                 showSnackbar(
                                                   context,
                                                   'Please sign in to join this game.',
@@ -1203,7 +893,7 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget>
                                                     .joinGame(
                                                       joinGameDetailedGamesRecord
                                                           .reference.id,
-                                                      currentUser.uid,
+                                                      currentUserId,
                                                       userGender: userGender,
                                                       ownerId: ownerId,
                                                     );
@@ -1276,7 +966,7 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget>
                                                       gameId:
                                                           joinGameDetailedGamesRecord
                                                               .reference.id,
-                                                      playerId: currentUser.uid,
+                                                      playerId: currentUserId,
                                                       ownerId: ownerId!,
                                                       vibeScore:
                                                           result.vibeScore!,
@@ -1483,29 +1173,5 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget>
         );
       },
     );
-  }
-
-  // ═══════════════════════════════════════════════════════════════════════════
-  // PENDING REQUESTS SECTION (OWNER-ONLY)
-  // ═══════════════════════════════════════════════════════════════════════════
-  // ANIMATED SECTION HELPER
-  // ═══════════════════════════════════════════════════════════════════════════
-  Widget _buildAnimatedSection({
-    required int sectionIndex,
-    required Widget child,
-  }) {
-    // Calculate stagger delay based on section index (max 8 sections animated)
-    final clampedIndex = sectionIndex < MotionTokens.staggerMaxItems
-        ? sectionIndex
-        : MotionTokens.staggerMaxItems - 1;
-    final staggerDelay = ReducedMotionService.shouldStagger
-        ? MotionTokens.staggerDelay * clampedIndex
-        : Duration.zero;
-
-    return child.animate(target: _hasAnimated ? 1 : 0).fadeIn(
-          delay: staggerDelay,
-          duration: ReducedMotionService.adjust(MotionTokens.contentReveal),
-          curve: MotionTokens.curveEnter,
-        );
   }
 }

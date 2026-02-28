@@ -253,6 +253,17 @@ class Game {
   bool get isFlexible => scheduleType == 'flexible';
   bool get isConfirmed => scheduleType == 'confirmed';
 
+  /// Total player count including joined players, guests, and owner.
+  int get playerCount {
+    final joinedCount = joinedPlayers.length;
+    final guestCount =
+        guestPlayers.where((name) => name.trim().isNotEmpty).length;
+    // Include owner if not already in joined players
+    final ownerCount =
+        (userRef != null && !joinedPlayers.contains(userRef)) ? 1 : 0;
+    return joinedCount + guestCount + ownerCount;
+  }
+
   String get flexibleSummary {
     if (!isFlexible) return '';
 

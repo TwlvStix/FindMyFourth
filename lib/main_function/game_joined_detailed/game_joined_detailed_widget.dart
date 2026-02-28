@@ -3,6 +3,7 @@ import 'dart:async';
 import '/backend/backend.dart';
 import '/core/content/app_copy.dart';
 import '/core/exceptions/app_exceptions.dart';
+import '/core/motion/animation_helpers.dart';
 import '/core/utils/app_log.dart';
 import '/core/widgets/fairway_background.dart';
 import 'components/pending_requests_section.dart';
@@ -502,8 +503,9 @@ class _GameJoinedDetailedWidgetState extends State<GameJoinedDetailedWidget>
                             FirebaseFirestore.instance
                                 .collection('users')
                                 .doc(FirebaseAuth.instance.currentUser!.uid))
-                      _buildAnimatedSection(
+                      buildAnimatedSection(
                         sectionIndex: 0,
+                        hasAnimated: _hasAnimated,
                         child: FirmItUpBanner(
                           onPressed: () async {
                             final result = await showModalBottomSheet<
@@ -609,8 +611,9 @@ class _GameJoinedDetailedWidgetState extends State<GameJoinedDetailedWidget>
 
                     // Quick Stats Row (Date, Players, Chat)
                     // Content section 2 - Staggered reveal
-                    _buildAnimatedSection(
+                    buildAnimatedSection(
                       sectionIndex: 1,
+                      hasAnimated: _hasAnimated,
                       child: Padding(
                         padding:
                             EdgeInsets.symmetric(horizontal: AppSpacing.md),
@@ -633,8 +636,9 @@ class _GameJoinedDetailedWidgetState extends State<GameJoinedDetailedWidget>
                     // Premium Message Group Button
                     // Content section 3 - Staggered reveal
                     if (gameJoinedDetailedGamesRecord.chatRef != null)
-                      _buildAnimatedSection(
+                      buildAnimatedSection(
                         sectionIndex: 2,
+                        hasAnimated: _hasAnimated,
                         child: Padding(
                           padding:
                               EdgeInsets.symmetric(horizontal: AppSpacing.md),
@@ -733,8 +737,9 @@ class _GameJoinedDetailedWidgetState extends State<GameJoinedDetailedWidget>
 
                     // Group Vibe Summary
                     // Content section 4 - Staggered reveal
-                    _buildAnimatedSection(
+                    buildAnimatedSection(
                       sectionIndex: 3,
+                      hasAnimated: _hasAnimated,
                       child: Padding(
                         padding:
                             EdgeInsets.symmetric(horizontal: AppSpacing.md),
@@ -757,8 +762,9 @@ class _GameJoinedDetailedWidgetState extends State<GameJoinedDetailedWidget>
 
                     // Game Details Section
                     // Content section 5 - Staggered reveal
-                    _buildAnimatedSection(
+                    buildAnimatedSection(
                       sectionIndex: 4,
+                      hasAnimated: _hasAnimated,
                       child: Padding(
                         padding:
                             EdgeInsets.symmetric(horizontal: AppSpacing.md),
@@ -847,11 +853,13 @@ class _GameJoinedDetailedWidgetState extends State<GameJoinedDetailedWidget>
                         'ProfileUser',
                         extra: <String, dynamic>{
                           'userRef': userRef,
-                          kTransitionInfoKey: TransitionStandards.detailTransition,
+                          kTransitionInfoKey:
+                              TransitionStandards.detailTransition,
                         },
                       ),
-                      onMatchChipTap: (userRef, displayName, photoUrl, memberMatch) =>
-                          _openPremiumVibePage(
+                      onMatchChipTap:
+                          (userRef, displayName, photoUrl, memberMatch) =>
+                              _openPremiumVibePage(
                         context,
                         userRef,
                         displayName,
@@ -934,7 +942,8 @@ class _GameJoinedDetailedWidgetState extends State<GameJoinedDetailedWidget>
                               await context.gameProvider.leaveGame(
                                 gameRef.id,
                                 currentUserRef.id,
-                                chatId: gameJoinedDetailedGamesRecord.chatRef?.id,
+                                chatId:
+                                    gameJoinedDetailedGamesRecord.chatRef?.id,
                               );
 
                               // Show success toast
@@ -1040,7 +1049,8 @@ class _GameJoinedDetailedWidgetState extends State<GameJoinedDetailedWidget>
                               );
                               // Use GameProvider to cancel game (handles Firestore + cache)
                               await context.gameProvider.cancelGame(gameRef.id);
-                              AppLog.d('CancelGame: game cancelled successfully');
+                              AppLog.d(
+                                  'CancelGame: game cancelled successfully');
 
                               // Archive chat (send cancel message + set read-only)
                               final currentUserId =
@@ -1086,7 +1096,8 @@ class _GameJoinedDetailedWidgetState extends State<GameJoinedDetailedWidget>
                               if (mounted) {
                                 ScaffoldMessenger.of(context).showSnackBar(
                                   SnackBar(
-                                    content: Text('Game cancelled successfully'),
+                                    content:
+                                        Text('Game cancelled successfully'),
                                     backgroundColor: AppColors.success,
                                     duration: Duration(seconds: 2),
                                   ),
@@ -1123,29 +1134,6 @@ class _GameJoinedDetailedWidgetState extends State<GameJoinedDetailedWidget>
         );
       },
     );
-  }
-
-  /// Builds a content section with staggered fade-in animation.
-  ///
-  /// Uses MotionTokens.contentReveal (160ms) timing with 24ms stagger delay
-  /// per section index. Respects reduced motion preferences.
-  Widget _buildAnimatedSection({
-    required int sectionIndex,
-    required Widget child,
-  }) {
-    // Calculate stagger delay based on section index (max 8 sections animated)
-    final clampedIndex = sectionIndex < MotionTokens.staggerMaxItems
-        ? sectionIndex
-        : MotionTokens.staggerMaxItems - 1;
-    final staggerDelay = ReducedMotionService.shouldStagger
-        ? MotionTokens.staggerDelay * clampedIndex
-        : Duration.zero;
-
-    return child.animate(target: _hasAnimated ? 1 : 0).fadeIn(
-          delay: staggerDelay,
-          duration: ReducedMotionService.adjust(MotionTokens.contentReveal),
-          curve: MotionTokens.curveEnter,
-        );
   }
 
   Future<void> _openPremiumVibePage(
@@ -1287,7 +1275,8 @@ class _GameJoinedDetailedWidgetState extends State<GameJoinedDetailedWidget>
         chatId: gameRecord.chatRef?.id,
       );
 
-      AppLog.d('Player Management: Removed ${isGuest ? 'guest' : 'player'}: ${isGuest ? guestName : playerRef?.id}');
+      AppLog.d(
+          'Player Management: Removed ${isGuest ? 'guest' : 'player'}: ${isGuest ? guestName : playerRef?.id}');
 
       // Show success message
       if (mounted) {
@@ -1423,7 +1412,8 @@ class _GameJoinedDetailedWidgetState extends State<GameJoinedDetailedWidget>
       };
 
       AppLog.d('🎯 Updating via GameProvider: $firestoreUpdate');
-      await context.gameProvider.updateGame(gameRecord.reference.id, firestoreUpdate);
+      await context.gameProvider
+          .updateGame(gameRecord.reference.id, firestoreUpdate);
 
       // Send notifications to all players (except owner)
       final currentUserUid = FirebaseAuth.instance.currentUser?.uid;
@@ -1487,5 +1477,4 @@ class _GameJoinedDetailedWidgetState extends State<GameJoinedDetailedWidget>
       }
     }
   }
-
 }

@@ -41,7 +41,8 @@ void main() {
       expect(source, contains('GroupVibeSummary('));
       expect(source, contains('groupVibeMatch: groupVibeMatch'));
       expect(source, contains('GroupVibeBreakdownSheet.show('));
-      expect(source, contains('groupVibeProvider.compareMemberIds('));
+      // After Phase 3: compareMemberIds moved to PlayerListSection component
+      expect(source, contains('PlayerListSection('));
     });
   });
 }
