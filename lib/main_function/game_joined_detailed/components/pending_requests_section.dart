@@ -101,17 +101,8 @@ class _PendingRequestsSectionState extends State<PendingRequestsSection> {
   Future<Map<String, VibeProfile>> _fetchVibeProfiles(
     List<String> requesterIds,
   ) async {
-    final entries = await Future.wait(
-      requesterIds.map((requesterId) async {
-        final vibeProfile =
-            await _vibeRepository.getVibeProfileForUser(requesterId);
-        return MapEntry(requesterId, vibeProfile);
-      }),
-    );
-
-    return {
-      for (final entry in entries) entry.key: entry.value,
-    };
+    // Use batch fetch instead of per-user Future.wait loop
+    return _vibeRepository.batchGetVibeProfiles(requesterIds);
   }
 
   @override

@@ -124,16 +124,8 @@ class _PlayerListSectionState extends State<PlayerListSection> {
     TrustProvider trustProvider,
     List<String> userIds,
   ) async {
-    final entries = await Future.wait(
-      userIds.map((userId) async {
-        final profile = await trustProvider.fetchTrustProfile(userId);
-        return MapEntry(userId, profile);
-      }),
-    );
-
-    return {
-      for (final entry in entries) entry.key: entry.value,
-    };
+    // Use batch fetch instead of per-user Future.wait loop
+    return trustProvider.batchGetTrustProfiles(userIds);
   }
 
   @override

@@ -1,8 +1,10 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+
 import '/auth/firebase_auth/auth_util.dart';
-import '/backend/backend.dart';
 import '/backend/cloud_functions/cloud_functions.dart';
 import '/backend/schema/player_standing.dart';
 import '/backend/schema/trust_profile.dart';
+import '/backend/schema/util/firestore_util.dart';
 import '/core/utils/app_log.dart';
 
 /// TrustRepository — data access layer for trust system.
@@ -11,7 +13,14 @@ import '/core/utils/app_log.dart';
 /// Public trust data is read from UsersRecord in Firestore.
 /// Private standing data is fetched via the getMyStanding cloud function.
 class TrustRepository {
-  const TrustRepository();
+  const TrustRepository({
+    FirebaseFirestore? firestore,
+  }) : _firestore = firestore;
+
+  final FirebaseFirestore? _firestore;
+
+  CollectionReference<Map<String, dynamic>> get _usersCollection =>
+      (_firestore ?? FirebaseFirestore.instance).collection('users');
 
   // ─────────────────────────────────────────────────────────────────────────
   // Public API
@@ -23,14 +32,60 @@ class TrustRepository {
   /// to a [TrustProfile] value object.
   Future<TrustProfile?> getTrustProfile(String userId) async {
     try {
-      final doc = await UsersRecord.collection.doc(userId).get();
+      final doc = await _usersCollection.doc(userId).get();
       if (!doc.exists) return null;
-      final data = Map<String, dynamic>.from(doc.data() as Map);
+      final data = mapFromFirestore(doc.data() ?? const <String, dynamic>{});
       return TrustProfile.fromMap(data);
     } catch (e) {
       AppLog.d('TrustRepository.getTrustProfile error for $userId: $e');
       return null;
     }
+  }
+
+  /// Batch fetch trust profiles for multiple users.
+  ///
+  /// Uses Firestore whereIn with 10-item chunking.
+  /// Returns Map<userId, TrustProfile?> - null for users without trust data.
+  Future<Map<String, TrustProfile?>> batchGetTrustProfiles(
+    List<String> userIds,
+  ) async {
+    if (userIds.isEmpty) return {};
+
+    final uniqueIds = userIds.toSet().toList();
+    final result = <String, TrustProfile?>{};
+
+    // Chunk by 10 (Firestore whereIn limit)
+    for (var i = 0; i < uniqueIds.length; i += 10) {
+      final end = (i + 10) > uniqueIds.length ? uniqueIds.length : i + 10;
+      final batch = uniqueIds.sublist(i, end);
+
+      try {
+        final snapshot = await _usersCollection
+            .where(FieldPath.documentId, whereIn: batch)
+            .get();
+
+        for (final doc in snapshot.docs) {
+          final data = mapFromFirestore(doc.data());
+          result[doc.id] = TrustProfile.fromMap(data);
+        }
+
+        // Add null entries for users not found
+        for (final userId in batch) {
+          if (!result.containsKey(userId)) {
+            result[userId] = null;
+          }
+        }
+      } catch (e) {
+        AppLog.d(
+            'TrustRepository.batchGetTrustProfiles error for chunk ${i ~/ 10 + 1}: $e');
+        // Add null entries for failed batch
+        for (final userId in batch) {
+          result[userId] = null;
+        }
+      }
+    }
+
+    return result;
   }
 
   /// Fetch the current user's private player standing.

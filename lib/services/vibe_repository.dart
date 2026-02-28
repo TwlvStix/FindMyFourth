@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
 import '/backend/schema/util/firestore_util.dart';
+import '/core/utils/app_log.dart';
 import '/models/vibe_profile.dart';
 
 class VibeRepository {
@@ -172,8 +173,7 @@ class VibeRepository {
   }
 
   Future<void> confirmVibes({VibeProfile? profile}) async {
-    final confirmed =
-        (profile ?? await getMyVibes()).confirmed(DateTime.now());
+    final confirmed = (profile ?? await getMyVibes()).confirmed(DateTime.now());
     await _currentUserRef().set(
       {'vibe_profile': confirmed.toFirestore()},
       SetOptions(merge: true),
@@ -224,5 +224,51 @@ class VibeRepository {
   Future<VibeProfile> getVibeProfileForUser(String userId) async {
     final doc = await _firestore.collection('users').doc(userId).get();
     return profileFromSnapshot(doc);
+  }
+
+  /// Batch fetch vibe profiles for multiple users.
+  ///
+  /// Uses Firestore whereIn with 10-item chunking.
+  /// Returns Map<userId, VibeProfile> - defaults for users without vibe data.
+  Future<Map<String, VibeProfile>> batchGetVibeProfiles(
+    List<String> userIds,
+  ) async {
+    if (userIds.isEmpty) return {};
+
+    final uniqueIds = userIds.toSet().toList();
+    final result = <String, VibeProfile>{};
+
+    // Chunk by 10 (Firestore whereIn limit)
+    for (var i = 0; i < uniqueIds.length; i += 10) {
+      final end = (i + 10) > uniqueIds.length ? uniqueIds.length : i + 10;
+      final batch = uniqueIds.sublist(i, end);
+
+      try {
+        final snapshot = await _firestore
+            .collection('users')
+            .where(FieldPath.documentId, whereIn: batch)
+            .get();
+
+        for (final doc in snapshot.docs) {
+          result[doc.id] = profileFromSnapshot(doc);
+        }
+
+        // Add default profiles for users not found
+        for (final userId in batch) {
+          if (!result.containsKey(userId)) {
+            result[userId] = VibeProfile.defaults();
+          }
+        }
+      } catch (e) {
+        AppLog.d(
+            'VibeRepository.batchGetVibeProfiles error for chunk ${i ~/ 10 + 1}: $e');
+        // Return defaults for failed batch
+        for (final userId in batch) {
+          result[userId] = VibeProfile.defaults();
+        }
+      }
+    }
+
+    return result;
   }
 }

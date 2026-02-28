@@ -22,6 +22,10 @@ import '/core/utils/app_log.dart';
 class TrustProvider extends ChangeNotifier {
   TrustProvider() : _repo = const TrustRepository();
 
+  /// Test constructor for dependency injection.
+  @visibleForTesting
+  TrustProvider.withRepository(this._repo);
+
   final TrustRepository _repo;
 
   // ─────────────────────────────────────────────────────────────────────────
@@ -33,6 +37,7 @@ class TrustProvider extends ChangeNotifier {
 
   final FutureRequestManager<TrustProfile?> _profileManager =
       FutureRequestManager(20);
+  final Map<String, Completer<TrustProfile?>> _inFlightBatchFetches = {};
 
   // ─────────────────────────────────────────────────────────────────────────
   // Private player standing (current user only)
@@ -93,6 +98,67 @@ class TrustProvider extends ChangeNotifier {
     }
   }
 
+  /// Batch fetch trust profiles with caching.
+  ///
+  /// Checks cache first, only fetches missing profiles from repository.
+  /// Returns Map<userId, TrustProfile?> with cached values where valid.
+  Future<Map<String, TrustProfile?>> batchGetTrustProfiles(
+    List<String> userIds,
+  ) async {
+    if (userIds.isEmpty) return {};
+
+    final uniqueIds = userIds.toSet().toList();
+    final result = <String, TrustProfile?>{};
+    final missingIds = <String>[];
+
+    // Check cache first
+    for (final userId in uniqueIds) {
+      if (_isProfileCacheValid(userId)) {
+        result[userId] = _profileCache[userId];
+      } else {
+        missingIds.add(userId);
+      }
+    }
+
+    if (missingIds.isEmpty) {
+      return result;
+    }
+
+    final idsToStartNow = <String>[];
+    for (final userId in missingIds) {
+      if (!_inFlightBatchFetches.containsKey(userId)) {
+        idsToStartNow.add(userId);
+      }
+    }
+
+    if (idsToStartNow.isNotEmpty) {
+      AppLog.d('🔥 TrustProvider.batchGetTrustProfiles: '
+          'Fetching ${idsToStartNow.length} profiles in batch '
+          '(${result.length} cached, ${missingIds.length - idsToStartNow.length} in-flight)');
+      _startBatchFetch(idsToStartNow);
+    }
+
+    final inFlightFutures = <String, Future<TrustProfile?>>{};
+    for (final userId in missingIds) {
+      final inFlight = _inFlightBatchFetches[userId];
+      if (inFlight != null) {
+        inFlightFutures[userId] = inFlight.future;
+      }
+    }
+
+    for (final userId in missingIds) {
+      final inFlightFuture = inFlightFutures[userId];
+      if (inFlightFuture != null) {
+        result[userId] = await inFlightFuture;
+      } else {
+        result[userId] =
+            _isProfileCacheValid(userId) ? _profileCache[userId] : null;
+      }
+    }
+
+    return result;
+  }
+
   /// Fetch (or return cached) current user's player standing.
   Future<PlayerStanding?> fetchPlayerStanding() async {
     if (_isStandingCacheValid() && _myStanding != null) return _myStanding;
@@ -151,6 +217,61 @@ class TrustProvider extends ChangeNotifier {
     _notifyTimer = Timer(const Duration(milliseconds: 100), () {
       if (!_disposed) notifyListeners();
     });
+  }
+
+  void _startBatchFetch(List<String> userIds) {
+    if (userIds.isEmpty) return;
+
+    final completers = <String, Completer<TrustProfile?>>{};
+    for (final userId in userIds) {
+      final completer = Completer<TrustProfile?>();
+      _inFlightBatchFetches[userId] = completer;
+      completers[userId] = completer;
+    }
+
+    unawaited(() async {
+      var cacheUpdated = false;
+      try {
+        final fetched = await _repo.batchGetTrustProfiles(userIds);
+        for (final userId in userIds) {
+          final profile = fetched[userId];
+          if (profile != null) {
+            _profileCache[userId] = profile;
+            _profileCacheTimestamps[userId] = DateTime.now();
+            cacheUpdated = true;
+          }
+          final completer = completers[userId];
+          if (completer != null && !completer.isCompleted) {
+            completer.complete(profile);
+          }
+        }
+      } catch (e) {
+        AppLog.d('❌ TrustProvider.batchGetTrustProfiles error: $e');
+        for (final completer in completers.values) {
+          if (!completer.isCompleted) {
+            completer.complete(null);
+          }
+        }
+      } finally {
+        for (final userId in userIds) {
+          _inFlightBatchFetches.remove(userId);
+        }
+        if (cacheUpdated) {
+          _scheduleNotify();
+        }
+      }
+    }());
+  }
+
+  // ─────────────────────────────────────────────────────────────────────────
+  // Test helpers
+  // ─────────────────────────────────────────────────────────────────────────
+
+  /// Expire cache for a specific user (for testing TTL behavior).
+  @visibleForTesting
+  void expireCacheForTest(String userId) {
+    _profileCacheTimestamps[userId] =
+        DateTime.now().subtract(const Duration(minutes: 6));
   }
 
   @override
