@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 
 import '/auth/firebase_auth/auth_util.dart';
+import '/services/notification_crud_service.dart';
 import '/core/widgets/app_premium_dialog.dart';
 import '/core/design_tokens/app_phosphor_icons.dart';
 import '/core/design_tokens/border_radius.dart';
@@ -33,6 +34,7 @@ class NotificationsListWidget extends StatefulWidget {
 
 class _NotificationsListWidgetState extends State<NotificationsListWidget> {
   final scaffoldKey = GlobalKey<ScaffoldState>();
+  final _notificationService = NotificationCrudService();
   static const int _pageSizeStep = 50;
   int _pageSize = _pageSizeStep;
   int _notificationCount = 0;
@@ -55,46 +57,23 @@ class _NotificationsListWidgetState extends State<NotificationsListWidget> {
   }
 
   Future<void> _markAllAsRead(DocumentReference userRef) async {
-    final unreadSnapshot = await userRef
-        .collection('notifications')
-        .where('read', isEqualTo: false)
-        .get();
-    if (unreadSnapshot.docs.isEmpty) {
-      return;
-    }
-    var batch = FirebaseFirestore.instance.batch();
-    var opCount = 0;
-    for (final doc in unreadSnapshot.docs) {
-      batch.update(doc.reference, {'read': true});
-      opCount += 1;
-      if (opCount >= 400) {
-        await batch.commit();
-        batch = FirebaseFirestore.instance.batch();
-        opCount = 0;
-      }
-    }
-    if (opCount > 0) {
-      await batch.commit();
-    }
+    await _notificationService.markAllAsRead(userRef);
   }
 
   Future<void> _markReadIfNeeded(
     DocumentReference reference,
     bool isRead,
   ) async {
-    if (isRead) {
-      return;
-    }
-    await reference.update({'read': true});
+    await _notificationService.markReadIfNeeded(reference, isRead);
   }
 
   Future<void> _markAsUnread(DocumentReference reference) async {
-    await reference.update({'read': false});
+    await _notificationService.markAsUnread(reference);
   }
 
   Future<void> _deleteNotification(DocumentReference reference) async {
     try {
-      await reference.delete();
+      await _notificationService.deleteNotification(reference);
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -119,48 +98,15 @@ class _NotificationsListWidgetState extends State<NotificationsListWidget> {
 
   Future<void> _deleteAllNotifications(DocumentReference userRef) async {
     try {
-      // Get all notifications in batches of 500 to stay under Firestore limits
-      final allSnapshot = await userRef
-          .collection('notifications')
-          .orderBy('createdAt')
-          .get();
-
-      if (allSnapshot.docs.isEmpty) {
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text('No notifications to delete'),
-              backgroundColor: AppColors.navy,
-              duration: Duration(seconds: 2),
-            ),
-          );
-        }
-        return;
-      }
-
-      var batch = FirebaseFirestore.instance.batch();
-      var opCount = 0;
-
-      for (final doc in allSnapshot.docs) {
-        batch.delete(doc.reference);
-        opCount += 1;
-        // Commit batch at 500 operations (Firestore limit)
-        if (opCount >= 500) {
-          await batch.commit();
-          batch = FirebaseFirestore.instance.batch();
-          opCount = 0;
-        }
-      }
-
-      // Commit remaining operations
-      if (opCount > 0) {
-        await batch.commit();
-      }
+      final deletedCount =
+          await _notificationService.deleteAllNotifications(userRef);
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('All notifications deleted'),
+            content: Text(deletedCount > 0
+                ? 'All notifications deleted'
+                : 'No notifications to delete'),
             backgroundColor: AppColors.navy,
             duration: Duration(seconds: 2),
           ),
@@ -185,7 +131,8 @@ class _NotificationsListWidgetState extends State<NotificationsListWidget> {
       variant: PremiumDialogVariant.informational,
       icon: PhosphorIconsRegular.lock,
       title: 'Friends Only Game',
-      body: 'This game is visible to friends only. Add the host as a friend to view details.',
+      body:
+          'This game is visible to friends only. Add the host as a friend to view details.',
       actionLabel: 'Got It',
     );
   }
@@ -195,53 +142,10 @@ class _NotificationsListWidgetState extends State<NotificationsListWidget> {
     if (currentUserRef == null) {
       return false;
     }
-
-    Map<String, dynamic>? data;
-    try {
-      final gameSnap = await gameRef.get();
-      data = gameSnap.data() as Map<String, dynamic>?;
-    } on FirebaseException catch (error) {
-      if (error.code == 'permission-denied') {
-        return true;
-      }
-      return false;
-    } catch (_) {
-      return false;
-    }
-    if (data == null) {
-      return false;
-    }
-
-    final friendGameValue = (data['friendGame'] as String?) ?? '';
-    final isFriendsOnly = friendGameValue.trim().toLowerCase() == 'friends';
-    if (!isFriendsOnly) {
-      return false;
-    }
-
-    final ownerRef = data['userRef'];
-    if (ownerRef is! DocumentReference) {
-      return true;
-    }
-
-    final userSnap = await currentUserRef.get();
-    final userData = userSnap.data() as Map<String, dynamic>? ?? {};
-    final friends = userData['friends'];
-    if (friends is List) {
-      return !friends.any((entry) {
-        if (entry is DocumentReference) {
-          return entry.id == ownerRef.id;
-        }
-        if (entry is String) {
-          if (entry.contains('/')) {
-            final parts = entry.split('/');
-            return parts.isNotEmpty && parts.last == ownerRef.id;
-          }
-          return entry == ownerRef.id;
-        }
-        return false;
-      });
-    }
-    return true;
+    return _notificationService.shouldBlockFriendsOnlyGame(
+      gameRef: gameRef,
+      currentUserRef: currentUserRef,
+    );
   }
 
   Future<void> _showDeleteAllConfirmDialog(DocumentReference userRef) async {
@@ -250,7 +154,8 @@ class _NotificationsListWidgetState extends State<NotificationsListWidget> {
       variant: PremiumDialogVariant.destructive,
       icon: PhosphorIconsRegular.trash,
       title: 'Delete All Notifications',
-      body: 'Are you sure you want to delete all notifications? This action cannot be undone.',
+      body:
+          'Are you sure you want to delete all notifications? This action cannot be undone.',
       actionLabel: 'Delete All',
       cancelLabel: 'Cancel',
     );
@@ -374,14 +279,7 @@ class _NotificationsListWidgetState extends State<NotificationsListWidget> {
     final type = (data['type'] as String?) ?? '';
     final payload = _extractDataMap(data['data']);
     if (_isGameNotification(type)) {
-      final gameId = payload['gameId'] ?? payload['game_id'];
-      final gameRefPath = payload['gameRef'];
-      DocumentReference? gameRef;
-      if (gameRefPath is String && gameRefPath.isNotEmpty) {
-        gameRef = FirebaseFirestore.instance.doc(gameRefPath);
-      } else if (gameId is String && gameId.isNotEmpty) {
-        gameRef = FirebaseFirestore.instance.collection('games').doc(gameId);
-      }
+      final gameRef = _notificationService.resolveGameRefFromPayload(payload);
       if (gameRef != null) {
         final shouldBlock = await _shouldBlockFriendsOnlyGame(gameRef);
         if (shouldBlock) {
@@ -416,14 +314,7 @@ class _NotificationsListWidgetState extends State<NotificationsListWidget> {
       return;
     }
     if (_isTrustGameNotification(type)) {
-      final gameId = payload['gameId'] ?? payload['game_id'];
-      final gameRefPath = payload['gameRef'];
-      DocumentReference? gameRef;
-      if (gameRefPath is String && gameRefPath.isNotEmpty) {
-        gameRef = FirebaseFirestore.instance.doc(gameRefPath);
-      } else if (gameId is String && gameId.isNotEmpty) {
-        gameRef = FirebaseFirestore.instance.collection('games').doc(gameId);
-      }
+      final gameRef = _notificationService.resolveGameRefFromPayload(payload);
       if (gameRef != null) {
         final shouldBlock = await _shouldBlockFriendsOnlyGame(gameRef);
         if (shouldBlock) {
@@ -478,10 +369,7 @@ class _NotificationsListWidgetState extends State<NotificationsListWidget> {
 
     return [
       StreamBuilder<QuerySnapshot>(
-        stream: userRef
-            .collection('notifications')
-            .where('read', isEqualTo: false)
-            .snapshots(),
+        stream: _notificationService.streamUnreadNotifications(userRef),
         builder: (context, snapshot) {
           final unreadCount = snapshot.data?.docs.length ?? 0;
           final hasUnread = unreadCount > 0;
@@ -545,309 +433,356 @@ class _NotificationsListWidgetState extends State<NotificationsListWidget> {
           child: SafeArea(
             top: false,
             child: userRef == null
-              ? Center(
-                  child: Text(
-                    'Please sign in to view notifications.',
-                    style: AppTypography.bodyMedium.copyWith(
-                      color: AppColors.pure,
+                ? Center(
+                    child: Text(
+                      'Please sign in to view notifications.',
+                      style: AppTypography.bodyMedium.copyWith(
+                        color: AppColors.pure,
+                      ),
                     ),
-                  ),
-                )
-              : StreamBuilder<QuerySnapshot>(
-                  stream: userRef
-                      .collection('notifications')
-                      .orderBy('createdAt', descending: true)
-                      .limit(_pageSize)
-                      .snapshots(),
-                  builder: (context, snapshot) {
-                    if (snapshot.hasError) {
-                      return Center(
-                        child: Text(
-                          'Failed to load notifications.',
-                          style: AppTypography.bodyMedium.copyWith(
-                            color: AppColors.pure,
+                  )
+                : StreamBuilder<QuerySnapshot>(
+                    stream: _notificationService.streamNotifications(
+                      userRef: userRef,
+                      limit: _pageSize,
+                    ),
+                    builder: (context, snapshot) {
+                      if (snapshot.hasError) {
+                        return Center(
+                          child: Text(
+                            'Failed to load notifications.',
+                            style: AppTypography.bodyMedium.copyWith(
+                              color: AppColors.pure,
+                            ),
                           ),
-                        ),
-                      );
-                    }
-                    if (!snapshot.hasData) {
-                      return Center(
-                        child: CircularProgressIndicator(
-                          color: AppColors.green,
-                        ),
-                      );
-                    }
-                    final docs = snapshot.data?.docs ?? [];
-
-                    // Update notification count for app bar actions
-                    WidgetsBinding.instance.addPostFrameCallback((_) {
-                      if (mounted && _notificationCount != docs.length) {
-                        setState(() => _notificationCount = docs.length);
+                        );
                       }
-                    });
+                      if (!snapshot.hasData) {
+                        return Center(
+                          child: CircularProgressIndicator(
+                            color: AppColors.green,
+                          ),
+                        );
+                      }
+                      final docs = snapshot.data?.docs ??
+                          const <QueryDocumentSnapshot>[];
 
-                    if (docs.isEmpty) {
-                      // Wrap in scrollable for pull-to-refresh on empty state
+                      // Update notification count for app bar actions
+                      WidgetsBinding.instance.addPostFrameCallback((_) {
+                        if (mounted && _notificationCount != docs.length) {
+                          setState(() => _notificationCount = docs.length);
+                        }
+                      });
+
+                      if (docs.isEmpty) {
+                        // Wrap in scrollable for pull-to-refresh on empty state
+                        return RefreshIndicator(
+                          color: AppColors.green,
+                          backgroundColor: AppColors.navy,
+                          onRefresh: _onRefresh,
+                          child: CustomScrollView(
+                            physics: const AlwaysScrollableScrollPhysics(),
+                            slivers: [
+                              SliverToBoxAdapter(
+                                child: Padding(
+                                  padding: EdgeInsets.only(
+                                    top: MediaQuery.of(context).padding.top +
+                                        100,
+                                  ),
+                                  child: AppEmptyStatePremium(
+                                    icon: AppPhosphorIcons.notifications,
+                                    title: "You're all caught up",
+                                    message: 'New activity will appear here.',
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        );
+                      }
                       return RefreshIndicator(
                         color: AppColors.green,
                         backgroundColor: AppColors.navy,
                         onRefresh: _onRefresh,
-                        child: CustomScrollView(
-                          physics: const AlwaysScrollableScrollPhysics(),
-                          slivers: [
-                            SliverToBoxAdapter(
-                              child: Padding(
-                                padding: EdgeInsets.only(
-                                  top: MediaQuery.of(context).padding.top + 100,
-                                ),
-                                child: AppEmptyStatePremium(
-                                  icon: AppPhosphorIcons.notifications,
-                                  title: "You're all caught up",
-                                  message: 'New activity will appear here.',
-                                ),
-                              ),
+                        child: NotificationListener<ScrollNotification>(
+                          onNotification: (notification) {
+                            if (notification.metrics.extentAfter < 200 &&
+                                docs.length >= _pageSize) {
+                              setState(() {
+                                _pageSize += _pageSizeStep;
+                              });
+                            }
+                            return false;
+                          },
+                          child: ListView.separated(
+                            padding: EdgeInsets.fromLTRB(
+                              AppSpacing.md,
+                              MediaQuery.of(context).padding.top + 60,
+                              AppSpacing.md,
+                              AppSpacing.xxxl,
                             ),
-                          ],
-                        ),
-                      );
-                    }
-                    return RefreshIndicator(
-                      color: AppColors.green,
-                      backgroundColor: AppColors.navy,
-                      onRefresh: _onRefresh,
-                      child: NotificationListener<ScrollNotification>(
-                      onNotification: (notification) {
-                        if (notification.metrics.extentAfter < 200 &&
-                            docs.length >= _pageSize) {
-                          setState(() {
-                            _pageSize += _pageSizeStep;
-                          });
-                        }
-                        return false;
-                      },
-                      child: ListView.separated(
-                        padding: EdgeInsets.fromLTRB(
-                          AppSpacing.md,
-                          MediaQuery.of(context).padding.top + 60,
-                          AppSpacing.md,
-                          AppSpacing.xxxl,
-                        ),
-                        itemCount: docs.length,
-                        separatorBuilder: (context, index) =>
-                            SizedBox(height: AppSpacing.sm),
-                        itemBuilder: (context, index) {
-                          final doc = docs[index];
-                          final data =
-                              (doc.data() as Map<String, dynamic>?) ??
-                                  <String, dynamic>{};
-                          final type = (data['type'] as String?) ?? '';
-                          final title = (data['title'] as String?)?.trim();
-                          final body = (data['body'] as String?)?.trim();
-                          final isRead = data['read'] == true;
-                          final createdAt =
-                              (data['createdAt'] as Timestamp?)?.toDate();
-                          final timeLabel =
-                              dateTimeFormat('relative', createdAt);
-                          return Dismissible(
-                            key: Key(doc.id),
-                            direction: DismissDirection.endToStart,
-                            background: Container(
-                              alignment: Alignment.centerRight,
-                              padding: EdgeInsets.only(right: AppSpacing.md),
-                              decoration: BoxDecoration(
-                                color: AppColors.error,
-                                borderRadius: BorderRadius.circular(AppBorderRadius.md),
-                              ),
-                              child: AppIcon(
-                                icon: AppPhosphorIcons.trash,
-                                color: AppColors.pure,
-                                size: AppIconSize.md,
-                              ),
-                            ),
-                            confirmDismiss: (direction) async {
-                              return await showPremiumDialog(
-                                context: context,
-                                variant: PremiumDialogVariant.destructive,
-                                icon: PhosphorIconsRegular.trash,
-                                title: 'Delete Notification',
-                                body: 'Are you sure you want to delete this notification?',
-                                actionLabel: 'Delete',
-                                cancelLabel: 'Cancel',
-                              ) ?? false;
-                            },
-                            onDismissed: (direction) {
-                              _deleteNotification(doc.reference);
-                            },
-                            child: InkWell(
-                              borderRadius: BorderRadius.circular(AppBorderRadius.md),
-                              onTap: () async {
-                                await _handleNotificationTap(doc);
-                              },
-                              onLongPress: isRead ? () async {
-                                final result = await showDialog<String>(
-                                  context: context,
-                                  builder: (dialogContext) => AlertDialog(
-                                    title: Text('Notification Actions'),
-                                    backgroundColor: AppColors.navy,
-                                    content: Column(
-                                      mainAxisSize: MainAxisSize.min,
-                                      children: [
-                                        ListTile(
-                                          leading: AppIcon(
-                                            icon: AppPhosphorIcons.notifications,
-                                            color: AppColors.textSecondary,
-                                            size: AppIconSize.md,
-                                          ),
-                                          title: Text('Mark as unread'),
-                                          onTap: () => Navigator.of(dialogContext).pop('unread'),
-                                        ),
-                                        ListTile(
-                                          leading: AppIcon(
-                                            icon: AppPhosphorIcons.trash,
-                                            color: AppColors.error,
-                                            size: AppIconSize.md,
-                                          ),
-                                          title: Text('Delete'),
-                                          onTap: () => Navigator.of(dialogContext).pop('delete'),
-                                        ),
-                                      ],
-                                    ),
+                            itemCount: docs.length,
+                            separatorBuilder: (context, index) =>
+                                SizedBox(height: AppSpacing.sm),
+                            itemBuilder: (context, index) {
+                              final doc = docs[index];
+                              final data =
+                                  (doc.data() as Map<String, dynamic>?) ??
+                                      <String, dynamic>{};
+                              final type = (data['type'] as String?) ?? '';
+                              final title = (data['title'] as String?)?.trim();
+                              final body = (data['body'] as String?)?.trim();
+                              final isRead = data['read'] == true;
+                              final createdAt =
+                                  (data['createdAt'] as Timestamp?)?.toDate();
+                              final timeLabel =
+                                  dateTimeFormat('relative', createdAt);
+                              return Dismissible(
+                                key: Key(doc.id),
+                                direction: DismissDirection.endToStart,
+                                background: Container(
+                                  alignment: Alignment.centerRight,
+                                  padding:
+                                      EdgeInsets.only(right: AppSpacing.md),
+                                  decoration: BoxDecoration(
+                                    color: AppColors.error,
+                                    borderRadius: BorderRadius.circular(
+                                        AppBorderRadius.md),
                                   ),
-                                );
-                                if (result == 'unread') {
-                                  await _markAsUnread(doc.reference);
-                                  if (mounted) {
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      SnackBar(
-                                        content: Text('Marked as unread'),
-                                        backgroundColor: AppColors.navy,
-                                        duration: Duration(seconds: 2),
-                                      ),
-                                    );
-                                  }
-                                } else if (result == 'delete') {
-                                  await _deleteNotification(doc.reference);
-                                }
-                              } : null,
-                              child: Container(
-                                decoration: BoxDecoration(
-                                  color: AppColors.navy,
-                                  borderRadius: BorderRadius.circular(AppBorderRadius.md),
-                                  border: Border.all(
-                                    color: AppColors.navyLight,
-                                    width: 1.0,
+                                  child: AppIcon(
+                                    icon: AppPhosphorIcons.trash,
+                                    color: AppColors.pure,
+                                    size: AppIconSize.md,
                                   ),
-                                  boxShadow: [AppElevation.xs],
                                 ),
-                                padding: EdgeInsets.all(AppSpacing.md),
-                                child: Row(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Container(
-                                      width: AppIconSize.xl,
-                                      height: AppIconSize.xl,
-                                      decoration: BoxDecoration(
-                                        color: _iconBgColorForType(context, type),
-                                        shape: BoxShape.circle,
-                                      ),
-                                      child: Center(
-                                        child: AppIcon(
-                                          icon: _iconForType(type),
-                                          color: AppColors.pure,
-                                          size: AppIconSize.button,
-                                        ),
-                                      ),
-                                    ),
-                                    SizedBox(width: AppSpacing.sm),
-                                    Expanded(
-                                      child: Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
-                                        children: [
-                                          Row(
-                                            children: [
-                                              Expanded(
-                                                child: Text(
-                                                  title?.isNotEmpty == true
-                                                      ? title!
-                                                      : _titleFallback(type),
-                                                  maxLines: 1,
-                                                  overflow: TextOverflow.ellipsis,
-                                                  style: AppTypography.bodyLarge.copyWith(
-                                                    color: AppColors.textPrimary,
+                                confirmDismiss: (direction) async {
+                                  return await showPremiumDialog(
+                                        context: context,
+                                        variant:
+                                            PremiumDialogVariant.destructive,
+                                        icon: PhosphorIconsRegular.trash,
+                                        title: 'Delete Notification',
+                                        body:
+                                            'Are you sure you want to delete this notification?',
+                                        actionLabel: 'Delete',
+                                        cancelLabel: 'Cancel',
+                                      ) ??
+                                      false;
+                                },
+                                onDismissed: (direction) {
+                                  _deleteNotification(doc.reference);
+                                },
+                                child: InkWell(
+                                  borderRadius:
+                                      BorderRadius.circular(AppBorderRadius.md),
+                                  onTap: () async {
+                                    await _handleNotificationTap(doc);
+                                  },
+                                  onLongPress: isRead
+                                      ? () async {
+                                          final result =
+                                              await showDialog<String>(
+                                            context: context,
+                                            builder: (dialogContext) =>
+                                                AlertDialog(
+                                              title:
+                                                  Text('Notification Actions'),
+                                              backgroundColor: AppColors.navy,
+                                              content: Column(
+                                                mainAxisSize: MainAxisSize.min,
+                                                children: [
+                                                  ListTile(
+                                                    leading: AppIcon(
+                                                      icon: AppPhosphorIcons
+                                                          .notifications,
+                                                      color: AppColors
+                                                          .textSecondary,
+                                                      size: AppIconSize.md,
+                                                    ),
+                                                    title:
+                                                        Text('Mark as unread'),
+                                                    onTap: () => Navigator.of(
+                                                            dialogContext)
+                                                        .pop('unread'),
                                                   ),
-                                                ),
+                                                  ListTile(
+                                                    leading: AppIcon(
+                                                      icon: AppPhosphorIcons
+                                                          .trash,
+                                                      color: AppColors.error,
+                                                      size: AppIconSize.md,
+                                                    ),
+                                                    title: Text('Delete'),
+                                                    onTap: () => Navigator.of(
+                                                            dialogContext)
+                                                        .pop('delete'),
+                                                  ),
+                                                ],
                                               ),
-                                              if (timeLabel.isNotEmpty)
+                                            ),
+                                          );
+                                          if (result == 'unread') {
+                                            await _markAsUnread(doc.reference);
+                                            if (mounted) {
+                                              ScaffoldMessenger.of(context)
+                                                  .showSnackBar(
+                                                SnackBar(
+                                                  content:
+                                                      Text('Marked as unread'),
+                                                  backgroundColor:
+                                                      AppColors.navy,
+                                                  duration:
+                                                      Duration(seconds: 2),
+                                                ),
+                                              );
+                                            }
+                                          } else if (result == 'delete') {
+                                            await _deleteNotification(
+                                                doc.reference);
+                                          }
+                                        }
+                                      : null,
+                                  child: Container(
+                                    decoration: BoxDecoration(
+                                      color: AppColors.navy,
+                                      borderRadius: BorderRadius.circular(
+                                          AppBorderRadius.md),
+                                      border: Border.all(
+                                        color: AppColors.navyLight,
+                                        width: 1.0,
+                                      ),
+                                      boxShadow: [AppElevation.xs],
+                                    ),
+                                    padding: EdgeInsets.all(AppSpacing.md),
+                                    child: Row(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Container(
+                                          width: AppIconSize.xl,
+                                          height: AppIconSize.xl,
+                                          decoration: BoxDecoration(
+                                            color: _iconBgColorForType(
+                                                context, type),
+                                            shape: BoxShape.circle,
+                                          ),
+                                          child: Center(
+                                            child: AppIcon(
+                                              icon: _iconForType(type),
+                                              color: AppColors.pure,
+                                              size: AppIconSize.button,
+                                            ),
+                                          ),
+                                        ),
+                                        SizedBox(width: AppSpacing.sm),
+                                        Expanded(
+                                          child: Column(
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.start,
+                                            children: [
+                                              Row(
+                                                children: [
+                                                  Expanded(
+                                                    child: Text(
+                                                      title?.isNotEmpty == true
+                                                          ? title!
+                                                          : _titleFallback(
+                                                              type),
+                                                      maxLines: 1,
+                                                      overflow:
+                                                          TextOverflow.ellipsis,
+                                                      style: AppTypography
+                                                          .bodyLarge
+                                                          .copyWith(
+                                                        color: AppColors
+                                                            .textPrimary,
+                                                      ),
+                                                    ),
+                                                  ),
+                                                  if (timeLabel.isNotEmpty)
+                                                    Padding(
+                                                      padding:
+                                                          EdgeInsetsDirectional
+                                                              .only(
+                                                        start: AppSpacing.xs,
+                                                      ),
+                                                      child: Text(
+                                                        timeLabel,
+                                                        style: AppTypography
+                                                            .labelSmall
+                                                            .copyWith(
+                                                          color: AppColors
+                                                              .textMuted,
+                                                        ),
+                                                      ),
+                                                    ),
+                                                  if (!isRead)
+                                                    Container(
+                                                      margin:
+                                                          EdgeInsetsDirectional
+                                                              .only(
+                                                        start: AppSpacing.xs,
+                                                      ),
+                                                      width: 8.0,
+                                                      height: 8.0,
+                                                      decoration: BoxDecoration(
+                                                        color: AppColors.green,
+                                                        shape: BoxShape.circle,
+                                                      ),
+                                                    ),
+                                                ],
+                                              ),
+                                              if ((body ?? '').isNotEmpty)
                                                 Padding(
-                                                  padding:
-                                                      EdgeInsetsDirectional.only(
-                                                    start: AppSpacing.xs,
+                                                  padding: EdgeInsetsDirectional
+                                                      .only(
+                                                    top: AppSpacing.xxs,
                                                   ),
                                                   child: Text(
-                                                    timeLabel,
-                                                    style: AppTypography.labelSmall.copyWith(
-                                                      color: AppColors.textMuted,
+                                                    body!,
+                                                    maxLines: 2,
+                                                    overflow:
+                                                        TextOverflow.ellipsis,
+                                                    style: AppTypography
+                                                        .bodyMedium
+                                                        .copyWith(
+                                                      color: AppColors
+                                                          .textSecondary,
                                                     ),
                                                   ),
                                                 ),
-                                              if (!isRead)
-                                                Container(
-                                                  margin:
-                                                      EdgeInsetsDirectional.only(
-                                                    start: AppSpacing.xs,
+                                              if (type ==
+                                                  'dispute_resolved_upheld')
+                                                Padding(
+                                                  padding: EdgeInsetsDirectional
+                                                      .only(
+                                                    top: AppSpacing.sm,
                                                   ),
-                                                  width: 8.0,
-                                                  height: 8.0,
-                                                  decoration: BoxDecoration(
-                                                    color: AppColors.green,
-                                                    shape: BoxShape.circle,
+                                                  child: AppButtonEnhanced(
+                                                    text: 'View Your Standing',
+                                                    variant:
+                                                        AppButtonVariant.ghost,
+                                                    size: AppButtonSize.small,
+                                                    onPressed: () {
+                                                      context.pushNamed(
+                                                          'YourStanding');
+                                                    },
                                                   ),
                                                 ),
                                             ],
                                           ),
-                                          if ((body ?? '').isNotEmpty)
-                                            Padding(
-                                              padding: EdgeInsetsDirectional.only(
-                                                top: AppSpacing.xxs,
-                                              ),
-                                              child: Text(
-                                                body!,
-                                                maxLines: 2,
-                                                overflow: TextOverflow.ellipsis,
-                                                style: AppTypography.bodyMedium.copyWith(
-                                                  color: AppColors.textSecondary,
-                                                ),
-                                              ),
-                                            ),
-                                          if (type == 'dispute_resolved_upheld')
-                                            Padding(
-                                              padding: EdgeInsetsDirectional.only(
-                                                top: AppSpacing.sm,
-                                              ),
-                                              child: AppButtonEnhanced(
-                                                text: 'View Your Standing',
-                                                variant: AppButtonVariant.ghost,
-                                                size: AppButtonSize.small,
-                                                onPressed: () {
-                                                  context.pushNamed('YourStanding');
-                                                },
-                                              ),
-                                            ),
-                                        ],
-                                      ),
+                                        ),
+                                      ],
                                     ),
-                                  ],
+                                  ),
                                 ),
-                              ),
-                            ),
-                          );
-                        },
-                      ),
-                    ),
-                    );
-                  },
-                ),
+                              );
+                            },
+                          ),
+                        ),
+                      );
+                    },
+                  ),
           ),
         ),
       ),

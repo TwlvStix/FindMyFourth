@@ -3,7 +3,6 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import '/core/utils/app_log.dart';
 import '/core/widgets/app_drop_down.dart';
-import '/utils/flexible_week_resolver.dart';
 import '/core/widgets/app_icon.dart';
 import '/core/design_tokens/app_phosphor_icons.dart';
 import '/core/design_tokens/border_radius.dart';
@@ -28,7 +27,12 @@ import '/providers/provider_extensions.dart';
 import '/providers/trust_provider.dart';
 import '/providers/user_provider.dart';
 import '/models/course.dart';
+import '/services/course_service.dart';
+import '/services/create_game_draft_service.dart';
+import '/services/create_game_service.dart';
 import 'create_game_constants.dart';
+import 'create_game_validator.dart';
+import 'models/create_game_form_data.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:collection/collection.dart';
@@ -36,9 +40,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:provider/provider.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-import 'dart:convert';
-import 'dart:math';
 
 import '/providers/chat_provider.dart';
 import 'components/draft_banner.dart';
@@ -62,124 +63,46 @@ class CreateGameWidget extends StatefulWidget {
 
 class _CreateGameWidgetState extends State<CreateGameWidget>
     with TickerProviderStateMixin {
+  // ═══════════════════════════════════════════════════════════════════════════
+  // SERVICES
+  // ═══════════════════════════════════════════════════════════════════════════
+  final _courseService = CourseService();
+  final _draftService = CreateGameDraftService();
+  final _gameService = CreateGameService();
+
+  // ═══════════════════════════════════════════════════════════════════════════
+  // FORM STATE
+  // ═══════════════════════════════════════════════════════════════════════════
   final formKey = GlobalKey<FormState>();
-  DateTime? datePicked;
-  String? friendsValue;
+  late CreateGameFormData _formData;
+
+  // Form controllers (manage UI state, synced to _formData on change)
   FormFieldController<String>? friendsValueController;
-  String? courseValue;
   FormFieldController<String>? courseValueController;
-  Course? selectedCourse;
-  String? memberValue;
   FormFieldController<String>? memberValueController;
-  String? rulesSetValue;
   FormFieldController<String>? rulesSetValueController;
-  String? styleGameValue;
   FormFieldController<String>? styleGameValueController;
-  String? gameTypeValue;
   FormFieldController<String>? gameTypeValueController;
-  String? scoringValue;
   FormFieldController<String>? scoringValueController;
-  DocumentReference? chatRef;
-  DocumentReference? gameRef;
-  bool memberDiscount = false;
-
-  // Flexible Time
-  String _scheduleType = 'confirmed'; // 'confirmed' | 'flexible'
-  String? _flexibleWeek;
-  Set<int> _selectedDays = {};
-  Set<String> _flexibleTimesOfDay = {'anytime'}; // Multi-select, default to Anytime
-
-  // Team Setup
-  bool _is2v2 = false;
-  String? _teamStyle;
-
-  // Just for Fun mode
-  bool _isJustForFun = false;
-
-  // Player Eligibility (who can join based on gender)
-  String _playerEligibility = 'open_to_all'; // 'open_to_all' | 'women_only' | 'men_only'
-
-  // Vibe Floor - require approval for players below vibe match threshold
-  bool _requireVibeMatch = true;
-
-  // Games multi-select (max 3)
-  final Set<String> _selectedGames = {};
+  final TextEditingController _gameNameController = TextEditingController();
   final TextEditingController _otherGameController = TextEditingController();
-  String? _otherGameText;
 
   final scaffoldKey = GlobalKey<ScaffoldState>();
 
-  // Draft & Loading state
+  // UI state
   bool _isLoading = true;
   bool _hasDraft = false;
-
-  // Animation state - triggers once when content loads
   bool _hasAnimated = false;
-  static const String _draftKey = 'create_game_draft';
-  final TextEditingController _gameNameController = TextEditingController();
 
-  static const List<String> _mastersChampions = [
-    'Nicklaus',
-    'Woods',
-    'Spieth',
-    'Mickelson',
-    'Hogan',
-    'Faldo',
-    'Player',
-    'Watson',
-    'Palmer',
-    'Scheffler',
-  ];
-
-  static const List<String> _fruits = [
-    'Apple',
-    'Banana',
-    'Cherry',
-    'Mango',
-    'Peach',
-    'Pear',
-    'Plum',
-    'Orange',
-    'Kiwi',
-    'Grape',
-  ];
-
-  static const List<String> _traits = [
-    'Bold',
-    'Calm',
-    'Clever',
-    'Daring',
-    'Focused',
-    'Gritty',
-    'Humble',
-    'Loyal',
-    'Steady',
-    'Swift',
-  ];
-
-  String _generateAutoGameName() {
-    final random = Random();
-    final champion =
-        _mastersChampions[random.nextInt(_mastersChampions.length)];
-    final fruit = _fruits[random.nextInt(_fruits.length)];
-    final trait = _traits[random.nextInt(_traits.length)];
-    return '$champion $fruit $trait';
-  }
-
-  String _ensureGameName() {
-    final existing = _gameNameController.text.trim();
-    if (existing.isNotEmpty) {
-      return existing;
-    }
-    final generated = _generateAutoGameName();
-    _gameNameController.text = generated;
-    return generated;
-  }
+  // ═══════════════════════════════════════════════════════════════════════════
+  // LIFECYCLE
+  // ═══════════════════════════════════════════════════════════════════════════
 
   @override
   void initState() {
     super.initState();
-    _gameNameController.text = _generateAutoGameName();
+    _formData = CreateGameFormData();
+    _gameNameController.text = _formData.gameName;
 
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       await _loadDraft();
@@ -188,8 +111,8 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
         final userGender = context.read<UserProvider>().currentUser?.gender;
         final validOptions = _getFilteredEligibilityOptions(userGender);
         final validValues = validOptions.map((o) => o['value']).toSet();
-        if (!validValues.contains(_playerEligibility)) {
-          _playerEligibility = 'open_to_all';
+        if (!validValues.contains(_formData.playerEligibility)) {
+          _formData.playerEligibility = 'open_to_all';
         }
         setState(() {
           _isLoading = false;
@@ -204,445 +127,201 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
     });
   }
 
-  // Load draft from SharedPreferences
+  @override
+  void dispose() {
+    _gameNameController.dispose();
+    _otherGameController.dispose();
+    super.dispose();
+  }
+
+  // ═══════════════════════════════════════════════════════════════════════════
+  // DRAFT PERSISTENCE
+  // ═══════════════════════════════════════════════════════════════════════════
+
   Future<void> _loadDraft() async {
-    try {
-      final prefs = await SharedPreferences.getInstance();
-      final draftJson = prefs.getString(_draftKey);
-      if (draftJson != null && draftJson.isNotEmpty) {
-        final draft = json.decode(draftJson) as Map<String, dynamic>;
-
-        // Restore form values
-        if (draft['date'] != null) {
-          datePicked = DateTime.parse(draft['date']);
-        }
-        if (draft['friends'] != null) {
-          friendsValue = draft['friends'];
-          friendsValueController?.value = draft['friends'];
-        }
-        if (draft['course'] != null) {
-          courseValue = draft['course'];
-          courseValueController?.value = draft['course'];
-        }
-        if (draft['member'] != null) {
-          memberValue = draft['member'];
-          memberValueController?.value = draft['member'];
-        }
-        if (draft['rulesSet'] != null) {
-          rulesSetValue = draft['rulesSet'];
-          rulesSetValueController?.value = draft['rulesSet'];
-        }
-        if (draft['styleGame'] != null) {
-          styleGameValue = draft['styleGame'];
-          styleGameValueController?.value = draft['styleGame'];
-        }
-        if (draft['gameType'] != null) {
-          gameTypeValue = draft['gameType'];
-          gameTypeValueController?.value = draft['gameType'];
-        }
-        if (draft['scoring'] != null) {
-          scoringValue = draft['scoring'];
-          scoringValueController?.value = draft['scoring'];
-        }
-        if (draft['is2v2'] != null) {
-          _is2v2 = draft['is2v2'] as bool;
-        }
-        if (draft['teamStyle'] != null) {
-          _teamStyle = draft['teamStyle'];
-        }
-        if (draft['selectedGames'] != null) {
-          final games = draft['selectedGames'] as List<dynamic>;
-          _selectedGames.clear();
-          _selectedGames.addAll(games.cast<String>());
-        }
-        if (draft['otherGame'] != null) {
-          _otherGameText = draft['otherGame'];
-          _otherGameController.text = draft['otherGame'];
-        }
-        final draftName = draft['gameName'] as String?;
-        if (draftName != null && draftName.trim().isNotEmpty) {
-          _gameNameController.text = draftName;
-        } else {
-          _ensureGameName();
-        }
-
-        // Load flexible time fields
-        if (draft['scheduleType'] != null) {
-          _scheduleType = draft['scheduleType'];
-        }
-        if (draft['flexibleWeek'] != null) {
-          _flexibleWeek = draft['flexibleWeek'];
-        }
-        if (draft['flexibleDays'] != null) {
-          final days = draft['flexibleDays'] as List<dynamic>;
-          _selectedDays = Set.from(days.cast<int>());
-        }
-        if (draft['flexibleTimeOfDay'] != null) {
-          // Handle both legacy single string and new comma-separated format
-          final stored = draft['flexibleTimeOfDay'] as String;
-          _flexibleTimesOfDay = stored.split(',').map((s) => s.trim()).where((s) => s.isNotEmpty).toSet();
-          if (_flexibleTimesOfDay.isEmpty) {
-            _flexibleTimesOfDay = {'anytime'}; // Default
-          }
-        }
-        if (draft['isJustForFun'] != null) {
-          _isJustForFun = draft['isJustForFun'] as bool;
-        }
-        if (draft['playerEligibility'] != null) {
-          _playerEligibility = draft['playerEligibility'] as String;
-        }
-        if (draft['requireVibeMatch'] != null) {
-          _requireVibeMatch = draft['requireVibeMatch'] as bool;
-        }
-
-        _hasDraft = true;
-      }
-    } catch (e) {
-      AppLog.d('Error loading draft: $e');
+    final draft = await _draftService.loadDraft();
+    if (draft != null) {
+      _formData = draft;
+      _formData.reconcileDerivedFields();
+      // Sync controllers with loaded data
+      _syncControllersFromFormData();
+      _hasDraft = true;
     }
   }
 
-  // Save draft to SharedPreferences
+  void _syncControllersFromFormData() {
+    _gameNameController.text = _formData.gameName;
+    friendsValueController?.value = _formData.friendsValue;
+    courseValueController?.value = _formData.courseValue;
+    memberValueController?.value = _formData.memberValue;
+    rulesSetValueController?.value = _formData.rulesSetValue;
+    styleGameValueController?.value = _formData.styleGameValue;
+    gameTypeValueController?.value = _formData.gameTypeValue;
+    scoringValueController?.value = _formData.scoringValue;
+    if (_formData.otherGameText != null) {
+      _otherGameController.text = _formData.otherGameText!;
+    }
+  }
+
   Future<void> _saveDraft() async {
-    try {
-      final gameName = _gameNameController.text.trim();
-      final draft = {
-        'date': datePicked?.toIso8601String(),
-        'friends': friendsValue,
-        'course': courseValue,
-        'member': memberValue,
-        'rulesSet': rulesSetValue,
-        'styleGame': styleGameValue,
-        'gameType': gameTypeValue,
-        'scoring': scoringValue,
-        'is2v2': _is2v2,
-        'teamStyle': _teamStyle,
-        'selectedGames': _selectedGames.toList(),
-        'otherGame': _otherGameText,
-        'gameName': gameName.isEmpty ? null : gameName,
-        'scheduleType': _scheduleType,
-        'flexibleWeek': _flexibleWeek,
-        'flexibleDays': _selectedDays.toList(),
-        'flexibleTimeOfDay': _flexibleTimesOfDay.join(','), // Store as comma-separated
-        'isJustForFun': _isJustForFun,
-        'playerEligibility': _playerEligibility,
-        'requireVibeMatch': _requireVibeMatch,
-      };
-
-      final prefs = await SharedPreferences.getInstance();
-      await prefs.setString(_draftKey, json.encode(draft));
-    } catch (e) {
-      AppLog.d('Error saving draft: $e');
-    }
+    _formData.gameName = _gameNameController.text.trim();
+    _formData.reconcileDerivedFields();
+    await _draftService.saveDraft(_formData);
   }
 
-  // Clear draft from SharedPreferences
   Future<void> _clearDraft() async {
-    try {
-      final prefs = await SharedPreferences.getInstance();
-      await prefs.remove(_draftKey);
-      setState(() {
-        _hasDraft = false;
-      });
-    } catch (e) {
-      AppLog.d('Error clearing draft: $e');
-    }
+    await _draftService.clearDraft();
+    setState(() {
+      _hasDraft = false;
+    });
   }
 
-  // Quick create with defaults - creates game immediately
-  // Shared game submission logic
+  // ═══════════════════════════════════════════════════════════════════════════
+  // GAME SUBMISSION
+  // ═══════════════════════════════════════════════════════════════════════════
+
   Future<void> _submitGame() async {
     AppLog.d('🎮 CREATE GAME: Submit triggered');
 
+    // 1. Form structure validation
     if (formKey.currentState == null || !formKey.currentState!.validate()) {
       AppLog.d('❌ CREATE GAME: Form validation failed');
       return;
     }
     AppLog.d('✅ CREATE GAME: Form validation passed');
 
-    // Course is required for confirmed games but optional for flexible games
-    if (_scheduleType == 'confirmed' && courseValue == null) {
-      AppLog.d('❌ CREATE GAME: courseValue is null');
+    // 2. Business rule validation
+    final error = CreateGameValidator.validateForSubmission(_formData);
+    if (error != null) {
+      AppLog.d('❌ CREATE GAME: $error');
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Please select a course'),
+          content: Text(error),
           backgroundColor: AppColors.error,
         ),
       );
       return;
-    }
-    if (friendsValue == null) {
-      AppLog.d('❌ CREATE GAME: friendsValue is null');
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Please select Friends or Public game'),
-          backgroundColor: AppColors.error,
-        ),
-      );
-      return;
-    }
-    if (!_isJustForFun) {
-      if (rulesSetValue == null) {
-        AppLog.d('❌ CREATE GAME: rulesSetValue is null');
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Please select a game vibe'),
-            backgroundColor: AppColors.error,
-          ),
-        );
-        return;
-      }
-      if (styleGameValue == null) {
-        AppLog.d('❌ CREATE GAME: styleGameValue is null');
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Please select stakes'),
-            backgroundColor: AppColors.error,
-          ),
-        );
-        return;
-      }
-      if (gameTypeValue == null) {
-        AppLog.d('❌ CREATE GAME: gameTypeValue is null');
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Please select a primary format'),
-            backgroundColor: AppColors.error,
-          ),
-        );
-        return;
-      }
     }
     AppLog.d('✅ CREATE GAME: All values present');
 
-    // Validate schedule based on type
-    if (_scheduleType == 'confirmed') {
-      if (datePicked == null) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Please select a date and time.'),
-            duration: Duration(milliseconds: 4000),
-            backgroundColor: AppColors.error,
-          ),
-        );
-        return;
-      }
-    } else {
-      // Flexible mode validation - week is required
-      if (_flexibleWeek == null) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Please select a week for your flexible game.'),
-            duration: Duration(milliseconds: 4000),
-            backgroundColor: AppColors.error,
-          ),
-        );
-        return;
-      }
+    // 3. Auth check
+    final currentUser = FirebaseAuth.instance.currentUser;
+    if (currentUser == null) {
+      AppLog.d('❌ CREATE GAME: User not authenticated');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Please sign in to create a game.'),
+          duration: Duration(milliseconds: 4000),
+          backgroundColor: AppColors.error,
+        ),
+      );
+      return;
     }
+    AppLog.d('✅ CREATE GAME: User authenticated: ${currentUser.uid}');
 
-    if (!_isJustForFun) {
-      // Validate Team Style is required if 2v2 is enabled
-      if (_is2v2 && (_teamStyle == null || _teamStyle!.isEmpty)) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Please select a team style for 2v2 games.'),
-            duration: Duration(milliseconds: 4000),
-            backgroundColor: AppColors.error,
-          ),
-        );
-        return;
-      }
-
-      // Validate "Other" game requires description if selected
-      if (_selectedGames.contains('Other') &&
-          (_otherGameText == null || _otherGameText!.trim().isEmpty)) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Please describe the other game.'),
-            duration: Duration(milliseconds: 4000),
-            backgroundColor: AppColors.error,
-          ),
-        );
-        return;
-      }
-    }
-
-    AppLog.d('✅ CREATE GAME: Date validation passed');
-    AppLog.d('🎮 CREATE GAME: Starting game creation...');
-    final gameName = _ensureGameName();
+    final currentUserRef =
+        context.userProvider.currentUser?.reference ??
+            _gameService.userRefForUid(currentUser.uid);
+    final gameName = _formData.ensureGameName();
     AppLog.d('🎮 CREATE GAME: Game name: $gameName');
-    AppLog.d('🎮 CREATE GAME: Course: $courseValue');
-    AppLog.d('🎮 CREATE GAME: Date: $datePicked');
-    AppLog.d('🎮 CREATE GAME: Style: $styleGameValue');
-    AppLog.d('🎮 CREATE GAME: Type: $gameTypeValue');
-    AppLog.d('🎮 CREATE GAME: Friends: $friendsValue');
-    AppLog.d('🎮 CREATE GAME: Rules: $rulesSetValue');
 
     try {
-      AppLog.d('🎮 CREATE GAME: Checking authentication...');
-      final currentUser = FirebaseAuth.instance.currentUser;
-      if (currentUser == null) {
-        AppLog.d('❌ CREATE GAME: User not authenticated');
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Please sign in to create a game.'),
-            duration: Duration(milliseconds: 4000),
-            backgroundColor: AppColors.error,
-          ),
-        );
-        return;
-      }
-      AppLog.d('✅ CREATE GAME: User authenticated: ${currentUser.uid}');
-
-      final currentUserRef =
-          FirebaseFirestore.instance.collection('users').doc(currentUser.uid);
-      // Default to 1 player needed for backend compatibility
-      final numPlayers = 1;
-      final maxPlayers = 4;
-      AppLog.d('CreateGame: creating game $gameName');
-      AppLog.d(
-          'CreateGame: numPlayers=$numPlayers (default), maxPlayers=$maxPlayers');
-
-      final gamesRecordReference =
-          FirebaseFirestore.instance.collection('games').doc();
-
-      AppLog.d('🎮 CREATE GAME: Creating game chat...');
+      // 4. Generate game reference first (needed for chat creation)
+      final gamesRecordReference = _gameService.generateGameRef();
       AppLog.d('🎮 CREATE GAME: Game ID: ${gamesRecordReference.id}');
-      AppLog.d('🎮 CREATE GAME: Creator UID: ${currentUser.uid}');
 
+      // 5. Create game chat
+      AppLog.d('🎮 CREATE GAME: Creating game chat...');
+      DocumentReference? chatRef;
       try {
-        final chatsRecordReference =
-            await context.read<ChatProvider>().createGameChat(
-                  createdByUid: currentUser.uid,
-                  gameId: gamesRecordReference.id,
-                  gameName: gameName,
-                );
-        chatRef = chatsRecordReference;
-        AppLog.d(
-            '✅ CREATE GAME: Game chat created: ${chatsRecordReference.id}');
+        chatRef = await context.read<ChatProvider>().createGameChat(
+              createdByUid: currentUser.uid,
+              gameId: gamesRecordReference.id,
+              gameName: gameName,
+            );
+        AppLog.d('✅ CREATE GAME: Game chat created: ${chatRef.id}');
       } catch (chatError, chatStackTrace) {
         AppLog.d('❌ CREATE GAME: Chat creation failed!');
-        AppLog.d('❌ CREATE GAME: Error type: ${chatError.runtimeType}');
         AppLog.d('❌ CREATE GAME: Error: $chatError');
         AppLog.d('❌ CREATE GAME: Stack trace: $chatStackTrace');
         throw Exception('Failed to create game chat: $chatError');
       }
 
+      // 6. Create game via service
       AppLog.d('🎮 CREATE GAME: Saving game to Firestore...');
-      AppLog.d('🎮 CREATE GAME: Path: ${gamesRecordReference.path}');
-
       try {
-        await gamesRecordReference.set({
-          'name_game': gameName,
-          'date': _scheduleType == 'confirmed' ? datePicked : null,
-          'num_players': numPlayers,
-          'style_game': styleGameValue,
-          'game_type': gameTypeValue,
-          'course_play': courseValue,
-          'member_discount': memberValue,
-          'scoring': scoringValue,
-          'friend_game': friendsValue,
-          'max_players': maxPlayers,
-          'rules_setting': rulesSetValue,
-          'created_time': DateTime.now(),
-          'chatRef': chatRef,
-          'userRef': currentUserRef,
-          'courseRef': selectedCourse?.reference,
-          'isCancelled': false,
-          'status': 'active',
-          'joined_players': [currentUserRef],
-          'guest_players': [],
-          'uid': currentUser.uid,
-          'is_fun_game': _isJustForFun,
-          'schedule_type': _scheduleType,
-          'player_eligibility': _playerEligibility,
-          'require_vibe_match': _requireVibeMatch,
-          if (_scheduleType == 'flexible') ...{
-            'flexible_week': _flexibleWeek,
-            'flexible_days': _selectedDays.toList(),
-            // Store as comma-separated for multi-select (e.g., "morning,afternoon")
-            'flexible_time_of_day': _flexibleTimesOfDay.where((t) => t != 'anytime').isEmpty
-                ? 'anytime'
-                : _flexibleTimesOfDay.where((t) => t != 'anytime').join(','),
-            // Compute concrete dates at creation time
-            if (FlexibleWeekResolver.resolveWeekDates(_flexibleWeek)
-                case final dates?) ...{
-              'flexible_start_date': dates.start,
-              'flexible_end_date': dates.end,
-            },
-          },
-        });
-        gameRef = gamesRecordReference;
-        await _clearDraft();
+        await _gameService.createGameWithRef(
+          gameRef: gamesRecordReference,
+          formData: _formData,
+          uid: currentUser.uid,
+          userRef: currentUserRef,
+          chatRef: chatRef,
+        );
         AppLog.d('✅ CREATE GAME: Game saved to Firestore successfully');
-        AppLog.d('CreateGame: game saved ${gamesRecordReference.path}');
       } catch (saveError, saveStackTrace) {
         AppLog.d('❌ CREATE GAME: Game save failed!');
-        AppLog.d('❌ CREATE GAME: Error type: ${saveError.runtimeType}');
         AppLog.d('❌ CREATE GAME: Error: $saveError');
         AppLog.d('❌ CREATE GAME: Stack trace: $saveStackTrace');
         throw Exception('Failed to save game data: $saveError');
       }
 
-      await Future.wait([
-        Future(() async {
-          if (!mounted) {
-            return;
-          }
-          context.gameProvider.invalidateAvailableGamesCache();
-          context.gameProvider.invalidateUserGamesCache(context.userProvider.userId);
-          AppLog.d('CreateGame: refreshed game caches');
+      // 7. Clear draft
+      await _clearDraft();
 
-          final numExistingFriends = 4 - numPlayers - 1;
-          AppLog.d(
-              'CreateGame: numPlayers=$numPlayers, existingFriends=$numExistingFriends');
+      // 8. Invalidate caches & navigate
+      if (!mounted) return;
 
-          if (numExistingFriends <= 0) {
-            AppLog.d('CreateGame: No existing friends, skipping Player List');
-            context.pushNamed(
-              GamesListWidget.routeName,
-              extra: <String, dynamic>{
-                kTransitionInfoKey: TransitionStandards.modalTransition,
-              },
-            );
-          } else {
-            AppLog.d(
-                'CreateGame: Has $numExistingFriends existing friends, showing Player List');
-            context.pushNamed(
-              PlayerListWidget.routeName,
-              extra: <String, dynamic>{
-                'gameRef': gamesRecordReference,
-                kTransitionInfoKey: TransitionInfo(
-                  hasTransition: true,
-                  transitionType: AppTransitionType.fade,
-                  enterDuration: Duration(milliseconds: 200),
-                  exitDuration: Duration(milliseconds: 170),
-                  scaleOnPush: false,
-                ),
-              },
-            );
-          }
+      context.gameProvider.invalidateAvailableGamesCache();
+      context.gameProvider
+          .invalidateUserGamesCache(context.userProvider.userId);
+      AppLog.d('CreateGame: refreshed game caches');
 
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(
-                'You have created a game!',
-                style: AppTypography.bodyMedium.copyWith(
-                  color: AppColors.pure,
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-              duration: Duration(milliseconds: 4000),
-              backgroundColor: AppColors.success,
+      final numExistingFriends = 4 - _formData.numPlayers - 1;
+      AppLog.d(
+          'CreateGame: numPlayers=${_formData.numPlayers}, existingFriends=$numExistingFriends');
+
+      if (numExistingFriends <= 0) {
+        AppLog.d('CreateGame: No existing friends, skipping Player List');
+        context.pushNamed(
+          GamesListWidget.routeName,
+          extra: <String, dynamic>{
+            kTransitionInfoKey: TransitionStandards.modalTransition,
+          },
+        );
+      } else {
+        AppLog.d(
+            'CreateGame: Has $numExistingFriends existing friends, showing Player List');
+        context.pushNamed(
+          PlayerListWidget.routeName,
+          extra: <String, dynamic>{
+            'gameRef': gamesRecordReference,
+            kTransitionInfoKey: TransitionInfo(
+              hasTransition: true,
+              transitionType: AppTransitionType.fade,
+              enterDuration: Duration(milliseconds: 200),
+              exitDuration: Duration(milliseconds: 170),
+              scaleOnPush: false,
             ),
-          );
-        }),
-      ]);
+          },
+        );
+      }
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            'You have created a game!',
+            style: AppTypography.bodyMedium.copyWith(
+              color: AppColors.pure,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+          duration: Duration(milliseconds: 4000),
+          backgroundColor: AppColors.success,
+        ),
+      );
     } catch (error, stackTrace) {
       AppLog.d('❌ CREATE GAME: FAILED TO CREATE GAME');
-      AppLog.d('❌ CREATE GAME: Error type: ${error.runtimeType}');
-      AppLog.d('❌ CREATE GAME: Error message: $error');
+      AppLog.d('❌ CREATE GAME: Error: $error');
       AppLog.d('❌ CREATE GAME: Stack trace: $stackTrace');
 
       String errorMsg = error.toString();
@@ -650,65 +329,27 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
         errorMsg = errorMsg.substring(0, 100) + '...';
       }
 
-      if (!mounted) {
-        return;
-      }
+      if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
             'Failed to create game: $errorMsg',
-            style: AppTypography.bodyMedium.copyWith(color: AppColors.textPrimary),
+            style:
+                AppTypography.bodyMedium.copyWith(color: AppColors.textPrimary),
           ),
           duration: Duration(milliseconds: 6000),
           backgroundColor: AppColors.error,
         ),
       );
-      return;
     }
-
-    if (mounted) setState(() {});
   }
 
-  // Build game summary string
-  String _buildGameSummary() {
-    // Primary Format
-    String format = gameTypeValue ?? '';
+  // ═══════════════════════════════════════════════════════════════════════════
+  // HELPERS
+  // ═══════════════════════════════════════════════════════════════════════════
 
-    // Add 2v2 Team Style if enabled
-    if (_is2v2 && _teamStyle != null && _teamStyle!.isNotEmpty) {
-      format += ' + 2v2 ($_teamStyle)';
-    }
-
-    // Display "Gross + Net" instead of "Both" for better readability
-    final handicap =
-        scoringValue == 'Both' ? 'Gross + Net' : (scoringValue ?? '');
-    final stakes = styleGameValue ?? '';
-    final vibe = rulesSetValue ?? '';
-
-    // Build base summary
-    String summary = '$format • $handicap • $stakes • $vibe';
-
-    // Add Games if any selected
-    if (_selectedGames.isNotEmpty) {
-      final gamesList = _selectedGames.map((game) {
-        if (game == 'Other' &&
-            _otherGameText != null &&
-            _otherGameText!.isNotEmpty) {
-          return _otherGameText!;
-        }
-        return game;
-      }).join(', ');
-      summary += ' • Games: $gamesList';
-    }
-
-    return summary;
-  }
-
-  /// Returns filtered eligibility options based on user's gender.
-  /// Male users see: Open to All, Men Only
-  /// Female users see: Open to All, Women Only
-  /// Unknown gender sees: Open to All only
-  List<Map<String, dynamic>> _getFilteredEligibilityOptions(String? userGender) {
+  List<Map<String, dynamic>> _getFilteredEligibilityOptions(
+      String? userGender) {
     if (userGender == 'Male') {
       return kCreateGameEligibilityOptions
           .where((opt) => opt['value'] != 'women_only')
@@ -718,14 +359,12 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
           .where((opt) => opt['value'] != 'men_only')
           .toList();
     } else {
-      // Gender not yet loaded or unknown - show Open to All only
       return kCreateGameEligibilityOptions
           .where((opt) => opt['value'] == 'open_to_all')
           .toList();
     }
   }
 
-  // Show help dialog
   void _showHelpDialog(BuildContext context, String title, String message) {
     HapticFeedback.lightImpact();
     showAppDialog(
@@ -793,21 +432,120 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
     );
   }
 
-  @override
-  void dispose() {
-    _gameNameController.dispose();
-    _otherGameController.dispose();
-    super.dispose();
+  // ═══════════════════════════════════════════════════════════════════════════
+  // FLEXIBLE TIME UI
+  // ═══════════════════════════════════════════════════════════════════════════
+
+  List<int> _getAvailableDays() {
+    final now = DateTime.now();
+    switch (_formData.flexibleWeek) {
+      case 'this_week':
+        final todayDayIndex = now.weekday % 7;
+        return List.generate(7, (i) => i)
+            .where((d) => d >= todayDayIndex)
+            .toList();
+      case 'this_weekend':
+        return [0, 6];
+      case 'next_week':
+      case 'next_2_weeks':
+      default:
+        return [0, 1, 2, 3, 4, 5, 6];
+    }
   }
 
-  // Flexible Time UI Components
+  void _onWeekChanged(String weekValue) {
+    setState(() {
+      _formData.flexibleWeek = weekValue;
+      final availableDays = _getAvailableDays();
+      _formData.selectedDays = availableDays.toSet();
+    });
+    _saveDraft();
+  }
+
+  String _buildFlexibleSummary() {
+    final parts = <String>[];
+
+    if (_formData.flexibleWeek != null) {
+      switch (_formData.flexibleWeek) {
+        case 'this_week':
+          parts.add('This Week');
+          break;
+        case 'this_weekend':
+          parts.add('This Weekend');
+          break;
+        case 'next_week':
+          parts.add('Next Week');
+          break;
+        case 'next_2_weeks':
+          parts.add('Next 2 Weeks');
+          break;
+      }
+    }
+
+    if (_formData.selectedDays.isNotEmpty &&
+        _formData.flexibleWeek != 'this_weekend') {
+      final dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+      final sortedDays = _formData.selectedDays.toList()..sort();
+
+      if (sortedDays.length == 7) {
+        parts.add('Any Day');
+      } else if (setEquals(sortedDays.toSet(), {1, 2, 3, 4, 5})) {
+        parts.add('Weekdays');
+      } else if (setEquals(sortedDays.toSet(), {0, 6})) {
+        parts.add('Weekend');
+      } else {
+        parts.add(sortedDays.map((d) => dayNames[d]).join(', '));
+      }
+    }
+
+    if (_formData.flexibleTimesOfDay.isNotEmpty) {
+      if (_formData.flexibleTimesOfDay.contains('anytime')) {
+        parts.add('Anytime');
+      } else {
+        final timeLabels = <String>[];
+        if (_formData.flexibleTimesOfDay.contains('morning'))
+          timeLabels.add('Morning');
+        if (_formData.flexibleTimesOfDay.contains('afternoon'))
+          timeLabels.add('Afternoon');
+        if (_formData.flexibleTimesOfDay.contains('twilight'))
+          timeLabels.add('Twilight');
+        if (timeLabels.isNotEmpty) {
+          parts.add(timeLabels.join(', '));
+        }
+      }
+    }
+
+    return parts.isEmpty ? 'Select your availability' : parts.join(' · ');
+  }
+
+  TextStyle _labelStyle() => AppTypography.labelSmall.copyWith(
+        fontSize: 13,
+        color: AppColors.glassTextSecondary,
+      );
+
+  Widget _buildAnimatedSection({
+    required int sectionIndex,
+    required Widget child,
+  }) {
+    final clampedIndex = sectionIndex < MotionTokens.staggerMaxItems
+        ? sectionIndex
+        : MotionTokens.staggerMaxItems - 1;
+    final staggerDelay = ReducedMotionService.shouldStagger
+        ? MotionTokens.staggerDelay * clampedIndex
+        : Duration.zero;
+
+    return child.animate(target: _hasAnimated ? 1 : 0).fadeIn(
+          delay: staggerDelay,
+          duration: ReducedMotionService.adjust(MotionTokens.contentReveal),
+          curve: MotionTokens.curveEnter,
+        );
+  }
+
   Widget _buildFlexibleTimeUI() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         SizedBox(height: AppSpacing.sm),
-
-        // Info hint
         Container(
           padding: EdgeInsets.all(AppSpacing.sm),
           decoration: BoxDecoration(
@@ -817,7 +555,10 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
           ),
           child: Row(
             children: [
-              AppIcon(icon: AppPhosphorIcons.info, color: AppColors.pure, size: AppIconSize.button),
+              AppIcon(
+                  icon: AppPhosphorIcons.info,
+                  color: AppColors.pure,
+                  size: AppIconSize.button),
               SizedBox(width: AppSpacing.sm),
               Expanded(
                 child: Text(
@@ -831,20 +572,14 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
             ],
           ),
         ),
-
         SizedBox(height: AppSpacing.md),
-
-        // Week selector
         Text('Week', style: _labelStyle()),
         SizedBox(height: AppSpacing.xs),
         _buildWeekChips(),
-
         SizedBox(height: AppSpacing.md),
-
-        // Day selector - hidden when "This Weekend" is selected
         AnimatedCrossFade(
           duration: MotionTokens.contentReveal,
-          crossFadeState: _flexibleWeek == 'this_weekend'
+          crossFadeState: _formData.flexibleWeek == 'this_weekend'
               ? CrossFadeState.showSecond
               : CrossFadeState.showFirst,
           firstChild: Column(
@@ -858,13 +593,9 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
           ),
           secondChild: const SizedBox.shrink(),
         ),
-
-        // Time of day
         Text('Time of Day', style: _labelStyle()),
         SizedBox(height: AppSpacing.xs),
         _buildTimeOfDayCards(),
-
-        // Summary bar
         if (_buildFlexibleSummary().isNotEmpty &&
             _buildFlexibleSummary() != 'Select your availability') ...[
           SizedBox(height: AppSpacing.md),
@@ -879,7 +610,10 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
             ),
             child: Row(
               children: [
-                AppIcon(icon: AppPhosphorIcons.calendarNote, color: AppColors.pure, size: AppIconSize.button),
+                AppIcon(
+                    icon: AppPhosphorIcons.calendarNote,
+                    color: AppColors.pure,
+                    size: AppIconSize.button),
                 SizedBox(width: AppSpacing.sm),
                 Expanded(
                   child: Text(
@@ -897,67 +631,6 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
     );
   }
 
-  TextStyle _labelStyle() => AppTypography.labelSmall.copyWith(
-        fontSize: 13,
-        color: AppColors.glassTextSecondary,
-      );
-
-  // ═══════════════════════════════════════════════════════════════════════════
-  // ANIMATED SECTION HELPER
-  // ═══════════════════════════════════════════════════════════════════════════
-  Widget _buildAnimatedSection({
-    required int sectionIndex,
-    required Widget child,
-  }) {
-    // Calculate stagger delay based on section index (max 8 sections animated)
-    final clampedIndex = sectionIndex < MotionTokens.staggerMaxItems
-        ? sectionIndex
-        : MotionTokens.staggerMaxItems - 1;
-    final staggerDelay = ReducedMotionService.shouldStagger
-        ? MotionTokens.staggerDelay * clampedIndex
-        : Duration.zero;
-
-    return child
-        .animate(target: _hasAnimated ? 1 : 0)
-        .fadeIn(
-          delay: staggerDelay,
-          duration: ReducedMotionService.adjust(MotionTokens.contentReveal),
-          curve: MotionTokens.curveEnter,
-        );
-  }
-
-  /// Returns available days based on selected week.
-  /// - 'this_week': Only remaining days this week (from today onwards)
-  /// - 'this_weekend': Sat, Sun (not shown in UI - row hidden)
-  /// - 'next_week' / 'next_2_weeks': All 7 days
-  List<int> _getAvailableDays() {
-    final now = DateTime.now();
-    switch (_flexibleWeek) {
-      case 'this_week':
-        // Only days from today onwards
-        // Dart weekday: Mon=1...Sun=7, we need Sun=0...Sat=6
-        final todayDayIndex = now.weekday % 7; // Sun=0, Mon=1, ... Sat=6
-        return List.generate(7, (i) => i).where((d) => d >= todayDayIndex).toList();
-      case 'this_weekend':
-        return [0, 6]; // Sun, Sat
-      case 'next_week':
-      case 'next_2_weeks':
-      default:
-        return [0, 1, 2, 3, 4, 5, 6]; // All days
-    }
-  }
-
-  /// Called when week selection changes - updates days to match available days
-  void _onWeekChanged(String weekValue) {
-    setState(() {
-      _flexibleWeek = weekValue;
-      // Reset days to all available days for the selected week
-      final availableDays = _getAvailableDays();
-      _selectedDays = availableDays.toSet();
-    });
-    _saveDraft();
-  }
-
   Widget _buildWeekChips() {
     final weeks = [
       {'value': 'this_week', 'label': 'This Week'},
@@ -968,7 +641,7 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
 
     return Row(
       children: weeks.map((week) {
-        final isSelected = _flexibleWeek == week['value'];
+        final isSelected = _formData.flexibleWeek == week['value'];
         return Expanded(
           child: Padding(
             padding: EdgeInsets.only(
@@ -983,9 +656,7 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
               child: Container(
                 padding: EdgeInsets.symmetric(vertical: AppSpacing.sm),
                 decoration: BoxDecoration(
-                  color: isSelected
-                      ? AppColors.navyDark
-                      : AppColors.navy,
+                  color: isSelected ? AppColors.navyDark : AppColors.navy,
                   borderRadius: BorderRadius.circular(AppBorderRadius.md),
                   border: Border.all(
                     color: isSelected
@@ -1020,25 +691,25 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
       {'value': 6, 'label': 'Sat'},
     ];
 
-    // Filter to only available days for the selected week
     final availableDayIndices = _getAvailableDays().toSet();
-    final days = allDays.where((d) => availableDayIndices.contains(d['value'])).toList();
+    final days =
+        allDays.where((d) => availableDayIndices.contains(d['value'])).toList();
 
     return Wrap(
       spacing: AppSpacing.xs,
       runSpacing: AppSpacing.xs,
       children: days.map((day) {
         final dayIndex = day['value'] as int;
-        final isSelected = _selectedDays.contains(dayIndex);
+        final isSelected = _formData.selectedDays.contains(dayIndex);
 
         return InkWell(
           onTap: () {
             HapticFeedback.selectionClick();
             setState(() {
               if (isSelected) {
-                _selectedDays.remove(dayIndex);
+                _formData.selectedDays.remove(dayIndex);
               } else {
-                _selectedDays.add(dayIndex);
+                _formData.selectedDays.add(dayIndex);
               }
             });
             _saveDraft();
@@ -1055,8 +726,7 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
                       colors: [AppColors.green, AppColors.greenLight],
                     )
                   : null,
-              color:
-                  isSelected ? null : AppColors.navy,
+              color: isSelected ? null : AppColors.navy,
               borderRadius: BorderRadius.circular(AppBorderRadius.xl),
               border: Border.all(
                 color: isSelected
@@ -1084,25 +754,25 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
         'value': 'anytime',
         'label': 'Anytime',
         'icon': AppPhosphorIcons.teeTime,
-        'subtitle': 'Any Time',
+        'subtitle': 'Any Time'
       },
       {
         'value': 'morning',
         'label': 'Morning',
         'icon': AppPhosphorIcons.morning,
-        'subtitle': 'Before 11am',
+        'subtitle': 'Before 11am'
       },
       {
         'value': 'afternoon',
         'label': 'Afternoon',
         'icon': AppPhosphorIcons.afternoon,
-        'subtitle': '11am-3pm',
+        'subtitle': '11am-3pm'
       },
       {
         'value': 'twilight',
         'label': 'Twilight',
         'icon': AppPhosphorIcons.twilight,
-        'subtitle': 'After 3pm',
+        'subtitle': 'After 3pm'
       },
     ];
 
@@ -1116,31 +786,28 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
       padding: EdgeInsets.zero,
       children: times.map((time) {
         final value = time['value'] as String;
-        final isSelected = _flexibleTimesOfDay.contains(value);
+        final isSelected = _formData.flexibleTimesOfDay.contains(value);
 
         return GestureDetector(
           onTap: () {
             HapticFeedback.lightImpact();
             setState(() {
               if (value == 'anytime') {
-                // Selecting Anytime clears all others and selects only Anytime
-                _flexibleTimesOfDay = {'anytime'};
+                _formData.flexibleTimesOfDay = {'anytime'};
               } else {
-                // Selecting a specific time
                 if (isSelected) {
-                  // Deselecting - if it would leave empty, default to Anytime
-                  _flexibleTimesOfDay.remove(value);
-                  if (_flexibleTimesOfDay.isEmpty ||
-                      (_flexibleTimesOfDay.length == 1 && _flexibleTimesOfDay.contains('anytime'))) {
-                    _flexibleTimesOfDay = {'anytime'};
+                  _formData.flexibleTimesOfDay.remove(value);
+                  if (_formData.flexibleTimesOfDay.isEmpty ||
+                      (_formData.flexibleTimesOfDay.length == 1 &&
+                          _formData.flexibleTimesOfDay.contains('anytime'))) {
+                    _formData.flexibleTimesOfDay = {'anytime'};
                   }
                 } else {
-                  // Adding - remove Anytime if present and add selection
-                  _flexibleTimesOfDay.remove('anytime');
-                  _flexibleTimesOfDay.add(value);
-                  // If all 3 specific times selected, auto-switch to Anytime
-                  if (_flexibleTimesOfDay.containsAll({'morning', 'afternoon', 'twilight'})) {
-                    _flexibleTimesOfDay = {'anytime'};
+                  _formData.flexibleTimesOfDay.remove('anytime');
+                  _formData.flexibleTimesOfDay.add(value);
+                  if (_formData.flexibleTimesOfDay
+                      .containsAll({'morning', 'afternoon', 'twilight'})) {
+                    _formData.flexibleTimesOfDay = {'anytime'};
                   }
                 }
               }
@@ -1158,13 +825,10 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
                       ],
                     )
                   : null,
-              color:
-                  isSelected ? null : AppColors.navy.withValues(alpha: 0.2),
+              color: isSelected ? null : AppColors.navy.withValues(alpha: 0.2),
               borderRadius: BorderRadius.circular(AppBorderRadius.md),
               border: Border.all(
-                color: isSelected
-                    ? AppColors.green
-                    : AppColors.glassSurface,
+                color: isSelected ? AppColors.green : AppColors.glassSurface,
                 width: isSelected ? 2 : 1,
               ),
             ),
@@ -1204,62 +868,9 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
     );
   }
 
-  String _buildFlexibleSummary() {
-    final parts = <String>[];
-
-    // Week part
-    if (_flexibleWeek != null) {
-      switch (_flexibleWeek) {
-        case 'this_week':
-          parts.add('This Week');
-          break;
-        case 'this_weekend':
-          parts.add('This Weekend');
-          break;
-        case 'next_week':
-          parts.add('Next Week');
-          break;
-        case 'next_2_weeks':
-          parts.add('Next 2 Weeks');
-          break;
-      }
-    }
-
-    // Days part - use intelligent collapsing
-    if (_selectedDays.isNotEmpty && _flexibleWeek != 'this_weekend') {
-      final dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-      final sortedDays = _selectedDays.toList()..sort();
-
-      // Check for special patterns
-      if (sortedDays.length == 7) {
-        parts.add('Any Day');
-      } else if (setEquals(sortedDays.toSet(), {1, 2, 3, 4, 5})) {
-        parts.add('Weekdays');
-      } else if (setEquals(sortedDays.toSet(), {0, 6})) {
-        parts.add('Weekend');
-      } else {
-        parts.add(sortedDays.map((d) => dayNames[d]).join(', '));
-      }
-    }
-
-    // Time of day part - handle multi-select
-    if (_flexibleTimesOfDay.isNotEmpty) {
-      if (_flexibleTimesOfDay.contains('anytime')) {
-        parts.add('Anytime');
-      } else {
-        final timeLabels = <String>[];
-        // Sort in logical order: morning, afternoon, twilight
-        if (_flexibleTimesOfDay.contains('morning')) timeLabels.add('Morning');
-        if (_flexibleTimesOfDay.contains('afternoon')) timeLabels.add('Afternoon');
-        if (_flexibleTimesOfDay.contains('twilight')) timeLabels.add('Twilight');
-        if (timeLabels.isNotEmpty) {
-          parts.add(timeLabels.join(', '));
-        }
-      }
-    }
-
-    return parts.isEmpty ? 'Select your availability' : parts.join(' · ');
-  }
+  // ═══════════════════════════════════════════════════════════════════════════
+  // BUILD
+  // ═══════════════════════════════════════════════════════════════════════════
 
   @override
   Widget build(BuildContext context) {
@@ -1332,24 +943,24 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
                           child: Column(
                             mainAxisSize: MainAxisSize.max,
                             children: [
-                              // Draft continuation banner
                               if (_hasDraft) DraftBanner(onClear: _clearDraft),
-
-                              // Restriction banner
                               Consumer<TrustProvider>(
                                 builder: (context, trust, _) {
-                                  final restriction = trust.myStanding?.currentRestriction;
-                                  if (restriction == null) return const SizedBox.shrink();
+                                  final restriction =
+                                      trust.myStanding?.currentRestriction;
+                                  if (restriction == null)
+                                    return const SizedBox.shrink();
                                   return Padding(
-                                    padding: EdgeInsets.only(bottom: AppSpacing.md),
+                                    padding:
+                                        EdgeInsets.only(bottom: AppSpacing.md),
                                     child: RestrictionBanner(
                                       restriction: restriction,
-                                      onViewStanding: () => context.pushNamed('YourStanding'),
+                                      onViewStanding: () =>
+                                          context.pushNamed('YourStanding'),
                                     ),
                                   );
                                 },
                               ),
-
                               Container(
                                 width: double.infinity,
                                 child: Form(
@@ -1368,7 +979,8 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
                                         _buildAnimatedSection(
                                           sectionIndex: 0,
                                           child: SectionHeader(
-                                            phosphorIcon: AppPhosphorIcons.games,
+                                            phosphorIcon:
+                                                AppPhosphorIcons.games,
                                             title: 'Game Name',
                                             helpText:
                                                 'Auto-generated for you. Edit here if you want a custom name.',
@@ -1385,16 +997,18 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
                                             label: 'Game name',
                                             hint: 'Auto-generated',
                                             controller: _gameNameController,
-                                            variant: AppTextFieldVariant.filledDark,
-                                            prefixPhosphorIcon: AppPhosphorIcons.label,
+                                            variant:
+                                                AppTextFieldVariant.filledDark,
+                                            prefixPhosphorIcon:
+                                                AppPhosphorIcons.label,
                                             onChanged: (_) => _saveDraft(),
                                           ),
                                         ),
-
                                         _buildAnimatedSection(
                                           sectionIndex: 1,
                                           child: SectionHeader(
-                                            phosphorIcon: AppPhosphorIcons.calendarCheck,
+                                            phosphorIcon:
+                                                AppPhosphorIcons.calendarCheck,
                                             title: 'Schedule',
                                             helpText:
                                                 'Choose if you have a confirmed tee time or flexible availability.',
@@ -1404,8 +1018,6 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
                                                 'Choose if you have a confirmed tee time or flexible availability.'),
                                           ),
                                         ),
-
-                                        // Schedule Type Selector
                                         Padding(
                                           padding: EdgeInsets.only(
                                               top: AppSpacing.xxs),
@@ -1414,25 +1026,33 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
                                               {
                                                 'value': 'confirmed',
                                                 'label': 'I Have a Tee Time',
-                                                'phosphorIcon': AppPhosphorIcons.calendarCheck,
+                                                'phosphorIcon': AppPhosphorIcons
+                                                    .calendarCheck
                                               },
                                               {
                                                 'value': 'flexible',
                                                 'label': 'Flexible Time',
-                                                'phosphorIcon': AppPhosphorIcons.calendarNote,
+                                                'phosphorIcon': AppPhosphorIcons
+                                                    .calendarNote
                                               },
                                             ],
-                                            selectedValue: _scheduleType,
+                                            selectedValue:
+                                                _formData.scheduleType,
                                             onChanged: (val) {
                                               if (mounted) {
                                                 setState(() {
-                                                  _scheduleType = val;
+                                                  _formData.scheduleType = val;
                                                   if (val == 'flexible') {
-                                                    datePicked = null;
+                                                    _formData.datePicked = null;
                                                   } else {
-                                                    _flexibleWeek = null;
-                                                    _selectedDays.clear();
-                                                    _flexibleTimesOfDay = {'anytime'}; // Reset to default
+                                                    _formData.flexibleWeek =
+                                                        null;
+                                                    _formData.selectedDays
+                                                        .clear();
+                                                    _formData
+                                                        .flexibleTimesOfDay = {
+                                                      'anytime'
+                                                    };
                                                   }
                                                 });
                                                 _saveDraft();
@@ -1440,37 +1060,37 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
                                             },
                                           ),
                                         ),
-
-                                        if (_scheduleType == 'confirmed') ...[
-                                          // Premium date picker
+                                        if (_formData.scheduleType ==
+                                            'confirmed') ...[
                                           Padding(
                                             padding: EdgeInsets.only(
                                                 top: AppSpacing.sm),
                                             child: PremiumDatePicker(
-                                              selectedDate: datePicked,
+                                              selectedDate:
+                                                  _formData.datePicked,
                                               onDateSelected: (date) {
                                                 if (mounted) {
                                                   setState(() {
-                                                    datePicked = date;
+                                                    _formData.datePicked = date;
                                                   });
                                                   _saveDraft();
                                                 }
                                               },
                                             ),
                                           ),
-
-                                          // Tee time picker row
-                                          if (datePicked != null) ...[
+                                          if (_formData.datePicked != null) ...[
                                             SizedBox(height: AppSpacing.sm),
                                             InkWell(
                                               onTap: () {
                                                 showTeeTimePicker(
                                                   context: context,
-                                                  selectedDateTime: datePicked,
+                                                  selectedDateTime:
+                                                      _formData.datePicked,
                                                   onTimeSelected: (dateTime) {
                                                     if (mounted) {
                                                       setState(() {
-                                                        datePicked = dateTime;
+                                                        _formData.datePicked =
+                                                            dateTime;
                                                       });
                                                       _saveDraft();
                                                     }
@@ -1478,54 +1098,63 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
                                                 );
                                               },
                                               borderRadius:
-                                                  BorderRadius.circular(AppBorderRadius.md),
+                                                  BorderRadius.circular(
+                                                      AppBorderRadius.md),
                                               child: Container(
                                                 width: double.infinity,
                                                 padding: EdgeInsets.symmetric(
-                                                  vertical: AppSpacing.md,
-                                                  horizontal: AppSpacing.md,
-                                                ),
+                                                    vertical: AppSpacing.md,
+                                                    horizontal: AppSpacing.md),
                                                 decoration: BoxDecoration(
                                                   color: AppColors.navy,
                                                   borderRadius:
-                                                      BorderRadius.circular(AppBorderRadius.md),
+                                                      BorderRadius.circular(
+                                                          AppBorderRadius.md),
                                                   border: Border.all(
-                                                    color: AppColors.greenLight.withValues(alpha: 0.3),
-                                                    width: 1.5,
-                                                  ),
+                                                      color: AppColors
+                                                          .greenLight
+                                                          .withValues(
+                                                              alpha: 0.3),
+                                                      width: 1.5),
                                                 ),
                                                 child: Row(
                                                   children: [
                                                     AppIcon(
-                                                      icon: AppPhosphorIcons.teeTime,
-                                                      color: AppColors.pure,
-                                                      size: AppIconSize.button,
-                                                    ),
+                                                        icon: AppPhosphorIcons
+                                                            .teeTime,
+                                                        color: AppColors.pure,
+                                                        size:
+                                                            AppIconSize.button),
                                                     SizedBox(
                                                         width: AppSpacing.sm),
                                                     Expanded(
                                                       child: Text(
-                                                        dateTimeFormat("jm",
-                                                            datePicked),
-                                                        style: AppTypography.labelMedium.copyWith(
-                                                          color: AppColors.pure,
-                                                          fontWeight: FontWeight.w600,
-                                                        ),
+                                                        dateTimeFormat(
+                                                            "jm",
+                                                            _formData
+                                                                .datePicked),
+                                                        style: AppTypography
+                                                            .labelMedium
+                                                            .copyWith(
+                                                                color: AppColors
+                                                                    .pure,
+                                                                fontWeight:
+                                                                    FontWeight
+                                                                        .w600),
                                                       ),
                                                     ),
                                                     AppIcon(
-                                                      icon: AppPhosphorIcons.edit,
-                                                      color: AppColors.textSecondary,
-                                                      size: AppIconSize.sm,
-                                                    ),
+                                                        icon: AppPhosphorIcons
+                                                            .edit,
+                                                        color: AppColors
+                                                            .textSecondary,
+                                                        size: AppIconSize.sm),
                                                   ],
                                                 ),
                                               ),
                                             ),
                                           ],
-
-                                          // Human-readable summary
-                                          if (datePicked != null) ...[
+                                          if (_formData.datePicked != null) ...[
                                             SizedBox(height: AppSpacing.sm),
                                             Container(
                                               width: double.infinity,
@@ -1533,31 +1162,33 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
                                                   EdgeInsets.all(AppSpacing.md),
                                               decoration: BoxDecoration(
                                                 gradient: LinearGradient(
-                                                  colors: [
-                                                    AppColors.navyLight,
-                                                    AppColors.navy
-                                                  ],
-                                                  begin: Alignment.topLeft,
-                                                  end: Alignment.bottomRight,
-                                                ),
+                                                    colors: [
+                                                      AppColors.navyLight,
+                                                      AppColors.navy
+                                                    ],
+                                                    begin: Alignment.topLeft,
+                                                    end: Alignment.bottomRight),
                                                 borderRadius:
-                                                    BorderRadius.circular(AppBorderRadius.md),
+                                                    BorderRadius.circular(
+                                                        AppBorderRadius.md),
                                               ),
                                               child: Row(
                                                 children: [
                                                   AppIcon(
-                                                    icon: AppPhosphorIcons.golfCourse,
-                                                    color: AppColors.pure,
-                                                    size: AppIconSize.button,
-                                                  ),
+                                                      icon: AppPhosphorIcons
+                                                          .golfCourse,
+                                                      color: AppColors.pure,
+                                                      size: AppIconSize.button),
                                                   SizedBox(
                                                       width: AppSpacing.sm),
                                                   Expanded(
                                                     child: Text(
-                                                      '${dateTimeFormat("EEEE, MMM d", datePicked)} at ${dateTimeFormat("jm", datePicked)}',
-                                                      style: AppTypography.labelMedium.copyWith(
-                                                        color: AppColors.textPrimary,
-                                                      ),
+                                                      '${dateTimeFormat("EEEE, MMM d", _formData.datePicked)} at ${dateTimeFormat("jm", _formData.datePicked)}',
+                                                      style: AppTypography
+                                                          .labelMedium
+                                                          .copyWith(
+                                                              color: AppColors
+                                                                  .textPrimary),
                                                     ),
                                                   ),
                                                 ],
@@ -1570,7 +1201,8 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
                                         _buildAnimatedSection(
                                           sectionIndex: 2,
                                           child: SectionHeader(
-                                            phosphorIcon: AppPhosphorIcons.publicVisibility,
+                                            phosphorIcon: AppPhosphorIcons
+                                                .publicVisibility,
                                             title: 'Visibility',
                                             helpText:
                                                 'Choose whether your game is visible to friends only or everyone in your area.',
@@ -1588,19 +1220,22 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
                                               {
                                                 'value': 'Friends',
                                                 'label': 'Friends',
-                                                'phosphorIcon': AppPhosphorIcons.people,
+                                                'phosphorIcon':
+                                                    AppPhosphorIcons.people
                                               },
                                               {
                                                 'value': 'Public',
                                                 'label': 'Public',
-                                                'phosphorIcon': AppPhosphorIcons.publicVisibility,
+                                                'phosphorIcon': AppPhosphorIcons
+                                                    .publicVisibility
                                               },
                                             ],
-                                            selectedValue: friendsValue,
+                                            selectedValue:
+                                                _formData.friendsValue,
                                             onChanged: (val) {
                                               if (mounted) {
-                                                setState(
-                                                    () => friendsValue = val);
+                                                setState(() => _formData
+                                                    .friendsValue = val);
                                                 _saveDraft();
                                               }
                                             },
@@ -1609,7 +1244,8 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
                                         _buildAnimatedSection(
                                           sectionIndex: 3,
                                           child: SectionHeader(
-                                            phosphorIcon: AppPhosphorIcons.openToAll,
+                                            phosphorIcon:
+                                                AppPhosphorIcons.openToAll,
                                             title: 'Who Can Join',
                                             helpText:
                                                 'Choose who can join your game based on gender.',
@@ -1623,43 +1259,44 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
                                           builder: (context, userProvider, _) {
                                             final filteredOptions =
                                                 _getFilteredEligibilityOptions(
-                                              userProvider.currentUser?.gender,
-                                            );
+                                                    userProvider
+                                                        .currentUser?.gender);
                                             return Padding(
                                               padding: EdgeInsets.only(
                                                   top: AppSpacing.xxs),
                                               child: CardGrid(
                                                 options: filteredOptions,
-                                                selectedValue: _playerEligibility,
+                                                selectedValue:
+                                                    _formData.playerEligibility,
                                                 onChanged: (val) {
                                                   if (mounted) {
-                                                    setState(() =>
-                                                        _playerEligibility = val);
+                                                    setState(() => _formData
+                                                            .playerEligibility =
+                                                        val);
                                                     _saveDraft();
                                                   }
                                                 },
-                                                crossAxisCount: filteredOptions.length,
+                                                crossAxisCount:
+                                                    filteredOptions.length,
                                                 childAspectRatio: 1.2,
                                               ),
                                             );
                                           },
                                         ),
-                                        // Vibe Floor Toggle
                                         _buildAnimatedSection(
                                           sectionIndex: 4,
                                           child: Padding(
                                             padding: EdgeInsets.only(
-                                              top: AppSpacing.md,
-                                            ),
+                                                top: AppSpacing.md),
                                             child: ToggleSwitch(
                                               label: 'Require vibe match',
                                               description:
                                                   'Players with a different play style will need your approval',
-                                              value: _requireVibeMatch,
+                                              value: _formData.requireVibeMatch,
                                               onChanged: (val) {
                                                 if (mounted) {
-                                                  setState(
-                                                      () => _requireVibeMatch = val);
+                                                  setState(() => _formData
+                                                      .requireVibeMatch = val);
                                                   _saveDraft();
                                                 }
                                               },
@@ -1669,9 +1306,9 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
                                         _buildAnimatedSection(
                                           sectionIndex: 5,
                                           child: SectionHeader(
-                                            phosphorIcon: AppPhosphorIcons.course,
-                                            title: 'Course',
-                                          ),
+                                              phosphorIcon:
+                                                  AppPhosphorIcons.course,
+                                              title: 'Course'),
                                         ),
                                         Align(
                                           alignment:
@@ -1679,15 +1316,10 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
                                           child: Padding(
                                             padding: EdgeInsets.only(
                                                 top: AppSpacing.xxs),
-                                            child: StreamBuilder<
-                                                QuerySnapshot<
-                                                    Map<String, dynamic>>>(
-                                              stream: FirebaseFirestore.instance
-                                                  .collection('course')
-                                                  .orderBy('name')
-                                                  .snapshots(),
+                                            child: StreamBuilder<List<Course>>(
+                                              stream: _courseService
+                                                  .streamAllCourses(),
                                               builder: (context, snapshot) {
-                                                // Customize what your widget looks like when it's loading.
                                                 if (!snapshot.hasData) {
                                                   return Center(
                                                     child: SizedBox(
@@ -1695,20 +1327,14 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
                                                       height: 50.0,
                                                       child:
                                                           SpinKitWanderingCubes(
-                                                        color: AppColors
-                                                            .gold,
-                                                        size: 50.0,
-                                                      ),
+                                                              color: AppColors
+                                                                  .gold,
+                                                              size: 50.0),
                                                     ),
                                                   );
                                                 }
                                                 final courseCourseRecordList =
-                                                    snapshot.data!.docs
-                                                        .map((doc) =>
-                                                            Course.fromDoc(doc))
-                                                        .toList();
-
-                                                // Empty state
+                                                    snapshot.data!;
                                                 if (courseCourseRecordList
                                                     .isEmpty) {
                                                   return Container(
@@ -1720,76 +1346,103 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
                                                               alpha: 0.2),
                                                       borderRadius:
                                                           BorderRadius.circular(
-                                                              AppBorderRadius.md),
+                                                              AppBorderRadius
+                                                                  .md),
                                                       border: Border.all(
-                                                        color: AppColors
-                                                            .navyLight
-                                                            .withValues(
-                                                                alpha: 0.3),
-                                                      ),
+                                                          color: AppColors
+                                                              .navyLight
+                                                              .withValues(
+                                                                  alpha: 0.3)),
                                                     ),
                                                     child: Column(
                                                       children: [
                                                         AppIcon(
-                                                          icon: AppPhosphorIcons.golfCourse,
-                                                          size: AppIconSize.xl,
-                                                          color: AppColors.textMuted,
-                                                        ),
+                                                            icon:
+                                                                AppPhosphorIcons
+                                                                    .golfCourse,
+                                                            size:
+                                                                AppIconSize.xl,
+                                                            color: AppColors
+                                                                .textMuted),
                                                         SizedBox(
                                                             height:
                                                                 AppSpacing.sm),
                                                         Text(
-                                                          'No courses available',
-                                                          style: AppTypography.bodySmall.copyWith(
-                                                            color: AppColors.glassTextSecondary,
-                                                          ),
-                                                        ),
+                                                            'No courses available',
+                                                            style: AppTypography
+                                                                .bodySmall
+                                                                .copyWith(
+                                                                    color: AppColors
+                                                                        .glassTextSecondary)),
                                                       ],
                                                     ),
                                                   );
                                                 }
+                                                _formData.hydrateSelectedCourse(
+                                                    courseCourseRecordList);
+                                                courseValueController ??=
+                                                    FormFieldController<String>(
+                                                        _formData.courseValue);
+                                                if (courseValueController
+                                                        ?.value !=
+                                                    _formData.courseValue) {
+                                                  courseValueController?.value =
+                                                      _formData.courseValue;
+                                                }
 
                                                 return AppDropDown<String>(
                                                   controller:
-                                                      courseValueController ??=
-                                                          FormFieldController<
-                                                              String>(null),
+                                                      courseValueController,
                                                   options:
                                                       courseCourseRecordList
                                                           .map((e) => e.name)
                                                           .toList(),
                                                   onChanged: (val) async {
                                                     if (mounted) {
-                                                      setState(() =>
-                                                          courseValue = val);
+                                                      setState(() => _formData
+                                                          .courseValue = val);
                                                     }
-                                                    selectedCourse =
-                                                        courseCourseRecordList
-                                                            .firstWhereOrNull(
-                                                                (course) =>
-                                                                    course
-                                                                        .name ==
-                                                                    val);
-
+                                                    _formData.setSelectedCourse(
+                                                      courseCourseRecordList
+                                                          .firstWhereOrNull(
+                                                              (course) =>
+                                                                  course.name ==
+                                                                  val),
+                                                    );
                                                     _saveDraft();
                                                     if (mounted)
                                                       setState(() {});
                                                   },
                                                   width: 300.0,
                                                   height: 50.0,
-                                                  searchHintTextStyle: AppTypography.labelMedium.copyWith(color: AppColors.textMuted),
-                                                  searchTextStyle: AppTypography.bodyMedium.copyWith(color: AppColors.textPrimary),
-                                                  searchCursorColor: AppColors.green,
-                                                  textStyle: AppTypography.bodyMedium.copyWith(color: AppColors.textPrimary),
+                                                  searchHintTextStyle:
+                                                      AppTypography
+                                                          .labelMedium
+                                                          .copyWith(
+                                                              color: AppColors
+                                                                  .textMuted),
+                                                  searchTextStyle: AppTypography
+                                                      .bodyMedium
+                                                      .copyWith(
+                                                          color: AppColors
+                                                              .textPrimary),
+                                                  searchCursorColor:
+                                                      AppColors.green,
+                                                  textStyle: AppTypography
+                                                      .bodyMedium
+                                                      .copyWith(
+                                                          color: AppColors
+                                                              .textPrimary),
                                                   hintText:
                                                       'Where are you playing?',
                                                   searchHintText:
                                                       'Find your course',
                                                   icon: AppIcon(
-                                                    icon: AppPhosphorIcons.chevronDown,
-                                                    color: AppColors.textSecondary,
-                                                    size: AppIconSize.md,
-                                                  ),
+                                                      icon: AppPhosphorIcons
+                                                          .chevronDown,
+                                                      color: AppColors
+                                                          .textSecondary,
+                                                      size: AppIconSize.md),
                                                   fillColor:
                                                       AppColors.inputBackground,
                                                   elevation: 2.0,
@@ -1814,12 +1467,12 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
                                           label: 'Member Guest Rate',
                                           description:
                                               'This game is created by a course member who can offer guest-rate pricing.',
-                                          value: memberDiscount,
+                                          value: _formData.memberDiscount,
                                           onChanged: (val) {
                                             if (mounted) {
                                               setState(() {
-                                                memberDiscount = val;
-                                                memberValue =
+                                                _formData.memberDiscount = val;
+                                                _formData.memberValue =
                                                     val ? 'Yes' : 'No';
                                               });
                                               _saveDraft();
@@ -1830,19 +1483,20 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
                                           label: 'Just for Fun',
                                           description:
                                               'Skip all the details. Just show up and play.',
-                                          value: _isJustForFun,
+                                          value: _formData.isJustForFun,
                                           onChanged: (val) {
                                             if (mounted) {
                                               setState(() {
-                                                _isJustForFun = val;
+                                                _formData.isJustForFun = val;
                                               });
                                               _saveDraft();
                                             }
                                           },
                                         ),
-                                        if (!_isJustForFun) ...[
+                                        if (!_formData.isJustForFun) ...[
                                           SectionHeader(
-                                            phosphorIcon: AppPhosphorIcons.competitive,
+                                            phosphorIcon:
+                                                AppPhosphorIcons.competitive,
                                             title: 'Game Vibe',
                                             helpText:
                                                 'Set the tone for your round. Competitive focuses on rules and pace, while Casual keeps it relaxed and friendly.',
@@ -1856,11 +1510,12 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
                                                 top: AppSpacing.xxs),
                                             child: CardGrid(
                                               options: kCreateGameVibeOptions,
-                                              selectedValue: rulesSetValue,
+                                              selectedValue:
+                                                  _formData.rulesSetValue,
                                               onChanged: (val) {
                                                 if (mounted) {
-                                                  setState(() =>
-                                                      rulesSetValue = val);
+                                                  setState(() => _formData
+                                                      .rulesSetValue = val);
                                                   _saveDraft();
                                                 }
                                               },
@@ -1869,7 +1524,8 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
                                             ),
                                           ),
                                           SectionHeader(
-                                            phosphorIcon: AppPhosphorIcons.betting,
+                                            phosphorIcon:
+                                                AppPhosphorIcons.betting,
                                             title: 'Stakes',
                                             helpText:
                                                 'Playing for money or keeping it friendly? Choose your comfort level.',
@@ -1883,11 +1539,12 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
                                                 top: AppSpacing.xxs),
                                             child: CardGrid(
                                               options: kCreateGameStakesOptions,
-                                              selectedValue: styleGameValue,
+                                              selectedValue:
+                                                  _formData.styleGameValue,
                                               onChanged: (val) {
                                                 if (mounted) {
-                                                  setState(() =>
-                                                      styleGameValue = val);
+                                                  setState(() => _formData
+                                                      .styleGameValue = val);
                                                   _saveDraft();
                                                 }
                                               },
@@ -1896,7 +1553,8 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
                                             ),
                                           ),
                                           SectionHeader(
-                                            phosphorIcon: AppPhosphorIcons.gameType,
+                                            phosphorIcon:
+                                                AppPhosphorIcons.gameType,
                                             title: 'Primary Format',
                                             helpText:
                                                 'Choose your core scoring format: Match Play (hole-by-hole), Stroke Play (total strokes), Stableford (points).',
@@ -1911,11 +1569,13 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
                                             child: CardGrid(
                                               options:
                                                   kCreateGamePrimaryFormatOptions,
-                                              selectedValue: gameTypeValue,
+                                              selectedValue:
+                                                  _formData.gameTypeValue,
                                               onChanged: (val) {
                                                 if (mounted) {
                                                   setState(() {
-                                                    gameTypeValue = val;
+                                                    _formData.gameTypeValue =
+                                                        val;
                                                   });
                                                   _saveDraft();
                                                 }
@@ -1924,34 +1584,30 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
                                               childAspectRatio: 0.95,
                                             ),
                                           ),
-
-                                          // Team Setup Section
                                           SizedBox(height: AppSpacing.md),
                                           ToggleSwitch(
                                             label: '2v2 (Teams)',
                                             description:
                                                 'Enable team play mode',
-                                            value: _is2v2,
+                                            value: _formData.is2v2,
                                             onChanged: (val) {
                                               if (mounted) {
                                                 setState(() {
-                                                  _is2v2 = val;
+                                                  _formData.is2v2 = val;
                                                   if (!val) {
-                                                    _teamStyle = null;
+                                                    _formData.teamStyle = null;
                                                   }
                                                 });
                                                 _saveDraft();
                                               }
                                             },
                                           ),
-
-                                          // Team Style (conditional, shown only if 2v2 is enabled)
-                                          if (_is2v2) ...[
+                                          if (_formData.is2v2) ...[
                                             SizedBox(height: AppSpacing.sm),
                                             SectionHeader(
-                                              phosphorIcon: AppPhosphorIcons.teams,
-                                              title: 'Team Style',
-                                            ),
+                                                phosphorIcon:
+                                                    AppPhosphorIcons.teams,
+                                                title: 'Team Style'),
                                             Padding(
                                               padding: EdgeInsets.only(
                                                   top: AppSpacing.xxs),
@@ -1960,19 +1616,23 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
                                                   {
                                                     'value': 'Best Ball',
                                                     'label': 'Best Ball',
-                                                    'phosphorIcon': AppPhosphorIcons.bestBall,
+                                                    'phosphorIcon':
+                                                        AppPhosphorIcons
+                                                            .bestBall
                                                   },
                                                   {
                                                     'value': 'Scramble',
                                                     'label': 'Scramble',
-                                                    'phosphorIcon': AppPhosphorIcons.groups,
+                                                    'phosphorIcon':
+                                                        AppPhosphorIcons.groups
                                                   },
                                                 ],
-                                                selectedValue: _teamStyle,
+                                                selectedValue:
+                                                    _formData.teamStyle,
                                                 onChanged: (val) {
                                                   if (mounted) {
                                                     setState(() {
-                                                      _teamStyle = val;
+                                                      _formData.teamStyle = val;
                                                     });
                                                     _saveDraft();
                                                   }
@@ -1982,9 +1642,9 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
                                               ),
                                             ),
                                           ],
-
                                           SectionHeader(
-                                            phosphorIcon: AppPhosphorIcons.handicap,
+                                            phosphorIcon:
+                                                AppPhosphorIcons.handicap,
                                             title: 'Handicap Use',
                                             helpText:
                                                 'Gross is total strokes. Net adjusts for handicap. Gross + Net tracks both scores.',
@@ -1999,11 +1659,12 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
                                             child: CardGrid(
                                               options:
                                                   kCreateGameHandicapOptions,
-                                              selectedValue: scoringValue,
+                                              selectedValue:
+                                                  _formData.scoringValue,
                                               onChanged: (val) {
                                                 if (mounted) {
-                                                  setState(
-                                                      () => scoringValue = val);
+                                                  setState(() => _formData
+                                                      .scoringValue = val);
                                                   _saveDraft();
                                                 }
                                               },
@@ -2011,8 +1672,6 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
                                               childAspectRatio: 0.95,
                                             ),
                                           ),
-
-                                          // Games Multi-Select Section
                                           SectionHeader(
                                             phosphorIcon: AppPhosphorIcons.dots,
                                             title: 'Games (Optional)',
@@ -2027,22 +1686,25 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
                                             padding: EdgeInsets.only(
                                                 top: AppSpacing.xxs),
                                             child: GamesMultiSelect(
-                                              selectedGames: _selectedGames,
+                                              selectedGames:
+                                                  _formData.selectedGames,
                                               onGameToggled: (game) {
                                                 if (mounted) {
                                                   setState(() {
-                                                    if (_selectedGames
+                                                    if (_formData.selectedGames
                                                         .contains(game)) {
-                                                      _selectedGames
+                                                      _formData.selectedGames
                                                           .remove(game);
-                                                      // Clear other game text if deselecting Other
                                                       if (game == 'Other') {
-                                                        _otherGameText = null;
+                                                        _formData
+                                                                .otherGameText =
+                                                            null;
                                                         _otherGameController
                                                             .clear();
                                                       }
                                                     } else {
-                                                      _selectedGames.add(game);
+                                                      _formData.selectedGames
+                                                          .add(game);
                                                     }
                                                   });
                                                   _saveDraft();
@@ -2052,7 +1714,7 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
                                                   _otherGameController,
                                               onOtherGameChanged: (text) {
                                                 setState(() {
-                                                  _otherGameText =
+                                                  _formData.otherGameText =
                                                       text.trim().isEmpty
                                                           ? null
                                                           : text.trim();
@@ -2062,12 +1724,12 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
                                               maxGames: 3,
                                             ),
                                           ),
-
-                                          // Auto-Generated Summary
-                                          if (gameTypeValue != null &&
-                                              scoringValue != null &&
-                                              styleGameValue != null &&
-                                              rulesSetValue != null) ...[
+                                          if (_formData.gameTypeValue != null &&
+                                              _formData.scoringValue != null &&
+                                              _formData.styleGameValue !=
+                                                  null &&
+                                              _formData.rulesSetValue !=
+                                                  null) ...[
                                             Padding(
                                               padding: EdgeInsets.only(
                                                   top: AppSpacing.lg),
@@ -2078,23 +1740,23 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
                                                 decoration: BoxDecoration(
                                                   gradient: LinearGradient(
                                                     colors: [
-                                                      AppColors.navy
-                                                          .withValues(
-                                                              alpha: 0.3),
+                                                      AppColors.navy.withValues(
+                                                          alpha: 0.3),
                                                       AppColors.navyDark
                                                           .withValues(
-                                                              alpha: 0.4),
+                                                              alpha: 0.4)
                                                     ],
                                                     begin: Alignment.topLeft,
                                                     end: Alignment.bottomRight,
                                                   ),
                                                   borderRadius:
-                                                      BorderRadius.circular(AppBorderRadius.md),
+                                                      BorderRadius.circular(
+                                                          AppBorderRadius.md),
                                                   border: Border.all(
-                                                    color: AppColors.green
-                                                        .withValues(alpha: 0.3),
-                                                    width: 1,
-                                                  ),
+                                                      color: AppColors.green
+                                                          .withValues(
+                                                              alpha: 0.3),
+                                                      width: 1),
                                                 ),
                                                 child: Column(
                                                   crossAxisAlignment:
@@ -2102,40 +1764,51 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
                                                   children: [
                                                     Text(
                                                       'Game Summary',
-                                                      style: AppTypography.labelSmall.copyWith(
-                                                        fontSize: 13,
-                                                        fontWeight: FontWeight.w500,
-                                                        color: AppColors.glassTextSecondary,
-                                                      ),
+                                                      style: AppTypography
+                                                          .labelSmall
+                                                          .copyWith(
+                                                              fontSize: 13,
+                                                              fontWeight:
+                                                                  FontWeight
+                                                                      .w500,
+                                                              color: AppColors
+                                                                  .glassTextSecondary),
                                                     ),
                                                     SizedBox(
                                                         height: AppSpacing.xs),
                                                     Text(
-                                                      _buildGameSummary(),
-                                                      style: AppTypography.labelMedium.copyWith(
-                                                        color: AppColors.textPrimary,
-                                                        height: 1.4,
-                                                      ),
+                                                      _formData
+                                                          .buildGameSummary(),
+                                                      style: AppTypography
+                                                          .labelMedium
+                                                          .copyWith(
+                                                              color: AppColors
+                                                                  .textPrimary,
+                                                              height: 1.4),
                                                     ),
                                                   ],
                                                 ),
                                               ),
                                             ),
                                           ],
-                                        ], // end if (!_isJustForFun)
-
-
+                                        ],
                                         Padding(
                                           padding: EdgeInsets.only(
                                               top: AppSpacing.xxl),
                                           child: Consumer<TrustProvider>(
                                             builder: (context, trust, _) {
-                                              final isRestricted = trust.myStanding?.currentRestriction != null;
+                                              final isRestricted = trust
+                                                      .myStanding
+                                                      ?.currentRestriction !=
+                                                  null;
                                               return AppButtonEnhanced(
                                                 text: 'Submit Game',
-                                                variant: AppButtonVariant.primary,
+                                                variant:
+                                                    AppButtonVariant.primary,
                                                 size: AppButtonSize.large,
-                                                onPressed: isRestricted ? null : _submitGame,
+                                                onPressed: isRestricted
+                                                    ? null
+                                                    : _submitGame,
                                                 enabled: !isRestricted,
                                               );
                                             },

@@ -1,0 +1,235 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+
+import '/core/utils/app_log.dart';
+
+/// Service for notification CRUD operations in Firestore.
+///
+/// Handles marking notifications as read/unread and deletion,
+/// with proper batch operation handling for Firestore limits.
+class NotificationCrudService {
+  NotificationCrudService({FirebaseFirestore? firestore})
+      : _firestore = firestore;
+
+  final FirebaseFirestore? _firestore;
+
+  FirebaseFirestore get _resolvedFirestore =>
+      _firestore ?? FirebaseFirestore.instance;
+
+  /// Streams recent notifications for the signed-in user.
+  Stream<QuerySnapshot> streamNotifications({
+    required DocumentReference userRef,
+    required int limit,
+  }) {
+    return userRef
+        .collection('notifications')
+        .orderBy('createdAt', descending: true)
+        .limit(limit)
+        .snapshots();
+  }
+
+  /// Streams unread notifications for the signed-in user.
+  Stream<QuerySnapshot> streamUnreadNotifications(
+    DocumentReference userRef,
+  ) {
+    return userRef
+        .collection('notifications')
+        .where('read', isEqualTo: false)
+        .snapshots();
+  }
+
+  /// Marks all unread notifications as read for a user.
+  ///
+  /// Uses batch operations with 400-op limit to stay safely under
+  /// Firestore's 500-operation batch limit.
+  Future<void> markAllAsRead(DocumentReference userRef) async {
+    try {
+      final unreadSnapshot = await userRef
+          .collection('notifications')
+          .where('read', isEqualTo: false)
+          .get();
+
+      if (unreadSnapshot.docs.isEmpty) {
+        AppLog.d('📖 NotificationCrudService: No unread notifications');
+        return;
+      }
+
+      var batch = _resolvedFirestore.batch();
+      var opCount = 0;
+
+      for (final doc in unreadSnapshot.docs) {
+        batch.update(doc.reference, {'read': true});
+        opCount += 1;
+        if (opCount >= 400) {
+          await batch.commit();
+          batch = _resolvedFirestore.batch();
+          opCount = 0;
+        }
+      }
+
+      if (opCount > 0) {
+        await batch.commit();
+      }
+
+      AppLog.d(
+          '✅ NotificationCrudService: Marked ${unreadSnapshot.docs.length} as read');
+    } on FirebaseException catch (e) {
+      AppLog.d(
+          '❌ NotificationCrudService.markAllAsRead: ${e.code} - ${e.message}');
+      rethrow;
+    }
+  }
+
+  /// Marks a notification as read if not already read.
+  Future<void> markReadIfNeeded(
+    DocumentReference notificationRef,
+    bool isRead,
+  ) async {
+    if (isRead) {
+      return;
+    }
+    try {
+      await notificationRef.update({'read': true});
+    } on FirebaseException catch (e) {
+      AppLog.d(
+          '❌ NotificationCrudService.markReadIfNeeded: ${e.code} - ${e.message}');
+      rethrow;
+    }
+  }
+
+  /// Marks a notification as unread.
+  Future<void> markAsUnread(DocumentReference notificationRef) async {
+    try {
+      await notificationRef.update({'read': false});
+    } on FirebaseException catch (e) {
+      AppLog.d(
+          '❌ NotificationCrudService.markAsUnread: ${e.code} - ${e.message}');
+      rethrow;
+    }
+  }
+
+  /// Deletes a single notification.
+  Future<void> deleteNotification(DocumentReference notificationRef) async {
+    try {
+      await notificationRef.delete();
+      AppLog.d('✅ NotificationCrudService: Deleted ${notificationRef.path}');
+    } on FirebaseException catch (e) {
+      AppLog.d(
+          '❌ NotificationCrudService.deleteNotification: ${e.code} - ${e.message}');
+      rethrow;
+    }
+  }
+
+  /// Deletes all notifications for a user.
+  ///
+  /// Uses batch operations with 500-op limit (Firestore max).
+  /// Returns the count of deleted notifications.
+  Future<int> deleteAllNotifications(DocumentReference userRef) async {
+    try {
+      final allSnapshot =
+          await userRef.collection('notifications').orderBy('createdAt').get();
+
+      if (allSnapshot.docs.isEmpty) {
+        AppLog.d('📖 NotificationCrudService: No notifications to delete');
+        return 0;
+      }
+
+      var batch = _resolvedFirestore.batch();
+      var opCount = 0;
+
+      for (final doc in allSnapshot.docs) {
+        batch.delete(doc.reference);
+        opCount += 1;
+        if (opCount >= 500) {
+          await batch.commit();
+          batch = _resolvedFirestore.batch();
+          opCount = 0;
+        }
+      }
+
+      if (opCount > 0) {
+        await batch.commit();
+      }
+
+      AppLog.d(
+          '✅ NotificationCrudService: Deleted ${allSnapshot.docs.length} notifications');
+      return allSnapshot.docs.length;
+    } on FirebaseException catch (e) {
+      AppLog.d(
+          '❌ NotificationCrudService.deleteAllNotifications: ${e.code} - ${e.message}');
+      rethrow;
+    }
+  }
+
+  /// Resolves a game reference from notification payload fields.
+  DocumentReference? resolveGameRefFromPayload(Map<String, dynamic> payload) {
+    final gameRefPath = payload['gameRef'];
+    if (gameRefPath is String && gameRefPath.isNotEmpty) {
+      return _resolvedFirestore.doc(gameRefPath);
+    }
+
+    final gameId = payload['gameId'] ?? payload['game_id'];
+    if (gameId is String && gameId.isNotEmpty) {
+      return _resolvedFirestore.collection('games').doc(gameId);
+    }
+
+    return null;
+  }
+
+  /// Returns true when a game should be blocked because it's friends-only and
+  /// the current user is not in the host's friend list.
+  Future<bool> shouldBlockFriendsOnlyGame({
+    required DocumentReference gameRef,
+    required DocumentReference currentUserRef,
+  }) async {
+    Map<String, dynamic>? data;
+    try {
+      final gameSnap = await gameRef.get();
+      data = gameSnap.data() as Map<String, dynamic>?;
+    } on FirebaseException catch (error) {
+      AppLog.d(
+        '❌ NotificationCrudService.shouldBlockFriendsOnlyGame: ${error.code} - ${error.message}',
+      );
+      if (error.code == 'permission-denied') {
+        return true;
+      }
+      return false;
+    } catch (_) {
+      return false;
+    }
+
+    if (data == null) {
+      return false;
+    }
+
+    final friendGameValue = (data['friendGame'] as String?) ?? '';
+    final isFriendsOnly = friendGameValue.trim().toLowerCase() == 'friends';
+    if (!isFriendsOnly) {
+      return false;
+    }
+
+    final ownerRef = data['userRef'];
+    if (ownerRef is! DocumentReference) {
+      return true;
+    }
+
+    final userSnap = await currentUserRef.get();
+    final userData = userSnap.data() as Map<String, dynamic>? ?? {};
+    final friends = userData['friends'];
+    if (friends is List) {
+      return !friends.any((entry) {
+        if (entry is DocumentReference) {
+          return entry.id == ownerRef.id;
+        }
+        if (entry is String) {
+          if (entry.contains('/')) {
+            final parts = entry.split('/');
+            return parts.isNotEmpty && parts.last == ownerRef.id;
+          }
+          return entry == ownerRef.id;
+        }
+        return false;
+      });
+    }
+    return true;
+  }
+}

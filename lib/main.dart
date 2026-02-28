@@ -19,11 +19,7 @@ import '/core/app_theme.dart';
 import '/core/design_tokens/colors.dart';
 import '/core/design_tokens/typography.dart';
 import '/core/design_tokens/spacing.dart';
-import '/core/design_tokens/icon_size.dart';
 import '/core/design_tokens/border_radius.dart';
-import '/core/design_tokens/app_phosphor_icons.dart';
-import '/core/design_tokens/app_icons.dart';
-import '/core/widgets/app_icon.dart';
 import '/utils/app_util.dart';
 import '/providers/user_provider.dart';
 import '/providers/chat_provider.dart';
@@ -33,17 +29,8 @@ import '/providers/join_request_provider.dart';
 import '/providers/profile_provider.dart';
 import '/providers/notification_provider.dart';
 import '/providers/trust_provider.dart';
-import '/services/notification_permission_service.dart';
-import '/services/local_notifications_service.dart';
-import '/services/fcm_notification_service.dart';
+import '/services/notification_orchestration_service.dart';
 import '/services/remote_config_service.dart';
-import 'package:google_nav_bar/google_nav_bar.dart';
-import 'package:find_my_fourth/friends/tab_friends/tab_friends_widget.dart';
-import '/main_function/community/community_widget.dart';
-import '/main_function/create_game/create_game_widget.dart';
-import '/main_function/games_joined/games_joined_widget.dart';
-import '/main_function/games_list/games_list_widget.dart';
-import '/profile/main_profile/main_profile_widget.dart';
 
 Future<void> main() async {
   // 🚀 STARTUP TIMING: Record start time (debug only)
@@ -209,9 +196,8 @@ class MyAppScrollBehavior extends MaterialScrollBehavior {
 
 class _MyAppState extends State<MyApp> {
   ThemeMode _themeMode = ThemeMode.system;
-
-  // Track previous UID for logout/account-switch detection
-  String? _previousNotificationUid;
+  final NotificationOrchestrationService _notificationOrchestrationService =
+      NotificationOrchestrationService();
 
   late AppStateNotifier _appStateNotifier;
   late GoRouter _router;
@@ -302,65 +288,8 @@ class _MyAppState extends State<MyApp> {
           '📊 APP: update() completed, authStateReady=${_appStateNotifier.authStateReady}');
 
       final newUid = user.loggedIn ? user.uid : null;
-
-      // Detect logout or account switch
-      if (_previousNotificationUid != null &&
-          _previousNotificationUid != newUid) {
-        debugPrint('🔔 APP: User changed, resetting notification services');
-        FcmNotificationService().dispose();
-        NotificationPermissionService().reset();
-      }
-
-      // Initialize notification services for logged-in user
-      if (user.loggedIn && newUid != null && !kIsWeb) {
-        if (_previousNotificationUid != newUid) {
-          debugPrint(
-              '🔔 APP: User signed in, initializing notification services');
-
-          // Capture UID for stale-check inside microtask
-          final capturedUid = newUid;
-
-          // Fire-and-forget for non-critical services
-          Future.microtask(() async {
-            // Guard: Re-check UID hasn't changed since microtask was queued
-            // This prevents binding tokens to a stale user after rapid logout/account-switch
-            final currentUid = FirebaseAuth.instance.currentUser?.uid;
-            if (currentUid != capturedUid) {
-              debugPrint(
-                  '🔔 APP: UID changed during init ($capturedUid → $currentUid), aborting stale init');
-              return;
-            }
-
-            try {
-              await NotificationPermissionService().init(capturedUid);
-
-              // Re-check UID between awaits (user could logout during permission request)
-              if (FirebaseAuth.instance.currentUser?.uid != capturedUid) {
-                debugPrint(
-                    '🔔 APP: UID changed after permission init, aborting');
-                return;
-              }
-
-              await LocalNotificationsService().init();
-
-              // Re-check UID before FCM init (final opportunity to abort stale init)
-              if (FirebaseAuth.instance.currentUser?.uid != capturedUid) {
-                debugPrint(
-                    '🔔 APP: UID changed after local notifications init, aborting');
-                return;
-              }
-
-              await FcmNotificationService().init();
-              debugPrint('🔔 APP: All notification services initialized');
-            } catch (error) {
-              debugPrint(
-                  '⚠️  APP: Failed to initialize notification services: $error');
-            }
-          });
-        }
-      }
-
-      _previousNotificationUid = newUid;
+      debugPrint('🔔 APP: Delegating notification lifecycle for uid=$newUid');
+      unawaited(_notificationOrchestrationService.onUserChanged(newUid));
 
       if (!_initialAuthHandled) {
         _initialAuthHandled = true;
@@ -442,6 +371,7 @@ class _MyAppState extends State<MyApp> {
     privateDataSub.cancel();
     _userStreamSub.cancel();
     _jwtTokenSub.cancel();
+    _notificationOrchestrationService.dispose();
     _splashFallbackTimer?.cancel();
     _removeNativeSplashIfNeeded();
     super.dispose();
@@ -577,183 +507,6 @@ class _InternalCrashTestOverlay extends StatelessWidget {
             ),
           ),
         ),
-      ),
-    );
-  }
-}
-
-class NavBarPage extends StatefulWidget {
-  NavBarPage({
-    Key? key,
-    this.initialPage,
-    this.page,
-    this.disableResizeToAvoidBottomInset = false,
-  }) : super(key: key);
-
-  final String? initialPage;
-  final Widget? page;
-  final bool disableResizeToAvoidBottomInset;
-
-  @override
-  _NavBarPageState createState() => _NavBarPageState();
-}
-
-/// This is the private State class that goes with NavBarPage.
-class _NavBarPageState extends State<NavBarPage> {
-  String _currentPageName = 'GamesList';
-  late Widget? _currentPage;
-
-  // ✅ PERFORMANCE: Create tab widgets once, reuse via IndexedStack
-  late final List<Widget> _tabs = [
-    GamesListWidget(),
-    GamesJoinedWidget(),
-    TabFriendsWidget(),
-    CommunityWidget(),
-    MainProfileWidget(),
-  ];
-
-  // Map tab names to indices for backward compatibility
-  static const Map<String, int> _tabIndices = {
-    'GamesList': 0,
-    'GamesJoined': 1,
-    'Golfers': 2,
-    'Community': 3,
-    'Profile': 4,
-  };
-
-  @override
-  void initState() {
-    super.initState();
-    _currentPageName = widget.initialPage ?? _currentPageName;
-    _currentPage = widget.page;
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final currentIndex = _tabIndices[_currentPageName] ?? 0;
-
-    // Only show FAB on GamesList and GamesJoined (My Games) tabs
-    final shouldShowFab =
-        _currentPageName == 'GamesList' || _currentPageName == 'GamesJoined';
-
-    return Scaffold(
-      resizeToAvoidBottomInset: !widget.disableResizeToAvoidBottomInset,
-      // ✅ PERFORMANCE: IndexedStack preserves state and avoids rebuilds
-      body: _currentPage ??
-          IndexedStack(
-            index: currentIndex,
-            children: _tabs,
-          ),
-      floatingActionButton: shouldShowFab
-          ? FloatingActionButton(
-              onPressed: () {
-                context.pushNamed(
-                  CreateGameWidget.routeName,
-                  extra: <String, dynamic>{
-                    kTransitionInfoKey: TransitionInfo(
-                      hasTransition: true,
-                      transitionType: AppTransitionType.fade,
-                      enterDuration: Duration(milliseconds: 200),
-                      exitDuration: Duration(milliseconds: 170),
-                      scaleOnPush: true,
-                    ),
-                  },
-                );
-              },
-              backgroundColor: AppColors.navyDark,
-              elevation: 8.0,
-              child: AppIcon(
-                icon: AppPhosphorIcons.add,
-                color: AppColors.pure,
-                size: AppIconSize.lg,
-              ),
-            )
-          : null,
-      floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
-      bottomNavigationBar: GNav(
-        selectedIndex: currentIndex,
-        onTabChange: (i) {
-          if (mounted) {
-            setState(() {
-              _currentPage = null;
-              // ✅ PERFORMANCE: Direct index to name mapping
-              _currentPageName = _tabIndices.keys.elementAt(i);
-            });
-          }
-        },
-        backgroundColor: AppColors.navyDark,
-        color: AppColors.textMuted,
-        activeColor: AppColors.green,
-        tabBackgroundColor: Colors.transparent,
-        tabBorderRadius: 0.0,
-        tabMargin: EdgeInsets.all(AppSpacing.xxs),
-        padding: EdgeInsets.all(AppSpacing.sm),
-        gap: 0.0,
-        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-        duration:
-            Duration.zero, // Instant tab switching per premium motion system
-        haptic: false,
-        tabs: [
-          GButton(
-            leading: AppNavIcon(
-              assetPath: AppIcons.games,
-              size: AppIconSize.lg,
-              isActive: currentIndex == 0,
-              activeColor: AppColors.green,
-              inactiveColor: AppColors.textMuted,
-            ),
-            icon: AppPhosphorIcons.games, // Fallback (hidden)
-            iconSize: 0, // Hide default icon
-          ),
-          GButton(
-            leading: AppNavIcon(
-              icon: AppPhosphorIcons.myGames,
-              iconFill: AppPhosphorIcons.myGamesFill,
-              size: AppIconSize.lg,
-              isActive: currentIndex == 1,
-              activeColor: AppColors.green,
-              inactiveColor: AppColors.textMuted,
-            ),
-            icon: AppPhosphorIcons.myGames, // Fallback (hidden)
-            iconSize: 0, // Hide default icon
-          ),
-          GButton(
-            leading: AppNavIcon(
-              icon: AppPhosphorIcons.golfers,
-              iconFill: AppPhosphorIcons.golfersFill,
-              size: AppIconSize.lg,
-              isActive: currentIndex == 2,
-              activeColor: AppColors.green,
-              inactiveColor: AppColors.textMuted,
-            ),
-            icon: AppPhosphorIcons.golfers, // Fallback (hidden)
-            iconSize: 0, // Hide default icon
-          ),
-          GButton(
-            leading: AppNavIcon(
-              icon: AppPhosphorIcons.chat,
-              iconFill: AppPhosphorIcons.chatFill,
-              size: AppIconSize.lg,
-              isActive: currentIndex == 3,
-              activeColor: AppColors.green,
-              inactiveColor: AppColors.textMuted,
-            ),
-            icon: AppPhosphorIcons.chat, // Fallback (hidden)
-            iconSize: 0, // Hide default icon
-          ),
-          GButton(
-            leading: AppNavIcon(
-              icon: AppPhosphorIcons.profile,
-              iconFill: AppPhosphorIcons.profileFill,
-              size: AppIconSize.lg,
-              isActive: currentIndex == 4,
-              activeColor: AppColors.green,
-              inactiveColor: AppColors.textMuted,
-            ),
-            icon: AppPhosphorIcons.profile, // Fallback (hidden)
-            iconSize: 0, // Hide default icon
-          )
-        ],
       ),
     );
   }

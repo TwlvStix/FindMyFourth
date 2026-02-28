@@ -19,6 +19,7 @@ import '/main_function/create_game/create_game_constants.dart';
 import '/models/alert_subscription.dart';
 import '/models/course.dart';
 import '/services/alert_subscription_service.dart';
+import '/services/course_service.dart';
 import '/services/notification_permission_service.dart';
 import '/utils/app_util.dart';
 
@@ -42,6 +43,7 @@ class GameAlertsPageWidget extends StatefulWidget {
 
 class _GameAlertsPageWidgetState extends State<GameAlertsPageWidget> {
   final scaffoldKey = GlobalKey<ScaffoldState>();
+  final _courseService = CourseService();
 
   // Working copy of subscription
   AlertSubscription? _subscription;
@@ -107,12 +109,7 @@ class _GameAlertsPageWidgetState extends State<GameAlertsPageWidget> {
 
   Future<List<Course>> _loadAllCourses() async {
     try {
-      final snapshot = await FirebaseFirestore.instance
-          .collection('course')
-          .orderBy('name')
-          .get();
-
-      return snapshot.docs.map((doc) => Course.fromDoc(doc)).toList();
+      return await _courseService.loadAllCourses();
     } catch (e) {
       AppLog.d('❌ Error loading courses: $e');
       return [];
