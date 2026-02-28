@@ -1,14 +1,12 @@
 import 'dart:async';
 
 import '/backend/backend.dart';
-import '/backend/schema/trust_profile.dart';
 import '/core/content/app_copy.dart';
 import '/core/exceptions/app_exceptions.dart';
 import '/core/utils/app_log.dart';
 import '/core/widgets/fairway_background.dart';
-import '/core/widgets/trust/luxury_player_card.dart';
-import '/core/widgets/collapsed_join_request_row.dart';
-import '/core/widgets/vibe_join_request_card.dart';
+import 'components/pending_requests_section.dart';
+import 'components/player_list_section.dart';
 import '/core/widgets/app_premium_dialog.dart';
 import '/core/motion/motion_tokens.dart';
 import '/core/motion/reduced_motion.dart';
@@ -20,7 +18,6 @@ import '/providers/join_request_provider.dart';
 import '/providers/provider_extensions.dart';
 import '/providers/game_provider.dart';
 import '/providers/profile_provider.dart';
-import '/providers/trust_provider.dart';
 import '/core/design_tokens/colors.dart';
 import '/core/design_tokens/elevation.dart';
 import '/core/design_tokens/spacing.dart';
@@ -31,7 +28,6 @@ import '/core/design_tokens/icon_size.dart';
 import '/core/design_tokens/border_radius.dart';
 import '/core/widgets/app_button_enhanced.dart';
 import '/core/widgets/cancelled_game_banner.dart';
-import '/core/widgets/app_icon_button.dart';
 import '/core/widgets/game_details_section.dart';
 import '/core/widgets/premium_section_header.dart';
 import '/main_function/games_joined/games_joined_widget.dart';
@@ -57,7 +53,6 @@ import 'components/premium_app_bar.dart';
 import 'components/premium_hero_section.dart';
 import 'components/quick_stats_row.dart';
 import 'components/group_vibe_summary.dart';
-import 'components/player_match_chip.dart';
 import 'components/firm_it_up_banner.dart';
 import 'components/firm_it_up_bottom_sheet.dart';
 import 'components/edit_game_details_bottom_sheet.dart';
@@ -103,11 +98,6 @@ class _GameJoinedDetailedWidgetState extends State<GameJoinedDetailedWidget>
   void initState() {
     super.initState();
     // ✅ PERFORMANCE: Removed empty post-frame setState (no-op rebuild)
-  }
-
-  @override
-  void dispose() {
-    super.dispose();
   }
 
   // ═══════════════════════════════════════════════════════════════════════════
@@ -557,7 +547,7 @@ class _GameJoinedDetailedWidgetState extends State<GameJoinedDetailedWidget>
 
                               try {
                                 AppLog.d(
-                                    '🎯 Firm It Up: Updating Firestore...');
+                                    '🎯 Firm It Up: Updating via GameProvider...');
                                 AppLog.d(
                                     '🎯 Game ref path: ${gameJoinedDetailedGamesRecord.reference.path}');
 
@@ -573,8 +563,11 @@ class _GameJoinedDetailedWidgetState extends State<GameJoinedDetailedWidget>
                                 };
 
                                 AppLog.d('🎯 Update data: $updateData');
-                                await gameJoinedDetailedGamesRecord.reference
-                                    .update(updateData);
+                                // Use GameProvider instead of direct Firestore
+                                await context.gameProvider.updateGame(
+                                  gameJoinedDetailedGamesRecord.reference.id,
+                                  updateData,
+                                );
 
                                 AppLog.d('✅ Firm It Up: Update successful');
 
@@ -589,8 +582,6 @@ class _GameJoinedDetailedWidgetState extends State<GameJoinedDetailedWidget>
                                       backgroundColor: AppColors.success,
                                     ),
                                   );
-                                  // Refresh game data
-                                  setState(() {});
                                 }
                               } catch (e, stackTrace) {
                                 AppLog.d('❌ Firm It Up: Error occurred');
@@ -785,16 +776,22 @@ class _GameJoinedDetailedWidgetState extends State<GameJoinedDetailedWidget>
                             SizedBox(height: AppSpacing.lg),
 
                             // Pending requests section (owner only)
-                            Builder(builder: (context) {
-                              final isOwner =
-                                  gameJoinedDetailedGamesRecord.userRef ==
-                                      currentUserRef;
-                              if (isOwner) {
-                                return _buildPendingRequestsSection(
-                                    gameJoinedDetailedGamesRecord);
-                              }
-                              return const SizedBox.shrink();
-                            }),
+                            if (gameJoinedDetailedGamesRecord.userRef ==
+                                    currentUserRef &&
+                                _pendingRequests.isNotEmpty &&
+                                _ownerVibeProfile != null)
+                              PendingRequestsSection(
+                                pendingRequests: _pendingRequests,
+                                ownerVibeProfile: _ownerVibeProfile!,
+                                expandedRequestId: _expandedRequestId,
+                                onApprove: (request) => _handleApproveRequest(
+                                  request,
+                                  gameJoinedDetailedGamesRecord.chatRef?.id,
+                                ),
+                                onDecline: _handleDeclineRequest,
+                                onRemoved: _removeRequestFromList,
+                                onExpandRequest: _expandRequest,
+                              ),
 
                             // Players Section Header with gradient accent
                             PremiumSectionHeader(
@@ -824,333 +821,42 @@ class _GameJoinedDetailedWidgetState extends State<GameJoinedDetailedWidget>
                         ),
                       ),
                     ),
-                    // Players horizontal cards - With stagger animation
-                    Padding(
-                      padding: EdgeInsets.symmetric(horizontal: AppSpacing.md),
-                      child: Builder(
-                        builder: (context) {
-                          final groupPlayers = gameJoinedDetailedGamesRecord
-                              .joinedPlayers
-                              .toList();
-                          if (memberMatchesById.isNotEmpty &&
-                              groupVibeCacheKey != null) {
-                            groupPlayers.sort(
-                              (a, b) => groupVibeProvider.compareMemberIds(
-                                cacheKey: groupVibeCacheKey,
-                                aId: a.id,
-                                bId: b.id,
-                              ),
-                            );
-                          }
-                          final guestPlayers = gameJoinedDetailedGamesRecord
-                              .guestPlayers
-                              .where((name) => name.trim().isNotEmpty)
-                              .toList();
-                          final gameOwner =
-                              gameJoinedDetailedGamesRecord.userRef;
-
-                          final playerIds = groupPlayers
-                              .map((playerRef) => playerRef.id)
-                              .toList();
-                          final profilesFuture = playerIds.isEmpty
-                              ? Future.value(<String, UsersRecord>{})
-                              : context
-                                  .read<ProfileProvider>()
-                                  .batchGetProfiles(playerIds);
-
-                          return FutureBuilder<Map<String, UsersRecord>>(
-                            future: profilesFuture,
-                            builder: (context, profilesSnapshot) {
-                              final profileMap = profilesSnapshot.data ??
-                                  <String, UsersRecord>{};
-
-                              return Column(
-                                crossAxisAlignment: CrossAxisAlignment.stretch,
-                                children: [
-                                  // Registered players
-                                  ...List.generate(groupPlayers.length,
-                                      (groupPlayersIndex) {
-                                    final groupPlayersItem =
-                                        groupPlayers[groupPlayersIndex];
-                                    final isOwner = gameOwner != null &&
-                                        groupPlayersItem == gameOwner;
-                                    final friendRecord =
-                                        profileMap[groupPlayersItem.id];
-                                    final displayName =
-                                        (friendRecord?.displayName ?? '')
-                                                .trim()
-                                                .isNotEmpty
-                                            ? friendRecord!.displayName
-                                            : 'Golfer';
-                                    final userRef = friendRecord?.reference ??
-                                        groupPlayersItem;
-                                    final photoUrl =
-                                        friendRecord?.photoUrl ?? '';
-
-                                    // Fetch trust profile for badge display
-                                    final trustProvider =
-                                        context.read<TrustProvider>();
-                                    // Stagger delay: 24ms per card, max 8 cards animated
-                                    final staggerIndex = groupPlayersIndex <
-                                            MotionTokens.staggerMaxItems
-                                        ? groupPlayersIndex
-                                        : MotionTokens.staggerMaxItems - 1;
-                                    final staggerDelay =
-                                        ReducedMotionService.shouldStagger
-                                            ? MotionTokens.staggerDelay *
-                                                staggerIndex
-                                            : Duration.zero;
-                                    return FutureBuilder<TrustProfile?>(
-                                      future: trustProvider.fetchTrustProfile(
-                                          groupPlayersItem.id),
-                                      builder: (context, trustSnapshot) {
-                                        final trustProfile = trustSnapshot.data;
-                                        return Padding(
-                                          padding: EdgeInsets.only(
-                                            top: 8,
-                                            bottom: AppSpacing.sm,
-                                          ),
-                                          child: LuxuryPlayerCard(
-                                            name: displayName,
-                                            avatarUrl: photoUrl,
-                                            tier: trustProfile?.currentBadge ??
-                                                BadgeTier.newPlayer,
-                                            isFavorite: isOwner,
-                                            status: 'Ready',
-                                            percentWidget: PlayerMatchChip(
-                                              name: displayName,
-                                              memberMatch: memberMatchesById[
-                                                  groupPlayersItem.id],
-                                              onTap: () => _openPremiumVibePage(
-                                                context,
-                                                userRef,
-                                                displayName,
-                                                photoUrl,
-                                                memberMatchesById[
-                                                    groupPlayersItem.id],
-                                              ),
-                                            ),
-                                            trailingWidget:
-                                                gameJoinedDetailedGamesRecord
-                                                            .userRef ==
-                                                        currentUserRef
-                                                    ? AppIconButton(
-                                                        icon: AppIcon(
-                                                          icon: AppPhosphorIcons
-                                                              .remove,
-                                                          color:
-                                                              AppColors.error,
-                                                          size: AppIconSize.md,
-                                                        ),
-                                                        borderRadius: 20.0,
-                                                        buttonSize: 40.0,
-                                                        fillColor:
-                                                            Colors.transparent,
-                                                        tooltip:
-                                                            'Remove player',
-                                                        onPressed: () =>
-                                                            _showRemovePlayerDialog(
-                                                          context: context,
-                                                          playerName:
-                                                              displayName,
-                                                          playerRef:
-                                                              groupPlayersItem,
-                                                          isGuest: false,
-                                                          gameRecord:
-                                                              gameJoinedDetailedGamesRecord,
-                                                        ),
-                                                      )
-                                                    : AppIcon(
-                                                        icon: AppPhosphorIcons
-                                                            .joined,
-                                                        color: AppColors.green,
-                                                        size: AppIconSize.md,
-                                                      ),
-                                            onTap: () {
-                                              context.pushNamed(
-                                                'ProfileUser',
-                                                extra: <String, dynamic>{
-                                                  'userRef': userRef,
-                                                  kTransitionInfoKey:
-                                                      TransitionStandards
-                                                          .detailTransition,
-                                                },
-                                              );
-                                            },
-                                          ),
-                                        )
-                                            .animate(
-                                                target: _hasAnimated ? 1 : 0)
-                                            .fadeIn(
-                                              delay: staggerDelay,
-                                              duration:
-                                                  ReducedMotionService.adjust(
-                                                MotionTokens.contentReveal,
-                                              ),
-                                              curve: MotionTokens.curveEnter,
-                                            )
-                                            .slideY(
-                                              delay: staggerDelay,
-                                              begin: 0.1,
-                                              end: 0,
-                                              duration:
-                                                  ReducedMotionService.adjust(
-                                                MotionTokens.contentReveal,
-                                              ),
-                                              curve: MotionTokens.curveEnter,
-                                            );
-                                      },
-                                    );
-                                  }),
-                                  // Guest players with stagger animation
-                                  ...guestPlayers.asMap().entries.map((entry) {
-                                    final guestIndex = entry.key;
-                                    final guestName = entry.value;
-                                    // Continue stagger from registered players count
-                                    final combinedIndex =
-                                        groupPlayers.length + guestIndex;
-                                    final staggerIndex = combinedIndex <
-                                            MotionTokens.staggerMaxItems
-                                        ? combinedIndex
-                                        : MotionTokens.staggerMaxItems - 1;
-                                    final staggerDelay =
-                                        ReducedMotionService.shouldStagger
-                                            ? MotionTokens.staggerDelay *
-                                                staggerIndex
-                                            : Duration.zero;
-
-                                    return Padding(
-                                      padding: EdgeInsets.only(
-                                          bottom: AppSpacing.sm),
-                                      child: Container(
-                                        padding: EdgeInsets.all(AppSpacing.sm),
-                                        decoration: BoxDecoration(
-                                          color: AppColors.navy
-                                              .withValues(alpha: 0.3),
-                                          borderRadius: BorderRadius.circular(
-                                              AppBorderRadius.md),
-                                          border: Border.all(
-                                            color: AppColors.navyLight
-                                                .withValues(alpha: 0.3),
-                                            width: 1,
-                                          ),
-                                        ),
-                                        child: Row(
-                                          children: [
-                                            // Avatar placeholder
-                                            Container(
-                                              width: 48.0,
-                                              height: 48.0,
-                                              decoration: BoxDecoration(
-                                                color: AppColors.navyLight
-                                                    .withValues(alpha: 0.5),
-                                                shape: BoxShape.circle,
-                                                border: Border.all(
-                                                  color: Colors.white
-                                                      .withValues(alpha: 0.3),
-                                                  width: 2.0,
-                                                ),
-                                              ),
-                                              child: Center(
-                                                child: Text(
-                                                  'G',
-                                                  style: AppTypography
-                                                      .titleMedium
-                                                      .copyWith(
-                                                    color: Colors.white,
-                                                    fontWeight: FontWeight.w600,
-                                                  ),
-                                                ),
-                                              ),
-                                            ),
-                                            SizedBox(width: AppSpacing.sm),
-                                            // Name and guest label
-                                            Expanded(
-                                              child: Column(
-                                                crossAxisAlignment:
-                                                    CrossAxisAlignment.start,
-                                                mainAxisSize: MainAxisSize.min,
-                                                children: [
-                                                  Text(
-                                                    guestName,
-                                                    style: AppTypography
-                                                        .bodyLarge
-                                                        .copyWith(
-                                                      color: Colors.white,
-                                                      fontWeight:
-                                                          FontWeight.w500,
-                                                    ),
-                                                    maxLines: 1,
-                                                    overflow:
-                                                        TextOverflow.ellipsis,
-                                                  ),
-                                                  SizedBox(
-                                                      height: AppSpacing.xxs),
-                                                  Text(
-                                                    'Guest',
-                                                    style: AppTypography
-                                                        .bodySmall
-                                                        .copyWith(
-                                                      color: Colors.white
-                                                          .withValues(
-                                                              alpha: 0.7),
-                                                    ),
-                                                  ),
-                                                ],
-                                              ),
-                                            ),
-                                            // Remove button for owner
-                                            if (gameJoinedDetailedGamesRecord
-                                                    .userRef ==
-                                                currentUserRef)
-                                              AppIconButton(
-                                                icon: AppIcon(
-                                                  icon: AppPhosphorIcons.remove,
-                                                  color: AppColors.error,
-                                                  size: AppIconSize.md,
-                                                ),
-                                                borderRadius: 20.0,
-                                                buttonSize: 40.0,
-                                                fillColor: Colors.transparent,
-                                                tooltip: 'Remove guest',
-                                                onPressed: () =>
-                                                    _showRemovePlayerDialog(
-                                                  context: context,
-                                                  playerName: guestName,
-                                                  playerRef: null,
-                                                  isGuest: true,
-                                                  guestName: guestName,
-                                                  gameRecord:
-                                                      gameJoinedDetailedGamesRecord,
-                                                ),
-                                              ),
-                                          ],
-                                        ),
-                                      ),
-                                    )
-                                        .animate(target: _hasAnimated ? 1 : 0)
-                                        .fadeIn(
-                                          delay: staggerDelay,
-                                          duration: ReducedMotionService.adjust(
-                                            MotionTokens.contentReveal,
-                                          ),
-                                          curve: MotionTokens.curveEnter,
-                                        )
-                                        .slideY(
-                                          delay: staggerDelay,
-                                          begin: 0.1,
-                                          end: 0,
-                                          duration: ReducedMotionService.adjust(
-                                            MotionTokens.contentReveal,
-                                          ),
-                                          curve: MotionTokens.curveEnter,
-                                        );
-                                  }),
-                                ],
-                              );
-                            },
-                          );
+                    // Players list section (extracted component)
+                    PlayerListSection(
+                      game: gameJoinedDetailedGamesRecord,
+                      memberMatchesById: memberMatchesById,
+                      groupVibeCacheKey: groupVibeCacheKey,
+                      hasAnimated: _hasAnimated,
+                      isOwner: gameJoinedDetailedGamesRecord.userRef ==
+                          currentUserRef,
+                      onRemovePlayer: ({
+                        required String playerName,
+                        required DocumentReference? playerRef,
+                        required bool isGuest,
+                        String? guestName,
+                      }) =>
+                          _showRemovePlayerDialog(
+                        context: context,
+                        playerName: playerName,
+                        playerRef: playerRef,
+                        isGuest: isGuest,
+                        guestName: guestName,
+                        gameRecord: gameJoinedDetailedGamesRecord,
+                      ),
+                      onPlayerTap: (userRef) => context.pushNamed(
+                        'ProfileUser',
+                        extra: <String, dynamic>{
+                          'userRef': userRef,
+                          kTransitionInfoKey: TransitionStandards.detailTransition,
                         },
+                      ),
+                      onMatchChipTap: (userRef, displayName, photoUrl, memberMatch) =>
+                          _openPremiumVibePage(
+                        context,
+                        userRef,
+                        displayName,
+                        photoUrl,
+                        memberMatch,
                       ),
                     ),
                     SizedBox(height: AppSpacing.md),
@@ -1223,33 +929,29 @@ class _GameJoinedDetailedWidgetState extends State<GameJoinedDetailedWidget>
                               );
                               return;
                             }
-                            final removeValues = <Object>[
-                              currentUserRef,
-                            ];
                             try {
-                              await gameRef.update({
-                                'joined_players':
-                                    FieldValue.arrayRemove(removeValues),
-                              });
-                              final chatRef =
-                                  gameJoinedDetailedGamesRecord.chatRef;
-                              if (chatRef != null) {
-                                try {
-                                  await context
-                                      .read<ChatProvider>()
-                                      .removeMember(
-                                        chatId: chatRef.id,
-                                        uid: currentUserRef.id,
-                                      );
-                                } catch (chatError) {
-                                  AppLog.d(
-                                      'LeaveGame: chat removal failed $chatError');
-                                }
+                              // Use GameProvider to leave game (handles Firestore + chat removal)
+                              await context.gameProvider.leaveGame(
+                                gameRef.id,
+                                currentUserRef.id,
+                                chatId: gameJoinedDetailedGamesRecord.chatRef?.id,
+                              );
+
+                              // Show success toast
+                              if (mounted) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: Text('You left the game'),
+                                    backgroundColor: AppColors.success,
+                                    duration: Duration(seconds: 2),
+                                  ),
+                                );
+
+                                // Navigate to Schedule tab (My Games)
+                                context.goNamed(GamesJoinedWidget.routeName);
                               }
                             } on FirebaseException catch (error) {
-                              if (!mounted) {
-                                return;
-                              }
+                              if (!mounted) return;
                               final message = error.code == 'permission-denied'
                                   ? 'You do not have permission to leave this game.'
                                   : 'Unable to leave the game right now. Please try again.';
@@ -1259,11 +961,8 @@ class _GameJoinedDetailedWidgetState extends State<GameJoinedDetailedWidget>
                                   backgroundColor: AppColors.error,
                                 ),
                               );
-                              return;
                             } catch (_) {
-                              if (!mounted) {
-                                return;
-                              }
+                              if (!mounted) return;
                               ScaffoldMessenger.of(context).showSnackBar(
                                 SnackBar(
                                   content: Text(
@@ -1272,23 +971,7 @@ class _GameJoinedDetailedWidgetState extends State<GameJoinedDetailedWidget>
                                   backgroundColor: AppColors.error,
                                 ),
                               );
-                              return;
                             }
-                            context
-                                .read<GameProvider>()
-                                .invalidateUserGamesCache(currentUserRef.id);
-
-                            // Show success toast
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                content: Text('You left the game'),
-                                backgroundColor: AppColors.success,
-                                duration: Duration(seconds: 2),
-                              ),
-                            );
-
-                            // Navigate to Schedule tab (My Games)
-                            context.goNamed(GamesJoinedWidget.routeName);
                           },
                         ),
                       ),
@@ -1351,35 +1034,15 @@ class _GameJoinedDetailedWidgetState extends State<GameJoinedDetailedWidget>
                               );
                             }
 
-                            {
-                              try {
-                                AppLog.d(
-                                  'CancelGame: updating ${widget.gameRef?.path}',
-                                );
-                                await gameRef.update({
-                                  'isCancelled': true,
-                                  'status': 'cancelled',
-                                });
-                                final updatedSnapshot = await gameRef.get();
-                                final updatedData = updatedSnapshot.data()
-                                    as Map<String, dynamic>?;
-                                AppLog.d(
-                                  'CancelGame: isCancelled=${updatedData?['isCancelled']}',
-                                );
-                              } catch (error, stackTrace) {
-                                AppLog.d('CancelGame: failed $error');
-                                AppLog.d('CancelGame stackTrace: $stackTrace');
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(
-                                    content: Text(
-                                      'Unable to cancel the game. Please try again.',
-                                    ),
-                                    backgroundColor: AppColors.error,
-                                  ),
-                                );
-                                return;
-                              }
+                            try {
+                              AppLog.d(
+                                'CancelGame: updating via GameProvider ${widget.gameRef?.path}',
+                              );
+                              // Use GameProvider to cancel game (handles Firestore + cache)
+                              await context.gameProvider.cancelGame(gameRef.id);
+                              AppLog.d('CancelGame: game cancelled successfully');
 
+                              // Archive chat (send cancel message + set read-only)
                               final currentUserId =
                                   FirebaseAuth.instance.currentUser?.uid;
                               final chatRef =
@@ -1409,28 +1072,44 @@ class _GameJoinedDetailedWidgetState extends State<GameJoinedDetailedWidget>
                                       ),
                                     ),
                                   });
-                                } catch (error, stackTrace) {
+                                } catch (chatError, stackTrace) {
                                   AppLog.d(
-                                    'CancelGame: chat update failed $error',
+                                    'CancelGame: chat update failed $chatError',
                                   );
                                   AppLog.d(
                                       'CancelGame chat stackTrace: $stackTrace');
+                                  // Continue - game cancellation succeeded
                                 }
                               }
 
                               // Show success toast
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(
-                                  content: Text('Game cancelled successfully'),
-                                  backgroundColor: AppColors.success,
-                                  duration: Duration(seconds: 2),
-                                ),
-                              );
-                              context.gameProvider.invalidateUserGamesCache(
-                                  context.userProvider.userId);
+                              if (mounted) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: Text('Game cancelled successfully'),
+                                    backgroundColor: AppColors.success,
+                                    duration: Duration(seconds: 2),
+                                  ),
+                                );
+                                context.gameProvider.invalidateUserGamesCache(
+                                    context.userProvider.userId);
 
-                              // Navigate to Games list tab
-                              context.goNamed(GamesListWidget.routeName);
+                                // Navigate to Games list tab
+                                context.goNamed(GamesListWidget.routeName);
+                              }
+                            } catch (error, stackTrace) {
+                              AppLog.d('CancelGame: failed $error');
+                              AppLog.d('CancelGame stackTrace: $stackTrace');
+                              if (mounted) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: Text(
+                                      'Unable to cancel the game. Please try again.',
+                                    ),
+                                    backgroundColor: AppColors.error,
+                                  ),
+                                );
+                              }
                             }
                           },
                         ),
@@ -1599,56 +1278,39 @@ class _GameJoinedDetailedWidgetState extends State<GameJoinedDetailedWidget>
     }
 
     try {
-      if (isGuest && guestName != null) {
-        // Remove guest player
-        await gameRef.update({
-          'guest_players': FieldValue.arrayRemove([guestName]),
-        });
+      // Use GameProvider to remove player (handles Firestore + chat removal)
+      await context.gameProvider.removePlayer(
+        gameRef.id,
+        playerId: playerRef?.id,
+        guestName: guestName,
+        isGuest: isGuest,
+        chatId: gameRecord.chatRef?.id,
+      );
 
-        AppLog.d('Player Management: Removed guest player: $guestName');
-      } else if (!isGuest && playerRef != null) {
-        // Remove registered player from game
-        await gameRef.update({
-          'joined_players': FieldValue.arrayRemove([playerRef]),
-        });
-
-        // Remove from chat group if chat exists
-        final chatRef = gameRecord.chatRef;
-        if (chatRef != null) {
-          try {
-            await context.read<ChatProvider>().removeMember(
-                  chatId: chatRef.id,
-                  uid: playerRef.id,
-                );
-            AppLog.d('Player Management: Removed from chat: ${playerRef.id}');
-          } catch (chatError) {
-            AppLog.d('Player Management: Chat removal failed: $chatError');
-            // Continue even if chat removal fails - game removal succeeded
-          }
-        }
-
-        AppLog.d(
-            'Player Management: Removed registered player: ${playerRef.id}');
-      }
+      AppLog.d('Player Management: Removed ${isGuest ? 'guest' : 'player'}: ${isGuest ? guestName : playerRef?.id}');
 
       // Show success message
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('$playerName removed from game'),
-          backgroundColor: AppColors.success,
-          duration: Duration(seconds: 2),
-        ),
-      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('$playerName removed from game'),
+            backgroundColor: AppColors.success,
+            duration: Duration(seconds: 2),
+          ),
+        );
+      }
     } catch (error, stackTrace) {
       AppLog.d('Player Management: Remove failed - $error');
       AppLog.d('Player Management stackTrace: $stackTrace');
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Failed to remove player. Please try again.'),
-          backgroundColor: AppColors.error,
-        ),
-      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to remove player. Please try again.'),
+            backgroundColor: AppColors.error,
+          ),
+        );
+      }
     }
   }
 
@@ -1753,15 +1415,15 @@ class _GameJoinedDetailedWidgetState extends State<GameJoinedDetailedWidget>
     );
 
     try {
-      // Update Firestore
+      // Use GameProvider to update (handles Firestore + cache invalidation)
       final firestoreUpdate = <String, dynamic>{
         'date': updateData['date'],
         'course_play': updateData['course'],
         'courseRef': updateData['courseRef'],
       };
 
-      debugPrint('🎯 Updating Firestore: $firestoreUpdate');
-      await gameRecord.reference.update(firestoreUpdate);
+      AppLog.d('🎯 Updating via GameProvider: $firestoreUpdate');
+      await context.gameProvider.updateGame(gameRecord.reference.id, firestoreUpdate);
 
       // Send notifications to all players (except owner)
       final currentUserUid = FirebaseAuth.instance.currentUser?.uid;
@@ -1826,197 +1488,4 @@ class _GameJoinedDetailedWidgetState extends State<GameJoinedDetailedWidget>
     }
   }
 
-  // ═══════════════════════════════════════════════════════════════════════════
-  // PENDING REQUESTS SECTION (OWNER VIEW)
-  // ═══════════════════════════════════════════════════════════════════════════
-
-  Widget _buildPendingRequestsSection(Game game) {
-    if (_pendingRequests.isEmpty || _ownerVibeProfile == null) {
-      return const SizedBox.shrink();
-    }
-
-    // Ensure _expandedRequestId is valid (requests already sorted by createdAt)
-    final hasValidExpanded =
-        _pendingRequests.any((r) => r.id == _expandedRequestId);
-    if (!hasValidExpanded && _pendingRequests.isNotEmpty) {
-      _expandedRequestId = _pendingRequests.first.id;
-    }
-
-    // Collect requester IDs for batch fetching
-    final requesterIds = _pendingRequests.map((r) => r.requesterId).toList();
-
-    return Padding(
-      padding: EdgeInsets.symmetric(horizontal: AppSpacing.md),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Section header with styled count
-          PremiumSectionHeader(
-            title: 'Pending requests',
-            trailing: Text.rich(
-              TextSpan(
-                children: [
-                  TextSpan(
-                    text: '(',
-                    style: AppTypography.titleMedium.copyWith(
-                      color: AppColors.textPrimary,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                  TextSpan(
-                    text: '${_pendingRequests.length}',
-                    style: AppTypography.titleMedium.copyWith(
-                      color: AppColors.gold,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                  TextSpan(
-                    text: ')',
-                    style: AppTypography.titleMedium.copyWith(
-                      color: AppColors.textPrimary,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-          SizedBox(height: AppSpacing.sm),
-
-          // Fetch profiles and render accordion
-          FutureBuilder<Map<String, UsersRecord>>(
-            future:
-                context.read<ProfileProvider>().batchGetProfiles(requesterIds),
-            builder: (context, profilesSnapshot) {
-              if (!profilesSnapshot.hasData) {
-                return Padding(
-                  padding: EdgeInsets.symmetric(vertical: AppSpacing.md),
-                  child: Center(
-                    child: SizedBox(
-                      width: 24,
-                      height: 24,
-                      child: CircularProgressIndicator(
-                        strokeWidth: 2,
-                        color: AppColors.green,
-                      ),
-                    ),
-                  ),
-                );
-              }
-
-              final profileMap = profilesSnapshot.data!;
-
-              return Column(
-                children: _pendingRequests.map((request) {
-                  final requesterProfile = profileMap[request.requesterId];
-                  if (requesterProfile == null) {
-                    return const SizedBox.shrink();
-                  }
-
-                  final isExpanded = request.id == _expandedRequestId;
-
-                  // Build expanded card or collapsed row with animation
-                  return AnimatedSize(
-                    duration: ReducedMotionService.adjust(
-                      MotionTokens.contentReveal,
-                    ),
-                    curve: MotionTokens.curveEnter,
-                    alignment: Alignment.topCenter,
-                    child: isExpanded
-                        ? _buildExpandedRequestCard(
-                            request,
-                            requesterProfile,
-                            game,
-                          )
-                        : _buildCollapsedRequestRow(request, requesterProfile),
-                  );
-                }).toList(),
-              );
-            },
-          ),
-          SizedBox(height: AppSpacing.md),
-        ],
-      ),
-    );
-  }
-
-  /// Builds the fully expanded join request card with vibe info and buttons
-  Widget _buildExpandedRequestCard(
-    JoinRequest request,
-    UsersRecord requesterProfile,
-    Game game,
-  ) {
-    return FutureBuilder<VibeProfile>(
-      future: _vibeRepository.getVibeProfileForUser(request.requesterId),
-      builder: (context, vibeSnapshot) {
-        if (!vibeSnapshot.hasData) {
-          // Loading placeholder for expanded card
-          return Padding(
-            padding: EdgeInsets.only(bottom: AppSpacing.sm),
-            child: Container(
-              height: 120,
-              decoration: BoxDecoration(
-                color: AppColors.navy,
-                borderRadius: BorderRadius.circular(AppBorderRadius.card),
-                border: Border.all(color: AppColors.navyLight),
-              ),
-              child: Center(
-                child: SizedBox(
-                  width: 20,
-                  height: 20,
-                  child: CircularProgressIndicator(
-                    strokeWidth: 2,
-                    color: AppColors.textMuted,
-                  ),
-                ),
-              ),
-            ),
-          );
-        }
-
-        final requesterVibeProfile = vibeSnapshot.data!;
-        // Calculate match from owner's perspective
-        final matchResult = VibeMatcher.score(
-          _ownerVibeProfile!,
-          requesterVibeProfile,
-        );
-
-        return AnimatedOpacity(
-          duration: MotionTokens.contentReveal,
-          opacity: 1.0,
-          child: Padding(
-            padding: EdgeInsets.only(bottom: AppSpacing.sm),
-            child: VibeJoinRequestCard(
-              request: request,
-              requesterProfile: requesterProfile,
-              ownerVibeProfile: _ownerVibeProfile!,
-              requesterVibeProfile: requesterVibeProfile,
-              matchResult: matchResult,
-              onApprove: () => _handleApproveRequest(
-                request,
-                game.chatRef?.id,
-              ),
-              onDecline: () => _handleDeclineRequest(request),
-              onRemoved: () => _removeRequestFromList(request.id),
-            ),
-          ),
-        );
-      },
-    );
-  }
-
-  /// Builds a collapsed row for a join request (accordion pattern)
-  Widget _buildCollapsedRequestRow(
-    JoinRequest request,
-    UsersRecord requesterProfile,
-  ) {
-    return AnimatedOpacity(
-      duration: MotionTokens.contentReveal,
-      opacity: 1.0,
-      child: CollapsedJoinRequestRow(
-        requesterProfile: requesterProfile,
-        onTap: () => _expandRequest(request.id),
-      ),
-    );
-  }
 }

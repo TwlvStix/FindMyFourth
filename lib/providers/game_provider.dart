@@ -298,10 +298,23 @@ class GameProvider extends ChangeNotifier {
 
   /// Leave a game
   ///
-  /// Invalidates game cache and refreshes data
-  Future<void> leaveGame(String gameId, String userId) async {
+  /// Removes user from joined_players and optionally from chat.
+  /// Invalidates game cache and refreshes data.
+  Future<void> leaveGame(String gameId, String userId, {String? chatId}) async {
     try {
       await _service.leaveGame(gameId, userId);
+
+      // Remove from chat if chatId provided
+      if (chatId != null) {
+        try {
+          await ChatService().removeMember(chatId: chatId, uid: userId);
+          AppLog.d('✅ GameProvider.leaveGame: Removed from chat');
+        } catch (chatError) {
+          AppLog.d('❌ GameProvider.leaveGame: Chat removal failed: $chatError');
+          // Continue - game removal succeeded
+        }
+      }
+
       // Invalidate game cache to force refresh
       invalidateGameCache(gameId);
       // Invalidate user games cache to refresh joined games list
@@ -393,6 +406,51 @@ class GameProvider extends ChangeNotifier {
       await getGame(gameId);
     } catch (e) {
       AppLog.d('❌ GameProvider.cancelGame error: $e');
+      rethrow;
+    }
+  }
+
+  /// Remove a player from a game (owner action)
+  ///
+  /// For registered players: removes from joined_players and chat
+  /// For guest players: removes from guest_players array
+  ///
+  /// Invalidates game cache after removal
+  Future<void> removePlayer(
+    String gameId, {
+    String? playerId,
+    String? guestName,
+    required bool isGuest,
+    String? chatId,
+  }) async {
+    try {
+      await _service.removePlayer(
+        gameId,
+        playerId: playerId,
+        guestName: guestName,
+        isGuest: isGuest,
+      );
+
+      // Remove from chat if registered player and chatId provided
+      if (!isGuest && playerId != null && chatId != null) {
+        try {
+          await ChatService().removeMember(chatId: chatId, uid: playerId);
+          AppLog.d('✅ GameProvider.removePlayer: Removed from chat');
+        } catch (chatError) {
+          AppLog.d('❌ GameProvider.removePlayer: Chat removal failed: $chatError');
+          // Continue - game removal succeeded
+        }
+      }
+
+      // Invalidate game cache
+      invalidateGameCache(gameId);
+
+      // Invalidate removed player's user games cache
+      if (!isGuest && playerId != null) {
+        invalidateUserGamesCache(playerId);
+      }
+    } catch (e) {
+      AppLog.d('❌ GameProvider.removePlayer error: $e');
       rethrow;
     }
   }

@@ -15,6 +15,19 @@ void main() {
       expect(source, contains('GroupVibeSummary('));
       expect(source, contains('groupVibeMatch: groupVibeMatch'));
       expect(source, contains('GroupVibeBreakdownSheet.show('));
+      // After Phase 2: compareMemberIds moved to PlayerListSection component
+      expect(source, contains('PlayerListSection('));
+    });
+
+    test('game joined detailed PlayerListSection uses provider for sorting',
+        () {
+      // Phase 2 extracted player list to component - verify sorting still uses provider
+      final file = File(
+        'lib/main_function/game_joined_detailed/components/player_list_section.dart',
+      );
+      final source = file.readAsStringSync();
+
+      expect(source, contains('context.watchGroupVibeProvider'));
       expect(source, contains('groupVibeProvider.compareMemberIds('));
     });
 

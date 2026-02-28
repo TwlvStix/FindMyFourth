@@ -345,4 +345,59 @@ class GameService {
       rethrow;
     }
   }
+
+  /// Remove a player from a game (owner action)
+  ///
+  /// For registered players: removes from joined_players array
+  /// For guest players: removes from guest_players array
+  ///
+  /// Throws GameOperationException if game not found
+  Future<void> removePlayer(
+    String gameId, {
+    String? playerId,
+    String? guestName,
+    required bool isGuest,
+  }) async {
+    final normalizedPlayerId = playerId?.trim();
+    final normalizedGuestName = guestName?.trim();
+    if (isGuest) {
+      if (normalizedGuestName == null || normalizedGuestName.isEmpty) {
+        throw GameOperationException(
+          'Guest name is required when removing a guest player.',
+          code: 'invalid-argument',
+        );
+      }
+    } else {
+      if (normalizedPlayerId == null || normalizedPlayerId.isEmpty) {
+        throw GameOperationException(
+          'Player ID is required when removing a registered player.',
+          code: 'invalid-argument',
+        );
+      }
+    }
+
+    try {
+      final gameRef = _firestore.collection('games').doc(gameId);
+
+      if (isGuest) {
+        await gameRef.update({
+          'guest_players': FieldValue.arrayRemove([normalizedGuestName]),
+        });
+        AppLog.d(
+          'GameService.removePlayer: Removed guest "$normalizedGuestName" from game $gameId',
+        );
+      } else {
+        final playerRef = _firestore.collection('users').doc(normalizedPlayerId);
+        await gameRef.update({
+          'joined_players': FieldValue.arrayRemove([playerRef]),
+        });
+        AppLog.d(
+          'GameService.removePlayer: Removed player $normalizedPlayerId from game $gameId',
+        );
+      }
+    } on FirebaseException catch (e) {
+      AppLog.d('GameService.removePlayer error: ${e.code} - ${e.message}');
+      rethrow;
+    }
+  }
 }
