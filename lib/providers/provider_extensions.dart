@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'group_vibe_provider.dart';
 import 'game_provider.dart';
 import 'join_request_provider.dart';
 import 'notification_provider.dart';
@@ -34,6 +35,12 @@ extension ProviderExtensions on BuildContext {
   /// Access JoinRequestProvider and listen for changes
   JoinRequestProvider get watchJoinRequestProvider =>
       watch<JoinRequestProvider>();
+
+  /// Access GroupVibeProvider without listening for changes
+  GroupVibeProvider get groupVibeProvider => read<GroupVibeProvider>();
+
+  /// Access GroupVibeProvider and listen for changes
+  GroupVibeProvider get watchGroupVibeProvider => watch<GroupVibeProvider>();
 
   /// Select specific data from UserProvider
   /// Only rebuilds when the selected data changes
@@ -80,7 +87,8 @@ extension UserProviderHelpers on UserProvider {
   /// Get a user-friendly handicap display
   String get handicapDisplay {
     if (handicap == 0) return 'Not set';
-    if (handicap < 0) return '+${handicap.abs()}';  // Plus handicap: +1, +2, etc.
+    if (handicap < 0)
+      return '+${handicap.abs()}'; // Plus handicap: +1, +2, etc.
     return handicap.toString();
   }
 

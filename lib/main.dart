@@ -28,6 +28,7 @@ import '/utils/app_util.dart';
 import '/providers/user_provider.dart';
 import '/providers/chat_provider.dart';
 import '/providers/game_provider.dart';
+import '/providers/group_vibe_provider.dart';
 import '/providers/join_request_provider.dart';
 import '/providers/profile_provider.dart';
 import '/providers/notification_provider.dart';
@@ -77,10 +78,11 @@ Future<void> main() async {
               create: (_) => ProfileProvider()),
           ChangeNotifierProvider<NotificationProvider>(
               create: (_) => NotificationProvider()),
-          ChangeNotifierProvider<TrustProvider>(
-              create: (_) => TrustProvider()),
+          ChangeNotifierProvider<TrustProvider>(create: (_) => TrustProvider()),
           ChangeNotifierProvider<JoinRequestProvider>(
               create: (_) => JoinRequestProvider()),
+          ChangeNotifierProvider<GroupVibeProvider>(
+              create: (_) => GroupVibeProvider()),
         ],
         child: MyApp(),
       ),
@@ -302,7 +304,8 @@ class _MyAppState extends State<MyApp> {
       final newUid = user.loggedIn ? user.uid : null;
 
       // Detect logout or account switch
-      if (_previousNotificationUid != null && _previousNotificationUid != newUid) {
+      if (_previousNotificationUid != null &&
+          _previousNotificationUid != newUid) {
         debugPrint('🔔 APP: User changed, resetting notification services');
         FcmNotificationService().dispose();
         NotificationPermissionService().reset();
@@ -311,7 +314,8 @@ class _MyAppState extends State<MyApp> {
       // Initialize notification services for logged-in user
       if (user.loggedIn && newUid != null && !kIsWeb) {
         if (_previousNotificationUid != newUid) {
-          debugPrint('🔔 APP: User signed in, initializing notification services');
+          debugPrint(
+              '🔔 APP: User signed in, initializing notification services');
 
           // Capture UID for stale-check inside microtask
           final capturedUid = newUid;
@@ -322,7 +326,8 @@ class _MyAppState extends State<MyApp> {
             // This prevents binding tokens to a stale user after rapid logout/account-switch
             final currentUid = FirebaseAuth.instance.currentUser?.uid;
             if (currentUid != capturedUid) {
-              debugPrint('🔔 APP: UID changed during init ($capturedUid → $currentUid), aborting stale init');
+              debugPrint(
+                  '🔔 APP: UID changed during init ($capturedUid → $currentUid), aborting stale init');
               return;
             }
 
@@ -331,7 +336,8 @@ class _MyAppState extends State<MyApp> {
 
               // Re-check UID between awaits (user could logout during permission request)
               if (FirebaseAuth.instance.currentUser?.uid != capturedUid) {
-                debugPrint('🔔 APP: UID changed after permission init, aborting');
+                debugPrint(
+                    '🔔 APP: UID changed after permission init, aborting');
                 return;
               }
 
@@ -339,7 +345,8 @@ class _MyAppState extends State<MyApp> {
 
               // Re-check UID before FCM init (final opportunity to abort stale init)
               if (FirebaseAuth.instance.currentUser?.uid != capturedUid) {
-                debugPrint('🔔 APP: UID changed after local notifications init, aborting');
+                debugPrint(
+                    '🔔 APP: UID changed after local notifications init, aborting');
                 return;
               }
 
