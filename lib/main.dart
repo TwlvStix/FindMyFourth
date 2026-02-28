@@ -33,6 +33,8 @@ import '/providers/profile_provider.dart';
 import '/providers/notification_provider.dart';
 import '/providers/trust_provider.dart';
 import '/services/notification_permission_service.dart';
+import '/services/local_notifications_service.dart';
+import '/services/fcm_notification_service.dart';
 import '/services/remote_config_service.dart';
 import 'package:google_nav_bar/google_nav_bar.dart';
 import 'package:find_my_fourth/friends/tab_friends/tab_friends_widget.dart';
@@ -206,6 +208,9 @@ class MyAppScrollBehavior extends MaterialScrollBehavior {
 class _MyAppState extends State<MyApp> {
   ThemeMode _themeMode = ThemeMode.system;
 
+  // Track previous UID for logout/account-switch detection
+  String? _previousNotificationUid;
+
   late AppStateNotifier _appStateNotifier;
   late GoRouter _router;
   Timer? _splashFallbackTimer;
@@ -294,14 +299,61 @@ class _MyAppState extends State<MyApp> {
       debugPrint(
           '📊 APP: update() completed, authStateReady=${_appStateNotifier.authStateReady}');
 
-      // Initialize notification service when user signs in
-      if (user.loggedIn && user.uid != null && !kIsWeb) {
-        debugPrint('🔔 APP: User signed in, initializing notification service');
-        NotificationPermissionService().init(user.uid!).catchError((error) {
-          debugPrint(
-              '⚠️  APP: Failed to initialize notification service: $error');
-        });
+      final newUid = user.loggedIn ? user.uid : null;
+
+      // Detect logout or account switch
+      if (_previousNotificationUid != null && _previousNotificationUid != newUid) {
+        debugPrint('🔔 APP: User changed, resetting notification services');
+        FcmNotificationService().dispose();
+        NotificationPermissionService().reset();
       }
+
+      // Initialize notification services for logged-in user
+      if (user.loggedIn && newUid != null && !kIsWeb) {
+        if (_previousNotificationUid != newUid) {
+          debugPrint('🔔 APP: User signed in, initializing notification services');
+
+          // Capture UID for stale-check inside microtask
+          final capturedUid = newUid;
+
+          // Fire-and-forget for non-critical services
+          Future.microtask(() async {
+            // Guard: Re-check UID hasn't changed since microtask was queued
+            // This prevents binding tokens to a stale user after rapid logout/account-switch
+            final currentUid = FirebaseAuth.instance.currentUser?.uid;
+            if (currentUid != capturedUid) {
+              debugPrint('🔔 APP: UID changed during init ($capturedUid → $currentUid), aborting stale init');
+              return;
+            }
+
+            try {
+              await NotificationPermissionService().init(capturedUid);
+
+              // Re-check UID between awaits (user could logout during permission request)
+              if (FirebaseAuth.instance.currentUser?.uid != capturedUid) {
+                debugPrint('🔔 APP: UID changed after permission init, aborting');
+                return;
+              }
+
+              await LocalNotificationsService().init();
+
+              // Re-check UID before FCM init (final opportunity to abort stale init)
+              if (FirebaseAuth.instance.currentUser?.uid != capturedUid) {
+                debugPrint('🔔 APP: UID changed after local notifications init, aborting');
+                return;
+              }
+
+              await FcmNotificationService().init();
+              debugPrint('🔔 APP: All notification services initialized');
+            } catch (error) {
+              debugPrint(
+                  '⚠️  APP: Failed to initialize notification services: $error');
+            }
+          });
+        }
+      }
+
+      _previousNotificationUid = newUid;
 
       if (!_initialAuthHandled) {
         _initialAuthHandled = true;

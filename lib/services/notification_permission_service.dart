@@ -383,6 +383,21 @@ class NotificationPermissionService {
     return 'unknown';
   }
 
+  /// Reset the service for account switch.
+  ///
+  /// This cancels the token refresh subscription (which was bound to the
+  /// previous user's UID) and clears cached state. Call this when the user
+  /// logs out or switches accounts, before calling [init] for the new user.
+  void reset() {
+    _tokenRefreshSub?.cancel();
+    _tokenRefreshSub = null;
+    _initialized = false;
+    _cachedStatus = null;
+    _cachedSettings = null;
+    _lastCheckedAt = null;
+    AppLog.d('[NotificationService] Reset for account switch');
+  }
+
   /// Dispose the service and cancel all subscriptions
   /// Only needed for app shutdown or testing. Singleton lives for app lifetime.
   void dispose() {
