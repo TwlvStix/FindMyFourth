@@ -1410,8 +1410,6 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
                                                                   val),
                                                     );
                                                     _saveDraft();
-                                                    if (mounted)
-                                                      setState(() {});
                                                   },
                                                   width: 300.0,
                                                   height: 50.0,

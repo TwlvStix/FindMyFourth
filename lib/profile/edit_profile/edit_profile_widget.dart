@@ -193,8 +193,6 @@ class _EditProfileWidgetState extends State<EditProfileWidget>
         ),
       );
     }
-
-    if (mounted) setState(() {});
   }
 
   void _showSuccessAndNavigate() {

@@ -119,7 +119,7 @@ class GamesListWidget extends StatefulWidget {
 class _GamesListWidgetState extends State<GamesListWidget> {
   final Map<DocumentReference, CancelledGameHandling>
       _cancelledGameHandlingByGame = {};
-  late final Stream<List<Game>> _gamesStream;
+  late Stream<List<Game>> _gamesStream;
   bool _didInitDependencies = false;
   List<Game>? _cachedGames;
   GameListFilters _filters = GameListFilters();
@@ -175,6 +175,16 @@ class _GamesListWidgetState extends State<GamesListWidget> {
   @override
   void dispose() {
     super.dispose();
+  }
+
+  // TODO: needs GameProvider cache invalidation before stream recreation to force fresh fetch
+  /// Retry loading games by recreating the stream.
+  void _retryGamesStream() {
+    final gameProvider = context.read<GameProvider>();
+    setState(() {
+      _gamesStream = gameProvider.availableGamesStream().map((records) =>
+          records.map((record) => Game.fromRecord(record)).toList());
+    });
   }
 
   CancelledGameHandling? _parseCancelledHandling(String? value) {
@@ -773,7 +783,7 @@ class _GamesListWidgetState extends State<GamesListWidget> {
               child: AppStreamBuilder<List<Game>>(
                 stream: _gamesStream,
                 initialData: _cachedGames ?? const <Game>[],
-                onRetry: () => setState(() {}),
+                onRetry: _retryGamesStream,
                 builder: (context, gamesList) {
                   // Debug logging wrapped in assertions (only runs in debug mode)
                   assert(() {

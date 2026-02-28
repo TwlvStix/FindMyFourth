@@ -81,7 +81,6 @@ class _GolferSearchSectionState extends State<GolferSearchSection> {
     _searchTerm = ValueNotifier<String>('');
     _textController = TextEditingController();
     _textFieldFocusNode = FocusNode();
-    _textFieldFocusNode!.addListener(_handleFocusChanged);
     _textController!.addListener(_handleTextChanged);
   }
 
@@ -89,17 +88,10 @@ class _GolferSearchSectionState extends State<GolferSearchSection> {
   void dispose() {
     _textController?.removeListener(_handleTextChanged);
     _textController?.dispose();
-    _textFieldFocusNode?.removeListener(_handleFocusChanged);
     _textFieldFocusNode?.dispose();
     _debounceTimer?.cancel();
     _searchTerm.dispose();
     super.dispose();
-  }
-
-  void _handleFocusChanged() {
-    if (mounted) {
-      setState(() {});
-    }
   }
 
   void _handleTextChanged() {

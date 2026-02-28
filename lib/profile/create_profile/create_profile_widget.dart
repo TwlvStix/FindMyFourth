@@ -131,7 +131,6 @@ class _CreateProfileWidgetState extends State<CreateProfileWidget>
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _fadeController.forward();
-      if (mounted) setState(() {});
     });
   }
 
@@ -220,7 +219,6 @@ class _CreateProfileWidgetState extends State<CreateProfileWidget>
     // Create username
     final desiredUsername =
         functions.usernameCreator(usernameTextController!.text);
-    if (mounted) setState(() {});
     var firebaseUser = FirebaseAuth.instance.currentUser;
     if (firebaseUser == null) {
       try {
@@ -451,8 +449,6 @@ class _CreateProfileWidgetState extends State<CreateProfileWidget>
                 ),
       },
     );
-
-    if (mounted) setState(() {});
   }
 
   Widget _buildTextField({
@@ -523,9 +519,7 @@ class _CreateProfileWidgetState extends State<CreateProfileWidget>
                               ),
                             );
                           },
-                        ).then((value) {
-                          if (mounted) setState(() {});
-                        });
+                        );
                       },
                     ),
                   ),
@@ -542,9 +536,7 @@ class _CreateProfileWidgetState extends State<CreateProfileWidget>
                           padding: MediaQuery.viewInsetsOf(context),
                           child: ChangePhotoWidget(),
                         ),
-                      ).then((value) {
-                        if (mounted) setState(() {});
-                      });
+                      );
                     },
                     child: Text(
                       'Change Photo',

@@ -63,9 +63,6 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
         );
       },
     );
-    if (mounted) {
-      setState(() {});
-    }
   }
 
   @override

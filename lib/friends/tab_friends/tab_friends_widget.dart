@@ -540,7 +540,6 @@ class _TabFriendsWidgetState extends State<TabFriendsWidget> {
   Future<void> _cancelFriendRequest(UsersRecord user) async {
     try {
       await context.read<UserProvider>().cancelFriendRequest(user.reference);
-      if (mounted) setState(() {});
       if (!mounted) return;
       ScaffoldMessenger.of(context).clearSnackBars();
       ScaffoldMessenger.of(context).showSnackBar(
@@ -686,7 +685,6 @@ class _TabFriendsWidgetState extends State<TabFriendsWidget> {
   Future<void> _acceptFriendRequest(UsersRecord user) async {
     try {
       await context.read<UserProvider>().acceptFriendRequest(user.reference);
-      if (mounted) setState(() {});
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -709,7 +707,6 @@ class _TabFriendsWidgetState extends State<TabFriendsWidget> {
   Future<void> _denyFriendRequest(UsersRecord user) async {
     try {
       await context.read<UserProvider>().rejectFriendRequest(user.reference);
-      if (mounted) setState(() {});
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
