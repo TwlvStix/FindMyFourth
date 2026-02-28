@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import '/core/design_tokens/border_radius.dart';
 import 'app_icon.dart';
@@ -65,16 +64,7 @@ class _AppIconButtonState extends State<AppIconButton> {
   }
 
   void _updateIcon() {
-    if (widget.icon is FaIcon) {
-      FaIcon icon = widget.icon as FaIcon;
-      effectiveIcon = FaIcon(
-        icon.icon,
-        size: icon.size,
-        color: icon.color,
-      );
-      iconSize = icon.size;
-      iconColor = icon.color;
-    } else if (widget.icon is PhosphorIcon) {
+    if (widget.icon is PhosphorIcon) {
       // Phosphor icon support
       PhosphorIcon icon = widget.icon as PhosphorIcon;
       if (icon.icon != null) {

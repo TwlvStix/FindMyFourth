@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 
+import '/core/utils/app_log.dart';
 import '/core/design_tokens/border_radius.dart';
 import '/core/design_tokens/elevation.dart';
 import '/core/design_tokens/spacing.dart';
@@ -245,11 +246,11 @@ class _ChatWidgetState extends State<ChatWidget> {
   @override
   Widget build(BuildContext context) {
     final currentUserId = _currentUserId();
-    debugPrint('💬 ChatList: Page build() called');
-    debugPrint('💬 ChatList: Current user ID: $currentUserId');
+    AppLog.d('💬 ChatList: Page build() called');
+    AppLog.d('💬 ChatList: Current user ID: $currentUserId');
 
     if (currentUserId == null) {
-      debugPrint('❌ ChatList: No current user, showing sign-in message');
+      AppLog.d('❌ ChatList: No current user, showing sign-in message');
 
       if (widget.isEmbedded) {
         return Center(
@@ -375,14 +376,14 @@ class _ChatWidgetState extends State<ChatWidget> {
         profileProvider: profileProvider,
       ),
       builder: (context, snapshot) {
-        debugPrint('💬 ChatList: StreamBuilder called');
-        debugPrint('💬 ChatList: connectionState = ${snapshot.connectionState}');
-        debugPrint('💬 ChatList: hasError = ${snapshot.hasError}');
-        debugPrint('💬 ChatList: hasData = ${snapshot.hasData}');
+        AppLog.d('💬 ChatList: StreamBuilder called');
+        AppLog.d('💬 ChatList: connectionState = ${snapshot.connectionState}');
+        AppLog.d('💬 ChatList: hasError = ${snapshot.hasError}');
+        AppLog.d('💬 ChatList: hasData = ${snapshot.hasData}');
 
         if (snapshot.hasError) {
-          debugPrint('❌ ChatList: ERROR - ${snapshot.error}');
-          debugPrint('❌ ChatList: Error type: ${snapshot.error.runtimeType}');
+          AppLog.d('❌ ChatList: ERROR - ${snapshot.error}');
+          AppLog.d('❌ ChatList: Error type: ${snapshot.error.runtimeType}');
           return SliverToBoxAdapter(
             child: Padding(
               padding: EdgeInsets.all(AppSpacing.lg),
@@ -397,7 +398,7 @@ class _ChatWidgetState extends State<ChatWidget> {
         }
 
         if (!snapshot.hasData) {
-          debugPrint('💬 ChatList: No data yet, showing loading...');
+          AppLog.d('💬 ChatList: No data yet, showing loading...');
           return SliverToBoxAdapter(
             child: Padding(
               padding: EdgeInsets.all(AppSpacing.lg),
@@ -421,10 +422,10 @@ class _ChatWidgetState extends State<ChatWidget> {
         }
 
         final chatRows = snapshot.data ?? <ChatRowViewModel>[];
-        debugPrint('💬 ChatList: Received ${chatRows.length} chat row(s)');
+        AppLog.d('💬 ChatList: Received ${chatRows.length} chat row(s)');
 
         if (chatRows.isEmpty) {
-          debugPrint('💬 ChatList: Chat rows array is empty, showing empty state');
+          AppLog.d('💬 ChatList: Chat rows array is empty, showing empty state');
           return SliverToBoxAdapter(
             child: Padding(
               padding: EdgeInsets.symmetric(vertical: AppSpacing.xxl),

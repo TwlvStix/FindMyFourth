@@ -3,7 +3,6 @@ import '../form_field_controller.dart';
 import 'package:flutter/material.dart';
 import '/core/design_tokens/border_radius.dart';
 import 'package:flutter/scheduler.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import '/utils/app_util.dart';
 import 'app_icon.dart';
 
@@ -138,7 +137,7 @@ class _AppChoiceChipsState extends State<AppChoiceChips> {
                     color: style.iconColor,
                   )
                 : option.iconData != null
-                    ? FaIcon(
+                    ? Icon(
                         option.iconData,
                         size: style.iconSize,
                         color: style.iconColor,

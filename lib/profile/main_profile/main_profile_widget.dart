@@ -598,7 +598,7 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                 extra: <String, dynamic>{
                   kTransitionInfoKey: TransitionInfo(
                     hasTransition: true,
-                    transitionType: PageTransitionType.fade,
+                    transitionType: AppTransitionType.fade,
                     enterDuration: Duration(milliseconds: 200),
                     exitDuration: Duration(milliseconds: 170),
                     scaleOnPush: false,
@@ -698,7 +698,7 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                             extra: <String, dynamic>{
                               kTransitionInfoKey: TransitionInfo(
                                 hasTransition: true,
-                                transitionType: PageTransitionType.fade,
+                                transitionType: AppTransitionType.fade,
                                 enterDuration: Duration(milliseconds: 200),
                                 exitDuration: Duration(milliseconds: 170),
                                 scaleOnPush: false,
@@ -722,7 +722,7 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                             extra: <String, dynamic>{
                               kTransitionInfoKey: TransitionInfo(
                                 hasTransition: true,
-                                transitionType: PageTransitionType.fade,
+                                transitionType: AppTransitionType.fade,
                                 enterDuration: Duration(milliseconds: 200),
                                 exitDuration: Duration(milliseconds: 170),
                                 scaleOnPush: false,
@@ -753,7 +753,7 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                         extra: <String, dynamic>{
                           kTransitionInfoKey: TransitionInfo(
                             hasTransition: true,
-                            transitionType: PageTransitionType.fade,
+                            transitionType: AppTransitionType.fade,
                             enterDuration: Duration(milliseconds: 200),
                             exitDuration: Duration(milliseconds: 170),
                             scaleOnPush: false,
@@ -777,7 +777,7 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                         extra: <String, dynamic>{
                           kTransitionInfoKey: TransitionInfo(
                             hasTransition: true,
-                            transitionType: PageTransitionType.fade,
+                            transitionType: AppTransitionType.fade,
                             enterDuration: Duration(milliseconds: 200),
                             exitDuration: Duration(milliseconds: 170),
                             scaleOnPush: false,
@@ -995,7 +995,7 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                       extra: <String, dynamic>{
                         kTransitionInfoKey: TransitionInfo(
                           hasTransition: true,
-                          transitionType: PageTransitionType.fade,
+                          transitionType: AppTransitionType.fade,
                           enterDuration: Duration(milliseconds: 200),
                           exitDuration: Duration(milliseconds: 170),
                           scaleOnPush: true,
@@ -1016,7 +1016,7 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                       extra: <String, dynamic>{
                         kTransitionInfoKey: TransitionInfo(
                           hasTransition: true,
-                          transitionType: PageTransitionType.fade,
+                          transitionType: AppTransitionType.fade,
                           enterDuration: const Duration(milliseconds: 200),
                           exitDuration: const Duration(milliseconds: 170),
                           scaleOnPush: false,

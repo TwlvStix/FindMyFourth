@@ -1,12 +1,13 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import '/core/utils/app_log.dart';
 
 /// One-time utility to initialize friend_requests field for current user
 /// Call this once from your app to fix existing users
 Future<void> initializeFriendFieldsForCurrentUser() async {
   final user = FirebaseAuth.instance.currentUser;
   if (user == null) {
-    print('No user logged in');
+    AppLog.d('No user logged in');
     return;
   }
 
@@ -15,7 +16,7 @@ Future<void> initializeFriendFieldsForCurrentUser() async {
     final snapshot = await userRef.get();
 
     if (!snapshot.exists) {
-      print('User document does not exist');
+      AppLog.d('User document does not exist');
       return;
     }
 
@@ -25,22 +26,22 @@ Future<void> initializeFriendFieldsForCurrentUser() async {
     // Initialize friend_requests if it doesn't exist
     if (data != null && !data.containsKey('friend_requests')) {
       updates['friend_requests'] = [];
-      print('Will initialize friend_requests');
+      AppLog.d('Will initialize friend_requests');
     }
 
     // Initialize friends if it doesn't exist
     if (data != null && !data.containsKey('friends')) {
       updates['friends'] = [];
-      print('Will initialize friends');
+      AppLog.d('Will initialize friends');
     }
 
     if (updates.isNotEmpty) {
       await userRef.update(updates);
-      print('✓ Initialized fields: ${updates.keys.join(", ")}');
+      AppLog.d('✓ Initialized fields: ${updates.keys.join(", ")}');
     } else {
-      print('All fields already initialized');
+      AppLog.d('All fields already initialized');
     }
   } catch (e) {
-    print('Error initializing fields: $e');
+    AppLog.d('Error initializing fields: $e');
   }
 }

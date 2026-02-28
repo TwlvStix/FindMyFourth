@@ -5,6 +5,7 @@ import '/core/exceptions/app_exceptions.dart';
 import '/core/motion/motion_helpers.dart';
 import '/core/motion/motion_tokens.dart';
 import '/core/motion/reduced_motion.dart';
+import '/core/utils/app_log.dart';
 import '/core/widgets/app_premium_dialog.dart';
 import '/core/widgets/fairway_background.dart';
 import '/core/widgets/trust/luxury_player_card.dart';
@@ -186,7 +187,7 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget>
       return;
     }
     _hasLoggedAccessDenied = true;
-    debugPrint(
+    AppLog.d(
       'JoinGameDetailed: access denied for game $gameId (likely friends-only). Error: $error',
     );
   }
@@ -742,7 +743,7 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget>
                           builder: (context, hostSnapshot) {
                             // Handle error state - show fallback UI instead of infinite loading
                             if (hostSnapshot.hasError) {
-                              debugPrint('JoinGameDetailed: Host data error: ${hostSnapshot.error}');
+                              AppLog.d('JoinGameDetailed: Host data error: ${hostSnapshot.error}');
                               return Container(
                                 height: 200,
                                 decoration: BoxDecoration(
@@ -1259,7 +1260,7 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget>
                                         }
                                       }
                                     } catch (error) {
-                                      debugPrint('JoinGameDetailed: owner friend check failed $error');
+                                      AppLog.d('JoinGameDetailed: owner friend check failed $error');
                                     }
                                   }
                                   if (!(isPublic || (isFriendsOnly && isOwnerFriendsWithUser))) {
@@ -1444,7 +1445,7 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget>
                                             joinGameDetailedGamesRecord.reference,
                                         kTransitionInfoKey: TransitionInfo(
                   hasTransition: true,
-                  transitionType: PageTransitionType.fade,
+                  transitionType: AppTransitionType.fade,
                   enterDuration: Duration(milliseconds: 200),
                   exitDuration: Duration(milliseconds: 170),
                   scaleOnPush: true,

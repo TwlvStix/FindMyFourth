@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import '/core/utils/app_log.dart';
 import '/core/design_tokens/spacing.dart';
 import '/core/design_tokens/colors.dart';
 import '/core/design_tokens/typography.dart';
@@ -44,17 +45,17 @@ class _EditGameDetailsBottomSheetState
   FormFieldController<String>? _courseController;
 
   Future<void> _saveChanges() async {
-    debugPrint('🎯 Edit Game Details: Starting save');
-    debugPrint('🎯 Selected date: $_selectedDate');
-    debugPrint('🎯 Selected course: $_selectedCourse');
+    AppLog.d('🎯 Edit Game Details: Starting save');
+    AppLog.d('🎯 Selected date: $_selectedDate');
+    AppLog.d('🎯 Selected course: $_selectedCourse');
 
     if (_selectedDate == null) {
-      debugPrint('❌ Edit Game Details: No date selected');
+      AppLog.d('❌ Edit Game Details: No date selected');
       _showError('Please select a date and time');
       return;
     }
     if (_selectedCourse == null) {
-      debugPrint('❌ Edit Game Details: No course selected');
+      AppLog.d('❌ Edit Game Details: No course selected');
       _showError('Please select a course');
       return;
     }
@@ -76,10 +77,10 @@ class _EditGameDetailsBottomSheetState
   @override
   void initState() {
     super.initState();
-    debugPrint('🎯 Edit Game Details Bottom Sheet: Initializing');
-    debugPrint('🎯 Game ref: ${widget.gameRef.path}');
-    debugPrint('🎯 Initial date: ${widget.initialDate}');
-    debugPrint('🎯 Initial course: ${widget.initialCourse}');
+    AppLog.d('🎯 Edit Game Details Bottom Sheet: Initializing');
+    AppLog.d('🎯 Game ref: ${widget.gameRef.path}');
+    AppLog.d('🎯 Initial date: ${widget.initialDate}');
+    AppLog.d('🎯 Initial course: ${widget.initialCourse}');
 
     // Pre-populate form fields
     _selectedDate = widget.initialDate;
@@ -95,7 +96,7 @@ class _EditGameDetailsBottomSheetState
 
   @override
   Widget build(BuildContext context) {
-    debugPrint('🎯 Edit Game Details Bottom Sheet: Building UI');
+    AppLog.d('🎯 Edit Game Details Bottom Sheet: Building UI');
     return Container(
       decoration: BoxDecoration(
         color: AppColors.navyDark,
@@ -189,11 +190,11 @@ class _EditGameDetailsBottomSheetState
                     .orderBy('name')
                     .snapshots(),
                 builder: (context, snapshot) {
-                  debugPrint(
+                  AppLog.d(
                       '🎯 Course StreamBuilder: hasData=${snapshot.hasData}, hasError=${snapshot.hasError}');
 
                   if (snapshot.hasError) {
-                    debugPrint('❌ Course loading error: ${snapshot.error}');
+                    AppLog.d('❌ Course loading error: ${snapshot.error}');
                     return Center(
                       child: Text(
                         'Error loading courses: ${snapshot.error}',
@@ -211,7 +212,7 @@ class _EditGameDetailsBottomSheetState
                     );
                   }
 
-                  debugPrint(
+                  AppLog.d(
                       '🎯 Courses loaded: ${snapshot.data!.docs.length} courses');
                   final courses =
                       snapshot.data!.docs.map((doc) => Course.fromDoc(doc)).toList();

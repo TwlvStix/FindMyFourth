@@ -1,5 +1,6 @@
 import '/auth/firebase_auth/auth_util.dart';
 import '/backend/backend.dart';
+import '/core/utils/app_log.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '/backend/cloud_functions/cloud_functions.dart';
 import '/core/custom_functions.dart' as functions;
@@ -338,8 +339,8 @@ class _ProgressiveOnboardingWidgetState
       await ensureUserDocReady(user);
       return true;
     } catch (error, stackTrace) {
-      debugPrint('❌ PROGRESSIVE ONBOARDING: unable to ensure user doc exists: $error');
-      debugPrint('❌ PROGRESSIVE ONBOARDING: Stack trace: $stackTrace');
+      AppLog.d('❌ PROGRESSIVE ONBOARDING: unable to ensure user doc exists: $error');
+      AppLog.d('❌ PROGRESSIVE ONBOARDING: Stack trace: $stackTrace');
       return false;
     }
   }

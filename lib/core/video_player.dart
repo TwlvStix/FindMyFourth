@@ -6,6 +6,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:video_player/video_player.dart';
 
+import '/core/utils/app_log.dart';
 import '/utils/app_util.dart' show routeObserver;
 import '/core/design_tokens/colors.dart';
 import '/core/design_tokens/spacing.dart';
@@ -152,7 +153,7 @@ class _AppVideoPlayerState extends State<AppVideoPlayer>
     _videoPlayers.add(_videoPlayerController!);
     _videoPlayerController!.addListener(() {
       if (_videoPlayerController!.value.hasError && !_loggedError) {
-        print(
+        AppLog.d(
             'Error playing video: ${_videoPlayerController!.value.errorDescription}');
         _loggedError = true;
       }

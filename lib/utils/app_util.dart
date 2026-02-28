@@ -23,7 +23,6 @@ export 'dart:convert' show jsonEncode, jsonDecode;
 export 'package:intl/intl.dart';
 export 'package:cloud_firestore/cloud_firestore.dart'
     show DocumentReference, FirebaseFirestore;
-export 'package:page_transition/page_transition.dart';
 export '../core/navigation/app_router.dart';
 export '../core/utils/formatting_utils.dart';
 

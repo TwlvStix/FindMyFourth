@@ -10,6 +10,7 @@ import 'package:flutter/services.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:provider/provider.dart';
 
+import '/core/utils/app_log.dart';
 import '/backend/backend.dart';
 import '/models/chat.dart';
 import '/models/chat_message.dart';
@@ -102,8 +103,8 @@ class _GameChatDetailsWidgetState extends State<GameChatDetailsWidget>
   @override
   void initState() {
     super.initState();
-    debugPrint('📨 UI: Chat page loaded for chatId: ${widget.chatId}');
-    debugPrint('📨 UI: Current user ID: $_currentUserId');
+    AppLog.d('📨 UI: Chat page loaded for chatId: ${widget.chatId}');
+    AppLog.d('📨 UI: Current user ID: $_currentUserId');
     final chatProvider = context.read<ChatProvider>();
     _chatStream = chatProvider.chatStream(widget.chatId);
     _chatUiStream = _chatStream.distinct(_chatUiEquals);
@@ -117,7 +118,7 @@ class _GameChatDetailsWidgetState extends State<GameChatDetailsWidget>
       onError: (error) {
         if (!mounted) return;
         if (kDebugMode) {
-          debugPrint('❌ UI: Chat stream error for chatId=${widget.chatId}: $error');
+          AppLog.d('❌ UI: Chat stream error for chatId=${widget.chatId}: $error');
         }
         setState(() {
           _chatError = error;
@@ -136,7 +137,7 @@ class _GameChatDetailsWidgetState extends State<GameChatDetailsWidget>
   @override
   void dispose() {
     if (kDebugMode) {
-      debugPrint('📨 UI: Disposing ChatDetails for chatId=${widget.chatId}');
+      AppLog.d('📨 UI: Disposing ChatDetails for chatId=${widget.chatId}');
     }
     _typingTimer?.cancel();
     _chatUiSubscription?.cancel();
@@ -152,7 +153,7 @@ class _GameChatDetailsWidgetState extends State<GameChatDetailsWidget>
 
     final hasText = _messageController.text.trim().isNotEmpty;
     if (kDebugMode) {
-      debugPrint(
+      AppLog.d(
         '✍️ UI: onTextChanged chatId=${widget.chatId} hasText=$hasText '
         'textLen=${_messageController.text.length} isTyping=$_isTyping',
       );
@@ -563,7 +564,7 @@ class _GameChatDetailsWidgetState extends State<GameChatDetailsWidget>
     }
     try {
       if (kDebugMode) {
-        debugPrint('📖 UI: _markChatSeen called for chatId=${widget.chatId}');
+        AppLog.d('📖 UI: _markChatSeen called for chatId=${widget.chatId}');
       }
 
       // Update chat-level unread count
@@ -592,7 +593,7 @@ class _GameChatDetailsWidgetState extends State<GameChatDetailsWidget>
       });
 
       if (kDebugMode) {
-        debugPrint(
+        AppLog.d(
             '✅ UI: _markChatSeen complete - ${stats['unreadCount']} unread messages, '
             '${stats['updatedCount']} updated in ${stats['batchCount']} batch(es)');
       }
@@ -625,8 +626,8 @@ class _GameChatDetailsWidgetState extends State<GameChatDetailsWidget>
       return;
     }
 
-    debugPrint('🔵 UI: Delete chat button pressed');
-    debugPrint('🔵 UI: chatId=${widget.chatId}, userId=$currentUserId');
+    AppLog.d('🔵 UI: Delete chat button pressed');
+    AppLog.d('🔵 UI: chatId=${widget.chatId}, userId=$currentUserId');
 
     // Show loading indicator
     if (!mounted) return;
@@ -648,7 +649,7 @@ class _GameChatDetailsWidgetState extends State<GameChatDetailsWidget>
             uid: currentUserId,
           );
 
-      debugPrint('✅ UI: Chat deleted successfully');
+      AppLog.d('✅ UI: Chat deleted successfully');
 
       // Close loading dialog
       if (!mounted) return;
@@ -667,7 +668,7 @@ class _GameChatDetailsWidgetState extends State<GameChatDetailsWidget>
         ),
       );
     } catch (error, stackTrace) {
-      debugPrint('❌ UI: Failed to delete chat: $error');
+      AppLog.d('❌ UI: Failed to delete chat: $error');
 
       context
           .read<ChatProvider>()
@@ -802,7 +803,7 @@ class _GameChatDetailsWidgetState extends State<GameChatDetailsWidget>
       if (!mounted) return;
       setState(() => _pendingUploads.removeWhere((u) => u.id == uploadId));
     } catch (error, stackTrace) {
-      debugPrint('📷 Image upload error: $error\n$stackTrace');
+      AppLog.d('📷 Image upload error: $error\n$stackTrace');
       if (!mounted) return;
       setState(() => _pendingUploads.removeWhere((u) => u.id == uploadId));
       ScaffoldMessenger.of(context).showSnackBar(
@@ -987,7 +988,7 @@ class _GameChatDetailsWidgetState extends State<GameChatDetailsWidget>
   Widget build(BuildContext context) {
     final backgroundGreen = AppColors.navy;
     if (kDebugMode) {
-      debugPrint(
+      AppLog.d(
         '🧱 UI: ChatDetails build chatId=${widget.chatId} '
         'chatLoaded=$_chatLoaded chatUi=${_chatUi?.id} '
         'chatError=${_chatError?.runtimeType} '
@@ -1186,19 +1187,19 @@ class _GameChatDetailsWidgetState extends State<GameChatDetailsWidget>
                                     stream: _messageViewModelsStream!,
                                     builder: (context, snapshot) {
                                       if (kDebugMode) {
-                                        debugPrint(
+                                        AppLog.d(
                                             '📨 UI: VM StreamBuilder called for chatId: ${widget.chatId}');
-                                        debugPrint(
+                                        AppLog.d(
                                             '📨 UI: snapshot.connectionState = ${snapshot.connectionState}');
-                                        debugPrint(
+                                        AppLog.d(
                                             '📨 UI: snapshot.hasError = ${snapshot.hasError}');
-                                        debugPrint(
+                                        AppLog.d(
                                             '📨 UI: snapshot.hasData = ${snapshot.hasData}');
                                       }
 
                                       if (snapshot.hasError) {
                                         if (kDebugMode) {
-                                          debugPrint(
+                                          AppLog.d(
                                               '❌ UI: VM StreamBuilder error: ${snapshot.error}');
                                         }
                                         return Center(
@@ -1215,7 +1216,7 @@ class _GameChatDetailsWidgetState extends State<GameChatDetailsWidget>
 
                                       if (!snapshot.hasData) {
                                         if (kDebugMode) {
-                                          debugPrint(
+                                          AppLog.d(
                                               '📨 UI: No data yet, showing loading indicator');
                                         }
                                         if (!hasCachedMessages) {
@@ -1228,13 +1229,13 @@ class _GameChatDetailsWidgetState extends State<GameChatDetailsWidget>
                                       final latestVMs = snapshot.data ?? [];
 
                                       if (kDebugMode) {
-                                        debugPrint(
+                                        AppLog.d(
                                             '📨 UI: Received ${latestVMs.length} view model(s)');
                                       }
 
                                       if (latestVMs.isEmpty && !hasCachedMessages) {
                                         if (kDebugMode) {
-                                          debugPrint(
+                                          AppLog.d(
                                               '📨 UI: VM list is empty - showing "No messages yet"');
                                         }
                                         return Center(
@@ -1258,7 +1259,7 @@ class _GameChatDetailsWidgetState extends State<GameChatDetailsWidget>
                                           : _latestMessageVMs;
 
                                       if (kDebugMode) {
-                                        debugPrint(
+                                        AppLog.d(
                                             '📨 UI: After merging: ${messageVMs.length} message VMs');
                                       }
 
@@ -1266,7 +1267,7 @@ class _GameChatDetailsWidgetState extends State<GameChatDetailsWidget>
                                           messageVMs.length + (_hasMoreOlder ? 1 : 0);
 
                                       if (kDebugMode) {
-                                        debugPrint(
+                                        AppLog.d(
                                             '📨 UI: Rendering ListView with $itemCount items');
                                       }
 
@@ -1275,7 +1276,7 @@ class _GameChatDetailsWidgetState extends State<GameChatDetailsWidget>
                                         final previewLength = firstMessageText.length < 30
                                             ? firstMessageText.length
                                             : 30;
-                                        debugPrint(
+                                        AppLog.d(
                                             '📨 UI: First message text: ${firstMessageText.substring(0, previewLength)}');
                                       }
 

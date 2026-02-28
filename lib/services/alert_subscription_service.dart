@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '/models/alert_subscription.dart';
+import '/core/utils/app_log.dart';
 
 /// Service for managing alert subscriptions in Firestore
 ///
@@ -29,8 +30,9 @@ class AlertSubscriptionService {
       }
 
       return AlertSubscription.fromFirestore(doc);
-    } catch (e) {
-      throw Exception('Failed to load alert subscription: $e');
+    } on FirebaseException catch (e) {
+      AppLog.d('❌ AlertSubscriptionService.loadSubscription error: ${e.code} - ${e.message}');
+      rethrow;
     }
   }
 
@@ -44,8 +46,9 @@ class AlertSubscriptionService {
         subscription.toFirestore(isUpdate: exists),
         SetOptions(merge: true),
       );
-    } catch (e) {
-      throw Exception('Failed to save alert subscription: $e');
+    } on FirebaseException catch (e) {
+      AppLog.d('❌ AlertSubscriptionService.saveSubscription error: ${e.code} - ${e.message}');
+      rethrow;
     }
   }
 
@@ -53,8 +56,9 @@ class AlertSubscriptionService {
   static Future<void> deleteSubscription(String userId) async {
     try {
       await getDocRef(userId).delete();
-    } catch (e) {
-      throw Exception('Failed to delete alert subscription: $e');
+    } on FirebaseException catch (e) {
+      AppLog.d('❌ AlertSubscriptionService.deleteSubscription error: ${e.code} - ${e.message}');
+      rethrow;
     }
   }
 
@@ -74,8 +78,9 @@ class AlertSubscriptionService {
     try {
       final defaultSub = AlertSubscription.defaults(userId);
       await saveSubscription(defaultSub);
-    } catch (e) {
-      throw Exception('Failed to reset alert subscription: $e');
+    } on FirebaseException catch (e) {
+      AppLog.d('❌ AlertSubscriptionService.resetSubscription error: ${e.code} - ${e.message}');
+      rethrow;
     }
   }
 
@@ -89,8 +94,9 @@ class AlertSubscriptionService {
         },
         SetOptions(merge: true),
       );
-    } catch (e) {
-      throw Exception('Failed to update subscription enabled state: $e');
+    } on FirebaseException catch (e) {
+      AppLog.d('❌ AlertSubscriptionService.setEnabled error: ${e.code} - ${e.message}');
+      rethrow;
     }
   }
 
@@ -105,8 +111,9 @@ class AlertSubscriptionService {
       return snapshot.docs
           .map((doc) => AlertSubscription.fromFirestore(doc))
           .toList();
-    } catch (e) {
-      throw Exception('Failed to load enabled subscriptions: $e');
+    } on FirebaseException catch (e) {
+      AppLog.d('❌ AlertSubscriptionService.getAllEnabledSubscriptions error: ${e.code} - ${e.message}');
+      rethrow;
     }
   }
 

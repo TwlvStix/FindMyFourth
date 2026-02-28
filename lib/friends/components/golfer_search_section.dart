@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 import '/backend/backend.dart';
+import '/core/utils/app_log.dart';
 import '/core/design_tokens/colors.dart';
 import '/core/design_tokens/spacing.dart';
 import '/core/design_tokens/typography.dart';
@@ -142,7 +143,7 @@ class _GolferSearchSectionState extends State<GolferSearchSection> {
       });
     }
     if (kDebugMode) {
-      debugPrint('🔍 UI: Golfer search text="${_searchTerm.value}"');
+      AppLog.d('🔍 UI: Golfer search text="${_searchTerm.value}"');
     }
   }
 
@@ -427,7 +428,7 @@ class _GolferSearchSectionState extends State<GolferSearchSection> {
 
     final searchTerm = inputTerm.toLowerCase();
     if (kDebugMode) {
-      debugPrint(
+      AppLog.d(
         '🔍 Golfer search: query="$searchTerm" length=${searchTerm.length}',
       );
     }

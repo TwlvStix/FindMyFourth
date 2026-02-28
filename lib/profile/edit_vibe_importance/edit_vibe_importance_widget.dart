@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import '/core/utils/app_log.dart';
 import '/core/design_tokens/app_phosphor_icons.dart';
 import '/core/design_tokens/colors.dart';
 import '/core/design_tokens/spacing.dart';
@@ -151,8 +152,8 @@ class _EditVibeImportanceWidgetState extends State<EditVibeImportanceWidget> {
       }
       Navigator.of(context).pop();
     } on FirebaseException catch (error, stackTrace) {
-      debugPrint('Failed to save vibe priorities: ${error.code}');
-      debugPrintStack(stackTrace: stackTrace);
+      AppLog.d('Failed to save vibe priorities: ${error.code}');
+      AppLog.d('Stack trace: $stackTrace');
       if (!mounted) {
         return;
       }
@@ -164,8 +165,8 @@ class _EditVibeImportanceWidgetState extends State<EditVibeImportanceWidget> {
         _isSaving = false;
       });
     } catch (error, stackTrace) {
-      debugPrint('Failed to save vibe priorities: $error');
-      debugPrintStack(stackTrace: stackTrace);
+      AppLog.d('Failed to save vibe priorities: $error');
+      AppLog.d('Stack trace: $stackTrace');
       if (!mounted) {
         return;
       }

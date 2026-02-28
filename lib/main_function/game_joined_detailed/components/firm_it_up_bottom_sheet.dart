@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import '/core/utils/app_log.dart';
 import '/core/design_tokens/spacing.dart';
 import '/core/design_tokens/colors.dart';
 import '/core/design_tokens/typography.dart';
@@ -33,17 +34,17 @@ class _FirmItUpBottomSheetState extends State<FirmItUpBottomSheet> {
   FormFieldController<String>? _courseController;
 
   Future<void> _confirmFirmUp() async {
-    debugPrint('🎯 Firm It Up: Starting confirmation');
-    debugPrint('🎯 Selected date: $_selectedDate');
-    debugPrint('🎯 Selected course: $_selectedCourse');
+    AppLog.d('🎯 Firm It Up: Starting confirmation');
+    AppLog.d('🎯 Selected date: $_selectedDate');
+    AppLog.d('🎯 Selected course: $_selectedCourse');
 
     if (_selectedDate == null) {
-      debugPrint('❌ Firm It Up: No date selected');
+      AppLog.d('❌ Firm It Up: No date selected');
       _showError('Please select a date and time');
       return;
     }
     if (_selectedCourse == null) {
-      debugPrint('❌ Firm It Up: No course selected');
+      AppLog.d('❌ Firm It Up: No course selected');
       _showError('Please select a course');
       return;
     }
@@ -65,13 +66,13 @@ class _FirmItUpBottomSheetState extends State<FirmItUpBottomSheet> {
   @override
   void initState() {
     super.initState();
-    debugPrint('🎯 Firm It Up Bottom Sheet: Initializing');
-    debugPrint('🎯 Game ref: ${widget.gameRef.path}');
+    AppLog.d('🎯 Firm It Up Bottom Sheet: Initializing');
+    AppLog.d('🎯 Game ref: ${widget.gameRef.path}');
   }
 
   @override
   Widget build(BuildContext context) {
-    debugPrint('🎯 Firm It Up Bottom Sheet: Building UI');
+    AppLog.d('🎯 Firm It Up Bottom Sheet: Building UI');
     return Container(
       decoration: BoxDecoration(
         color: AppColors.navyDark,
@@ -165,10 +166,10 @@ class _FirmItUpBottomSheetState extends State<FirmItUpBottomSheet> {
                     .orderBy('name')
                     .snapshots(),
                 builder: (context, snapshot) {
-                  debugPrint('🎯 Course StreamBuilder: hasData=${snapshot.hasData}, hasError=${snapshot.hasError}');
+                  AppLog.d('🎯 Course StreamBuilder: hasData=${snapshot.hasData}, hasError=${snapshot.hasError}');
 
                   if (snapshot.hasError) {
-                    debugPrint('❌ Course loading error: ${snapshot.error}');
+                    AppLog.d('❌ Course loading error: ${snapshot.error}');
                     return Center(
                       child: Text(
                         'Error loading courses: ${snapshot.error}',
@@ -186,7 +187,7 @@ class _FirmItUpBottomSheetState extends State<FirmItUpBottomSheet> {
                     );
                   }
 
-                  debugPrint('🎯 Courses loaded: ${snapshot.data!.docs.length} courses');
+                  AppLog.d('🎯 Courses loaded: ${snapshot.data!.docs.length} courses');
                   final courses = snapshot.data!.docs
                       .map((doc) => Course.fromDoc(doc))
                       .toList();

@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 
 import '/backend/backend.dart';
+import '/core/utils/app_log.dart';
 
 import '../models/place.dart';
 import '../models/uploaded_file.dart';
@@ -37,7 +38,7 @@ String _serializeDocumentReference(DocumentReference ref) {
     // Get the parent document (catching any errors that arise).
     currentRef = safeGet<DocumentReference?>(
       () => currentRef?.parent.parent,
-      (e) => print(
+      (e) => AppLog.d(
         'Error serializing doc reference ${currentRef?.path ?? 'unknown'}:\n$e',
       ),
     );
@@ -95,7 +96,7 @@ String? serializeParam(
     }
     return data;
   } catch (e) {
-    print('Error serializing parameter: $e');
+    AppLog.d('Error serializing parameter: $e');
     return null;
   }
 }
@@ -239,7 +240,7 @@ dynamic deserializeParam<T>(
         return null;
     }
   } catch (e) {
-    print('Error deserializing parameter: $e');
+    AppLog.d('Error deserializing parameter: $e');
     return null;
   }
 }

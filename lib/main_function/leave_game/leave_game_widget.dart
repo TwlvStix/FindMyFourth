@@ -190,7 +190,7 @@ class _LeaveGameWidgetState extends State<LeaveGameWidget> {
                                 extra: <String, dynamic>{
                                   kTransitionInfoKey: TransitionInfo(
                   hasTransition: true,
-                  transitionType: PageTransitionType.fade,
+                  transitionType: AppTransitionType.fade,
                   enterDuration: Duration(milliseconds: 200),
                   exitDuration: Duration(milliseconds: 170),
                   scaleOnPush: true,

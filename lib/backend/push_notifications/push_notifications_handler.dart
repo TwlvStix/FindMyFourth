@@ -362,9 +362,10 @@ class _PushNotificationsHandlerState extends State<PushNotificationsHandler> {
   Widget build(BuildContext context) => _loading
       ? Container(
           color: AppColors.navyDark,
-          child: Image.asset(
-            'assets/images/Blackfixed.png',
-            fit: BoxFit.contain,
+          child: Center(
+            child: CircularProgressIndicator(
+              color: AppColors.green,
+            ),
           ),
         )
       : widget.child;

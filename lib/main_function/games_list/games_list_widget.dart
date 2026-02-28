@@ -777,7 +777,7 @@ class _GamesListWidgetState extends State<GamesListWidget> {
                 builder: (context, gamesList) {
                   // Debug logging wrapped in assertions (only runs in debug mode)
                   assert(() {
-                    debugPrint(
+                    AppLog.d(
                         '📋 GAME LIST: StreamBuilder triggered with ${gamesList.length} games');
                     return true;
                   }());
@@ -801,7 +801,7 @@ class _GamesListWidgetState extends State<GamesListWidget> {
                   }).toList();
 
                   assert(() {
-                    debugPrint(
+                    AppLog.d(
                         '📊 GAME LIST: After status filter: ${activeGames.length} games');
                     return true;
                   }());
@@ -822,7 +822,7 @@ class _GamesListWidgetState extends State<GamesListWidget> {
                   final visibleGames = _applyFilters(activeGames, _filters);
 
                   assert(() {
-                    debugPrint(
+                    AppLog.d(
                         '✅ GAME LIST: Final visible games: ${visibleGames.length}');
                     return true;
                   }());

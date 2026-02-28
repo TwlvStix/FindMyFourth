@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import '/core/utils/app_log.dart';
 import '/models/chat_message.dart';
 import '/core/design_tokens/app_phosphor_icons.dart';
 import '/core/design_tokens/spacing.dart';
@@ -43,7 +44,7 @@ class ChatInputBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (kDebugMode) {
-      debugPrint(
+      AppLog.d(
         '🧩 UI: ChatInputBar build enabled=$enabled '
         'ctrl=${messageController.hashCode} '
         'focus=${messageFocusNode.hashCode}',
@@ -151,7 +152,7 @@ class ChatInputBar extends StatelessWidget {
                   cursorColor: AppColors.textPrimary,
                   onChanged: (value) {
                     if (kDebugMode) {
-                      debugPrint(
+                      AppLog.d(
                         '✍️ UI: ChatInputBar onChanged len=${value.length}',
                       );
                     }

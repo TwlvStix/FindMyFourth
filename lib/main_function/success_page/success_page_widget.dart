@@ -108,7 +108,7 @@ class _SuccessPageWidgetState extends State<SuccessPageWidget> {
                                   extra: <String, dynamic>{
                                     kTransitionInfoKey: TransitionInfo(
                   hasTransition: true,
-                  transitionType: PageTransitionType.fade,
+                  transitionType: AppTransitionType.fade,
                   enterDuration: Duration(milliseconds: 200),
                   exitDuration: Duration(milliseconds: 170),
                   scaleOnPush: false,

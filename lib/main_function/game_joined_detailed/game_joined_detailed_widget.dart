@@ -599,8 +599,8 @@ class _GameJoinedDetailedWidgetState extends State<GameJoinedDetailedWidget>
                             );
 
                             try {
-                              debugPrint('🎯 Firm It Up: Updating Firestore...');
-                              debugPrint('🎯 Game ref path: ${gameJoinedDetailedGamesRecord.reference.path}');
+                              AppLog.d('🎯 Firm It Up: Updating Firestore...');
+                              AppLog.d('🎯 Game ref path: ${gameJoinedDetailedGamesRecord.reference.path}');
 
                               // Build update map
                               final updateData = <String, dynamic>{
@@ -613,10 +613,10 @@ class _GameJoinedDetailedWidgetState extends State<GameJoinedDetailedWidget>
                                 'flexible_time_of_day': null,
                               };
 
-                              debugPrint('🎯 Update data: $updateData');
+                              AppLog.d('🎯 Update data: $updateData');
                               await gameJoinedDetailedGamesRecord.reference.update(updateData);
 
-                              debugPrint('✅ Firm It Up: Update successful');
+                              AppLog.d('✅ Firm It Up: Update successful');
 
                               // Close loading dialog
                               if (mounted) Navigator.pop(context);
@@ -633,9 +633,9 @@ class _GameJoinedDetailedWidgetState extends State<GameJoinedDetailedWidget>
                                 setState(() {});
                               }
                             } catch (e, stackTrace) {
-                              debugPrint('❌ Firm It Up: Error occurred');
-                              debugPrint('❌ Error: $e');
-                              debugPrint('❌ Stack trace: $stackTrace');
+                              AppLog.d('❌ Firm It Up: Error occurred');
+                              AppLog.d('❌ Error: $e');
+                              AppLog.d('❌ Stack trace: $stackTrace');
 
                               // Close loading dialog
                               if (mounted) Navigator.pop(context);
@@ -1191,7 +1191,7 @@ class _GameJoinedDetailedWidgetState extends State<GameJoinedDetailedWidget>
                                   uid: currentUserRef.id,
                                 );
                               } catch (chatError) {
-                                debugPrint('LeaveGame: chat removal failed $chatError');
+                                AppLog.d('LeaveGame: chat removal failed $chatError');
                               }
                             }
                           } on FirebaseException catch (error) {
@@ -1296,7 +1296,7 @@ class _GameJoinedDetailedWidgetState extends State<GameJoinedDetailedWidget>
 
                           {
                             try {
-                              debugPrint(
+                              AppLog.d(
                                 'CancelGame: updating ${widget.gameRef?.path}',
                               );
                               await gameRef.update({
@@ -1307,12 +1307,12 @@ class _GameJoinedDetailedWidgetState extends State<GameJoinedDetailedWidget>
                                   await gameRef.get();
                               final updatedData = updatedSnapshot.data()
                                   as Map<String, dynamic>?;
-                              debugPrint(
+                              AppLog.d(
                                 'CancelGame: isCancelled=${updatedData?['isCancelled']}',
                               );
                             } catch (error, stackTrace) {
-                              debugPrint('CancelGame: failed $error');
-                              debugPrintStack(stackTrace: stackTrace);
+                              AppLog.d('CancelGame: failed $error');
+                              AppLog.d('CancelGame stackTrace: $stackTrace');
                               ScaffoldMessenger.of(context).showSnackBar(
                                 SnackBar(
                                   content: Text(
@@ -1351,10 +1351,10 @@ class _GameJoinedDetailedWidgetState extends State<GameJoinedDetailedWidget>
                                   ),
                                 });
                               } catch (error, stackTrace) {
-                                debugPrint(
+                                AppLog.d(
                                   'CancelGame: chat update failed $error',
                                 );
-                                debugPrintStack(stackTrace: stackTrace);
+                                AppLog.d('CancelGame chat stackTrace: $stackTrace');
                               }
                             }
 
@@ -1747,7 +1747,7 @@ class _GameJoinedDetailedWidgetState extends State<GameJoinedDetailedWidget>
   }) async {
     final gameRef = widget.gameRef;
     if (gameRef == null) {
-      debugPrint('Player Management: gameRef is null');
+      AppLog.d('Player Management: gameRef is null');
       return;
     }
 
@@ -1759,7 +1759,7 @@ class _GameJoinedDetailedWidgetState extends State<GameJoinedDetailedWidget>
           'guest_players': FieldValue.arrayRemove([guestName]),
         });
 
-        debugPrint('Player Management: Removed guest player: $guestName');
+        AppLog.d('Player Management: Removed guest player: $guestName');
       } else if (!isGuest && playerRef != null) {
         // Remove registered player from game
         await gameRef.update({
@@ -1774,14 +1774,14 @@ class _GameJoinedDetailedWidgetState extends State<GameJoinedDetailedWidget>
               chatId: chatRef.id,
               uid: playerRef.id,
             );
-            debugPrint('Player Management: Removed from chat: ${playerRef.id}');
+            AppLog.d('Player Management: Removed from chat: ${playerRef.id}');
           } catch (chatError) {
-            debugPrint('Player Management: Chat removal failed: $chatError');
+            AppLog.d('Player Management: Chat removal failed: $chatError');
             // Continue even if chat removal fails - game removal succeeded
           }
         }
 
-        debugPrint('Player Management: Removed registered player: ${playerRef.id}');
+        AppLog.d('Player Management: Removed registered player: ${playerRef.id}');
       }
 
       // Show success message
@@ -1793,8 +1793,8 @@ class _GameJoinedDetailedWidgetState extends State<GameJoinedDetailedWidget>
         ),
       );
     } catch (error, stackTrace) {
-      debugPrint('Player Management: Remove failed - $error');
-      debugPrintStack(stackTrace: stackTrace);
+      AppLog.d('Player Management: Remove failed - $error');
+      AppLog.d('Player Management stackTrace: $stackTrace');
 
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -1814,7 +1814,7 @@ class _GameJoinedDetailedWidgetState extends State<GameJoinedDetailedWidget>
         'gameRef': widget.gameRef,
         kTransitionInfoKey: const TransitionInfo(
                   hasTransition: true,
-                  transitionType: PageTransitionType.fade,
+                  transitionType: AppTransitionType.fade,
                   enterDuration: Duration(milliseconds: 200),
                   exitDuration: Duration(milliseconds: 170),
                   scaleOnPush: true,
@@ -1831,16 +1831,16 @@ class _GameJoinedDetailedWidgetState extends State<GameJoinedDetailedWidget>
     BuildContext context,
     Game gameRecord,
   ) async {
-    debugPrint('🎯 Edit Game Details: Starting edit flow');
+    AppLog.d('🎯 Edit Game Details: Starting edit flow');
 
     // Validate 2-hour restriction
     final teeTime = gameRecord.date;
     if (teeTime != null) {
       final hoursUntilTeeTime = teeTime.difference(DateTime.now()).inHours;
-      debugPrint('🎯 Hours until tee time: $hoursUntilTeeTime');
+      AppLog.d('🎯 Hours until tee time: $hoursUntilTeeTime');
 
       if (hoursUntilTeeTime < 2) {
-        debugPrint('❌ Edit blocked: Less than 2 hours until tee time');
+        AppLog.d('❌ Edit blocked: Less than 2 hours until tee time');
         await showPremiumDialog(
           context: context,
           variant: PremiumDialogVariant.informational,
@@ -1868,7 +1868,7 @@ class _GameJoinedDetailedWidgetState extends State<GameJoinedDetailedWidget>
     );
 
     if (result != null && mounted) {
-      debugPrint('🎯 Edit result received: $result');
+      AppLog.d('🎯 Edit result received: $result');
       await _updateGameDetails(context, gameRecord, result);
     }
   }
@@ -1878,7 +1878,7 @@ class _GameJoinedDetailedWidgetState extends State<GameJoinedDetailedWidget>
     Game gameRecord,
     Map<String, dynamic> updateData,
   ) async {
-    debugPrint('🎯 Update Game Details: Starting update');
+    AppLog.d('🎯 Update Game Details: Starting update');
 
     // Show loading
     showDialog(
@@ -1933,8 +1933,8 @@ class _GameJoinedDetailedWidgetState extends State<GameJoinedDetailedWidget>
         final notificationText =
             'Game updated — now $dayName $dateStr, $timeStr at $newCourse';
 
-        debugPrint('🎯 Sending notifications to ${recipients.length} players');
-        debugPrint('🎯 Notification text: $notificationText');
+        AppLog.d('🎯 Sending notifications to ${recipients.length} players');
+        AppLog.d('🎯 Notification text: $notificationText');
 
         triggerPushNotification(
           notificationTitle: 'Game Details Updated',
@@ -1958,11 +1958,11 @@ class _GameJoinedDetailedWidgetState extends State<GameJoinedDetailedWidget>
         );
       }
 
-      debugPrint('✅ Game details updated successfully');
+      AppLog.d('✅ Game details updated successfully');
     } catch (e, stackTrace) {
-      debugPrint('❌ Edit Game Details: Error occurred');
-      debugPrint('❌ Error: $e');
-      debugPrint('❌ Stack trace: $stackTrace');
+      AppLog.d('❌ Edit Game Details: Error occurred');
+      AppLog.d('❌ Error: $e');
+      AppLog.d('❌ Stack trace: $stackTrace');
 
       // Close loading dialog
       if (mounted) Navigator.pop(context);

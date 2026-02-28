@@ -49,6 +49,12 @@ export 'package:go_router/go_router.dart';
 export '/utils/serialization_util.dart';
 export 'transition_standards.dart';
 
+/// Custom transition type to replace page_transition package dependency.
+/// Currently only supports fade transitions as that's all the app uses.
+enum AppTransitionType {
+  fade,
+}
+
 const kTransitionInfoKey = '__transition_info__';
 
 GlobalKey<NavigatorState> appNavigatorKey = GlobalKey<NavigatorState>();
@@ -535,9 +541,15 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) => GoRouter(
             context,
             state,
             appStateNotifier,
-            HostCheckinScreen(
-              gameRef: _gameRefFromState(state)!,
-            ),
+            _gameRefFromState(state) == null
+                ? Scaffold(
+                    body: Center(
+                      child: Text('Game not found.'),
+                    ),
+                  )
+                : HostCheckinScreen(
+                    gameRef: _gameRefFromState(state)!,
+                  ),
           ),
         ),
         GoRoute(
@@ -548,9 +560,15 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) => GoRouter(
             context,
             state,
             appStateNotifier,
-            PeerRatingScreen(
-              gameRef: _gameRefFromState(state)!,
-            ),
+            _gameRefFromState(state) == null
+                ? Scaffold(
+                    body: Center(
+                      child: Text('Game not found.'),
+                    ),
+                  )
+                : PeerRatingScreen(
+                    gameRef: _gameRefFromState(state)!,
+                  ),
           ),
         ),
         GoRoute(
@@ -561,9 +579,15 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) => GoRouter(
             context,
             state,
             appStateNotifier,
-            FallbackConfirmationScreen(
-              gameRef: _gameRefFromState(state)!,
-            ),
+            _gameRefFromState(state) == null
+                ? Scaffold(
+                    body: Center(
+                      child: Text('Game not found.'),
+                    ),
+                  )
+                : FallbackConfirmationScreen(
+                    gameRef: _gameRefFromState(state)!,
+                  ),
           ),
         ),
       ],
@@ -703,20 +727,10 @@ Page<dynamic> _buildPageWithTransition(
         );
       }
 
-      // Apply page transition (fade/slide from page_transition package)
-      final pageTransition = PageTransition(
-        type: transitionInfo.transitionType,
-        duration: transitionInfo.getEnterDuration(),
-        reverseDuration: transitionInfo.getExitDuration(),
-        alignment: transitionInfo.alignment,
+      // Apply fade transition
+      return FadeTransition(
+        opacity: animation,
         child: result,
-      );
-
-      return pageTransition.buildTransitions(
-        context,
-        animation,
-        secondaryAnimation,
-        result,
       );
     },
   );
@@ -776,7 +790,7 @@ TransitionInfo _transitionInfo(GoRouterState state) {
 class TransitionInfo {
   const TransitionInfo({
     required this.hasTransition,
-    this.transitionType = PageTransitionType.fade,
+    this.transitionType = AppTransitionType.fade,
     this.enterDuration,
     this.exitDuration,
     this.scaleOnPush = false,
@@ -784,7 +798,7 @@ class TransitionInfo {
   });
 
   final bool hasTransition;
-  final PageTransitionType transitionType;
+  final AppTransitionType transitionType;
   final Duration? enterDuration;
   final Duration? exitDuration;
   final bool scaleOnPush;

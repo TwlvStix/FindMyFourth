@@ -283,7 +283,7 @@ class _SignInWidgetState extends State<SignInWidget> {
                                       fallbackExtra: <String, dynamic>{
                                         kTransitionInfoKey: TransitionInfo(
                   hasTransition: true,
-                  transitionType: PageTransitionType.fade,
+                  transitionType: AppTransitionType.fade,
                   enterDuration: Duration(milliseconds: 200),
                   exitDuration: Duration(milliseconds: 170),
                   scaleOnPush: true,
@@ -371,7 +371,7 @@ class _SignInWidgetState extends State<SignInWidget> {
                                       fallbackExtra: <String, dynamic>{
                                         kTransitionInfoKey: TransitionInfo(
                   hasTransition: true,
-                  transitionType: PageTransitionType.fade,
+                  transitionType: AppTransitionType.fade,
                   enterDuration: Duration(milliseconds: 200),
                   exitDuration: Duration(milliseconds: 170),
                   scaleOnPush: true,
@@ -419,7 +419,7 @@ class _SignInWidgetState extends State<SignInWidget> {
                                                   TransitionInfo(
                                                 hasTransition: true,
                                                 transitionType:
-                                                    PageTransitionType.fade,
+                                                    AppTransitionType.fade,
                                                 enterDuration:
                                                     Duration(milliseconds: 200),
                                                 exitDuration:
@@ -455,7 +455,7 @@ class _SignInWidgetState extends State<SignInWidget> {
                                         extra: <String, dynamic>{
                                           kTransitionInfoKey: TransitionInfo(
                   hasTransition: true,
-                  transitionType: PageTransitionType.fade,
+                  transitionType: AppTransitionType.fade,
                   enterDuration: Duration(milliseconds: 200),
                   exitDuration: Duration(milliseconds: 170),
                   scaleOnPush: true,
@@ -508,7 +508,7 @@ class _SignInWidgetState extends State<SignInWidget> {
                                         extra: <String, dynamic>{
                                           kTransitionInfoKey: TransitionInfo(
                   hasTransition: true,
-                  transitionType: PageTransitionType.fade,
+                  transitionType: AppTransitionType.fade,
                   enterDuration: Duration(milliseconds: 200),
                   exitDuration: Duration(milliseconds: 170),
                   scaleOnPush: true,

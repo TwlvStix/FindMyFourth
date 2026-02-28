@@ -1,6 +1,7 @@
 import '/auth/firebase_auth/auth_util.dart';
 import '/backend/backend.dart';
 import '/backend/cloud_functions/cloud_functions.dart';
+import '/core/utils/app_log.dart';
 import '/core/widgets/app_count_controller.dart';
 import '/core/widgets/app_drop_down.dart';
 import '/core/motion/motion_helpers.dart';
@@ -304,7 +305,7 @@ class _CreateProfileWidgetState extends State<CreateProfileWidget>
       });
       try {
         final golfCanadaRaw = golfCanadaTextController?.text.trim() ?? '';
-        debugPrint('Creating user document with friend fields initialized...');
+        AppLog.d('Creating user document with friend fields initialized...');
         final phoneText = phoneNumTextController!.text;
         await Future.wait([
           userRef.set(
@@ -330,7 +331,7 @@ class _CreateProfileWidgetState extends State<CreateProfileWidget>
               SetOptions(merge: true),
             ),
         ]);
-        debugPrint('User document created with friend fields initialized');
+        AppLog.d('User document created with friend fields initialized');
       } catch (e) {
         try {
           final usernameDoc = await usernamesRef.get();
@@ -379,8 +380,8 @@ class _CreateProfileWidgetState extends State<CreateProfileWidget>
       );
       return;
     } on FirebaseException catch (e, stackTrace) {
-      debugPrint('CreateProfile save failed: $e');
-      debugPrint('CreateProfile save stackTrace: $stackTrace');
+      AppLog.d('CreateProfile save failed: $e');
+      AppLog.d('CreateProfile save stackTrace: $stackTrace');
       final message = e.code == 'permission-denied'
           ? 'Unable to save profile due to permissions. Please try again.'
           : 'Unable to save profile. Please try again.';
@@ -398,8 +399,8 @@ class _CreateProfileWidgetState extends State<CreateProfileWidget>
       );
       return;
     } catch (e, stackTrace) {
-      debugPrint('CreateProfile save failed: $e');
-      debugPrint('CreateProfile save stackTrace: $stackTrace');
+      AppLog.d('CreateProfile save failed: $e');
+      AppLog.d('CreateProfile save stackTrace: $stackTrace');
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
@@ -443,7 +444,7 @@ class _CreateProfileWidgetState extends State<CreateProfileWidget>
       extra: <String, dynamic>{
         kTransitionInfoKey: TransitionInfo(
                   hasTransition: true,
-                  transitionType: PageTransitionType.fade,
+                  transitionType: AppTransitionType.fade,
                   enterDuration: Duration(milliseconds: 200),
                   exitDuration: Duration(milliseconds: 170),
                   scaleOnPush: true,

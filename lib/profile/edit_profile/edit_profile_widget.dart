@@ -2,6 +2,7 @@ import '/auth/firebase_auth/auth_util.dart';
 import '/backend/backend.dart';
 import '/backend/cloud_functions/cloud_functions.dart';
 import '/core/widgets/app_count_controller.dart';
+import '/core/utils/app_log.dart';
 import '/core/widgets/premium_back_button.dart';
 import '/core/widgets/app_drop_down.dart';
 import '/core/widgets/app_text_field.dart';
@@ -180,7 +181,7 @@ class _EditProfileWidgetState extends State<EditProfileWidget>
           await UsersRecord.getDocumentOnce(currentUserReference!);
       _showSuccessAndNavigate();
     } catch (e) {
-      debugPrint('EditProfile: profile save failed: $e');
+      AppLog.d('EditProfile: profile save failed: $e');
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
@@ -964,7 +965,7 @@ class _EditProfileWidgetState extends State<EditProfileWidget>
               },
             );
           } catch (e) {
-            debugPrint('Delete account failed: $e');
+            AppLog.d('Delete account failed: $e');
             if (!mounted) return;
             showSnackbar(
                 context, 'Unable to delete account. Please try again.');

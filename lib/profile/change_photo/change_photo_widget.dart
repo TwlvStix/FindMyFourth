@@ -140,9 +140,13 @@ class _ChangePhotoWidgetState extends State<ChangePhotoWidget> {
                                             fit: BoxFit.cover,
                                             errorBuilder:
                                                 (context, error, stackTrace) =>
-                                                    Image.asset(
-                                              'assets/images/error_image.png',
-                                              fit: BoxFit.cover,
+                                                    Container(
+                                              color: AppColors.navyLight,
+                                              child: Icon(
+                                                Icons.person,
+                                                size: 60,
+                                                color: AppColors.textMuted,
+                                              ),
                                             ),
                                           ),
                                         ),
@@ -165,9 +169,13 @@ class _ChangePhotoWidgetState extends State<ChangePhotoWidget> {
                                           fit: BoxFit.cover,
                                           errorBuilder:
                                               (context, error, stackTrace) =>
-                                                  Image.asset(
-                                            'assets/images/error_image.png',
-                                            fit: BoxFit.cover,
+                                                  Container(
+                                            color: AppColors.navyLight,
+                                            child: Icon(
+                                              Icons.person,
+                                              size: 60,
+                                              color: AppColors.textMuted,
+                                            ),
                                           ),
                                         ),
                                       ),

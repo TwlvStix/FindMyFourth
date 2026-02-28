@@ -214,7 +214,7 @@ class _GamesJoinedWidgetState extends State<GamesJoinedWidget> {
             'gameRef': game.reference,
             kTransitionInfoKey: TransitionInfo(
                   hasTransition: true,
-                  transitionType: PageTransitionType.fade,
+                  transitionType: AppTransitionType.fade,
                   enterDuration: Duration(milliseconds: 200),
                   exitDuration: Duration(milliseconds: 170),
                   scaleOnPush: true,

@@ -50,3 +50,4 @@ keys/*.json
 node_modules/
 firebase/functions/service-account.json
 firebase/functions/node_modules/
+AUDIT.md

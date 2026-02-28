@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:page_transition/page_transition.dart';
 import 'app_router.dart';
 import '/core/motion/motion_tokens.dart';
 
@@ -67,7 +66,7 @@ class TransitionStandards {
   /// ```
   static const modalTransition = TransitionInfo(
     hasTransition: true,
-    transitionType: PageTransitionType.fade,
+    transitionType: AppTransitionType.fade,
     enterDuration: MotionTokens.routeEnter,
     exitDuration: MotionTokens.routeExit,
     scaleOnPush: true,
@@ -94,7 +93,7 @@ class TransitionStandards {
   /// ```
   static const detailTransition = TransitionInfo(
     hasTransition: true,
-    transitionType: PageTransitionType.fade,
+    transitionType: AppTransitionType.fade,
     enterDuration: MotionTokens.routeEnter,
     exitDuration: MotionTokens.routeExit,
     scaleOnPush: true,
@@ -118,7 +117,7 @@ class TransitionStandards {
   /// ```
   static const dismissalTransition = TransitionInfo(
     hasTransition: true,
-    transitionType: PageTransitionType.fade,
+    transitionType: AppTransitionType.fade,
     enterDuration: MotionTokens.routeEnter,
     exitDuration: MotionTokens.routeExit,
     scaleOnPush: false,
@@ -142,7 +141,7 @@ class TransitionStandards {
   /// ```
   static const tabTransition = TransitionInfo(
     hasTransition: true,
-    transitionType: PageTransitionType.fade,
+    transitionType: AppTransitionType.fade,
     enterDuration: MotionTokens.routeEnter,
     exitDuration: MotionTokens.routeExit,
     scaleOnPush: false,

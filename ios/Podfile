@@ -27,6 +27,21 @@ end
 
 require File.expand_path(File.join('packages', 'flutter_tools', 'bin', 'podhelper'), flutter_root)
 
+# Work around firebase_crashlytics podspec shell escaping bug when the app path contains spaces.
+def patch_firebase_crashlytics_podspec_for_space_paths
+  podspec_path = File.join(__dir__, '.symlinks', 'plugins', 'firebase_crashlytics', 'ios', 'firebase_crashlytics.podspec')
+  return unless File.exist?(podspec_path)
+
+  podspec_contents = File.read(podspec_path)
+  broken_line = 'system("ruby #{current_dir}/crashlytics_add_upload_symbols -f -p #{project_dir} -n Runner.xcodeproj")'
+  fixed_line = 'system("ruby #{current_dir}/crashlytics_add_upload_symbols -f -p \"#{project_dir}\" -n Runner.xcodeproj")'
+  return unless podspec_contents.include?(broken_line)
+
+  File.write(podspec_path, podspec_contents.sub(broken_line, fixed_line))
+end
+
+patch_firebase_crashlytics_podspec_for_space_paths
+
 flutter_ios_podfile_setup
 
 target 'Runner' do

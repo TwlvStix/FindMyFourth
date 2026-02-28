@@ -272,7 +272,7 @@ class _MyAppState extends State<MyApp> {
       extra: <String, dynamic>{
         kTransitionInfoKey: const TransitionInfo(
           hasTransition: true,
-          transitionType: PageTransitionType.fade,
+          transitionType: AppTransitionType.fade,
           enterDuration: Duration(milliseconds: 260),
           exitDuration: Duration(milliseconds: 220),
           scaleOnPush: false,
@@ -645,7 +645,7 @@ class _NavBarPageState extends State<NavBarPage> {
                   extra: <String, dynamic>{
                     kTransitionInfoKey: TransitionInfo(
                       hasTransition: true,
-                      transitionType: PageTransitionType.fade,
+                      transitionType: AppTransitionType.fade,
                       enterDuration: Duration(milliseconds: 200),
                       exitDuration: Duration(milliseconds: 170),
                       scaleOnPush: true,

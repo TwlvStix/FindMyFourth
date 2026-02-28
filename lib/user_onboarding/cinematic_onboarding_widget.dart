@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '/backend/backend.dart';
+import '/core/utils/app_log.dart';
 import '/utils/app_util.dart';
 import '/profile/create_profile/create_profile_widget.dart';
 import '/main_function/games_list/games_list_widget.dart';
@@ -165,8 +166,8 @@ class _CinematicOnboardingWidgetState extends State<CinematicOnboardingWidget>
       await ensureUserDocReady(user);
       return true;
     } catch (error, stackTrace) {
-      debugPrint('❌ ONBOARDING: unable to ensure user doc exists: $error');
-      debugPrint('❌ ONBOARDING: Stack trace: $stackTrace');
+      AppLog.d('❌ ONBOARDING: unable to ensure user doc exists: $error');
+      AppLog.d('❌ ONBOARDING: Stack trace: $stackTrace');
       return false;
     }
   }

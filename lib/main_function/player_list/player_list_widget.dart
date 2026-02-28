@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import '/core/utils/app_log.dart';
 import '/utils/app_util.dart';
 import '/core/widgets/app_button_enhanced.dart';
 import '/core/widgets/fairway_background.dart';
@@ -203,7 +204,7 @@ class _PlayerListWidgetState extends State<PlayerListWidget> {
   Future<void> _runSearch({required String query, required bool reset}) async {
     final searchToken = ++_searchToken;
     if (mounted) {
-      debugPrint(
+      AppLog.d(
         '🔍 AddPlayer search: query="$query" length=${query.length} reset=$reset',
       );
       setState(() {
@@ -914,7 +915,7 @@ class _PlayerListWidgetState extends State<PlayerListWidget> {
       canPop: !_isSubmitting,
       onPopInvokedWithResult: (didPop, result) {
         if (_isSubmitting) {
-          debugPrint('⚠️ PLAYER LIST: Back navigation blocked - submission in progress');
+          AppLog.d('⚠️ PLAYER LIST: Back navigation blocked - submission in progress');
           WidgetsBinding.instance.addPostFrameCallback((_) {
             if (!mounted) return;
             ScaffoldMessenger.of(context).showSnackBar(
@@ -961,7 +962,7 @@ class _PlayerListWidgetState extends State<PlayerListWidget> {
         final remainingSlots =
             (game.maxPlayers - currentPlayerCount).clamp(0, game.maxPlayers);
 
-        debugPrint(
+        AppLog.d(
             'PlayerList: current=$currentPlayerCount/${game.maxPlayers}, remaining=$remainingSlots');
 
         return GestureDetector(
@@ -1202,7 +1203,7 @@ class _PlayerListWidgetState extends State<PlayerListWidget> {
                                             onPressed: _isSubmitting ? null : () async {
                                               // Prevent double submission
                                               if (_isSubmitting) {
-                                                debugPrint('⚠️ PLAYER LIST: Already submitting, ignoring click');
+                                                AppLog.d('⚠️ PLAYER LIST: Already submitting, ignoring click');
                                                 return;
                                               }
 
@@ -1210,18 +1211,18 @@ class _PlayerListWidgetState extends State<PlayerListWidget> {
                                                 _isSubmitting = true;
                                               });
 
-                                              debugPrint('👥 PLAYER LIST: Starting player submission');
-                                              debugPrint('👥 PLAYER LIST: Current game max players: ${game.maxPlayers}');
-                                              debugPrint('👥 PLAYER LIST: Current joined players: ${game.joinedPlayers.length}');
-                                              debugPrint('👥 PLAYER LIST: Current guest players: ${game.guestPlayers.length}');
+                                              AppLog.d('👥 PLAYER LIST: Starting player submission');
+                                              AppLog.d('👥 PLAYER LIST: Current game max players: ${game.maxPlayers}');
+                                              AppLog.d('👥 PLAYER LIST: Current joined players: ${game.joinedPlayers.length}');
+                                              AppLog.d('👥 PLAYER LIST: Current guest players: ${game.guestPlayers.length}');
 
                                               // Calculate current player count
                                               final currentPlayerCount = game.joinedPlayers.length + game.guestPlayers.length;
-                                              debugPrint('👥 PLAYER LIST: Current total players: $currentPlayerCount / ${game.maxPlayers}');
+                                              AppLog.d('👥 PLAYER LIST: Current total players: $currentPlayerCount / ${game.maxPlayers}');
 
                                               // Validate we haven't exceeded max players
                                               if (currentPlayerCount >= game.maxPlayers) {
-                                                debugPrint('❌ PLAYER LIST: Game is already full!');
+                                                AppLog.d('❌ PLAYER LIST: Game is already full!');
                                                 ScaffoldMessenger.of(context).showSnackBar(
                                                   SnackBar(
                                                     content: Text('Game is already full (${game.maxPlayers} players)'),
@@ -1257,13 +1258,13 @@ class _PlayerListWidgetState extends State<PlayerListWidget> {
                                                 }
                                               }
 
-                                              debugPrint('👥 PLAYER LIST: Adding ${joinedPlayersToAdd.length} joined players');
-                                              debugPrint('👥 PLAYER LIST: Adding ${guestPlayersToAdd.length} guest players');
+                                              AppLog.d('👥 PLAYER LIST: Adding ${joinedPlayersToAdd.length} joined players');
+                                              AppLog.d('👥 PLAYER LIST: Adding ${guestPlayersToAdd.length} guest players');
 
                                               // Validate total count won't exceed max
                                               final newPlayerCount = currentPlayerCount + joinedPlayersToAdd.length + guestPlayersToAdd.length;
                                               if (newPlayerCount > game.maxPlayers) {
-                                                debugPrint('❌ PLAYER LIST: Would exceed max players: $newPlayerCount > ${game.maxPlayers}');
+                                                AppLog.d('❌ PLAYER LIST: Would exceed max players: $newPlayerCount > ${game.maxPlayers}');
                                                 ScaffoldMessenger.of(context).showSnackBar(
                                                   SnackBar(
                                                     content: Text('Cannot add ${joinedPlayersToAdd.length + guestPlayersToAdd.length} players - would exceed max (${game.maxPlayers})'),
@@ -1290,7 +1291,7 @@ class _PlayerListWidgetState extends State<PlayerListWidget> {
                                                   if (!eligibilityResult.allowed) {
                                                     final restrictionType = game.playerEligibility == PlayerEligibility.womenOnly ? 'women' : 'men';
                                                     final playerName = slotData['name'] ?? 'A player';
-                                                    debugPrint('❌ PLAYER LIST: $playerName does not meet eligibility (gender: $playerGender)');
+                                                    AppLog.d('❌ PLAYER LIST: $playerName does not meet eligibility (gender: $playerGender)');
                                                     ScaffoldMessenger.of(context).showSnackBar(
                                                       SnackBar(
                                                         content: Text('$playerName cannot join - this round is open to $restrictionType only'),
@@ -1323,21 +1324,21 @@ class _PlayerListWidgetState extends State<PlayerListWidget> {
                                                           FieldValue.arrayUnion(
                                                               guestPlayersToAdd),
                                                   });
-                                                  debugPrint('✅ PLAYER LIST: Players added successfully');
+                                                  AppLog.d('✅ PLAYER LIST: Players added successfully');
                                                 } else {
-                                                  debugPrint('ℹ️ PLAYER LIST: No players selected, proceeding anyway');
+                                                  AppLog.d('ℹ️ PLAYER LIST: No players selected, proceeding anyway');
                                                 }
 
                                                 // Navigate to Game List
                                                 // This replaces the current location and prevents back navigation issues
-                                                debugPrint('🚀 PLAYER LIST: Navigating to Game List');
+                                                AppLog.d('🚀 PLAYER LIST: Navigating to Game List');
 
                                                 if (!mounted) return;
 
                                                 // Use context.goNamed for standard API
                                                 context.goNamed(GamesListWidget.routeName);
                                               } catch (e) {
-                                                debugPrint('❌ PLAYER LIST: Error adding players: $e');
+                                                AppLog.d('❌ PLAYER LIST: Error adding players: $e');
                                                 ScaffoldMessenger.of(context).showSnackBar(
                                                   SnackBar(
                                                     content: Text('Error adding players: $e'),

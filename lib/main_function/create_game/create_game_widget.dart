@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart' show setEquals;
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
+import '/core/utils/app_log.dart';
 import '/core/widgets/app_drop_down.dart';
 import '/utils/flexible_week_resolver.dart';
 import '/core/widgets/app_icon.dart';
@@ -297,7 +298,7 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
         _hasDraft = true;
       }
     } catch (e) {
-      debugPrint('Error loading draft: $e');
+      AppLog.d('Error loading draft: $e');
     }
   }
 
@@ -331,7 +332,7 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
       final prefs = await SharedPreferences.getInstance();
       await prefs.setString(_draftKey, json.encode(draft));
     } catch (e) {
-      debugPrint('Error saving draft: $e');
+      AppLog.d('Error saving draft: $e');
     }
   }
 
@@ -344,24 +345,24 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
         _hasDraft = false;
       });
     } catch (e) {
-      debugPrint('Error clearing draft: $e');
+      AppLog.d('Error clearing draft: $e');
     }
   }
 
   // Quick create with defaults - creates game immediately
   // Shared game submission logic
   Future<void> _submitGame() async {
-    debugPrint('🎮 CREATE GAME: Submit triggered');
+    AppLog.d('🎮 CREATE GAME: Submit triggered');
 
     if (formKey.currentState == null || !formKey.currentState!.validate()) {
-      debugPrint('❌ CREATE GAME: Form validation failed');
+      AppLog.d('❌ CREATE GAME: Form validation failed');
       return;
     }
-    debugPrint('✅ CREATE GAME: Form validation passed');
+    AppLog.d('✅ CREATE GAME: Form validation passed');
 
     // Course is required for confirmed games but optional for flexible games
     if (_scheduleType == 'confirmed' && courseValue == null) {
-      debugPrint('❌ CREATE GAME: courseValue is null');
+      AppLog.d('❌ CREATE GAME: courseValue is null');
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('Please select a course'),
@@ -371,7 +372,7 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
       return;
     }
     if (friendsValue == null) {
-      debugPrint('❌ CREATE GAME: friendsValue is null');
+      AppLog.d('❌ CREATE GAME: friendsValue is null');
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('Please select Friends or Public game'),
@@ -382,7 +383,7 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
     }
     if (!_isJustForFun) {
       if (rulesSetValue == null) {
-        debugPrint('❌ CREATE GAME: rulesSetValue is null');
+        AppLog.d('❌ CREATE GAME: rulesSetValue is null');
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Please select a game vibe'),
@@ -392,7 +393,7 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
         return;
       }
       if (styleGameValue == null) {
-        debugPrint('❌ CREATE GAME: styleGameValue is null');
+        AppLog.d('❌ CREATE GAME: styleGameValue is null');
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Please select stakes'),
@@ -402,7 +403,7 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
         return;
       }
       if (gameTypeValue == null) {
-        debugPrint('❌ CREATE GAME: gameTypeValue is null');
+        AppLog.d('❌ CREATE GAME: gameTypeValue is null');
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Please select a primary format'),
@@ -412,7 +413,7 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
         return;
       }
     }
-    debugPrint('✅ CREATE GAME: All values present');
+    AppLog.d('✅ CREATE GAME: All values present');
 
     // Validate schedule based on type
     if (_scheduleType == 'confirmed') {
@@ -467,22 +468,22 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
       }
     }
 
-    debugPrint('✅ CREATE GAME: Date validation passed');
-    debugPrint('🎮 CREATE GAME: Starting game creation...');
+    AppLog.d('✅ CREATE GAME: Date validation passed');
+    AppLog.d('🎮 CREATE GAME: Starting game creation...');
     final gameName = _ensureGameName();
-    debugPrint('🎮 CREATE GAME: Game name: $gameName');
-    debugPrint('🎮 CREATE GAME: Course: $courseValue');
-    debugPrint('🎮 CREATE GAME: Date: $datePicked');
-    debugPrint('🎮 CREATE GAME: Style: $styleGameValue');
-    debugPrint('🎮 CREATE GAME: Type: $gameTypeValue');
-    debugPrint('🎮 CREATE GAME: Friends: $friendsValue');
-    debugPrint('🎮 CREATE GAME: Rules: $rulesSetValue');
+    AppLog.d('🎮 CREATE GAME: Game name: $gameName');
+    AppLog.d('🎮 CREATE GAME: Course: $courseValue');
+    AppLog.d('🎮 CREATE GAME: Date: $datePicked');
+    AppLog.d('🎮 CREATE GAME: Style: $styleGameValue');
+    AppLog.d('🎮 CREATE GAME: Type: $gameTypeValue');
+    AppLog.d('🎮 CREATE GAME: Friends: $friendsValue');
+    AppLog.d('🎮 CREATE GAME: Rules: $rulesSetValue');
 
     try {
-      debugPrint('🎮 CREATE GAME: Checking authentication...');
+      AppLog.d('🎮 CREATE GAME: Checking authentication...');
       final currentUser = FirebaseAuth.instance.currentUser;
       if (currentUser == null) {
-        debugPrint('❌ CREATE GAME: User not authenticated');
+        AppLog.d('❌ CREATE GAME: User not authenticated');
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Please sign in to create a game.'),
@@ -492,23 +493,23 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
         );
         return;
       }
-      debugPrint('✅ CREATE GAME: User authenticated: ${currentUser.uid}');
+      AppLog.d('✅ CREATE GAME: User authenticated: ${currentUser.uid}');
 
       final currentUserRef =
           FirebaseFirestore.instance.collection('users').doc(currentUser.uid);
       // Default to 1 player needed for backend compatibility
       final numPlayers = 1;
       final maxPlayers = 4;
-      debugPrint('CreateGame: creating game $gameName');
-      debugPrint(
+      AppLog.d('CreateGame: creating game $gameName');
+      AppLog.d(
           'CreateGame: numPlayers=$numPlayers (default), maxPlayers=$maxPlayers');
 
       final gamesRecordReference =
           FirebaseFirestore.instance.collection('games').doc();
 
-      debugPrint('🎮 CREATE GAME: Creating game chat...');
-      debugPrint('🎮 CREATE GAME: Game ID: ${gamesRecordReference.id}');
-      debugPrint('🎮 CREATE GAME: Creator UID: ${currentUser.uid}');
+      AppLog.d('🎮 CREATE GAME: Creating game chat...');
+      AppLog.d('🎮 CREATE GAME: Game ID: ${gamesRecordReference.id}');
+      AppLog.d('🎮 CREATE GAME: Creator UID: ${currentUser.uid}');
 
       try {
         final chatsRecordReference =
@@ -518,18 +519,18 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
                   gameName: gameName,
                 );
         chatRef = chatsRecordReference;
-        debugPrint(
+        AppLog.d(
             '✅ CREATE GAME: Game chat created: ${chatsRecordReference.id}');
       } catch (chatError, chatStackTrace) {
-        debugPrint('❌ CREATE GAME: Chat creation failed!');
-        debugPrint('❌ CREATE GAME: Error type: ${chatError.runtimeType}');
-        debugPrint('❌ CREATE GAME: Error: $chatError');
-        debugPrintStack(stackTrace: chatStackTrace);
+        AppLog.d('❌ CREATE GAME: Chat creation failed!');
+        AppLog.d('❌ CREATE GAME: Error type: ${chatError.runtimeType}');
+        AppLog.d('❌ CREATE GAME: Error: $chatError');
+        AppLog.d('❌ CREATE GAME: Stack trace: $chatStackTrace');
         throw Exception('Failed to create game chat: $chatError');
       }
 
-      debugPrint('🎮 CREATE GAME: Saving game to Firestore...');
-      debugPrint('🎮 CREATE GAME: Path: ${gamesRecordReference.path}');
+      AppLog.d('🎮 CREATE GAME: Saving game to Firestore...');
+      AppLog.d('🎮 CREATE GAME: Path: ${gamesRecordReference.path}');
 
       try {
         await gamesRecordReference.set({
@@ -574,13 +575,13 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
         });
         gameRef = gamesRecordReference;
         await _clearDraft();
-        debugPrint('✅ CREATE GAME: Game saved to Firestore successfully');
-        debugPrint('CreateGame: game saved ${gamesRecordReference.path}');
+        AppLog.d('✅ CREATE GAME: Game saved to Firestore successfully');
+        AppLog.d('CreateGame: game saved ${gamesRecordReference.path}');
       } catch (saveError, saveStackTrace) {
-        debugPrint('❌ CREATE GAME: Game save failed!');
-        debugPrint('❌ CREATE GAME: Error type: ${saveError.runtimeType}');
-        debugPrint('❌ CREATE GAME: Error: $saveError');
-        debugPrintStack(stackTrace: saveStackTrace);
+        AppLog.d('❌ CREATE GAME: Game save failed!');
+        AppLog.d('❌ CREATE GAME: Error type: ${saveError.runtimeType}');
+        AppLog.d('❌ CREATE GAME: Error: $saveError');
+        AppLog.d('❌ CREATE GAME: Stack trace: $saveStackTrace');
         throw Exception('Failed to save game data: $saveError');
       }
 
@@ -591,14 +592,14 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
           }
           context.gameProvider.invalidateAvailableGamesCache();
           context.gameProvider.invalidateUserGamesCache(context.userProvider.userId);
-          debugPrint('CreateGame: refreshed game caches');
+          AppLog.d('CreateGame: refreshed game caches');
 
           final numExistingFriends = 4 - numPlayers - 1;
-          debugPrint(
+          AppLog.d(
               'CreateGame: numPlayers=$numPlayers, existingFriends=$numExistingFriends');
 
           if (numExistingFriends <= 0) {
-            debugPrint('CreateGame: No existing friends, skipping Player List');
+            AppLog.d('CreateGame: No existing friends, skipping Player List');
             context.pushNamed(
               GamesListWidget.routeName,
               extra: <String, dynamic>{
@@ -606,7 +607,7 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
               },
             );
           } else {
-            debugPrint(
+            AppLog.d(
                 'CreateGame: Has $numExistingFriends existing friends, showing Player List');
             context.pushNamed(
               PlayerListWidget.routeName,
@@ -614,7 +615,7 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
                 'gameRef': gamesRecordReference,
                 kTransitionInfoKey: TransitionInfo(
                   hasTransition: true,
-                  transitionType: PageTransitionType.fade,
+                  transitionType: AppTransitionType.fade,
                   enterDuration: Duration(milliseconds: 200),
                   exitDuration: Duration(milliseconds: 170),
                   scaleOnPush: false,
@@ -639,11 +640,10 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
         }),
       ]);
     } catch (error, stackTrace) {
-      debugPrint('❌ CREATE GAME: FAILED TO CREATE GAME');
-      debugPrint('❌ CREATE GAME: Error type: ${error.runtimeType}');
-      debugPrint('❌ CREATE GAME: Error message: $error');
-      debugPrint('❌ CREATE GAME: Stack trace:');
-      debugPrintStack(stackTrace: stackTrace);
+      AppLog.d('❌ CREATE GAME: FAILED TO CREATE GAME');
+      AppLog.d('❌ CREATE GAME: Error type: ${error.runtimeType}');
+      AppLog.d('❌ CREATE GAME: Error message: $error');
+      AppLog.d('❌ CREATE GAME: Stack trace: $stackTrace');
 
       String errorMsg = error.toString();
       if (errorMsg.length > 100) {

@@ -1,4 +1,5 @@
 import '/utils/app_util.dart';
+import '/core/utils/app_log.dart';
 import '/core/widgets/app_button_enhanced.dart';
 import '/core/widgets/fairway_background.dart';
 import '/core/design_tokens/spacing.dart';
@@ -183,7 +184,7 @@ class _JoinGameWidgetState extends State<JoinGameWidget> {
                                     }
                                   }
                                 } catch (error) {
-                                  debugPrint(
+                                  AppLog.d(
                                     'JoinGame: friend check failed $error',
                                   );
                                 }
@@ -244,7 +245,7 @@ class _JoinGameWidgetState extends State<JoinGameWidget> {
                                   'gameRef': widget.gameRef.reference,
                                   kTransitionInfoKey: TransitionInfo(
                   hasTransition: true,
-                  transitionType: PageTransitionType.fade,
+                  transitionType: AppTransitionType.fade,
                   enterDuration: Duration(milliseconds: 200),
                   exitDuration: Duration(milliseconds: 170),
                   scaleOnPush: true,
