@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:phosphor_flutter/phosphor_flutter.dart';
 import '../design_tokens/colors.dart';
 import '../design_tokens/icon_size.dart';
 import '../design_tokens/typography.dart';
@@ -8,7 +9,7 @@ import 'app_icon.dart';
 
 class AppEmptyState extends StatelessWidget {
   final IconData? icon;
-  final String? svgPath;
+  final PhosphorIconData? phosphorIcon;
   final String title;
   final String? message;
   final String? actionText;
@@ -17,12 +18,12 @@ class AppEmptyState extends StatelessWidget {
   const AppEmptyState({
     super.key,
     this.icon,
-    this.svgPath,
+    this.phosphorIcon,
     required this.title,
     this.message,
     this.actionText,
     this.onAction,
-  }) : assert(icon != null || svgPath != null, 'Either icon or svgPath must be provided');
+  }) : assert(icon != null || phosphorIcon != null, 'Either icon or phosphorIcon must be provided');
 
   @override
   Widget build(BuildContext context) {
@@ -32,9 +33,9 @@ class AppEmptyState extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            if (svgPath != null)
+            if (phosphorIcon != null)
               AppIcon(
-                assetPath: svgPath!,
+                icon: phosphorIcon!,
                 size: AppIconSize.hero,
                 color: AppColors.cloud,
               )

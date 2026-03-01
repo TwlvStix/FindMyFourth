@@ -1,4 +1,5 @@
 import 'dart:async';
+import '/core/utils/state_update.dart';
 
 import '/auth/firebase_auth/auth_util.dart';
 import '/backend/backend.dart';
@@ -58,7 +59,7 @@ class _TabFriendsWidgetState extends State<TabFriendsWidget> {
     _debounceTimer?.cancel();
     _debounceTimer = Timer(const Duration(milliseconds: 300), () {
       if (mounted) {
-        setState(() => _searchTerm = value.trim().toLowerCase());
+        updateState(this, () => _searchTerm = value.trim().toLowerCase());
       }
     });
   }
@@ -80,7 +81,7 @@ class _TabFriendsWidgetState extends State<TabFriendsWidget> {
   Set<String> favoriteFriends = {};
   void toggleFavorite(String friendId) {
     if (mounted) {
-      setState(() {
+      updateState(this, () {
         if (favoriteFriends.contains(friendId)) {
           favoriteFriends.remove(friendId);
         } else {
@@ -115,7 +116,7 @@ class _TabFriendsWidgetState extends State<TabFriendsWidget> {
     );
 
     if (result != null && mounted) {
-      setState(() {
+      updateState(this, () {
         friendFilters = result;
       });
     }
@@ -123,34 +124,34 @@ class _TabFriendsWidgetState extends State<TabFriendsWidget> {
 
   Future<void> _refreshSearchTab() async {
     if (mounted) {
-      setState(() => isRefreshing = true);
+      updateState(this, () => isRefreshing = true);
     }
     // Wait a bit to simulate refresh
     await Future.delayed(Duration(milliseconds: 500));
     if (mounted) {
-      setState(() => isRefreshing = false);
+      updateState(this, () => isRefreshing = false);
     }
   }
 
   Future<void> _refreshRequestsTab() async {
     if (mounted) {
-      setState(() => isRefreshing = true);
+      updateState(this, () => isRefreshing = true);
     }
     // Force refresh of auth user stream
     await Future.delayed(Duration(milliseconds: 500));
     if (mounted) {
-      setState(() => isRefreshing = false);
+      updateState(this, () => isRefreshing = false);
     }
   }
 
   Future<void> _refreshFriendsTab() async {
     if (mounted) {
-      setState(() => isRefreshing = true);
+      updateState(this, () => isRefreshing = true);
     }
     // Force refresh of auth user stream
     await Future.delayed(Duration(milliseconds: 500));
     if (mounted) {
-      setState(() => isRefreshing = false);
+      updateState(this, () => isRefreshing = false);
     }
   }
 
@@ -168,11 +169,9 @@ class _TabFriendsWidgetState extends State<TabFriendsWidget> {
             currentUid: currentUserId,
             otherUid: otherUserId,
           );
-      context.pushNamed(
-        'ChatDetails',
-        pathParameters: {
-          'chatId': chatRef.id,
-        },
+      context.pushChatDetails(
+        chatId: chatRef.id,
+        transition: TransitionStandards.noTransition,
       );
     } catch (error, stackTrace) {
       context
@@ -188,7 +187,7 @@ class _TabFriendsWidgetState extends State<TabFriendsWidget> {
     try {
       // Optimistically update local state for immediate UI feedback
       // Use existing optimistic state if available, otherwise use server state
-      setState(() {
+      updateState(this, () {
         final currentList =
             _optimisticFriendsList ?? (currentUserDocument?.friends ?? []);
         _optimisticFriendsList =
@@ -219,7 +218,7 @@ class _TabFriendsWidgetState extends State<TabFriendsWidget> {
     } catch (e) {
       // Revert optimistic update on error
       if (mounted) {
-        setState(() {
+        updateState(this, () {
           _optimisticFriendsList = null;
         });
       }
@@ -357,7 +356,7 @@ class _TabFriendsWidgetState extends State<TabFriendsWidget> {
                         onSegmentChanged: (segment) {
                           HapticFeedback.lightImpact();
                           FocusScope.of(context).unfocus();
-                          setState(() => _currentSegment = segment);
+                          updateState(this, () => _currentSegment = segment);
                         },
                         requestsBadgeCount: requestCount,
                       );
@@ -498,11 +497,9 @@ class _TabFriendsWidgetState extends State<TabFriendsWidget> {
                     user: listViewUsersRecord,
                     currentUser: currentUserDocument,
                     onViewProfile: () {
-                      context.pushNamed(
-                        'ProfileUser',
-                        extra: <String, dynamic>{
-                          'userRef': listViewUsersRecord.reference,
-                        },
+                      context.pushProfileUser(
+                        userRef: listViewUsersRecord.reference,
+                        transition: TransitionStandards.noTransition,
                       );
                     },
                     onMessage: () async {
@@ -614,7 +611,8 @@ class _TabFriendsWidgetState extends State<TabFriendsWidget> {
                   key: const ValueKey('empty_requests_state'),
                   type: FriendsEmptyStateType.noFriendRequests,
                   onActionPressed: () {
-                    setState(() => _currentSegment = GolferSegment.discover);
+                    updateState(
+                        this, () => _currentSegment = GolferSegment.discover);
                   },
                 );
               }
@@ -652,11 +650,9 @@ class _TabFriendsWidgetState extends State<TabFriendsWidget> {
                         messageIcon: AppPhosphorIcons.addPlayer,
                         messageIsPrimary: true,
                         onViewProfile: () {
-                          context.pushNamed(
-                            'ProfileUser',
-                            extra: <String, dynamic>{
-                              'userRef': user.reference,
-                            },
+                          context.pushProfileUser(
+                            userRef: user.reference,
+                            transition: TransitionStandards.noTransition,
                           );
                         },
                         onMessage: () async {
@@ -753,7 +749,7 @@ class _TabFriendsWidgetState extends State<TabFriendsWidget> {
                     optimisticIds.difference(serverIds).isEmpty) {
                   WidgetsBinding.instance.addPostFrameCallback((_) {
                     if (mounted) {
-                      setState(() => _optimisticFriendsList = null);
+                      updateState(this, () => _optimisticFriendsList = null);
                     }
                   });
                 }
@@ -765,7 +761,8 @@ class _TabFriendsWidgetState extends State<TabFriendsWidget> {
                 return FriendsEmptyState(
                   type: FriendsEmptyStateType.noFriends,
                   onActionPressed: () {
-                    setState(() => _currentSegment = GolferSegment.discover);
+                    updateState(
+                        this, () => _currentSegment = GolferSegment.discover);
                   },
                 );
               }
@@ -778,11 +775,9 @@ class _TabFriendsWidgetState extends State<TabFriendsWidget> {
                 searchFilter: _searchTerm.isNotEmpty ? _searchTerm : null,
                 onToggleFavorite: toggleFavorite,
                 onViewProfile: (user) {
-                  context.pushNamed(
-                    'ProfileUser',
-                    extra: <String, dynamic>{
-                      'userRef': user.reference,
-                    },
+                  context.pushProfileUser(
+                    userRef: user.reference,
+                    transition: TransitionStandards.noTransition,
                   );
                 },
                 onMessage: _openDirectChat,

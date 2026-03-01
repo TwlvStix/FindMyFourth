@@ -7,7 +7,6 @@ import '/core/design_tokens/typography.dart';
 import '/core/design_tokens/icon_size.dart';
 import '/core/design_tokens/app_phosphor_icons.dart';
 import '/core/widgets/app_icon.dart';
-import '/main_function/games_list/games_list_widget.dart';
 import 'package:flutter/material.dart';
 
 class SuccessPageWidget extends StatefulWidget {
@@ -103,17 +102,9 @@ class _SuccessPageWidgetState extends State<SuccessPageWidget> {
                           children: [
                             AppButtonEnhanced(
                               onPressed: () async {
-                                context.pushNamed(
-                                  GamesListWidget.routeName,
-                                  extra: <String, dynamic>{
-                                    kTransitionInfoKey: TransitionInfo(
-                  hasTransition: true,
-                  transitionType: AppTransitionType.fade,
-                  enterDuration: Duration(milliseconds: 200),
-                  exitDuration: Duration(milliseconds: 170),
-                  scaleOnPush: false,
-                ),
-                                  },
+                                context.pushGamesList(
+                                  transition:
+                                      TransitionStandards.flatFadeTransition,
                                 );
                               },
                               text: 'Go to Game Lists',

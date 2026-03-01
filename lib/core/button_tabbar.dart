@@ -1,4 +1,5 @@
 import 'dart:math' as math;
+import '/core/utils/state_update.dart';
 import 'dart:ui' show lerpDouble;
 
 import 'package:flutter/foundation.dart';
@@ -412,7 +413,7 @@ class _AppButtonTabBarState extends State<AppButtonTabBar>
       ..value = 1.0
       ..addListener(() {
         if (mounted) {
-          setState(() {});
+          updateState(this, () {});
         }
       });
   }
@@ -595,7 +596,7 @@ class _AppButtonTabBarState extends State<AppButtonTabBar>
         _scrollToCurrentIndex();
       }
     }
-    setState(() {
+    updateState(this, () {
       // Rebuild the tabs after a (potentially animated) index change
       // has completed.
     });

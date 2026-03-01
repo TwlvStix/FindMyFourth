@@ -2,7 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-import 'package:find_my_fourth/backend/api_requests/trust_repository.dart';
+import 'package:find_my_fourth/services/trust_repository.dart';
 import 'package:find_my_fourth/backend/schema/trust_profile.dart';
 
 void main() {

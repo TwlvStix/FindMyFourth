@@ -9,14 +9,8 @@ import '/core/widgets/app_premium_dialog.dart';
 import '/core/widgets/fairway_background.dart';
 import '/core/motion/motion_helpers.dart';
 import '/utils/app_util.dart';
-import '/friends/tab_friends/tab_friends_widget.dart';
-import '/notification_settings/notification_settings_widget.dart';
-import '/notifications/notifications_list/notifications_list_widget.dart';
 import '/profile/change_photo/change_photo_widget.dart';
-import '/profile/edit_profile/edit_profile_widget.dart';
-import '/profile/edit_vibes/edit_vibes_widget.dart';
 import '/models/vibe_profile.dart';
-import '/user_auth/sign_in/sign_in_widget.dart';
 import '/core/design_tokens/spacing.dart';
 import '/core/design_tokens/colors.dart';
 import '/core/design_tokens/elevation.dart';
@@ -27,7 +21,6 @@ import '/core/design_tokens/border_radius.dart';
 import '/core/widgets/app_icon.dart';
 import '/core/widgets/app_stat_card.dart';
 import '/screens/trust/trust_profile_section.dart';
-import '/screens/trust/your_standing_screen.dart';
 
 class MainProfileWidget extends StatefulWidget {
   const MainProfileWidget({super.key});
@@ -81,20 +74,6 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
     super.dispose();
   }
 
-  void _pushNamed(
-    String routeName, {
-    Map<String, String> pathParameters = const {},
-    Map<String, dynamic>? extra,
-  }) {
-    final rootContext = appNavigatorKey.currentContext;
-    final targetContext = rootContext ?? context;
-    GoRouter.of(targetContext).pushNamed(
-      routeName,
-      pathParameters: pathParameters,
-      extra: extra,
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
@@ -126,8 +105,9 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                       children: [
                         Container(
                           decoration: BoxDecoration(
-                            color: AppColors.navy.withValues(alpha:0.3),
-                            borderRadius: BorderRadius.circular(AppBorderRadius.md),
+                            color: AppColors.navy.withValues(alpha: 0.3),
+                            borderRadius:
+                                BorderRadius.circular(AppBorderRadius.md),
                             border: Border.all(
                               color: AppColors.glassSurface,
                             ),
@@ -145,13 +125,7 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                             ),
                             onPressed: () async {
                               HapticFeedback.lightImpact();
-                              _pushNamed(
-                                NotificationsListWidget.routeName,
-                                extra: <String, dynamic>{
-                                  kTransitionInfoKey:
-                                      TransitionStandards.detailTransition,
-                                },
-                              );
+                              context.pushNotifications();
                             },
                           ),
                         ),
@@ -171,7 +145,8 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                                     AppColors.goldLight,
                                   ],
                                 ),
-                                borderRadius: BorderRadius.circular(AppBorderRadius.sm),
+                                borderRadius:
+                                    BorderRadius.circular(AppBorderRadius.sm),
                                 boxShadow: [AppElevation.md],
                               ),
                               child: Text(
@@ -243,7 +218,8 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                           height: 4,
                           decoration: BoxDecoration(
                             color: AppColors.navyLight,
-                            borderRadius: BorderRadius.circular(AppBorderRadius.xxs),
+                            borderRadius:
+                                BorderRadius.circular(AppBorderRadius.xxs),
                           ),
                         ),
 
@@ -513,7 +489,8 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                 Expanded(
                   child: AuthUserStreamWidget(
                     builder: (context) {
-                      final friendsCount = currentUserDocument?.friends.length ?? 0;
+                      final friendsCount =
+                          currentUserDocument?.friends.length ?? 0;
                       return AppStatCard(
                         variant: AppStatCardVariant.glass,
                         icon: AppPhosphorIcons.friends,
@@ -521,9 +498,9 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                         label: 'Friends',
                         iconGradient: [AppColors.gold, AppColors.goldLight],
                         onTap: () {
-                          _pushNamed(
-                            TabFriendsWidget.routeName,
-                            extra: <String, dynamic>{'initialSegment': 'friends'},
+                          context.pushTabFriends(
+                            initialSegment: 'friends',
+                            transition: TransitionStandards.noTransition,
                           );
                         },
                       );
@@ -590,18 +567,7 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
           child: GestureDetector(
             onTap: () {
               HapticFeedback.lightImpact();
-              _pushNamed(
-                EditVibesWidget.routeName,
-                extra: <String, dynamic>{
-                  kTransitionInfoKey: TransitionInfo(
-                    hasTransition: true,
-                    transitionType: AppTransitionType.fade,
-                    enterDuration: Duration(milliseconds: 200),
-                    exitDuration: Duration(milliseconds: 170),
-                    scaleOnPush: false,
-                  ),
-                },
-              );
+              context.pushEditVibes();
             },
             child: Container(
               padding: EdgeInsets.all(AppSpacing.md),
@@ -609,7 +575,7 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                 color: AppColors.navy,
                 borderRadius: BorderRadius.circular(AppBorderRadius.lg),
                 border: Border.all(
-                  color: AppColors.gold.withValues(alpha:0.4),
+                  color: AppColors.gold.withValues(alpha: 0.4),
                 ),
               ),
               child: Row(
@@ -690,18 +656,7 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                         gradient: [AppColors.navyLight, AppColors.navy],
                         onTap: () {
                           HapticFeedback.lightImpact();
-                          _pushNamed(
-                            EditProfileWidget.routeName,
-                            extra: <String, dynamic>{
-                              kTransitionInfoKey: TransitionInfo(
-                                hasTransition: true,
-                                transitionType: AppTransitionType.fade,
-                                enterDuration: Duration(milliseconds: 200),
-                                exitDuration: Duration(milliseconds: 170),
-                                scaleOnPush: false,
-                              ),
-                            },
-                          );
+                          context.pushEditProfile();
                         },
                       ),
                     ),
@@ -714,18 +669,7 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                         gradient: [AppColors.gold, AppColors.goldLight],
                         onTap: () {
                           HapticFeedback.lightImpact();
-                          _pushNamed(
-                            EditVibesWidget.routeName,
-                            extra: <String, dynamic>{
-                              kTransitionInfoKey: TransitionInfo(
-                                hasTransition: true,
-                                transitionType: AppTransitionType.fade,
-                                enterDuration: Duration(milliseconds: 200),
-                                exitDuration: Duration(milliseconds: 170),
-                                scaleOnPush: false,
-                              ),
-                            },
-                          );
+                          context.pushEditVibes();
                         },
                       ),
                     ),
@@ -745,18 +689,7 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                     gradient: [AppColors.navyLight, AppColors.navy],
                     onTap: () {
                       HapticFeedback.lightImpact();
-                      _pushNamed(
-                        EditProfileWidget.routeName,
-                        extra: <String, dynamic>{
-                          kTransitionInfoKey: TransitionInfo(
-                            hasTransition: true,
-                            transitionType: AppTransitionType.fade,
-                            enterDuration: Duration(milliseconds: 200),
-                            exitDuration: Duration(milliseconds: 170),
-                            scaleOnPush: false,
-                          ),
-                        },
-                      );
+                      context.pushEditProfile();
                     },
                   ),
                 ),
@@ -769,18 +702,7 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                     gradient: [AppColors.green, AppColors.greenLight],
                     onTap: () {
                       HapticFeedback.lightImpact();
-                      _pushNamed(
-                        EditVibesWidget.routeName,
-                        extra: <String, dynamic>{
-                          kTransitionInfoKey: TransitionInfo(
-                            hasTransition: true,
-                            transitionType: AppTransitionType.fade,
-                            enterDuration: Duration(milliseconds: 200),
-                            exitDuration: Duration(milliseconds: 170),
-                            scaleOnPush: false,
-                          ),
-                        },
-                      );
+                      context.pushEditVibes();
                     },
                   ),
                 ),
@@ -987,18 +909,7 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                   label: 'Notifications',
                   onTap: () {
                     HapticFeedback.lightImpact();
-                    _pushNamed(
-                      NotificationSettingsWidget.routeName,
-                      extra: <String, dynamic>{
-                        kTransitionInfoKey: TransitionInfo(
-                          hasTransition: true,
-                          transitionType: AppTransitionType.fade,
-                          enterDuration: Duration(milliseconds: 200),
-                          exitDuration: Duration(milliseconds: 170),
-                          scaleOnPush: true,
-                        ),
-                      },
-                    );
+                    context.pushNotificationSettings();
                   },
                 ),
                 Divider(height: 1, color: AppColors.navyLight, indent: 56),
@@ -1008,17 +919,8 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                   label: 'Your Standing',
                   onTap: () {
                     HapticFeedback.lightImpact();
-                    _pushNamed(
-                      YourStandingScreen.routeName,
-                      extra: <String, dynamic>{
-                        kTransitionInfoKey: TransitionInfo(
-                          hasTransition: true,
-                          transitionType: AppTransitionType.fade,
-                          enterDuration: const Duration(milliseconds: 200),
-                          exitDuration: const Duration(milliseconds: 170),
-                          scaleOnPush: false,
-                        ),
-                      },
+                    context.pushYourStanding(
+                      transition: TransitionStandards.flatFadeTransition,
                     );
                   },
                 ),
@@ -1037,7 +939,8 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                       variant: PremiumDialogVariant.destructive,
                       icon: PhosphorIconsRegular.signOut,
                       title: 'Log Out',
-                      body: 'You will need to sign in again to access your account.',
+                      body:
+                          'You will need to sign in again to access your account.',
                       actionLabel: 'Log Out',
                     );
 
@@ -1049,7 +952,7 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                       if (!context.mounted) return;
                       final router = GoRouter.of(context);
                       if (router.shouldRedirect(false)) return;
-                      router.goNamed(SignInWidget.routeName);
+                      context.goSignIn();
                     }
                   },
                 ),
@@ -1092,8 +995,7 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                 label,
                 style: AppTypography.bodyMedium.copyWith(
                   color: color,
-                  fontWeight:
-                      isDestructive ? AppTypography.medium : null,
+                  fontWeight: isDestructive ? AppTypography.medium : null,
                 ),
               ),
             ),

@@ -1,4 +1,5 @@
 import 'dart:async';
+import '/core/utils/state_update.dart';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -105,7 +106,7 @@ class _VibeCategorySliderState extends State<VibeCategorySlider> {
       // Wait 400ms before showing prompt (user might still be sliding)
       _dealbreakerPromptTimer = Timer(const Duration(milliseconds: 400), () {
         if (mounted && _isExtremeValue) {
-          setState(() {
+          updateState(this, () {
             _showDealbreakerPrompt = true;
           });
         }
@@ -113,7 +114,7 @@ class _VibeCategorySliderState extends State<VibeCategorySlider> {
     } else {
       // Moved away from extreme — hide prompt and clear dealbreaker
       if (_showDealbreakerPrompt || _currentDealbreaker) {
-        setState(() {
+        updateState(this, () {
           _showDealbreakerPrompt = false;
           _dealbreakerConfirmed = false;
         });
@@ -128,7 +129,7 @@ class _VibeCategorySliderState extends State<VibeCategorySlider> {
   /// User tapped "Yes, it's a must"
   void _confirmDealbreaker() {
     HapticFeedback.mediumImpact();
-    setState(() {
+    updateState(this, () {
       _currentDealbreaker = true;
       _dealbreakerConfirmed = true;
       _showDealbreakerPrompt = false;
@@ -138,7 +139,7 @@ class _VibeCategorySliderState extends State<VibeCategorySlider> {
 
   /// User tapped "No, just a preference"
   void _declineDealbreaker() {
-    setState(() {
+    updateState(this, () {
       _showDealbreakerPrompt = false;
       _dealbreakerConfirmed = false;
       _currentDealbreaker = false;
@@ -309,7 +310,7 @@ class _VibeCategorySliderState extends State<VibeCategorySlider> {
       return;
     }
     _didChange = true;
-    setState(() {
+    updateState(this, () {
       _currentValue = updatedValue;
     });
     widget.onValueChanged(updatedValue);

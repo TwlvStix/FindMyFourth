@@ -13,12 +13,11 @@ import '/core/widgets/app_icon.dart';
 /// Used throughout forms to mark distinct sections.
 /// Supports optional help text with info icon that shows dialog on tap.
 ///
-/// Icon priority: phosphorIcon > svgPath > emoji
+/// Icon priority: phosphorIcon > emoji
 class SectionHeader extends StatelessWidget {
   const SectionHeader({
     super.key,
     this.emoji,
-    this.svgPath,
     this.phosphorIcon,
     required this.title,
     this.helpText,
@@ -26,7 +25,6 @@ class SectionHeader extends StatelessWidget {
   });
 
   final String? emoji;
-  final String? svgPath;
   final PhosphorIconData? phosphorIcon;
   final String title;
   final String? helpText;
@@ -53,20 +51,14 @@ class SectionHeader extends StatelessWidget {
             child: Center(
               child: phosphorIcon != null
                   ? AppIcon(
-                      icon: phosphorIcon,
+                      icon: phosphorIcon!,
                       size: AppIconSize.button,
                       color: AppColors.pure,
                     )
-                  : svgPath != null
-                      ? AppIcon(
-                          assetPath: svgPath!,
-                          size: AppIconSize.button,
-                          color: AppColors.pure,
-                        )
-                      : Text(
-                          emoji ?? '',
-                          style: TextStyle(fontSize: 18),
-                        ),
+                  : Text(
+                      emoji ?? '',
+                      style: TextStyle(fontSize: 18),
+                    ),
             ),
           ),
           SizedBox(width: AppSpacing.sm),

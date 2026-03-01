@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import '../design_tokens/colors.dart';
 import '../design_tokens/border_radius.dart';
@@ -40,13 +39,13 @@ enum AppIconBadgeSize {
 
 /// Standardized icon badge for status indicators, feature icons, and decorative elements.
 ///
-/// Supports Material [icon], SVG [svgPath], or Phosphor [phosphorIcon].
+/// Supports Phosphor [phosphorIcon] (preferred) or Material [icon].
 ///
-/// ⚠️ DESIGN NOTE: Use sparingly — only for trust badges, achievements,
+/// DESIGN NOTE: Use sparingly — only for trust badges, achievements,
 /// and premium indicators. For general info display, prefer plain [AppIcon]
 /// without a colored background.
 ///
-/// Example (Phosphor):
+/// Example:
 /// ```dart
 /// AppIconBadge(
 ///   phosphorIcon: AppPhosphorIcons.trust,
@@ -58,23 +57,19 @@ class AppIconBadge extends StatelessWidget {
   const AppIconBadge({
     super.key,
     this.icon,
-    this.svgPath,
     this.phosphorIcon,
     this.variant = AppIconBadgeVariant.primary,
     this.size = AppIconBadgeSize.medium,
     this.onTap,
   }) : assert(
-          icon != null || svgPath != null || phosphorIcon != null,
-          'Provide icon, svgPath, or phosphorIcon',
+          icon != null || phosphorIcon != null,
+          'Provide icon or phosphorIcon',
         );
 
   /// Material icon to display (IconData)
   final IconData? icon;
 
-  /// SVG asset path to display (use AppIcons constants)
-  final String? svgPath;
-
-  /// Phosphor icon to display (use AppPhosphorIcons constants)
+  /// Phosphor icon to display (use AppPhosphorIcons constants) - preferred
   final PhosphorIconData? phosphorIcon;
 
   /// Visual style variant
@@ -118,21 +113,13 @@ class AppIconBadge extends StatelessWidget {
   }
 
   /// Build the icon widget based on which source was provided.
-  /// Priority: phosphorIcon > svgPath > icon
+  /// Priority: phosphorIcon > icon
   Widget _buildIcon(Color color, double iconSize) {
     if (phosphorIcon != null) {
       return PhosphorIcon(
         phosphorIcon!,
         size: iconSize,
         color: color,
-      );
-    }
-    if (svgPath != null) {
-      return SvgPicture.asset(
-        svgPath!,
-        width: iconSize,
-        height: iconSize,
-        colorFilter: ColorFilter.mode(color, BlendMode.srcIn),
       );
     }
     return Icon(

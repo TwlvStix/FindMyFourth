@@ -1,4 +1,5 @@
 import '/auth/firebase_auth/auth_util.dart';
+import '/core/utils/state_update.dart';
 import '/core/content/app_copy.dart';
 import '/core/design_tokens/app_phosphor_icons.dart';
 import '/core/design_tokens/colors.dart';
@@ -16,9 +17,7 @@ import '/core/widgets/app_text.dart';
 import '/core/widgets/premium_back_button.dart';
 import '/core/widgets/fairway_background.dart';
 import '/models/vibe_profile.dart';
-import '/profile/edit_vibe_importance/edit_vibe_importance_widget.dart';
 import '/profile/edit_vibes/vibe_category_slider.dart';
-import '/profile/main_profile/main_profile_widget.dart';
 import '/services/vibe_analytics_service.dart';
 import '/services/vibe_edit_cooldown_service.dart';
 import '/services/vibe_repository.dart';
@@ -82,7 +81,7 @@ class _EditVibesWidgetState extends State<EditVibesWidget> {
   }
 
   Future<void> _loadProfile() async {
-    setState(() {
+    updateState(this, () {
       _isLoading = true;
     });
     try {
@@ -94,7 +93,7 @@ class _EditVibesWidgetState extends State<EditVibesWidget> {
       if (!mounted) {
         return;
       }
-      setState(() {
+      updateState(this, () {
         _profile = results[0] as VibeProfile;
         _originalProfile = _profile;
         if (results.length > 1) {
@@ -110,7 +109,7 @@ class _EditVibesWidgetState extends State<EditVibesWidget> {
       if (!mounted) {
         return;
       }
-      setState(() {
+      updateState(this, () {
         _isLoading = false;
       });
     }
@@ -122,7 +121,7 @@ class _EditVibesWidgetState extends State<EditVibesWidget> {
   ) {
     final updatedPrefs = Map<VibeCategory, VibePreference>.from(_profile.prefs);
     updatedPrefs[category] = preference;
-    setState(() {
+    updateState(this, () {
       _profile = _profile.copyWith(prefs: updatedPrefs);
     });
   }
@@ -206,7 +205,7 @@ class _EditVibesWidgetState extends State<EditVibesWidget> {
       return; // User cancelled
     }
 
-    setState(() {
+    updateState(this, () {
       _isConfirming = true;
     });
     try {
@@ -230,10 +229,10 @@ class _EditVibesWidgetState extends State<EditVibesWidget> {
       if (!mounted) {
         return;
       }
-      setState(() {
+      updateState(this, () {
         _profile = _profile.confirmed(DateTime.now());
       });
-      context.goNamed(MainProfileWidget.routeName);
+      context.goMainProfile();
     } catch (error) {
       if (!mounted) {
         return;
@@ -243,7 +242,7 @@ class _EditVibesWidgetState extends State<EditVibesWidget> {
       if (!mounted) {
         return;
       }
-      setState(() {
+      updateState(this, () {
         _isConfirming = false;
       });
     }
@@ -301,8 +300,8 @@ class _EditVibesWidgetState extends State<EditVibesWidget> {
                                   height: 40,
                                   decoration: BoxDecoration(
                                     color: AppColorsDark.navyLight,
-                                    borderRadius:
-                                        BorderRadius.circular(AppBorderRadius.md),
+                                    borderRadius: BorderRadius.circular(
+                                        AppBorderRadius.md),
                                     border: Border.all(
                                       color: AppColorsDark.glassBorder,
                                     ),
@@ -318,13 +317,15 @@ class _EditVibesWidgetState extends State<EditVibesWidget> {
                                 const SizedBox(width: AppSpacing.md),
                                 Expanded(
                                   child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
                                     children: [
                                       Text(
                                         AppVibeEditCopy.cooldownBannerMessage(
                                           _formatCooldownDate(),
                                         ),
-                                        style: AppTypography.bodyMedium.copyWith(
+                                        style:
+                                            AppTypography.bodyMedium.copyWith(
                                           color: AppColorsDark.textPrimary,
                                         ),
                                       ),
@@ -351,8 +352,10 @@ class _EditVibesWidgetState extends State<EditVibesWidget> {
                             return GestureDetector(
                               onTap: () {
                                 HapticFeedback.selectionClick();
-                                setState(() =>
-                                    _archetypeExpanded = !_archetypeExpanded);
+                                updateState(
+                                    this,
+                                    () => _archetypeExpanded =
+                                        !_archetypeExpanded);
                               },
                               child: GlassCard(
                                 padding: const EdgeInsets.all(AppSpacing.md),
@@ -388,25 +391,28 @@ class _EditVibesWidgetState extends State<EditVibesWidget> {
                                         children: [
                                           Text(
                                             'Your vibe style',
-                                            style:
-                                                AppTypography.labelSmall.copyWith(
+                                            style: AppTypography.labelSmall
+                                                .copyWith(
                                               color: AppColorsDark.textMuted,
-                                              letterSpacing:
-                                                  AppTypography.letterSpacingWide,
+                                              letterSpacing: AppTypography
+                                                  .letterSpacingWide,
                                             ),
                                           ),
-                                          const SizedBox(height: AppSpacing.xxs),
+                                          const SizedBox(
+                                              height: AppSpacing.xxs),
                                           Text(
                                             archetypeMatch.name,
-                                            style:
-                                                AppTypography.titleMedium.copyWith(
+                                            style: AppTypography.titleMedium
+                                                .copyWith(
                                               color: AppColorsDark.textPrimary,
                                               fontWeight: AppTypography.bold,
                                             ),
                                           ),
-                                          const SizedBox(height: AppSpacing.xxs),
+                                          const SizedBox(
+                                              height: AppSpacing.xxs),
                                           AnimatedCrossFade(
-                                            duration: MotionTokens.microInteraction,
+                                            duration:
+                                                MotionTokens.microInteraction,
                                             crossFadeState: _archetypeExpanded
                                                 ? CrossFadeState.showSecond
                                                 : CrossFadeState.showFirst,
@@ -414,7 +420,8 @@ class _EditVibesWidgetState extends State<EditVibesWidget> {
                                               archetypeMatch.description,
                                               style: AppTypography.bodySmall
                                                   .copyWith(
-                                                color: AppColorsDark.textSecondary,
+                                                color:
+                                                    AppColorsDark.textSecondary,
                                               ),
                                               maxLines: 2,
                                               overflow: TextOverflow.ellipsis,
@@ -423,12 +430,14 @@ class _EditVibesWidgetState extends State<EditVibesWidget> {
                                               archetypeMatch.description,
                                               style: AppTypography.bodySmall
                                                   .copyWith(
-                                                color: AppColorsDark.textSecondary,
+                                                color:
+                                                    AppColorsDark.textSecondary,
                                               ),
                                             ),
                                           ),
                                           if (!_archetypeExpanded) ...[
-                                            const SizedBox(height: AppSpacing.xs),
+                                            const SizedBox(
+                                                height: AppSpacing.xs),
                                             Text(
                                               'Tap to read more',
                                               style: AppTypography.labelSmall
@@ -459,9 +468,7 @@ class _EditVibesWidgetState extends State<EditVibesWidget> {
                         GestureDetector(
                           onTap: () {
                             HapticFeedback.lightImpact();
-                            context.pushNamed(
-                              EditVibeImportanceWidget.routeName,
-                            );
+                            context.pushEditVibeImportance();
                           },
                           child: GlassCard(
                             padding: const EdgeInsets.all(AppSpacing.md),
@@ -473,8 +480,8 @@ class _EditVibesWidgetState extends State<EditVibesWidget> {
                                   height: 40,
                                   decoration: BoxDecoration(
                                     color: AppColorsDark.navyLight,
-                                    borderRadius:
-                                        BorderRadius.circular(AppBorderRadius.md),
+                                    borderRadius: BorderRadius.circular(
+                                        AppBorderRadius.md),
                                   ),
                                   child: Center(
                                     child: AppIcon(
@@ -487,11 +494,13 @@ class _EditVibesWidgetState extends State<EditVibesWidget> {
                                 const SizedBox(width: AppSpacing.md),
                                 Expanded(
                                   child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
                                     children: [
                                       Text(
                                         'Set your priorities',
-                                        style: AppTypography.bodyMedium.copyWith(
+                                        style:
+                                            AppTypography.bodyMedium.copyWith(
                                           color: AppColorsDark.textPrimary,
                                           fontWeight: AppTypography.semiBold,
                                         ),

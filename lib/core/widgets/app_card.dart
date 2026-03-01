@@ -1,5 +1,6 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
+import 'package:phosphor_flutter/phosphor_flutter.dart';
 import '/core/motion/motion_tokens.dart';
 import '/core/motion/reduced_motion.dart';
 import '../design_tokens/colors.dart';
@@ -410,14 +411,14 @@ class StatCard extends StatelessWidget {
     required this.label,
     required this.value,
     this.icon,
-    this.svgPath,
+    this.phosphorIcon,
     this.onTap,
   });
 
   final String label;
   final String value;
   final IconData? icon;
-  final String? svgPath;
+  final PhosphorIconData? phosphorIcon;
   final VoidCallback? onTap;
 
   @override
@@ -431,9 +432,9 @@ class StatCard extends StatelessWidget {
         children: [
           Row(
             children: [
-              if (svgPath != null) ...[
+              if (phosphorIcon != null) ...[
                 AppIcon(
-                  assetPath: svgPath!,
+                  icon: phosphorIcon!,
                   color: AppColors.navy,
                   size: AppIconSize.button,
                 ),

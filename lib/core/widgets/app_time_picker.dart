@@ -1,4 +1,5 @@
 import 'package:flutter/cupertino.dart';
+import '/core/utils/state_update.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '/core/design_tokens/app_phosphor_icons.dart';
@@ -86,7 +87,7 @@ class _AppTimePickerState extends State<AppTimePicker> {
     if (totalMinutes < 60) totalMinutes = 12 * 60 + totalMinutes;
     if (totalMinutes >= 13 * 60) totalMinutes = totalMinutes - 12 * 60;
 
-    setState(() {
+    updateState(this, () {
       _hour = (totalMinutes ~/ 60);
       if (_hour == 0) _hour = 12;
       if (_hour > 12) _hour = _hour - 12;
@@ -118,7 +119,7 @@ class _AppTimePickerState extends State<AppTimePicker> {
 
     // Run validator if provided
     if (widget.validator != null && !widget.validator!(timeOfDay)) {
-      setState(() {
+      updateState(this, () {
         _errorMessage = widget.validatorErrorText ?? 'Invalid time';
       });
       HapticFeedback.heavyImpact();
@@ -240,7 +241,7 @@ class _AppTimePickerState extends State<AppTimePicker> {
                               itemExtent: 44,
                               onSelectedItemChanged: (index) {
                                 HapticFeedback.selectionClick();
-                                setState(() {
+                                updateState(this, () {
                                   _hour = _hours[index];
                                   _errorMessage = null;
                                 });
@@ -306,7 +307,7 @@ class _AppTimePickerState extends State<AppTimePicker> {
                               itemExtent: 44,
                               onSelectedItemChanged: (index) {
                                 HapticFeedback.selectionClick();
-                                setState(() {
+                                updateState(this, () {
                                   _minute = _minutes[index];
                                   _errorMessage = null;
                                 });
@@ -358,7 +359,7 @@ class _AppTimePickerState extends State<AppTimePicker> {
                       child: InkWell(
                         onTap: () {
                           HapticFeedback.selectionClick();
-                          setState(() {
+                          updateState(this, () {
                             _isPM = false;
                             _errorMessage = null;
                           });
@@ -386,7 +387,7 @@ class _AppTimePickerState extends State<AppTimePicker> {
                       child: InkWell(
                         onTap: () {
                           HapticFeedback.selectionClick();
-                          setState(() {
+                          updateState(this, () {
                             _isPM = true;
                             _errorMessage = null;
                           });

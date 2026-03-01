@@ -19,11 +19,9 @@ import '/core/design_tokens/typography.dart';
 import '/core/design_tokens/icon_size.dart';
 import '/core/design_tokens/border_radius.dart';
 import '/core/form_field_controller.dart';
-import '/main_function/games_list/games_list_widget.dart';
 import '/services/profile_setup_service.dart';
 import '/profile/change_photo/change_photo_widget.dart';
 import '/core/custom_functions.dart' as functions;
-import '/user_onboarding/vibe_onboarding_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
@@ -403,22 +401,11 @@ class _CreateProfileWidgetState extends State<CreateProfileWidget>
     final nextRoute = GoRouterState.of(context).uri.queryParameters['next'];
     final nextAfterVibes = nextRoute != null && nextRoute.isNotEmpty
         ? nextRoute
-        : GamesListWidget.routeName;
+        : AppRouteNames.gamesList;
 
-    context.goNamed(
-      VibeOnboardingWidget.routeName,
-      queryParameters: {
-        'next': nextAfterVibes,
-      },
-      extra: <String, dynamic>{
-        kTransitionInfoKey: TransitionInfo(
-          hasTransition: true,
-          transitionType: AppTransitionType.fade,
-          enterDuration: Duration(milliseconds: 200),
-          exitDuration: Duration(milliseconds: 170),
-          scaleOnPush: true,
-        ),
-      },
+    context.goVibeOnboarding(
+      next: nextAfterVibes,
+      transition: TransitionStandards.modalTransition,
     );
   }
 

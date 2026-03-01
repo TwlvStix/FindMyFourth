@@ -9,8 +9,6 @@ import '/core/design_tokens/icon_size.dart';
 import '/core/widgets/app_icon.dart';
 import '/core/widgets/app_expandable_text.dart';
 import '/models/player_eligibility.dart';
-import '/main_function/join_game_detailed/join_game_detailed_widget.dart';
-import '/main_function/game_joined_detailed/game_joined_detailed_widget.dart';
 import '/main_function/games_list/components/flexible_availability_summary.dart';
 import '/models/game.dart';
 import '/utils/app_util.dart';
@@ -29,8 +27,8 @@ class FlexibleGameExpandedCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isOwner = currentUserReference != null &&
-        game.userRef == currentUserReference;
+    final isOwner =
+        currentUserReference != null && game.userRef == currentUserReference;
     final isUserGame = currentUserReference != null &&
         (game.userRef == currentUserReference ||
             game.joinedPlayers.contains(currentUserReference));
@@ -54,28 +52,28 @@ class FlexibleGameExpandedCard extends StatelessWidget {
             boxShadow: [AppElevation.card],
           ),
           child: Padding(
-          padding: EdgeInsets.all(AppSpacing.md),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Row 1: Badges + Status
-              _buildTopRow(
-                isOwner: isOwner,
-                isUserGame: isUserGame,
-                isCancelled: isCancelled,
-                isExpired: isExpired,
-              ),
-              SizedBox(height: AppSpacing.md),
-              // Row 2: Course icon + Course name + Game name
-              _buildCourseSection(isUserGame: isUserGame),
-              SizedBox(height: AppSpacing.md),
-              // Row 3: Flexible availability summary
-              _buildDateTimeSection(
-                isUserGame: isUserGame,
-              ),
-            ],
+            padding: EdgeInsets.all(AppSpacing.md),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Row 1: Badges + Status
+                _buildTopRow(
+                  isOwner: isOwner,
+                  isUserGame: isUserGame,
+                  isCancelled: isCancelled,
+                  isExpired: isExpired,
+                ),
+                SizedBox(height: AppSpacing.md),
+                // Row 2: Course icon + Course name + Game name
+                _buildCourseSection(isUserGame: isUserGame),
+                SizedBox(height: AppSpacing.md),
+                // Row 3: Flexible availability summary
+                _buildDateTimeSection(
+                  isUserGame: isUserGame,
+                ),
+              ],
+            ),
           ),
-        ),
         ),
       ),
     );
@@ -192,7 +190,8 @@ class FlexibleGameExpandedCard extends StatelessWidget {
                     ),
                   ),
                 ),
-              ] else if (game.playerEligibility == PlayerEligibility.menOnly) ...[
+              ] else if (game.playerEligibility ==
+                  PlayerEligibility.menOnly) ...[
                 SizedBox(width: AppSpacing.xs),
                 Opacity(
                   opacity: isUserGame ? 0.65 : 1.0,
@@ -405,7 +404,8 @@ class FlexibleGameExpandedCard extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 AppExpandableText(
-                  text: game.coursePlay.isEmpty ? 'Course TBD' : game.coursePlay,
+                  text:
+                      game.coursePlay.isEmpty ? 'Course TBD' : game.coursePlay,
                   style: AppTypography.titleSmall.copyWith(
                     color: AppColors.textPrimary,
                     fontWeight: FontWeight.w600,
@@ -445,20 +445,12 @@ class FlexibleGameExpandedCard extends StatelessWidget {
     Navigator.of(context).pop();
 
     if (isUserGame) {
-      context.pushNamed(
-        GameJoinedDetailedWidget.routeName,
-        extra: <String, dynamic>{
-          'gameRef': game.reference,
-          kTransitionInfoKey: TransitionStandards.detailTransition,
-        },
+      context.pushGameJoinedDetailed(
+        gameRef: game.reference,
       );
     } else {
-      context.pushNamed(
-        JoinGameDetailedWidget.routeName,
-        extra: <String, dynamic>{
-          'gameRef': game.reference,
-          kTransitionInfoKey: TransitionStandards.detailTransition,
-        },
+      context.pushJoinGameDetailed(
+        gameRef: game.reference,
       );
     }
   }

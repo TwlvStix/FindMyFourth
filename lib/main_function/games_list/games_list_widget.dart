@@ -1,8 +1,8 @@
 import '/core/design_tokens/spacing.dart';
+import '/core/utils/state_update.dart';
 import '/core/design_tokens/colors.dart';
 import '/core/design_tokens/typography.dart';
 import '/core/design_tokens/app_phosphor_icons.dart';
-import '/core/design_tokens/app_icons.dart';
 import '/core/design_tokens/icon_size.dart';
 import '/core/widgets/app_empty_state_premium.dart';
 import '/core/widgets/app_icon.dart';
@@ -16,7 +16,6 @@ import '/core/widgets/app_button_enhanced.dart';
 import '/core/widgets/fairway_background.dart';
 import '/utils/app_util.dart';
 import '/auth/firebase_auth/auth_util.dart';
-import '/main_function/create_game/create_game_widget.dart';
 import '/main_function/games_list/components/game_list_filter_bottom_sheet.dart';
 import '/main_function/games_list/components/premium_game_card.dart';
 import '/main_function/games_list/components/flexible_games_shelf.dart';
@@ -29,7 +28,6 @@ import '/providers/profile_provider.dart';
 import '/providers/user_provider.dart';
 import '/core/utils/app_log.dart';
 import '/backend/backend.dart';
-import '/notifications/notifications_list/notifications_list_widget.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
@@ -148,7 +146,7 @@ class _GamesListWidgetState extends State<GamesListWidget> {
   @override
   void initState() {
     super.initState();
-    // ✅ PERFORMANCE: Removed empty post-frame setState (no-op rebuild)
+    // ✅ PERFORMANCE: Removed empty post-frame updateState(this, no-op rebuild)
   }
 
   @override
@@ -181,7 +179,7 @@ class _GamesListWidgetState extends State<GamesListWidget> {
   /// Retry loading games by recreating the stream.
   void _retryGamesStream() {
     final gameProvider = context.read<GameProvider>();
-    setState(() {
+    updateState(this, () {
       _gamesStream = gameProvider.availableGamesStream().map((records) =>
           records.map((record) => Game.fromRecord(record)).toList());
     });
@@ -519,7 +517,7 @@ class _GamesListWidgetState extends State<GamesListWidget> {
     );
 
     if (result != null && mounted) {
-      setState(() {
+      updateState(this, () {
         _filters = result;
       });
     }
@@ -594,7 +592,7 @@ class _GamesListWidgetState extends State<GamesListWidget> {
     if (!mounted) {
       return;
     }
-    setState(() {
+    updateState(this, () {
       _cancelledGameHandlingByGame[game.reference] = selection;
     });
     AppState().setCancelledGameHandling(
@@ -689,13 +687,7 @@ class _GamesListWidgetState extends State<GamesListWidget> {
                         size: AppIconSize.md,
                       ),
                       onPressed: () {
-                        context.pushNamed(
-                          NotificationsListWidget.routeName,
-                          extra: <String, dynamic>{
-                            kTransitionInfoKey:
-                                TransitionStandards.detailTransition,
-                          },
-                        );
+                        context.pushNotifications();
                       },
                     )
                   : StreamBuilder<QuerySnapshot>(
@@ -722,13 +714,7 @@ class _GamesListWidgetState extends State<GamesListWidget> {
                                 size: AppIconSize.md,
                               ),
                               onPressed: () {
-                                context.pushNamed(
-                                  NotificationsListWidget.routeName,
-                                  extra: <String, dynamic>{
-                                    kTransitionInfoKey:
-                                        TransitionStandards.detailTransition,
-                                  },
-                                );
+                                context.pushNotifications();
                               },
                             ),
                             if (unreadCount > 0)
@@ -922,7 +908,7 @@ class _GamesListWidgetState extends State<GamesListWidget> {
                           context.read<GameProvider>().invalidateAllGameCache();
                           await Future.delayed(Duration(milliseconds: 500));
                           if (mounted) {
-                            setState(() {});
+                            updateState(this, () {});
                           }
                         },
                         child: CustomScrollView(
@@ -948,7 +934,7 @@ class _GamesListWidgetState extends State<GamesListWidget> {
                                     child: RestrictionBanner(
                                       restriction: restriction,
                                       onViewStanding: () =>
-                                          context.pushNamed('YourStanding'),
+                                          context.pushYourStanding(),
                                     ),
                                   ),
                                 );
@@ -986,7 +972,7 @@ class _GamesListWidgetState extends State<GamesListWidget> {
                                     mainAxisAlignment: MainAxisAlignment.center,
                                     children: [
                                       AppEmptyStatePremium(
-                                        assetPath: AppIcons.games,
+                                        icon: AppPhosphorIcons.games,
                                         title: 'No Games Yet',
                                         message:
                                             'Join or create a game to get started.',
@@ -999,13 +985,9 @@ class _GamesListWidgetState extends State<GamesListWidget> {
                                           variant: AppButtonVariant.primary,
                                           size: AppButtonSize.medium,
                                           onPressed: () {
-                                            context.pushNamed(
-                                              CreateGameWidget.routeName,
-                                              extra: <String, dynamic>{
-                                                kTransitionInfoKey:
-                                                    TransitionStandards
-                                                        .detailTransition,
-                                              },
+                                            context.pushCreateGame(
+                                              transition: TransitionStandards
+                                                  .detailTransition,
                                             );
                                           },
                                         ),
@@ -1147,7 +1129,7 @@ class _GamesListWidgetState extends State<GamesListWidget> {
                                                   !AppState()
                                                       .hideFriendsOnlyGames;
                                               if (mounted) {
-                                                setState(() {});
+                                                updateState(this, () {});
                                               }
                                             },
                                             behavior: HitTestBehavior.opaque,

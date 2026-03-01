@@ -40,11 +40,9 @@ class PremiumFriendCard extends StatefulWidget {
   final VoidCallback? onAction;
   final String messageLabel;
   final PhosphorIconData? messageIcon;
-  final String? messageSvgPath;
   final bool messageIsPrimary;
   final String actionLabel;
   final PhosphorIconData? actionIcon;
-  final String? actionSvgPath;
   final Color actionColor;
   final ActionButtonVariant actionVariant;
   final bool showActionButton;
@@ -65,11 +63,9 @@ class PremiumFriendCard extends StatefulWidget {
     this.onAction,
     this.messageLabel = 'Chat',
     this.messageIcon = AppPhosphorIcons.chat,
-    this.messageSvgPath,
     this.messageIsPrimary = false,
     this.actionLabel = 'Add',
     this.actionIcon = AppPhosphorIcons.addPlayer,
-    this.actionSvgPath,
     this.actionColor = AppColors.navy,
     this.actionVariant = ActionButtonVariant.primary,
     this.showActionButton = true,
@@ -387,7 +383,6 @@ class _PremiumFriendCardState extends State<PremiumFriendCard>
       actions.add(
         _buildIconOnlyButton(
           icon: widget.messageIcon,
-          svgPath: widget.messageSvgPath,
           onPressed: widget.onMessage!,
           variant: widget.messageIsPrimary
               ? ActionButtonVariant.primary
@@ -402,7 +397,6 @@ class _PremiumFriendCardState extends State<PremiumFriendCard>
       actions.add(
         _buildIconOnlyButton(
           icon: widget.actionIcon,
-          svgPath: widget.actionSvgPath,
           onPressed: widget.onAction,
           variant: widget.actionVariant,
           isLoading: widget.isLoading,
@@ -438,7 +432,6 @@ class _PremiumFriendCardState extends State<PremiumFriendCard>
 
   Widget _buildIconOnlyButton({
     PhosphorIconData? icon,
-    String? svgPath,
     required VoidCallback? onPressed,
     required ActionButtonVariant variant,
     bool isLoading = false,
@@ -492,17 +485,13 @@ class _PremiumFriendCardState extends State<PremiumFriendCard>
                       valueColor: AlwaysStoppedAnimation<Color>(iconColor),
                     ),
                   )
-                : svgPath != null
+                : icon != null
                     ? AppIcon(
-                        assetPath: svgPath,
-                        size: AppIconSize.button,
-                        color: iconColor,
-                      )
-                    : AppIcon(
                         icon: icon,
                         size: AppIconSize.button,
                         color: iconColor,
-                      ),
+                      )
+                    : SizedBox.shrink(),
           ),
         ),
       ),

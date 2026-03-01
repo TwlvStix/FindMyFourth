@@ -47,6 +47,7 @@ import '/screens/confirmation/fallback_confirmation_screen.dart';
 
 export 'package:go_router/go_router.dart';
 export '/utils/serialization_util.dart';
+export 'nav_extensions.dart';
 export 'transition_standards.dart';
 
 /// Custom transition type to replace page_transition package dependency.

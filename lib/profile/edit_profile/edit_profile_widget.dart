@@ -1,4 +1,5 @@
 import '/auth/firebase_auth/auth_util.dart';
+import '/core/utils/state_update.dart';
 import '/backend/backend.dart';
 import '/backend/cloud_functions/cloud_functions.dart';
 import '/core/widgets/app_count_controller.dart';
@@ -18,9 +19,7 @@ import '/core/design_tokens/icon_size.dart';
 import '/core/design_tokens/border_radius.dart';
 import '/core/form_field_controller.dart';
 import '/profile/change_photo/change_photo_widget.dart';
-import '/profile/main_profile/main_profile_widget.dart';
 import '/services/profile_setup_service.dart';
-import '/user_auth/sign_in/sign_in_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '/core/design_tokens/app_phosphor_icons.dart';
@@ -108,7 +107,7 @@ class _EditProfileWidgetState extends State<EditProfileWidget>
     golfCanadaFocusNode = FocusNode();
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      // ✅ PERFORMANCE: Removed empty setState (no-op rebuild)
+      // ✅ PERFORMANCE: Removed empty updateState(this, no-op rebuild)
     });
   }
 
@@ -206,11 +205,8 @@ class _EditProfileWidgetState extends State<EditProfileWidget>
       ),
     );
 
-    context.goNamed(
-      MainProfileWidget.routeName,
-      extra: <String, dynamic>{
-        kTransitionInfoKey: TransitionStandards.modalTransition,
-      },
+    context.goMainProfile(
+      transition: TransitionStandards.modalTransition,
     );
   }
 
@@ -431,7 +427,7 @@ class _EditProfileWidgetState extends State<EditProfileWidget>
                         );
                       },
                     ).then((value) {
-                      // ✅ PERFORMANCE: Removed empty setState (no-op rebuild)
+                      // ✅ PERFORMANCE: Removed empty updateState(this, no-op rebuild)
                     });
                   },
                   child: Container(
@@ -471,7 +467,7 @@ class _EditProfileWidgetState extends State<EditProfileWidget>
                 child: ChangePhotoWidget(),
               ),
             ).then((value) {
-              // ✅ PERFORMANCE: Removed empty setState (no-op rebuild)
+              // ✅ PERFORMANCE: Removed empty updateState(this, no-op rebuild)
             });
           },
           child: Text(
@@ -715,7 +711,8 @@ class _EditProfileWidgetState extends State<EditProfileWidget>
                         controller: coursesValueController ??=
                             FormFieldController<String>(coursesValue),
                         options: courses.map((c) => c.name).toList(),
-                        onChanged: (val) => setState(() => coursesValue = val),
+                        onChanged: (val) =>
+                            updateState(this, () => coursesValue = val),
                         width: double.infinity,
                         height: 56,
                         textStyle: AppTypography.bodyMedium.copyWith(
@@ -845,7 +842,7 @@ class _EditProfileWidgetState extends State<EditProfileWidget>
                         count: handicapValue ??
                             valueOrDefault(currentUserDocument?.handicap, 0),
                         updateCount: (count) =>
-                            setState(() => handicapValue = count),
+                            updateState(this, () => handicapValue = count),
                         stepSize: 1,
                         minimum: -5,
                         maximum: 54,
@@ -952,11 +949,8 @@ class _EditProfileWidgetState extends State<EditProfileWidget>
             }
             await authManager.signOut();
             if (!mounted) return;
-            context.goNamed(
-              SignInWidget.routeName,
-              extra: <String, dynamic>{
-                kTransitionInfoKey: TransitionStandards.modalTransition,
-              },
+            context.goSignIn(
+              transition: TransitionStandards.modalTransition,
             );
           } catch (e) {
             AppLog.d('Delete account failed: $e');

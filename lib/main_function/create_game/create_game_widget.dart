@@ -1,12 +1,11 @@
 import '/core/design_tokens/colors.dart';
+import '/core/utils/state_update.dart';
 import '/core/design_tokens/spacing.dart';
 import '/core/design_tokens/typography.dart';
 import '/core/form_field_controller.dart';
 import '/core/widgets/fairway_background.dart';
 import '/core/widgets/premium_back_button.dart';
 import '/core/widgets/trust/restriction_banner.dart';
-import '/main_function/games_list/games_list_widget.dart';
-import '/main_function/player_list/player_list_widget.dart';
 import '/providers/provider_extensions.dart';
 import '/providers/trust_provider.dart';
 import '/providers/user_provider.dart';
@@ -74,13 +73,13 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
           _formData.playerEligibility = 'open_to_all';
         }
 
-        setState(() {
+        updateState(this, () {
           _isLoading = false;
         });
 
         Future.delayed(const Duration(milliseconds: 50), () {
           if (mounted && !_hasAnimated) {
-            setState(() => _hasAnimated = true);
+            updateState(this, () => _hasAnimated = true);
           }
         });
       }
@@ -120,7 +119,7 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
 
   Future<void> _clearDraft() async {
     await _controller.clearDraft();
-    setState(() {
+    updateState(this, () {
       _hasDraft = false;
     });
   }
@@ -129,7 +128,7 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
     if (!mounted) {
       return;
     }
-    setState(mutation);
+    updateState(this, mutation);
   }
 
   Future<void> _submitGame() async {
@@ -170,30 +169,17 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
       return;
     }
 
-    setState(() {
+    updateState(this, () {
       _hasDraft = false;
     });
 
     if (nextRoute == CreateGameNextRoute.gamesList) {
-      context.pushNamed(
-        GamesListWidget.routeName,
-        extra: <String, dynamic>{
-          kTransitionInfoKey: TransitionStandards.modalTransition,
-        },
+      context.pushGamesList(
+        transition: TransitionStandards.modalTransition,
       );
     } else {
-      context.pushNamed(
-        PlayerListWidget.routeName,
-        extra: <String, dynamic>{
-          'gameRef': gameRef,
-          kTransitionInfoKey: TransitionInfo(
-            hasTransition: true,
-            transitionType: AppTransitionType.fade,
-            enterDuration: Duration(milliseconds: 200),
-            exitDuration: Duration(milliseconds: 170),
-            scaleOnPush: false,
-          ),
-        },
+      context.pushPlayerList(
+        gameRef: gameRef,
       );
     }
 
@@ -247,7 +233,7 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
   }
 
   void _onWeekChanged(String weekValue) {
-    setState(() {
+    updateState(this, () {
       _formData.flexibleWeek = weekValue;
       final availableDays = _getAvailableDays();
       _formData.selectedDays = availableDays.toSet();
@@ -338,7 +324,7 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
                                   child: RestrictionBanner(
                                     restriction: restriction,
                                     onViewStanding: () =>
-                                        context.pushNamed('YourStanding'),
+                                        context.pushYourStanding(),
                                   ),
                                 );
                               },

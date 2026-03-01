@@ -64,14 +64,8 @@ class _ChatWidgetState extends State<ChatWidget> {
     return GestureDetector(
       onTap: () {
         _safeHaptic();
-        context.pushNamed(
-          'ChatDetails',
-          pathParameters: {
-            'chatId': chatId,
-          },
-          extra: <String, dynamic>{
-            kTransitionInfoKey: TransitionStandards.detailTransition,
-          },
+        context.pushChatDetails(
+          chatId: chatId,
         );
       },
       child: Container(
@@ -225,14 +219,8 @@ class _ChatWidgetState extends State<ChatWidget> {
         return;
       }
       _safeHaptic();
-      context.pushNamed(
-        'ChatDetails',
-        pathParameters: {
-          'chatId': chatRef.id,
-        },
-        extra: <String, dynamic>{
-          kTransitionInfoKey: TransitionStandards.detailTransition,
-        },
+      context.pushChatDetails(
+        chatId: chatRef.id,
       );
     } catch (error, stackTrace) {
       context

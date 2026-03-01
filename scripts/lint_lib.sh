@@ -50,3 +50,6 @@ else
 fi
 
 echo "Lint check passed."
+
+echo "Running setState budget audit..."
+./tool/setstate_audit.sh lib

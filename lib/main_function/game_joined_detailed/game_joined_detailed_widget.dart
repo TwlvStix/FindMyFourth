@@ -1,4 +1,5 @@
 import 'dart:async';
+import '/core/utils/state_update.dart';
 
 import '/auth/firebase_auth/auth_util.dart';
 import '/backend/backend.dart';
@@ -92,7 +93,7 @@ class _GameJoinedDetailedWidgetState extends State<GameJoinedDetailedWidget>
         final requests = results[0] as List<JoinRequest>;
         requests.sort((a, b) => a.createdAt.compareTo(b.createdAt));
 
-        setState(() {
+        updateState(this, () {
           _pendingRequests = requests;
           _ownerVibeProfile = results[1] as VibeProfile;
           _isLoadingPendingRequests = false;
@@ -103,7 +104,7 @@ class _GameJoinedDetailedWidgetState extends State<GameJoinedDetailedWidget>
       } catch (error) {
         AppLog.d('Error loading pending join requests: $error');
         if (mounted) {
-          setState(() {
+          updateState(this, () {
             _isLoadingPendingRequests = false;
           });
         }
@@ -157,7 +158,7 @@ class _GameJoinedDetailedWidgetState extends State<GameJoinedDetailedWidget>
       return;
     }
 
-    setState(() {
+    updateState(this, () {
       _pendingRequests.removeWhere((r) => r.id == requestId);
       if (_expandedRequestId == requestId) {
         _expandedRequestId =
@@ -168,7 +169,7 @@ class _GameJoinedDetailedWidgetState extends State<GameJoinedDetailedWidget>
 
   void _expandRequest(String requestId) {
     if (_expandedRequestId != requestId) {
-      setState(() {
+      updateState(this, () {
         _expandedRequestId = requestId;
       });
     }
@@ -279,7 +280,7 @@ class _GameJoinedDetailedWidgetState extends State<GameJoinedDetailedWidget>
         if (!_hasAnimated) {
           WidgetsBinding.instance.addPostFrameCallback((_) {
             if (mounted && !_hasAnimated) {
-              setState(() {
+              updateState(this, () {
                 _hasAnimated = true;
               });
             }

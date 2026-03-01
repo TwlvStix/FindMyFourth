@@ -45,10 +45,8 @@ class AppTextField extends StatefulWidget {
   final void Function(String)? onChanged;
   final void Function(String)? onSubmitted;
   final IconData? prefixIcon;
-  final String? prefixSvgPath;
   final PhosphorIconData? prefixPhosphorIcon;
   final IconData? suffixIcon;
-  final String? suffixSvgPath;
   final PhosphorIconData? suffixPhosphorIcon;
   final VoidCallback? onSuffixIconTap;
   final FocusNode? focusNode;
@@ -73,10 +71,8 @@ class AppTextField extends StatefulWidget {
     this.onChanged,
     this.onSubmitted,
     this.prefixIcon,
-    this.prefixSvgPath,
     this.prefixPhosphorIcon,
     this.suffixIcon,
-    this.suffixSvgPath,
     this.suffixPhosphorIcon,
     this.onSuffixIconTap,
     this.focusNode,
@@ -179,18 +175,12 @@ class _AppTextFieldState extends State<AppTextField> {
     );
   }
 
-  /// Build prefix icon widget with priority: Phosphor > SVG > Material
+  /// Build prefix icon widget with priority: Phosphor > Material
   Widget? _buildPrefixIcon() {
     if (widget.prefixPhosphorIcon != null) {
       return Padding(
         padding: AppSpacing.allSm,
         child: AppIcon(icon: widget.prefixPhosphorIcon!, color: AppColors.slate, size: AppIconSize.button),
-      );
-    }
-    if (widget.prefixSvgPath != null) {
-      return Padding(
-        padding: AppSpacing.allSm,
-        child: AppIcon(assetPath: widget.prefixSvgPath!, color: AppColors.slate, size: AppIconSize.button),
       );
     }
     if (widget.prefixIcon != null) {
@@ -199,17 +189,11 @@ class _AppTextFieldState extends State<AppTextField> {
     return null;
   }
 
-  /// Build suffix icon widget with priority: Phosphor > SVG > Material
+  /// Build suffix icon widget with priority: Phosphor > Material
   Widget? _buildSuffixIcon() {
     if (widget.suffixPhosphorIcon != null) {
       return IconButton(
         icon: AppIcon(icon: widget.suffixPhosphorIcon!, color: AppColors.slate, size: AppIconSize.button),
-        onPressed: widget.onSuffixIconTap,
-      );
-    }
-    if (widget.suffixSvgPath != null) {
-      return IconButton(
-        icon: AppIcon(assetPath: widget.suffixSvgPath!, color: AppColors.slate, size: AppIconSize.button),
         onPressed: widget.onSuffixIconTap,
       );
     }
@@ -230,12 +214,6 @@ class _AppTextFieldState extends State<AppTextField> {
         child: AppIcon(icon: widget.prefixPhosphorIcon!, color: AppColors.textMuted, size: AppIconSize.button),
       );
     }
-    if (widget.prefixSvgPath != null) {
-      return Padding(
-        padding: AppSpacing.allSm,
-        child: AppIcon(assetPath: widget.prefixSvgPath!, color: AppColors.textMuted, size: AppIconSize.button),
-      );
-    }
     if (widget.prefixIcon != null) {
       return Icon(widget.prefixIcon, color: AppColors.textMuted);
     }
@@ -247,12 +225,6 @@ class _AppTextFieldState extends State<AppTextField> {
     if (widget.suffixPhosphorIcon != null) {
       return IconButton(
         icon: AppIcon(icon: widget.suffixPhosphorIcon!, color: AppColors.textMuted, size: AppIconSize.button),
-        onPressed: widget.onSuffixIconTap,
-      );
-    }
-    if (widget.suffixSvgPath != null) {
-      return IconButton(
-        icon: AppIcon(assetPath: widget.suffixSvgPath!, color: AppColors.textMuted, size: AppIconSize.button),
         onPressed: widget.onSuffixIconTap,
       );
     }

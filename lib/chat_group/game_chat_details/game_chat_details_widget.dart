@@ -1,4 +1,5 @@
 import 'dart:async';
+import '/core/utils/state_update.dart';
 import 'dart:ui' as ui;
 
 import 'package:firebase_storage/firebase_storage.dart';
@@ -125,7 +126,7 @@ class _GameChatDetailsWidgetState extends State<GameChatDetailsWidget>
           AppLog.d(
               '❌ UI: Chat stream error for chatId=${widget.chatId}: $error');
         }
-        setState(() {
+        updateState(this, () {
           _chatError = error;
           _chatLoaded = true;
           _chatUi = null;
@@ -396,7 +397,7 @@ class _GameChatDetailsWidgetState extends State<GameChatDetailsWidget>
     final showFab =
         _scrollController.hasClients && _scrollController.offset > 200;
     if (showFab != _showScrollToBottom) {
-      setState(() {
+      updateState(this, () {
         _showScrollToBottom = showFab;
       });
     }
@@ -430,7 +431,7 @@ class _GameChatDetailsWidgetState extends State<GameChatDetailsWidget>
 
   void _updateChatUiState(Chat? chat) {
     if (chat == null) {
-      setState(() {
+      updateState(this, () {
         _chatLoaded = true;
         _chatError = null;
         _chatUi = null;
@@ -485,7 +486,7 @@ class _GameChatDetailsWidgetState extends State<GameChatDetailsWidget>
       _gameOwnerFuture = null;
     }
 
-    setState(() {
+    updateState(this, () {
       _chatLoaded = true;
       _chatError = null;
       _chatUi = chat;
@@ -774,7 +775,7 @@ class _GameChatDetailsWidgetState extends State<GameChatDetailsWidget>
 
     final uploadId = DateTime.now().millisecondsSinceEpoch.toString();
     if (!mounted) return;
-    setState(() {
+    updateState(this, () {
       _pendingUploads.add(_PendingUpload(id: uploadId, previewBytes: bytes));
     });
 
@@ -790,7 +791,7 @@ class _GameChatDetailsWidgetState extends State<GameChatDetailsWidget>
           if (!mounted) return;
           final total = snapshot.totalBytes;
           final progress = total > 0 ? snapshot.bytesTransferred / total : 0.0;
-          setState(() {
+          updateState(this, () {
             final idx = _pendingUploads.indexWhere((u) => u.id == uploadId);
             if (idx != -1) {
               _pendingUploads[idx] =
@@ -816,11 +817,11 @@ class _GameChatDetailsWidgetState extends State<GameChatDetailsWidget>
           );
 
       if (!mounted) return;
-      setState(() => _pendingUploads.removeWhere((u) => u.id == uploadId));
+      updateState(this, () => _pendingUploads.removeWhere((u) => u.id == uploadId));
     } catch (error, stackTrace) {
       AppLog.d('📷 Image upload error: $error\n$stackTrace');
       if (!mounted) return;
-      setState(() => _pendingUploads.removeWhere((u) => u.id == uploadId));
+      updateState(this, () => _pendingUploads.removeWhere((u) => u.id == uploadId));
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
@@ -887,7 +888,7 @@ class _GameChatDetailsWidgetState extends State<GameChatDetailsWidget>
     }
     _messageController.clear();
     final replyTo = _replyToMessage;
-    setState(() {
+    updateState(this, () {
       _replyToMessage = null;
     });
     try {
@@ -906,7 +907,7 @@ class _GameChatDetailsWidgetState extends State<GameChatDetailsWidget>
         return;
       }
       _messageController.text = text;
-      setState(() {
+      updateState(this, () {
         _replyToMessage = replyTo;
       });
       ScaffoldMessenger.of(context).showSnackBar(
@@ -925,7 +926,7 @@ class _GameChatDetailsWidgetState extends State<GameChatDetailsWidget>
     if (_isLoadingOlder || !_hasMoreOlder) {
       return;
     }
-    setState(() {
+    updateState(this, () {
       _isLoadingOlder = true;
     });
     try {
@@ -961,7 +962,7 @@ class _GameChatDetailsWidgetState extends State<GameChatDetailsWidget>
       }
     } finally {
       if (mounted) {
-        setState(() {
+        updateState(this, () {
           _isLoadingOlder = false;
         });
       }
@@ -1491,7 +1492,7 @@ class _GameChatDetailsWidgetState extends State<GameChatDetailsWidget>
                                                           _showReactionPicker(
                                                               message),
                                                       onReplySwipe: () {
-                                                        setState(() {
+                                                        updateState(this, () {
                                                           _replyToMessage =
                                                               message;
                                                         });
@@ -1538,7 +1539,7 @@ class _GameChatDetailsWidgetState extends State<GameChatDetailsWidget>
                           onSendMessage: _sendMessage,
                           replyToMessage: _replyToMessage,
                           onCancelReply: () {
-                            setState(() {
+                            updateState(this, () {
                               _replyToMessage = null;
                             });
                           },

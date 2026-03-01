@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:phosphor_flutter/phosphor_flutter.dart';
 import '../design_tokens/colors.dart';
 import '../design_tokens/typography.dart';
 import '../design_tokens/border_radius.dart';
@@ -41,7 +42,7 @@ class AppBadge extends StatelessWidget {
   final AppBadgeVariant variant;
   final AppBadgeSize size;
   final IconData? icon;
-  final String? svgPath;
+  final PhosphorIconData? phosphorIcon;
 
   const AppBadge({
     super.key,
@@ -49,7 +50,7 @@ class AppBadge extends StatelessWidget {
     this.variant = AppBadgeVariant.primary,
     this.size = AppBadgeSize.medium,
     this.icon,
-    this.svgPath,
+    this.phosphorIcon,
   });
 
   @override
@@ -71,9 +72,9 @@ class AppBadge extends StatelessWidget {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          if (svgPath != null) ...[
+          if (phosphorIcon != null) ...[
             AppIcon(
-              assetPath: svgPath!,
+              icon: phosphorIcon!,
               color: colors.textColor,
               size: _getIconSize(),
             ),

@@ -2,7 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/foundation.dart';
 
-import '/backend/api_requests/trust_repository.dart';
+import '/services/trust_repository.dart';
 import '/backend/schema/player_standing.dart';
 import '/backend/schema/trust_profile.dart';
 import '/core/request_manager.dart';

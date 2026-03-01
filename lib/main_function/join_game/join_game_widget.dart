@@ -7,7 +7,6 @@ import '/core/design_tokens/colors.dart';
 import '/core/design_tokens/typography.dart';
 import '/core/design_tokens/border_radius.dart';
 import 'dart:ui';
-import '/main_function/game_joined_detailed/game_joined_detailed_widget.dart';
 import '/models/game.dart';
 import '/providers/provider_extensions.dart';
 import 'package:flutter/material.dart';
@@ -184,18 +183,8 @@ class _JoinGameWidgetState extends State<JoinGameWidget> {
                                 return;
                               }
                               Navigator.of(context).pop();
-                              context.goNamed(
-                                GameJoinedDetailedWidget.routeName,
-                                extra: <String, dynamic>{
-                                  'gameRef': widget.gameRef.reference,
-                                  kTransitionInfoKey: TransitionInfo(
-                                    hasTransition: true,
-                                    transitionType: AppTransitionType.fade,
-                                    enterDuration: Duration(milliseconds: 200),
-                                    exitDuration: Duration(milliseconds: 170),
-                                    scaleOnPush: true,
-                                  ),
-                                },
+                              context.goGameJoinedDetailed(
+                                gameRef: widget.gameRef.reference,
                               );
                             },
                             text: 'Join Game',

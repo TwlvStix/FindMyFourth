@@ -1,4 +1,5 @@
 import 'package:collection/collection.dart';
+import '/core/utils/state_update.dart';
 import 'package:dropdown_button2/dropdown_button2.dart';
 
 import '../form_field_controller.dart';
@@ -253,7 +254,7 @@ class _AppDropDownState<T> extends State<AppDropDown<T>> {
                         : multiSelectController.value!.add(item);
                     multiSelectController.update();
                     // This rebuilds the StatefulWidget to update the button's text.
-                    setState(() {});
+                    updateState(this, () {});
                     // This rebuilds the dropdownMenu Widget to update the check mark.
                     menuSetState(() {});
                   },

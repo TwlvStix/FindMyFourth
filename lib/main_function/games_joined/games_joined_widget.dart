@@ -1,4 +1,5 @@
 import '/backend/backend.dart';
+import '/core/utils/state_update.dart';
 import '/core/widgets/app_stream_builder.dart';
 import '/core/widgets/app_button_enhanced.dart';
 import '/core/widgets/fairway_background.dart';
@@ -9,13 +10,10 @@ import '/core/design_tokens/spacing.dart';
 import '/core/design_tokens/colors.dart';
 import '/core/design_tokens/typography.dart';
 import '/core/design_tokens/app_phosphor_icons.dart';
-import '/core/design_tokens/app_icons.dart';
 import '/core/design_tokens/icon_size.dart';
 import '/core/widgets/app_empty_state_premium.dart';
 import '/core/widgets/app_expandable_text.dart';
 import '/core/widgets/app_icon.dart';
-import '/main_function/game_joined_detailed/game_joined_detailed_widget.dart';
-import '/main_function/create_game/create_game_widget.dart';
 import '/main_function/games_list/components/flexible_availability_summary.dart';
 import '/models/game.dart';
 import '/models/player_eligibility.dart';
@@ -43,7 +41,7 @@ class _GamesJoinedWidgetState extends State<GamesJoinedWidget> {
   void initState() {
     super.initState();
 
-    // ✅ PERFORMANCE: Removed empty post-frame setState (no-op rebuild)
+    // ✅ PERFORMANCE: Removed empty post-frame updateState(this, no-op rebuild)
   }
 
   @override
@@ -95,100 +93,105 @@ class _GamesJoinedWidgetState extends State<GamesJoinedWidget> {
                 top: MediaQuery.of(context).padding.top + 56,
               ),
               child: AppStreamBuilder<List<GamesRecord>>(
-              stream: currentUserUid.isEmpty
-                  ? Stream.value(const <GamesRecord>[])
-                  : context.read<GameProvider>().userGamesStream(currentUserUid),
-              initialData: _cachedGames ?? const <GamesRecord>[],
-              onRetry: () => setState(() {}),
-              builder: (context, listViewGamesRecordList) {
-                final visibleGames = listViewGamesRecordList.where((game) {
-                  if (game.isCancelled) {
-                    return false;
-                  }
-                  final status = game.snapshotData['status'];
-                  return status != 'cancelled';
-                }).toList();
-
-                return RefreshIndicator(
-                  color: AppColors.gold,
-                  backgroundColor: AppColors.navyDark,
-                  onRefresh: () async {
-                    context.read<GameProvider>().invalidateUserGamesCache(currentUserUid);
-                    await Future.delayed(Duration(milliseconds: 500));
-                    if (mounted) {
-                      setState(() {});
+                stream: currentUserUid.isEmpty
+                    ? Stream.value(const <GamesRecord>[])
+                    : context
+                        .read<GameProvider>()
+                        .userGamesStream(currentUserUid),
+                initialData: _cachedGames ?? const <GamesRecord>[],
+                onRetry: () => updateState(this, () {}),
+                builder: (context, listViewGamesRecordList) {
+                  final visibleGames = listViewGamesRecordList.where((game) {
+                    if (game.isCancelled) {
+                      return false;
                     }
-                  },
-                  child: CustomScrollView(
-                    physics: const AlwaysScrollableScrollPhysics(
-                      parent: BouncingScrollPhysics(),
-                    ),
-                    slivers: [
-                      SliverPadding(
-                        padding: EdgeInsets.only(
-                          top: AppSpacing.md,
-                          // Account for bottom nav bar (56) + FAB (56) + spacing (16) + safe area
-                          bottom: MediaQuery.of(context).padding.bottom + 128.0,
-                        ),
-                        sliver: visibleGames.isEmpty
-                            ? SliverToBoxAdapter(
-                                child: Padding(
-                                  padding: EdgeInsets.symmetric(
-                                    vertical: AppSpacing.xl,
-                                  ),
-                                  child: Column(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    children: [
-                                      AppEmptyStatePremium(
-                                        assetPath: AppIcons.games,
-                                        title: 'No Games Yet',
-                                        message: 'Join or create a game to get started.',
-                                      ),
-                                      SizedBox(height: AppSpacing.lg),
-                                      SizedBox(
-                                        width: 220,
-                                        child: AppButtonEnhanced(
-                                          text: 'Create a game',
-                                          variant: AppButtonVariant.primary,
-                                          size: AppButtonSize.medium,
-                                          onPressed: () {
-                                            context.pushNamed(
-                                              CreateGameWidget.routeName,
-                                              extra: <String, dynamic>{
-                                                kTransitionInfoKey:
-                                                    TransitionStandards.detailTransition,
-                                              },
-                                            );
-                                          },
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              )
-                            : SliverList(
-                                delegate: SliverChildBuilderDelegate(
-                                  (context, listViewIndex) {
-                                    final game = visibleGames[listViewIndex];
-                                    return Padding(
-                                      padding: EdgeInsets.symmetric(
-                                        horizontal: AppSpacing.md,
-                                        vertical: AppSpacing.xs,
-                                      ),
-                                      child: _buildPremiumMyGameCard(context, game),
-                                    );
-                                  },
-                                  childCount: visibleGames.length,
-                                ),
-                              ),
+                    final status = game.snapshotData['status'];
+                    return status != 'cancelled';
+                  }).toList();
+
+                  return RefreshIndicator(
+                    color: AppColors.gold,
+                    backgroundColor: AppColors.navyDark,
+                    onRefresh: () async {
+                      context
+                          .read<GameProvider>()
+                          .invalidateUserGamesCache(currentUserUid);
+                      await Future.delayed(Duration(milliseconds: 500));
+                      if (mounted) {
+                        updateState(this, () {});
+                      }
+                    },
+                    child: CustomScrollView(
+                      physics: const AlwaysScrollableScrollPhysics(
+                        parent: BouncingScrollPhysics(),
                       ),
-                    ],
-                  ),
-                );
-            },
+                      slivers: [
+                        SliverPadding(
+                          padding: EdgeInsets.only(
+                            top: AppSpacing.md,
+                            // Account for bottom nav bar (56) + FAB (56) + spacing (16) + safe area
+                            bottom:
+                                MediaQuery.of(context).padding.bottom + 128.0,
+                          ),
+                          sliver: visibleGames.isEmpty
+                              ? SliverToBoxAdapter(
+                                  child: Padding(
+                                    padding: EdgeInsets.symmetric(
+                                      vertical: AppSpacing.xl,
+                                    ),
+                                    child: Column(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
+                                      children: [
+                                        AppEmptyStatePremium(
+                                          icon: AppPhosphorIcons.games,
+                                          title: 'No Games Yet',
+                                          message:
+                                              'Join or create a game to get started.',
+                                        ),
+                                        SizedBox(height: AppSpacing.lg),
+                                        SizedBox(
+                                          width: 220,
+                                          child: AppButtonEnhanced(
+                                            text: 'Create a game',
+                                            variant: AppButtonVariant.primary,
+                                            size: AppButtonSize.medium,
+                                            onPressed: () {
+                                              context.pushCreateGame(
+                                                transition: TransitionStandards
+                                                    .detailTransition,
+                                              );
+                                            },
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                )
+                              : SliverList(
+                                  delegate: SliverChildBuilderDelegate(
+                                    (context, listViewIndex) {
+                                      final game = visibleGames[listViewIndex];
+                                      return Padding(
+                                        padding: EdgeInsets.symmetric(
+                                          horizontal: AppSpacing.md,
+                                          vertical: AppSpacing.xs,
+                                        ),
+                                        child: _buildPremiumMyGameCard(
+                                            context, game),
+                                      );
+                                    },
+                                    childCount: visibleGames.length,
+                                  ),
+                                ),
+                        ),
+                      ],
+                    ),
+                  );
+                },
+              ),
+            ),
           ),
-        ),
-      ),
         ),
       ),
     );
@@ -199,27 +202,21 @@ class _GamesJoinedWidgetState extends State<GamesJoinedWidget> {
   // ═══════════════════════════════════════════════════════════════════════════
   Widget _buildPremiumMyGameCard(BuildContext context, GamesRecord gameRecord) {
     final game = Game.fromRecord(gameRecord);
-    final isOwner = currentUserUid.isNotEmpty && game.userRef?.id == currentUserUid;
+    final isOwner =
+        currentUserUid.isNotEmpty && game.userRef?.id == currentUserUid;
     final isCancelled = game.isCancelled;
-    final isExpired = game.date != null && game.date!.isBefore(getCurrentTimestamp) && !isCancelled;
-    final spotsLeft = game.maxPlayers - (game.joinedPlayers.length + game.guestPlayers.length);
+    final isExpired = game.date != null &&
+        game.date!.isBefore(getCurrentTimestamp) &&
+        !isCancelled;
+    final spotsLeft = game.maxPlayers -
+        (game.joinedPlayers.length + game.guestPlayers.length);
     final isFull = spotsLeft <= 0;
 
     return GestureDetector(
       onTap: () async {
         HapticFeedback.lightImpact();
-        context.pushNamed(
-          GameJoinedDetailedWidget.routeName,
-          extra: <String, dynamic>{
-            'gameRef': game.reference,
-            kTransitionInfoKey: TransitionInfo(
-                  hasTransition: true,
-                  transitionType: AppTransitionType.fade,
-                  enterDuration: Duration(milliseconds: 200),
-                  exitDuration: Duration(milliseconds: 170),
-                  scaleOnPush: true,
-                ),
-          },
+        context.pushGameJoinedDetailed(
+          gameRef: game.reference,
         );
       },
       child: Container(
@@ -254,7 +251,8 @@ class _GamesJoinedWidgetState extends State<GamesJoinedWidget> {
                           ),
                           decoration: BoxDecoration(
                             color: AppColors.navy,
-                            borderRadius: BorderRadius.circular(AppBorderRadius.chip),
+                            borderRadius:
+                                BorderRadius.circular(AppBorderRadius.chip),
                             border: Border.all(
                               color: AppColors.navyLight,
                               width: 1.0,
@@ -277,7 +275,8 @@ class _GamesJoinedWidgetState extends State<GamesJoinedWidget> {
                           ),
                           decoration: BoxDecoration(
                             color: AppColors.navy,
-                            borderRadius: BorderRadius.circular(AppBorderRadius.chip),
+                            borderRadius:
+                                BorderRadius.circular(AppBorderRadius.chip),
                             border: Border.all(
                               color: AppColors.navyLight,
                               width: 1.0,
@@ -300,7 +299,8 @@ class _GamesJoinedWidgetState extends State<GamesJoinedWidget> {
                           ),
                           decoration: BoxDecoration(
                             color: AppColors.gold.withValues(alpha: 0.2),
-                            borderRadius: BorderRadius.circular(AppBorderRadius.md),
+                            borderRadius:
+                                BorderRadius.circular(AppBorderRadius.md),
                           ),
                           child: Text(
                             '\$\$\$',
@@ -312,7 +312,8 @@ class _GamesJoinedWidgetState extends State<GamesJoinedWidget> {
                         ),
                       ],
                       // Player eligibility badge
-                      if (game.playerEligibility == PlayerEligibility.womenOnly) ...[
+                      if (game.playerEligibility ==
+                          PlayerEligibility.womenOnly) ...[
                         SizedBox(width: AppSpacing.xs),
                         Container(
                           padding: EdgeInsets.symmetric(
@@ -321,7 +322,8 @@ class _GamesJoinedWidgetState extends State<GamesJoinedWidget> {
                           ),
                           decoration: BoxDecoration(
                             color: AppColors.gold.withValues(alpha: 0.2),
-                            borderRadius: BorderRadius.circular(AppBorderRadius.md),
+                            borderRadius:
+                                BorderRadius.circular(AppBorderRadius.md),
                           ),
                           child: Text(
                             'Women Only',
@@ -331,7 +333,8 @@ class _GamesJoinedWidgetState extends State<GamesJoinedWidget> {
                             ),
                           ),
                         ),
-                      ] else if (game.playerEligibility == PlayerEligibility.menOnly) ...[
+                      ] else if (game.playerEligibility ==
+                          PlayerEligibility.menOnly) ...[
                         SizedBox(width: AppSpacing.xs),
                         Container(
                           padding: EdgeInsets.symmetric(
@@ -340,7 +343,8 @@ class _GamesJoinedWidgetState extends State<GamesJoinedWidget> {
                           ),
                           decoration: BoxDecoration(
                             color: AppColors.info.withValues(alpha: 0.2),
-                            borderRadius: BorderRadius.circular(AppBorderRadius.md),
+                            borderRadius:
+                                BorderRadius.circular(AppBorderRadius.md),
                           ),
                           child: Text(
                             'Men Only',
@@ -358,7 +362,8 @@ class _GamesJoinedWidgetState extends State<GamesJoinedWidget> {
                           padding: EdgeInsets.all(AppSpacing.xxs),
                           decoration: BoxDecoration(
                             color: AppColors.green.withValues(alpha: 0.15),
-                            borderRadius: BorderRadius.circular(AppBorderRadius.md),
+                            borderRadius:
+                                BorderRadius.circular(AppBorderRadius.md),
                           ),
                           child: AppIcon(
                             icon: AppPhosphorIcons.memberDiscount,
@@ -376,10 +381,11 @@ class _GamesJoinedWidgetState extends State<GamesJoinedWidget> {
                             vertical: AppSpacing.xxs,
                           ),
                           decoration: BoxDecoration(
-                            color: AppColors.error.withValues(alpha:0.2),
-                            borderRadius: BorderRadius.circular(AppBorderRadius.md),
+                            color: AppColors.error.withValues(alpha: 0.2),
+                            borderRadius:
+                                BorderRadius.circular(AppBorderRadius.md),
                             border: Border.all(
-                              color: AppColors.error.withValues(alpha:0.3),
+                              color: AppColors.error.withValues(alpha: 0.3),
                             ),
                           ),
                           child: Text(
@@ -397,8 +403,9 @@ class _GamesJoinedWidgetState extends State<GamesJoinedWidget> {
                             vertical: AppSpacing.xxs,
                           ),
                           decoration: BoxDecoration(
-                            color: AppColors.warning.withValues(alpha:0.2),
-                            borderRadius: BorderRadius.circular(AppBorderRadius.md),
+                            color: AppColors.warning.withValues(alpha: 0.2),
+                            borderRadius:
+                                BorderRadius.circular(AppBorderRadius.md),
                           ),
                           child: Text(
                             'Completed',
@@ -415,15 +422,17 @@ class _GamesJoinedWidgetState extends State<GamesJoinedWidget> {
                             vertical: AppSpacing.xxs,
                           ),
                           decoration: BoxDecoration(
-                            color: AppColors.green.withValues(alpha:0.9),
-                            borderRadius: BorderRadius.circular(AppBorderRadius.md),
+                            color: AppColors.green.withValues(alpha: 0.9),
+                            borderRadius:
+                                BorderRadius.circular(AppBorderRadius.md),
                           ),
                           child: Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
                               AppIcon(
                                   icon: AppPhosphorIcons.owner,
-                                  color: AppColors.pure, size: AppIconSize.xs),
+                                  color: AppColors.pure,
+                                  size: AppIconSize.xs),
                               SizedBox(width: 4),
                               Text(
                                 'Owner',
@@ -443,14 +452,16 @@ class _GamesJoinedWidgetState extends State<GamesJoinedWidget> {
                           ),
                           decoration: BoxDecoration(
                             color: AppColors.stone.withValues(alpha: 0.85),
-                            borderRadius: BorderRadius.circular(AppBorderRadius.md),
+                            borderRadius:
+                                BorderRadius.circular(AppBorderRadius.md),
                           ),
                           child: Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
                               AppIcon(
                                   icon: AppPhosphorIcons.joined,
-                                  color: AppColors.pure, size: AppIconSize.xs),
+                                  color: AppColors.pure,
+                                  size: AppIconSize.xs),
                               SizedBox(width: 4),
                               Text(
                                 'Joined',
@@ -475,7 +486,8 @@ class _GamesJoinedWidgetState extends State<GamesJoinedWidget> {
                         height: 36,
                         decoration: BoxDecoration(
                           color: AppColors.navyLight,
-                          borderRadius: BorderRadius.circular(AppBorderRadius.sm),
+                          borderRadius:
+                              BorderRadius.circular(AppBorderRadius.sm),
                         ),
                         child: Center(
                           child: AppIcon(
@@ -491,7 +503,8 @@ class _GamesJoinedWidgetState extends State<GamesJoinedWidget> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             AppExpandableText(
-                              text: valueOrDefault<String>(game.coursePlay, 'Course Name'),
+                              text: valueOrDefault<String>(
+                                  game.coursePlay, 'Course Name'),
                               style: AppTypography.titleSmall.copyWith(
                                 color: Colors.white,
                                 fontWeight: FontWeight.w600,
@@ -499,7 +512,8 @@ class _GamesJoinedWidgetState extends State<GamesJoinedWidget> {
                               maxLines: 1,
                             ),
                             Text(
-                              valueOrDefault<String>(game.nameGame, 'Game Name'),
+                              valueOrDefault<String>(
+                                  game.nameGame, 'Game Name'),
                               style: AppTypography.bodySmall.copyWith(
                                 color: AppColors.textSecondary,
                                 fontWeight: FontWeight.w500,
@@ -530,7 +544,8 @@ class _GamesJoinedWidgetState extends State<GamesJoinedWidget> {
                             height: 32,
                             decoration: BoxDecoration(
                               color: AppColors.navyLight.withValues(alpha: 0.2),
-                              borderRadius: BorderRadius.circular(AppBorderRadius.sm),
+                              borderRadius:
+                                  BorderRadius.circular(AppBorderRadius.sm),
                             ),
                             child: Center(
                               child: AppIcon(
@@ -575,7 +590,8 @@ class _GamesJoinedWidgetState extends State<GamesJoinedWidget> {
                               color: isFull
                                   ? AppColors.error.withValues(alpha: 0.2)
                                   : AppColors.navy,
-                              borderRadius: BorderRadius.circular(AppBorderRadius.chip),
+                              borderRadius:
+                                  BorderRadius.circular(AppBorderRadius.chip),
                               border: Border.all(
                                 color: isFull
                                     ? AppColors.error.withValues(alpha: 0.4)
@@ -588,14 +604,18 @@ class _GamesJoinedWidgetState extends State<GamesJoinedWidget> {
                               children: [
                                 AppIcon(
                                   icon: AppPhosphorIcons.golfers,
-                                  color: isFull ? AppColors.error : AppColors.textSecondary,
+                                  color: isFull
+                                      ? AppColors.error
+                                      : AppColors.textSecondary,
                                   size: AppIconSize.xs,
                                 ),
                                 SizedBox(width: 4),
                                 Text(
                                   '${game.joinedPlayers.length + game.guestPlayers.length}/${game.maxPlayers}',
                                   style: AppTypography.labelMicro.copyWith(
-                                    color: isFull ? AppColors.error : AppColors.textSecondary,
+                                    color: isFull
+                                        ? AppColors.error
+                                        : AppColors.textSecondary,
                                     fontWeight: FontWeight.w600,
                                   ),
                                 ),

@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import '/core/utils/state_update.dart';
 import 'package:flutter/material.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 
@@ -60,11 +61,11 @@ class _FallbackConfirmationScreenState
     } catch (e) {
       AppLog.d('FallbackConfirmationScreen load error: $e');
     }
-    if (mounted) setState(() { _loading = false; });
+    if (mounted) updateState(this, () { _loading = false; });
   }
 
   Future<void> _submit(bool didPlay) async {
-    setState(() { _submitting = true; _error = null; });
+    updateState(this, () { _submitting = true; _error = null; });
 
     try {
       final result = await makeCloudCall('submitFallbackConfirmation', {
@@ -73,13 +74,13 @@ class _FallbackConfirmationScreenState
       });
 
       if (result['success'] == true) {
-        if (mounted) setState(() { _submitting = false; _answered = didPlay; });
+        if (mounted) updateState(this, () { _submitting = false; _answered = didPlay; });
       } else {
-        if (mounted) setState(() { _submitting = false; _error = 'Submission failed. Please try again.'; });
+        if (mounted) updateState(this, () { _submitting = false; _error = 'Submission failed. Please try again.'; });
       }
     } catch (e) {
       AppLog.d('FallbackConfirmationScreen submit error: $e');
-      if (mounted) setState(() { _submitting = false; _error = 'Something went wrong. Please try again.'; });
+      if (mounted) updateState(this, () { _submitting = false; _error = 'Something went wrong. Please try again.'; });
     }
   }
 

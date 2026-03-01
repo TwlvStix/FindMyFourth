@@ -7,8 +7,6 @@ import '/core/design_tokens/app_phosphor_icons.dart';
 import '/core/design_tokens/icon_size.dart';
 import '/core/motion/motion_tokens.dart';
 import '/core/widgets/app_icon.dart';
-import '/main_function/join_game_detailed/join_game_detailed_widget.dart';
-import '/main_function/game_joined_detailed/game_joined_detailed_widget.dart';
 import '/models/game.dart';
 import '/models/player_eligibility.dart';
 import '/utils/app_util.dart';
@@ -35,7 +33,8 @@ class FlexibleGameCompactCard extends StatefulWidget {
   final int animationIndex;
 
   @override
-  State<FlexibleGameCompactCard> createState() => _FlexibleGameCompactCardState();
+  State<FlexibleGameCompactCard> createState() =>
+      _FlexibleGameCompactCardState();
 }
 
 class _FlexibleGameCompactCardState extends State<FlexibleGameCompactCard>
@@ -48,7 +47,8 @@ class _FlexibleGameCompactCardState extends State<FlexibleGameCompactCard>
   void initState() {
     super.initState();
 
-    final effectiveIndex = widget.animationIndex.clamp(0, MotionTokens.staggerMaxItems - 1);
+    final effectiveIndex =
+        widget.animationIndex.clamp(0, MotionTokens.staggerMaxItems - 1);
     final staggerDelay = MotionTokens.staggerDelay * effectiveIndex;
 
     _controller = AnimationController(
@@ -102,20 +102,12 @@ class _FlexibleGameCompactCardState extends State<FlexibleGameCompactCard>
     return GestureDetector(
       onTap: () {
         if (isUserGame) {
-          context.pushNamed(
-            GameJoinedDetailedWidget.routeName,
-            extra: <String, dynamic>{
-              'gameRef': game.reference,
-              kTransitionInfoKey: TransitionStandards.detailTransition,
-            },
+          context.pushGameJoinedDetailed(
+            gameRef: game.reference,
           );
         } else {
-          context.pushNamed(
-            JoinGameDetailedWidget.routeName,
-            extra: <String, dynamic>{
-              'gameRef': game.reference,
-              kTransitionInfoKey: TransitionStandards.detailTransition,
-            },
+          context.pushJoinGameDetailed(
+            gameRef: game.reference,
           );
         }
       },
@@ -134,73 +126,73 @@ class _FlexibleGameCompactCardState extends State<FlexibleGameCompactCard>
             ),
           ),
           child: Stack(
-          children: [
-            // Gold accent bar on the left
-            Positioned(
-              left: 0,
-              top: 0,
-              bottom: 0,
-              child: Container(
-                width: 4,
-                decoration: BoxDecoration(
-                  color: AppColors.gold.withValues(alpha: 0.5),
-                  borderRadius: BorderRadius.only(
-                    topLeft: Radius.circular(AppBorderRadius.lg - 1),
-                    bottomLeft: Radius.circular(AppBorderRadius.lg - 1),
-                  ),
-                ),
-              ),
-            ),
-            // Cancelled badge (top-right)
-            if (isCancelled)
+            children: [
+              // Gold accent bar on the left
               Positioned(
-                top: AppSpacing.xs,
-                right: AppSpacing.xs,
+                left: 0,
+                top: 0,
+                bottom: 0,
                 child: Container(
-                  padding: EdgeInsets.symmetric(
-                    horizontal: AppSpacing.xs,
-                    vertical: 2,
-                  ),
+                  width: 4,
                   decoration: BoxDecoration(
-                    color: AppColors.error.withValues(alpha: 0.15),
-                    borderRadius: BorderRadius.circular(AppBorderRadius.chip),
-                    border: Border.all(
-                      color: AppColors.error.withValues(alpha: 0.3),
-                      width: 1,
-                    ),
-                  ),
-                  child: Text(
-                    'Cancelled',
-                    style: AppTypography.labelMicro.copyWith(
-                      color: AppColors.error,
-                      fontWeight: FontWeight.w600,
+                    color: AppColors.gold.withValues(alpha: 0.5),
+                    borderRadius: BorderRadius.only(
+                      topLeft: Radius.circular(AppBorderRadius.lg - 1),
+                      bottomLeft: Radius.circular(AppBorderRadius.lg - 1),
                     ),
                   ),
                 ),
               ),
-            // Main content
-            Padding(
-              padding: EdgeInsets.only(
-                left: AppSpacing.sm + 4, // Extra padding for gold bar
-                top: AppSpacing.sm,
-                right: AppSpacing.sm,
-                bottom: AppSpacing.sm,
+              // Cancelled badge (top-right)
+              if (isCancelled)
+                Positioned(
+                  top: AppSpacing.xs,
+                  right: AppSpacing.xs,
+                  child: Container(
+                    padding: EdgeInsets.symmetric(
+                      horizontal: AppSpacing.xs,
+                      vertical: 2,
+                    ),
+                    decoration: BoxDecoration(
+                      color: AppColors.error.withValues(alpha: 0.15),
+                      borderRadius: BorderRadius.circular(AppBorderRadius.chip),
+                      border: Border.all(
+                        color: AppColors.error.withValues(alpha: 0.3),
+                        width: 1,
+                      ),
+                    ),
+                    child: Text(
+                      'Cancelled',
+                      style: AppTypography.labelMicro.copyWith(
+                        color: AppColors.error,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                ),
+              // Main content
+              Padding(
+                padding: EdgeInsets.only(
+                  left: AppSpacing.sm + 4, // Extra padding for gold bar
+                  top: AppSpacing.sm,
+                  right: AppSpacing.sm,
+                  bottom: AppSpacing.sm,
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    // Row 1: Course name + Player count
+                    _buildRow1(game),
+                    // Row 2: Availability with calendar icon
+                    _buildRow2(game),
+                    // Row 3: Stakes tag (THE HOOK)
+                    _buildRow3(game),
+                  ],
+                ),
               ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  // Row 1: Course name + Player count
-                  _buildRow1(game),
-                  // Row 2: Availability with calendar icon
-                  _buildRow2(game),
-                  // Row 3: Stakes tag (THE HOOK)
-                  _buildRow3(game),
-                ],
-              ),
-            ),
-          ],
-        ),
+            ],
+          ),
         ),
       ),
     );
@@ -291,8 +283,7 @@ class _FlexibleGameCompactCardState extends State<FlexibleGameCompactCard>
         const Spacer(),
 
         // Eligibility pill on RIGHT (only if restricted)
-        if (eligibilityLabel != null)
-          _buildEligibilityPill(eligibilityLabel),
+        if (eligibilityLabel != null) _buildEligibilityPill(eligibilityLabel),
       ],
     );
   }

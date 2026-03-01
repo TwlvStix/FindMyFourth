@@ -3,8 +3,6 @@ import 'package:flutter/services.dart';
 import '/backend/backend.dart';
 import '/core/utils/app_log.dart';
 import '/utils/app_util.dart';
-import '/profile/create_profile/create_profile_widget.dart';
-import '/main_function/games_list/games_list_widget.dart';
 import '/services/profile_setup_service.dart';
 import '../core/design_tokens/colors.dart';
 import '../core/design_tokens/spacing.dart';
@@ -129,8 +127,8 @@ class _CinematicOnboardingWidgetState extends State<CinematicOnboardingWidget>
     final nextRoute = GoRouterState.of(context).uri.queryParameters['next'];
     final nextAfterProfile = nextRoute == null ||
             nextRoute.isEmpty ||
-            nextRoute == CreateProfileWidget.routeName
-        ? GamesListWidget.routeName
+            nextRoute == AppRouteNames.createProfile
+        ? AppRouteNames.gamesList
         : nextRoute;
 
     final recordReady = await _ensureUserRecord();
@@ -149,11 +147,8 @@ class _CinematicOnboardingWidgetState extends State<CinematicOnboardingWidget>
     }
 
     if (mounted) {
-      context.goNamed(
-        CreateProfileWidget.routeName,
-        queryParameters: {
-          'next': nextAfterProfile,
-        },
+      context.goCreateProfile(
+        next: nextAfterProfile,
       );
     }
   }

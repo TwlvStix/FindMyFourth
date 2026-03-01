@@ -20,7 +20,7 @@ import '/core/widgets/app_icon.dart';
 /// - Haptic feedback on tap
 /// - Consistent styling with design tokens
 ///
-/// Icon priority: phosphorIcon > svgPath > emoji > icon (Material)
+/// Icon priority: phosphorIcon > emoji > icon (Material)
 ///
 /// Used for: Game type selection, course type, scoring method, etc.
 class SelectionCard extends StatelessWidget {
@@ -31,7 +31,6 @@ class SelectionCard extends StatelessWidget {
     required this.isSelected,
     required this.onTap,
     this.emoji,
-    this.svgPath,
     this.phosphorIcon,
   });
 
@@ -41,8 +40,6 @@ class SelectionCard extends StatelessWidget {
   final bool isSelected;
   final VoidCallback onTap;
   final String? emoji;
-  /// Optional SVG asset path (use AppIcons constants). Takes priority over emoji.
-  final String? svgPath;
   /// Phosphor icon (preferred). Takes priority over all other icon types.
   final PhosphorIconData? phosphorIcon;
 
@@ -96,26 +93,18 @@ class SelectionCard extends StatelessWidget {
               child: phosphorIcon != null
                   ? Center(
                       child: AppIcon(
-                        icon: phosphorIcon,
+                        icon: phosphorIcon!,
                         size: AppIconSize.button,
                         color: AppColors.pure,
                       ),
                     )
-                  : svgPath != null
+                  : emoji != null
                       ? Center(
-                          child: AppIcon(
-                            assetPath: svgPath!,
-                            size: AppIconSize.button,
-                            color: AppColors.pure,
-                          ),
+                          child: Text(emoji!, style: AppTypography.bodyLarge.copyWith(fontSize: 18)),
                         )
-                      : emoji != null
-                          ? Center(
-                              child: Text(emoji!, style: AppTypography.bodyLarge.copyWith(fontSize: 18)),
-                            )
-                          : icon != null
-                              ? Icon(icon, color: AppColors.pure, size: AppIconSize.button)
-                              : const SizedBox.shrink(),
+                      : icon != null
+                          ? Icon(icon, color: AppColors.pure, size: AppIconSize.button)
+                          : const SizedBox.shrink(),
             ),
             SizedBox(height: AppSpacing.xxs),
             Flexible(

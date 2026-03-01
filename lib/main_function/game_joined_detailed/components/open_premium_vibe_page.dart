@@ -48,10 +48,9 @@ Future<void> openPremiumVibePage({
       return;
     }
 
-    context.pushNamed(
-      'PremiumVibePage',
-      pathParameters: {'userId': userRef.id},
-      extra: pageData,
+    context.pushPremiumVibePage(
+      userId: userRef.id,
+      data: pageData,
     );
   } catch (_) {
     if (!context.mounted) {

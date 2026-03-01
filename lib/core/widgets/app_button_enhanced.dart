@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:phosphor_flutter/phosphor_flutter.dart';
 import '/core/motion/motion_tokens.dart';
 import '/core/motion/reduced_motion.dart';
 import '../design_tokens/border_radius.dart';
@@ -98,8 +99,8 @@ class AppButtonEnhanced extends StatefulWidget {
     this.size = AppButtonSize.medium,
     this.leadingIcon,
     this.trailingIcon,
-    this.leadingSvgPath,
-    this.trailingSvgPath,
+    this.leadingPhosphorIcon,
+    this.trailingPhosphorIcon,
     this.leadingWidget,
     this.isLoading = false,
     this.enabled = true,
@@ -126,13 +127,13 @@ class AppButtonEnhanced extends StatefulWidget {
   /// Optional icon after text (IconData)
   final IconData? trailingIcon;
 
-  /// Optional SVG icon before text (takes precedence over leadingIcon)
-  final String? leadingSvgPath;
+  /// Optional Phosphor icon before text (takes precedence over leadingIcon)
+  final PhosphorIconData? leadingPhosphorIcon;
 
-  /// Optional SVG icon after text (takes precedence over trailingIcon)
-  final String? trailingSvgPath;
+  /// Optional Phosphor icon after text (takes precedence over trailingIcon)
+  final PhosphorIconData? trailingPhosphorIcon;
 
-  /// Optional custom widget before text (takes precedence over leadingSvgPath and leadingIcon)
+  /// Optional custom widget before text (takes precedence over leadingPhosphorIcon and leadingIcon)
   final Widget? leadingWidget;
 
   /// Show loading indicator and disable interaction
@@ -629,9 +630,9 @@ class _AppButtonEnhancedState extends State<AppButtonEnhanced>
         if (widget.leadingWidget != null) ...[
           widget.leadingWidget!,
           SizedBox(width: widget.size == AppButtonSize.small ? 6.0 : 8.0),
-        ] else if (widget.leadingSvgPath != null) ...[
+        ] else if (widget.leadingPhosphorIcon != null) ...[
           AppIcon(
-            assetPath: widget.leadingSvgPath!,
+            icon: widget.leadingPhosphorIcon!,
             size: _iconSize,
             color: _getTextColor(),
           ),
@@ -654,10 +655,10 @@ class _AppButtonEnhancedState extends State<AppButtonEnhanced>
             maxLines: 1,
           ),
         ),
-        if (widget.trailingSvgPath != null) ...[
+        if (widget.trailingPhosphorIcon != null) ...[
           SizedBox(width: widget.size == AppButtonSize.small ? 6.0 : 8.0),
           AppIcon(
-            assetPath: widget.trailingSvgPath!,
+            icon: widget.trailingPhosphorIcon!,
             size: _iconSize,
             color: _getTextColor(),
           ),

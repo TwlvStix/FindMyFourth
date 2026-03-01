@@ -1,16 +1,18 @@
 import '../form_field_controller.dart';
+import '/core/utils/state_update.dart';
 
 import 'package:flutter/material.dart';
+import 'package:phosphor_flutter/phosphor_flutter.dart';
 import '/core/design_tokens/border_radius.dart';
 import 'package:flutter/scheduler.dart';
 import '/utils/app_util.dart';
 import 'app_icon.dart';
 
 class ChipData {
-  const ChipData(this.label, [this.iconData, this.svgPath]);
+  const ChipData(this.label, [this.iconData, this.phosphorIcon]);
   final String label;
   final IconData? iconData;
-  final String? svgPath;
+  final PhosphorIconData? phosphorIcon;
 }
 
 class ChipStyle {
@@ -113,12 +115,12 @@ class _AppChoiceChipsState extends State<AppChoiceChips> {
                           ? choiceChipValues.add(option.label)
                           : choiceChipValues = [option.label];
                       widget.controller.value = List.from(choiceChipValues);
-                      setState(() {});
+                      updateState(this, () {});
                     } else {
                       if (widget.multiselect) {
                         choiceChipValues.remove(option.label);
                         widget.controller.value = List.from(choiceChipValues);
-                        setState(() {});
+                        updateState(this, () {});
                       }
                     }
                     widget.onChanged!(choiceChipValues);
@@ -130,9 +132,9 @@ class _AppChoiceChipsState extends State<AppChoiceChips> {
               overflow: TextOverflow.ellipsis,
             ),
             labelPadding: style.labelPadding,
-            avatar: option.svgPath != null
+            avatar: option.phosphorIcon != null
                 ? AppIcon(
-                    assetPath: option.svgPath!,
+                    icon: option.phosphorIcon!,
                     size: style.iconSize ?? 18,
                     color: style.iconColor,
                   )

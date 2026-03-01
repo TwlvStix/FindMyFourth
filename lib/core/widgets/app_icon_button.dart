@@ -81,7 +81,6 @@ class _AppIconButtonState extends State<AppIconButton> {
     } else if (widget.icon is AppIcon) {
       AppIcon icon = widget.icon as AppIcon;
       effectiveIcon = AppIcon(
-        assetPath: icon.assetPath,
         icon: icon.icon,
         size: icon.size,
         color: icon.color,

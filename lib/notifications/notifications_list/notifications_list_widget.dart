@@ -18,7 +18,6 @@ import '/core/widgets/app_icon.dart';
 import '/core/widgets/app_popup_menu.dart';
 import '/core/widgets/fairway_background.dart';
 import '/core/widgets/premium_back_button.dart';
-import '/main_function/join_game_detailed/join_game_detailed_widget.dart';
 import '/utils/app_util.dart';
 
 class NotificationsListWidget extends StatefulWidget {
@@ -286,12 +285,8 @@ class _NotificationsListWidgetState extends State<NotificationsListWidget> {
           await _showFriendsOnlyDialog();
           return;
         }
-        context.pushNamed(
-          JoinGameDetailedWidget.routeName,
-          extra: <String, dynamic>{
-            'gameRef': gameRef,
-            kTransitionInfoKey: TransitionStandards.detailTransition,
-          },
+        context.pushJoinGameDetailed(
+          gameRef: gameRef,
         );
       }
       return;
@@ -299,18 +294,14 @@ class _NotificationsListWidgetState extends State<NotificationsListWidget> {
     if (type == 'chat_message') {
       final chatId = payload['threadId'] ?? payload['chatId'];
       if (chatId is String && chatId.isNotEmpty) {
-        context.pushNamed(
-          'ChatDetails',
-          pathParameters: {'chatId': chatId},
-          extra: <String, dynamic>{
-            kTransitionInfoKey: TransitionStandards.detailTransition,
-          },
+        context.pushChatDetails(
+          chatId: chatId,
         );
       }
       return;
     }
     if (type == 'dispute_resolved_upheld') {
-      context.pushNamed('YourStanding');
+      context.pushYourStanding();
       return;
     }
     if (_isTrustGameNotification(type)) {
@@ -321,41 +312,29 @@ class _NotificationsListWidgetState extends State<NotificationsListWidget> {
           await _showFriendsOnlyDialog();
           return;
         }
-        context.pushNamed(
-          JoinGameDetailedWidget.routeName,
-          extra: <String, dynamic>{
-            'gameRef': gameRef,
-            kTransitionInfoKey: TransitionStandards.detailTransition,
-          },
+        context.pushJoinGameDetailed(
+          gameRef: gameRef,
         );
       }
       return;
     }
     if (_isTrustAccountNotification(type)) {
-      context.pushNamed('YourStanding');
+      context.pushYourStanding();
       return;
     }
     if (_isBadgeNotification(type)) {
-      context.pushNamed('MainProfile');
+      context.pushMainProfile();
       return;
     }
     if (type == 'friend_request_received') {
-      context.pushNamed(
-        'Golfers',
-        extra: <String, dynamic>{
-          'initialSegment': 'requests',
-          kTransitionInfoKey: TransitionStandards.detailTransition,
-        },
+      context.pushTabFriends(
+        initialSegment: 'requests',
       );
       return;
     }
     if (type == 'friend_request_accepted') {
-      context.pushNamed(
-        'Golfers',
-        extra: <String, dynamic>{
-          'initialSegment': 'friends',
-          kTransitionInfoKey: TransitionStandards.detailTransition,
-        },
+      context.pushTabFriends(
+        initialSegment: 'friends',
       );
       return;
     }
@@ -764,8 +743,8 @@ class _NotificationsListWidgetState extends State<NotificationsListWidget> {
                                                         AppButtonVariant.ghost,
                                                     size: AppButtonSize.small,
                                                     onPressed: () {
-                                                      context.pushNamed(
-                                                          'YourStanding');
+                                                      context
+                                                          .pushYourStanding();
                                                     },
                                                   ),
                                                 ),

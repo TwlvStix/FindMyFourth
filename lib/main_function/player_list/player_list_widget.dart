@@ -1,4 +1,5 @@
 import 'dart:async';
+import '/core/utils/state_update.dart';
 
 import '/auth/firebase_auth/auth_util.dart';
 import '/core/utils/app_log.dart';
@@ -13,7 +14,6 @@ import '/core/design_tokens/typography.dart';
 import '/core/design_tokens/icon_size.dart';
 import '/core/design_tokens/app_phosphor_icons.dart';
 import '/core/widgets/app_icon.dart';
-import '/main_function/games_list/games_list_widget.dart';
 import '/models/game.dart';
 import '/models/player_eligibility.dart';
 import '/models/user_profile.dart';
@@ -109,7 +109,7 @@ class _PlayerListWidgetState extends State<PlayerListWidget> {
   @override
   void initState() {
     super.initState();
-    // ✅ PERFORMANCE: Removed empty post-frame setState (no-op rebuild)
+    // ✅ PERFORMANCE: Removed empty post-frame updateState(this, no-op rebuild)
   }
 
   @override
@@ -127,7 +127,7 @@ class _PlayerListWidgetState extends State<PlayerListWidget> {
     _searchDebounce = Timer(const Duration(milliseconds: 300), () {
       if (!mounted) return;
       if (query.length < _minSearchChars) {
-        setState(() {
+        updateState(this, () {
           _activeQuery = query;
           _searchResults = [];
           _lastDocument = null;
@@ -147,7 +147,7 @@ class _PlayerListWidgetState extends State<PlayerListWidget> {
       PlayerEligibility eligibility = PlayerEligibility.openToAll}) {
     if (isGuest) {
       // Guests are always allowed - trust the owner to add eligible guests
-      setState(() {
+      updateState(this, () {
         _playerSlots[slotIndex] = {
           'uid': guestOptionValue,
           'name': 'Guest',
@@ -191,7 +191,7 @@ class _PlayerListWidgetState extends State<PlayerListWidget> {
       return;
     }
 
-    setState(() {
+    updateState(this, () {
       _playerSlots[slotIndex] = {
         'uid': uid,
         'name': profile.displayName.isNotEmpty ? profile.displayName : 'Player',
@@ -205,7 +205,7 @@ class _PlayerListWidgetState extends State<PlayerListWidget> {
   }
 
   void _removePlayerFromSlot(int slotIndex) {
-    setState(() {
+    updateState(this, () {
       _playerSlots.remove(slotIndex);
     });
   }
@@ -216,7 +216,7 @@ class _PlayerListWidgetState extends State<PlayerListWidget> {
       AppLog.d(
         '🔍 AddPlayer search: query="$query" length=${query.length} reset=$reset',
       );
-      setState(() {
+      updateState(this, () {
         _isSearching = true;
         _activeQuery = query;
         if (reset) {
@@ -242,7 +242,7 @@ class _PlayerListWidgetState extends State<PlayerListWidget> {
             profile.displayName.isNotEmpty ? profile.displayName : 'Name';
       }
 
-      setState(() {
+      updateState(this, () {
         _lastDocument = page.lastDocument;
         _hasMoreResults = page.hasMoreResults;
         if (reset) {
@@ -259,7 +259,7 @@ class _PlayerListWidgetState extends State<PlayerListWidget> {
       _refreshModalIfOpen();
     } catch (e) {
       if (!mounted || searchToken != _searchToken) return;
-      setState(() {
+      updateState(this, () {
         _isSearching = false;
         _hasMoreResults = false;
         if (reset) {
@@ -1263,7 +1263,7 @@ class _PlayerListWidgetState extends State<PlayerListWidget> {
                                                       return;
                                                     }
 
-                                                    setState(() {
+                                                    updateState(this, () {
                                                       _isSubmitting = true;
                                                     });
 
@@ -1300,7 +1300,7 @@ class _PlayerListWidgetState extends State<PlayerListWidget> {
                                                               AppColors.error,
                                                         ),
                                                       );
-                                                      setState(() {
+                                                      updateState(this, () {
                                                         _isSubmitting = false;
                                                       });
                                                       return;
@@ -1358,7 +1358,7 @@ class _PlayerListWidgetState extends State<PlayerListWidget> {
                                                               AppColors.error,
                                                         ),
                                                       );
-                                                      setState(() {
+                                                      updateState(this, () {
                                                         _isSubmitting = false;
                                                       });
                                                       return;
@@ -1412,7 +1412,7 @@ class _PlayerListWidgetState extends State<PlayerListWidget> {
                                                                       .error,
                                                             ),
                                                           );
-                                                          setState(() {
+                                                          updateState(this, () {
                                                             _isSubmitting =
                                                                 false;
                                                           });
@@ -1449,10 +1449,7 @@ class _PlayerListWidgetState extends State<PlayerListWidget> {
 
                                                       if (!mounted) return;
 
-                                                      // Use context.goNamed for standard API
-                                                      context.goNamed(
-                                                          GamesListWidget
-                                                              .routeName);
+                                                      context.goGamesList();
                                                     } catch (e) {
                                                       AppLog.d(
                                                           '❌ PLAYER LIST: Error adding players: $e');
@@ -1466,7 +1463,7 @@ class _PlayerListWidgetState extends State<PlayerListWidget> {
                                                               AppColors.error,
                                                         ),
                                                       );
-                                                      setState(() {
+                                                      updateState(this, () {
                                                         _isSubmitting = false;
                                                       });
                                                     }

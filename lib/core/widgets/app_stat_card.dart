@@ -140,7 +140,7 @@ class AppStatCard extends StatelessWidget {
                 children: [
                   if (icon != null) ...[
                     AppIcon(
-                      icon: icon,
+                      icon: icon!,
                       color: AppColors.navy,
                       size: AppIconSize.button,
                     ),

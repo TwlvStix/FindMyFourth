@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:phosphor_flutter/phosphor_flutter.dart';
 import '../design_tokens/colors.dart';
 import '../design_tokens/icon_size.dart';
 import '../design_tokens/typography.dart';
@@ -31,8 +32,8 @@ class AppListTile extends StatelessWidget {
   final String? avatarInitials;
   final IconData? leadingIcon;
   final IconData? trailingIcon;
-  final String? leadingSvgPath;
-  final String? trailingSvgPath;
+  final PhosphorIconData? leadingPhosphorIcon;
+  final PhosphorIconData? trailingPhosphorIcon;
   final AppListTileVariant variant;
   final VoidCallback? onTap;
   final bool showDivider;
@@ -48,8 +49,8 @@ class AppListTile extends StatelessWidget {
     this.avatarInitials,
     this.leadingIcon,
     this.trailingIcon,
-    this.leadingSvgPath,
-    this.trailingSvgPath,
+    this.leadingPhosphorIcon,
+    this.trailingPhosphorIcon,
     this.variant = AppListTileVariant.standard,
     this.onTap,
     this.showDivider = true,
@@ -174,7 +175,7 @@ class AppListTile extends StatelessWidget {
                 ? AppAvatarSize.small
                 : AppAvatarSize.medium,
           )
-        else if (leadingSvgPath != null)
+        else if (leadingPhosphorIcon != null)
           Container(
             width: 40,
             height: 40,
@@ -184,7 +185,7 @@ class AppListTile extends StatelessWidget {
             ),
             child: Center(
               child: AppIcon(
-                assetPath: leadingSvgPath!,
+                icon: leadingPhosphorIcon!,
                 color: AppColors.slate,
                 size: AppIconSize.button,
               ),
@@ -207,7 +208,7 @@ class AppListTile extends StatelessWidget {
         if (leadingWidget != null ||
             avatarUrl != null ||
             avatarInitials != null ||
-            leadingSvgPath != null ||
+            leadingPhosphorIcon != null ||
             leadingIcon != null)
           SizedBox(width: AppSpacing.sm),
         Expanded(
@@ -236,7 +237,7 @@ class AppListTile extends StatelessWidget {
             ],
           ),
         ),
-        if (trailing != null || trailingWidget != null || trailingSvgPath != null || trailingIcon != null)
+        if (trailing != null || trailingWidget != null || trailingPhosphorIcon != null || trailingIcon != null)
           SizedBox(width: AppSpacing.sm),
         if (trailingWidget != null)
           trailingWidget!
@@ -247,9 +248,9 @@ class AppListTile extends StatelessWidget {
               color: AppColors.stone,
             ),
           )
-        else if (trailingSvgPath != null)
+        else if (trailingPhosphorIcon != null)
           AppIcon(
-            assetPath: trailingSvgPath!,
+            icon: trailingPhosphorIcon!,
             color: AppColors.slate,
             size: AppIconSize.button,
           )

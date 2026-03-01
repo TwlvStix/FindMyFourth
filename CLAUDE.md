@@ -101,7 +101,7 @@ firebase deploy
 - `services/` - Firestore operations and business logic
 - `providers/` - State management with ChangeNotifiers
 - `backend/schema/` - Legacy FlutterFlow Firestore record classes (UsersRecord, GamesRecord, etc.)
-- `backend/api_requests/` - Service classes for Firestore access
+- `services/` - Service and repository classes for Firestore/domain access
 - `core/` - Design system, widgets, utilities, navigation
 
 ### Design System

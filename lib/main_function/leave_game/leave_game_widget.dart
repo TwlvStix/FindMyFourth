@@ -7,7 +7,6 @@ import '/core/design_tokens/spacing.dart';
 import '/core/design_tokens/colors.dart';
 import '/core/design_tokens/typography.dart';
 import 'dart:ui';
-import '/main_function/success_page/success_page_widget.dart';
 import '/models/game.dart';
 import '/screens/trust/cancellation_warning_modal.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -188,17 +187,8 @@ class _LeaveGameWidgetState extends State<LeaveGameWidget> {
                                 return;
                               }
 
-                              context.pushNamed(
-                                SuccessPageWidget.routeName,
-                                extra: <String, dynamic>{
-                                  kTransitionInfoKey: TransitionInfo(
-                                    hasTransition: true,
-                                    transitionType: AppTransitionType.fade,
-                                    enterDuration: Duration(milliseconds: 200),
-                                    exitDuration: Duration(milliseconds: 170),
-                                    scaleOnPush: true,
-                                  ),
-                                },
+                              context.pushSuccessPage(
+                                transition: TransitionStandards.modalTransition,
                               );
                             },
                             text: 'Cancel My Spot',

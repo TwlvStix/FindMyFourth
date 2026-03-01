@@ -45,7 +45,6 @@ class CardGrid extends StatelessWidget {
           icon: option['icon'] as IconData?,
           label: option['label'] as String,
           emoji: option['emoji'] as String?,
-          svgPath: option['svgPath'] as String?,
           phosphorIcon: option['phosphorIcon'] as PhosphorIconData?,
           isSelected: isSelected,
           onTap: () => onChanged(option['value'] as String),

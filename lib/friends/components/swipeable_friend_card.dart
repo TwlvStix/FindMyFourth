@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '/core/utils/state_update.dart';
 import 'package:flutter/services.dart';
 import '/core/design_tokens/colors.dart';
 import '/core/design_tokens/spacing.dart';
@@ -65,7 +66,7 @@ class _SwipeableFriendCardState extends State<SwipeableFriendCard>
   void _handleDragStart(DragStartDetails details) {
     _dragUnderway = true;
     if (mounted) {
-      setState(() {});
+      updateState(this, () {});
     }
   }
 
@@ -83,12 +84,12 @@ class _SwipeableFriendCardState extends State<SwipeableFriendCard>
 
     if (oldDragExtent.sign != _dragExtent.sign) {
       if (mounted) {
-        setState(() {});
+        updateState(this, () {});
       }
     }
 
     if (_dragExtent != oldDragExtent && mounted) {
-      setState(() {});
+      updateState(this, () {});
     }
   }
 
@@ -114,7 +115,7 @@ class _SwipeableFriendCardState extends State<SwipeableFriendCard>
     // Reset
     _dragExtent = 0;
     if (mounted) {
-      setState(() {});
+      updateState(this, () {});
     }
   }
 

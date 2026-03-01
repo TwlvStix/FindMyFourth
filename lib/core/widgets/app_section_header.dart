@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:phosphor_flutter/phosphor_flutter.dart';
 import '../design_tokens/colors.dart';
 import '../design_tokens/typography.dart';
 import '../design_tokens/spacing.dart';
@@ -23,7 +24,7 @@ import 'app_icon.dart';
 ///   subtitle: 'Last 30 days',
 ///   actionText: 'See All',
 ///   onActionTap: () => navigateToAllGames(),
-///   leadingSvgPath: AppIcons.games,
+///   leadingPhosphorIcon: AppPhosphorIcons.games,
 /// )
 /// ```
 class AppSectionHeader extends StatelessWidget {
@@ -34,7 +35,7 @@ class AppSectionHeader extends StatelessWidget {
     this.actionText,
     this.onActionTap,
     this.leadingIcon,
-    this.leadingSvgPath,
+    this.leadingPhosphorIcon,
   });
 
   /// Section title (required)
@@ -52,8 +53,8 @@ class AppSectionHeader extends StatelessWidget {
   /// Optional leading icon (IconData)
   final IconData? leadingIcon;
 
-  /// Optional leading SVG icon (takes precedence over leadingIcon)
-  final String? leadingSvgPath;
+  /// Optional leading Phosphor icon (takes precedence over leadingIcon)
+  final PhosphorIconData? leadingPhosphorIcon;
 
   @override
   Widget build(BuildContext context) {
@@ -64,9 +65,9 @@ class AppSectionHeader extends StatelessWidget {
       ),
       child: Row(
         children: [
-          if (leadingSvgPath != null) ...[
+          if (leadingPhosphorIcon != null) ...[
             AppIcon(
-              assetPath: leadingSvgPath!,
+              icon: leadingPhosphorIcon!,
               color: AppColors.navy,
               size: AppIconSize.button,
             ),

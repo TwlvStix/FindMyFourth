@@ -26,4 +26,6 @@ jobs:
         run: flutter pub get
 
       - name: Run lint gate
+        env:
+          SETSTATE_BUDGET: "150"
         run: ./scripts/lint_lib.sh

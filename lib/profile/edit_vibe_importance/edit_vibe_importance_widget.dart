@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '/core/utils/state_update.dart';
 import 'package:flutter/services.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '/auth/firebase_auth/auth_util.dart';
@@ -50,7 +51,7 @@ class _EditVibeImportanceWidgetState extends State<EditVibeImportanceWidget> {
       if (!mounted) {
         return;
       }
-      setState(() {
+      updateState(this, () {
         _importance =
             Map<VibeCategory, VibeImportance>.from(profile.importance);
         _isLoading = false;
@@ -59,7 +60,7 @@ class _EditVibeImportanceWidgetState extends State<EditVibeImportanceWidget> {
       if (!mounted) {
         return;
       }
-      setState(() {
+      updateState(this, () {
         _isLoading = false;
       });
     }
@@ -81,13 +82,13 @@ class _EditVibeImportanceWidgetState extends State<EditVibeImportanceWidget> {
   void _setImportance(VibeCategory category, VibeImportance next) {
     final current = _importance[category] ?? VibeImportance.normal;
     if (current == next) {
-      setState(() {
+      updateState(this, () {
         _importance = Map<VibeCategory, VibeImportance>.from(_importance)
           ..[category] = VibeImportance.normal;
       });
       return;
     }
-    setState(() {
+    updateState(this, () {
       final updated = Map<VibeCategory, VibeImportance>.from(_importance);
       if (next == VibeImportance.top && _topCount >= 2) {
         // Auto-clear another top to allow this selection.
@@ -119,7 +120,7 @@ class _EditVibeImportanceWidgetState extends State<EditVibeImportanceWidget> {
     if (_isSaving) {
       return;
     }
-    setState(() {
+    updateState(this, () {
       _importance = {
         for (final category in VibeCategory.values)
           category: VibeImportance.normal,
@@ -143,7 +144,7 @@ class _EditVibeImportanceWidgetState extends State<EditVibeImportanceWidget> {
       _showSnack('Please sign in to save priorities.');
       return;
     }
-    setState(() {
+    updateState(this, () {
       _isSaving = true;
     });
     try {
@@ -162,7 +163,7 @@ class _EditVibeImportanceWidgetState extends State<EditVibeImportanceWidget> {
           ? 'Unable to save priorities. Permission denied.'
           : 'Unable to save priorities. Please try again.';
       _showSnack(message);
-      setState(() {
+      updateState(this, () {
         _isSaving = false;
       });
     } catch (error, stackTrace) {
@@ -172,7 +173,7 @@ class _EditVibeImportanceWidgetState extends State<EditVibeImportanceWidget> {
         return;
       }
       _showSnack('Unable to save priorities. Please try again.');
-      setState(() {
+      updateState(this, () {
         _isSaving = false;
       });
     }

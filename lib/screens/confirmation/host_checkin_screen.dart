@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import '/core/utils/state_update.dart';
 import 'package:flutter/material.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 
@@ -74,7 +75,7 @@ class _HostCheckinScreenState extends State<HostCheckinScreen> {
           .toList(growable: false);
 
       if (mounted) {
-        setState(() {
+        updateState(this, () {
           _courseName = data.courseName;
           _participants.addAll(entries);
           _attendance.addAll(data.defaultAttendance);
@@ -84,7 +85,7 @@ class _HostCheckinScreenState extends State<HostCheckinScreen> {
     } on StateError catch (e) {
       final code = e.message;
       if (mounted) {
-        setState(() {
+        updateState(this, () {
           _error = code == 'game_not_found'
               ? 'Game not found.'
               : 'Failed to load participants. Please try again.';
@@ -94,7 +95,7 @@ class _HostCheckinScreenState extends State<HostCheckinScreen> {
     } catch (e) {
       AppLog.d('HostCheckinScreen load error: $e');
       if (mounted) {
-        setState(() {
+        updateState(this, () {
           _error = 'Failed to load participants. Please try again.';
           _loading = false;
         });
@@ -103,7 +104,7 @@ class _HostCheckinScreenState extends State<HostCheckinScreen> {
   }
 
   Future<void> _submit() async {
-    setState(() {
+    updateState(this, () {
       _submitting = true;
       _error = null;
     });
@@ -118,14 +119,14 @@ class _HostCheckinScreenState extends State<HostCheckinScreen> {
 
       if (result['success'] == true) {
         if (mounted) {
-          setState(() {
+          updateState(this, () {
             _submitting = false;
             _successMessage = 'Attendance confirmed. Thanks!';
           });
         }
       } else {
         if (mounted)
-          setState(() {
+          updateState(this, () {
             _submitting = false;
             _error = 'Submission failed. Please try again.';
           });
@@ -133,7 +134,7 @@ class _HostCheckinScreenState extends State<HostCheckinScreen> {
     } catch (e) {
       AppLog.d('HostCheckinScreen submit error: $e');
       if (mounted)
-        setState(() {
+        updateState(this, () {
           _submitting = false;
           _error = 'Something went wrong. Please try again.';
         });
@@ -237,7 +238,7 @@ class _HostCheckinScreenState extends State<HostCheckinScreen> {
                     participant: p,
                     isPresent: isPresent,
                     onToggle: (val) {
-                      setState(() {
+                      updateState(this, () {
                         _attendance[p.key] = val;
                       });
                     },

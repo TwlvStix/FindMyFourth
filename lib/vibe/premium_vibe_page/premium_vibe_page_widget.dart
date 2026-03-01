@@ -186,14 +186,8 @@ class _PremiumVibePageWidgetState extends State<PremiumVibePageWidget> {
 
       if (!mounted) return;
 
-      context.pushNamed(
-        'ChatDetails',
-        pathParameters: {
-          'chatId': chatRef.id,
-        },
-        extra: <String, dynamic>{
-          kTransitionInfoKey: TransitionStandards.detailTransition,
-        },
+      context.pushChatDetails(
+        chatId: chatRef.id,
       );
     } catch (error, stackTrace) {
       if (!mounted) return;

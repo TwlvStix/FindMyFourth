@@ -32,7 +32,6 @@ import '/providers/provider_extensions.dart';
 import '/providers/game_provider.dart';
 import '/providers/profile_provider.dart';
 import '/providers/join_request_provider.dart';
-import '/main_function/game_joined_detailed/game_joined_detailed_widget.dart';
 import '/services/vibe_group_matcher.dart';
 import '/auth/firebase_auth/auth_util.dart';
 import 'package:flutter/material.dart';
@@ -205,18 +204,8 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget>
       return;
     }
 
-    context.goNamed(
-      GameJoinedDetailedWidget.routeName,
-      extra: <String, dynamic>{
-        'gameRef': game.reference,
-        kTransitionInfoKey: TransitionInfo(
-          hasTransition: true,
-          transitionType: AppTransitionType.fade,
-          enterDuration: Duration(milliseconds: 200),
-          exitDuration: Duration(milliseconds: 170),
-          scaleOnPush: true,
-        ),
-      },
+    context.goGameJoinedDetailed(
+      gameRef: game.reference,
     );
   }
 
@@ -477,13 +466,8 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget>
                       hasAnimated: _hasAnimated,
                       isOwner: false,
                       onRemovePlayer: null,
-                      onPlayerTap: (userRef) => context.pushNamed(
-                        'ProfileUser',
-                        extra: <String, dynamic>{
-                          'userRef': userRef,
-                          kTransitionInfoKey:
-                              TransitionStandards.detailTransition,
-                        },
+                      onPlayerTap: (userRef) => context.pushProfileUser(
+                        userRef: userRef,
                       ),
                       onMatchChipTap: null,
                     ),
@@ -520,8 +504,7 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget>
                             ),
                             child: RestrictionBanner(
                               restriction: restriction,
-                              onViewStanding: () =>
-                                  context.pushNamed('YourStanding'),
+                              onViewStanding: () => context.pushYourStanding(),
                             ),
                           );
                         },

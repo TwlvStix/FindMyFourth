@@ -1,4 +1,5 @@
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
+import '/core/utils/state_update.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
@@ -94,7 +95,7 @@ class _GameAlertsPageWidgetState extends State<GameAlertsPageWidget> {
           .where((course) => sub.courses.contains(course.reference.id))
           .toList();
 
-      setState(() {
+      updateState(this, () {
         _subscription = sub;
         _allCourses = courses;
         _selectedCourses = selectedCourses;
@@ -102,7 +103,7 @@ class _GameAlertsPageWidgetState extends State<GameAlertsPageWidget> {
         _hasChanges = false;
       });
     } catch (e) {
-      setState(() {
+      updateState(this, () {
         _errorMessage = 'Failed to load courses: $e';
         _isLoading = false;
       });
@@ -129,7 +130,7 @@ class _GameAlertsPageWidgetState extends State<GameAlertsPageWidget> {
   Future<void> _save() async {
     if (_subscription == null) return;
 
-    setState(() {
+    updateState(this, () {
       _isSaving = true;
       _errorMessage = null;
     });
@@ -137,7 +138,7 @@ class _GameAlertsPageWidgetState extends State<GameAlertsPageWidget> {
     try {
       await AlertSubscriptionService.saveSubscription(_subscription!);
 
-      setState(() {
+      updateState(this, () {
         _isSaving = false;
         _hasChanges = false;
       });
@@ -161,7 +162,7 @@ class _GameAlertsPageWidgetState extends State<GameAlertsPageWidget> {
         context.pop(_subscription);
       }
     } catch (e) {
-      setState(() {
+      updateState(this, () {
         _isSaving = false;
         _errorMessage = 'Failed to save: $e';
       });
@@ -181,7 +182,7 @@ class _GameAlertsPageWidgetState extends State<GameAlertsPageWidget> {
     );
 
     if (confirmed == true) {
-      setState(() {
+      updateState(this, () {
         _subscription = AlertSubscription.defaults(currentUserUid);
         _selectedCourses = [];
         _hasChanges = true;
@@ -191,14 +192,14 @@ class _GameAlertsPageWidgetState extends State<GameAlertsPageWidget> {
   }
 
   void _updateSubscription(AlertSubscription updated) {
-    setState(() {
+    updateState(this, () {
       _subscription = updated;
       _hasChanges = true;
     });
   }
 
   void _toggleFilterExpanded(int index) {
-    setState(() {
+    updateState(this, () {
       if (_expandedFilterIndex == index) {
         _expandedFilterIndex = null;
       } else {
@@ -219,7 +220,7 @@ class _GameAlertsPageWidgetState extends State<GameAlertsPageWidget> {
     );
 
     if (selected != null) {
-      setState(() {
+      updateState(this, () {
         _selectedCourses = selected;
         _subscription = _subscription!.copyWith(
           courses: selected.map((c) => c.reference.id).toList(),
@@ -808,7 +809,7 @@ class _CoursesPickerSheetState extends State<_CoursesPickerSheet> {
           Padding(
             padding: EdgeInsets.symmetric(horizontal: AppSpacing.md),
             child: TextField(
-              onChanged: (value) => setState(() => _searchQuery = value),
+              onChanged: (value) => updateState(this, () => _searchQuery = value),
               style: AppTypography.bodyMedium.copyWith(color: Colors.white),
               decoration: InputDecoration(
                 hintText: 'Search courses...',
@@ -853,7 +854,7 @@ class _CoursesPickerSheetState extends State<_CoursesPickerSheet> {
 
                       return InkWell(
                         onTap: () {
-                          setState(() {
+                          updateState(this, () {
                             if (isSelected) {
                               _selected.removeWhere(
                                   (c) => c.reference.id == course.reference.id);

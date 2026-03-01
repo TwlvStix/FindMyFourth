@@ -8,7 +8,8 @@ import '/core/design_tokens/typography.dart';
 import '/core/design_tokens/icon_size.dart';
 import '/core/design_tokens/app_phosphor_icons.dart';
 import '/core/widgets/app_icon.dart';
-import '/core/navigation/app_router.dart';
+import '/core/navigation/nav_extensions.dart';
+import '/core/navigation/transition_standards.dart';
 
 /// Host information section showing avatar, name, and view profile button
 class HostInfoSection extends StatelessWidget {
@@ -88,11 +89,9 @@ class HostInfoSection extends StatelessWidget {
           GestureDetector(
             onTap: () {
               HapticFeedback.lightImpact();
-              context.pushNamed(
-                'ProfileUser',
-                extra: <String, dynamic>{
-                  'userRef': hostUser.reference,
-                },
+              context.pushProfileUser(
+                userRef: hostUser.reference,
+                transition: TransitionStandards.noTransition,
               );
             },
             child: Container(

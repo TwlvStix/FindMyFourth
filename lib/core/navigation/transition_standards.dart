@@ -99,6 +99,17 @@ class TransitionStandards {
     scaleOnPush: true,
   );
 
+  /// Standard fade transition without depth scaling.
+  ///
+  /// Use for lateral or utility navigation where push-depth emphasis is not desired.
+  static const flatFadeTransition = TransitionInfo(
+    hasTransition: true,
+    transitionType: AppTransitionType.fade,
+    enterDuration: MotionTokens.routeEnter,
+    exitDuration: MotionTokens.routeExit,
+    scaleOnPush: false,
+  );
+
   /// Success/dismissal screen transition.
   ///
   /// UPDATED: Fade transition without scale creates clean dismissal feel.
@@ -193,7 +204,8 @@ extension TransitionNavigation on BuildContext {
     Map<String, dynamic> queryParameters = const <String, dynamic>{},
     Object? extra,
   }) {
-    final extraWithTransition = _mergeExtra(extra, TransitionStandards.modalTransition);
+    final extraWithTransition =
+        _mergeExtra(extra, TransitionStandards.modalTransition);
     pushNamed(
       name,
       pathParameters: pathParameters,
@@ -211,7 +223,27 @@ extension TransitionNavigation on BuildContext {
     Map<String, dynamic> queryParameters = const <String, dynamic>{},
     Object? extra,
   }) {
-    final extraWithTransition = _mergeExtra(extra, TransitionStandards.detailTransition);
+    final extraWithTransition =
+        _mergeExtra(extra, TransitionStandards.detailTransition);
+    pushNamed(
+      name,
+      pathParameters: pathParameters,
+      queryParameters: queryParameters,
+      extra: extraWithTransition,
+    );
+  }
+
+  /// Push a route with an explicit transition.
+  ///
+  /// Use when route-specific helpers need to preserve custom transition behavior.
+  void pushWithTransition(
+    String name, {
+    Map<String, String> pathParameters = const <String, String>{},
+    Map<String, dynamic> queryParameters = const <String, dynamic>{},
+    Object? extra,
+    required TransitionInfo transition,
+  }) {
+    final extraWithTransition = _mergeExtra(extra, transition);
     pushNamed(
       name,
       pathParameters: pathParameters,

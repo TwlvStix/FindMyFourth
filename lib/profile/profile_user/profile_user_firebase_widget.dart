@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import '/core/utils/state_update.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '/core/design_tokens/app_phosphor_icons.dart';
@@ -13,7 +14,8 @@ import '/core/design_tokens/icon_size.dart';
 import '/core/design_tokens/border_radius.dart';
 import '/core/widgets/app_stat_card.dart';
 import '/core/motion/motion_helpers.dart';
-import '/core/navigation/app_router.dart';
+import '/core/navigation/nav_extensions.dart';
+import '/core/navigation/transition_standards.dart';
 import '/core/widgets/fairway_background.dart';
 import '/core/widgets/premium_back_button.dart';
 import '/models/vibe_profile.dart';
@@ -88,14 +90,8 @@ class _ProfileUserFirebaseWidgetState extends State<ProfileUserFirebaseWidget>
   }
 
   void _openChat(String chatId) {
-    context.pushNamed(
-      'ChatDetails',
-      pathParameters: {
-        'chatId': chatId,
-      },
-      extra: <String, dynamic>{
-        kTransitionInfoKey: TransitionStandards.detailTransition,
-      },
+    context.pushChatDetails(
+      chatId: chatId,
     );
   }
 
@@ -130,7 +126,7 @@ class _ProfileUserFirebaseWidgetState extends State<ProfileUserFirebaseWidget>
 
     if (mutualUids.isEmpty) {
       if (mounted) {
-        setState(() {
+        updateState(this, () {
           _mutualFriends = [];
           _mutualFriendsLoaded = true;
         });
@@ -140,7 +136,7 @@ class _ProfileUserFirebaseWidgetState extends State<ProfileUserFirebaseWidget>
 
     // Only show skeleton now that we know a Firestore fetch is needed
     if (mounted) {
-      setState(() {
+      updateState(this, () {
         _mutualFriendsLoaded = false;
       });
     }
@@ -152,14 +148,14 @@ class _ProfileUserFirebaseWidgetState extends State<ProfileUserFirebaseWidget>
       final results = await Future.wait(futures);
 
       if (mounted) {
-        setState(() {
+        updateState(this, () {
           _mutualFriends = results;
           _mutualFriendsLoaded = true;
         });
       }
     } catch (_) {
       if (mounted) {
-        setState(() {
+        updateState(this, () {
           _mutualFriends = [];
           _mutualFriendsLoaded = true;
         });
@@ -184,7 +180,7 @@ class _ProfileUserFirebaseWidgetState extends State<ProfileUserFirebaseWidget>
   }
 
   Future<void> _loadVibeMatch(DocumentSnapshot snapshot) async {
-    setState(() {
+    updateState(this, () {
       _isVibeMatchLoading = true;
       _vibeMatchResult = null;
     });
@@ -195,7 +191,7 @@ class _ProfileUserFirebaseWidgetState extends State<ProfileUserFirebaseWidget>
       if (!mounted) {
         return;
       }
-      setState(() {
+      updateState(this, () {
         _myVibes = myVibes;
         _theirVibes = theirVibes;
         _vibeMatchResult = result;
@@ -204,14 +200,14 @@ class _ProfileUserFirebaseWidgetState extends State<ProfileUserFirebaseWidget>
       if (!mounted) {
         return;
       }
-      setState(() {
+      updateState(this, () {
         _vibeMatchResult = null;
       });
     } finally {
       if (!mounted) {
         return;
       }
-      setState(() {
+      updateState(this, () {
         _isVibeMatchLoading = false;
       });
     }
@@ -257,12 +253,9 @@ class _ProfileUserFirebaseWidgetState extends State<ProfileUserFirebaseWidget>
     );
 
     // Navigate
-    context.pushNamed(
-      'PremiumVibePage',
-      pathParameters: {
-        'userId': widget.userRef.id,
-      },
-      extra: pageData,
+    context.pushPremiumVibePage(
+      userId: widget.userRef.id,
+      data: pageData,
     );
   }
 
@@ -628,11 +621,9 @@ class _ProfileUserFirebaseWidgetState extends State<ProfileUserFirebaseWidget>
         mutualFriends: friends,
         onFriendTap: (friend) {
           Navigator.of(sheetContext).pop();
-          context.pushNamed(
-            'ProfileUser',
-            extra: <String, dynamic>{
-              'userRef': friend.reference,
-            },
+          context.pushProfileUser(
+            userRef: friend.reference,
+            transition: TransitionStandards.noTransition,
           );
         },
       ),

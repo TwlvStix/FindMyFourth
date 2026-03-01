@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_nav_bar/google_nav_bar.dart';
 
-import '/core/design_tokens/app_icons.dart';
 import '/core/design_tokens/app_phosphor_icons.dart';
 import '/core/design_tokens/colors.dart';
 import '/core/design_tokens/icon_size.dart';
@@ -10,7 +9,6 @@ import '/core/navigation/app_router.dart';
 import '/core/widgets/app_icon.dart';
 import '/friends/tab_friends/tab_friends_widget.dart';
 import '/main_function/community/community_widget.dart';
-import '/main_function/create_game/create_game_widget.dart';
 import '/main_function/games_joined/games_joined_widget.dart';
 import '/main_function/games_list/games_list_widget.dart';
 
@@ -81,18 +79,7 @@ class _NavBarPageState extends State<NavBarPage> {
       floatingActionButton: shouldShowFab
           ? FloatingActionButton(
               onPressed: () {
-                context.pushNamed(
-                  CreateGameWidget.routeName,
-                  extra: <String, dynamic>{
-                    kTransitionInfoKey: TransitionInfo(
-                      hasTransition: true,
-                      transitionType: AppTransitionType.fade,
-                      enterDuration: Duration(milliseconds: 200),
-                      exitDuration: Duration(milliseconds: 170),
-                      scaleOnPush: true,
-                    ),
-                  },
-                );
+                context.pushCreateGame();
               },
               backgroundColor: AppColors.navyDark,
               elevation: 8.0,
@@ -130,7 +117,8 @@ class _NavBarPageState extends State<NavBarPage> {
         tabs: [
           GButton(
             leading: AppNavIcon(
-              assetPath: AppIcons.games,
+              icon: AppPhosphorIcons.games,
+              iconFill: AppPhosphorIcons.gamesFill,
               size: AppIconSize.lg,
               isActive: currentIndex == 0,
               activeColor: AppColors.green,

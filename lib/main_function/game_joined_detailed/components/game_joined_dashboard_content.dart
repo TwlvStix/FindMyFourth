@@ -17,9 +17,6 @@ import '/core/widgets/cancelled_game_banner.dart';
 import '/core/widgets/game_details_section.dart';
 import '/core/widgets/premium_section_header.dart';
 import '/core/widgets/vibe/group_vibe_breakdown_sheet.dart';
-import '/main_function/games_joined/games_joined_widget.dart';
-import '/main_function/games_list/games_list_widget.dart';
-import '/main_function/player_list/player_list_widget.dart';
 import '/models/game.dart';
 import '/models/join_request.dart';
 import '/models/vibe_profile.dart';
@@ -284,13 +281,8 @@ class GameJoinedDashboardContent extends StatelessWidget {
                       if (!context.mounted) {
                         return;
                       }
-                      context.pushNamed(
-                        'ChatDetails',
-                        pathParameters: {'chatId': chatRef.id},
-                        extra: <String, dynamic>{
-                          kTransitionInfoKey:
-                              TransitionStandards.detailTransition,
-                        },
+                      context.pushChatDetails(
+                        chatId: chatRef.id,
                       );
                     },
                     child: Container(
@@ -420,12 +412,8 @@ class GameJoinedDashboardContent extends StatelessWidget {
                 guestName: guestName,
                 gameRecord: game,
               ),
-              onPlayerTap: (userRef) => context.pushNamed(
-                'ProfileUser',
-                extra: <String, dynamic>{
-                  'userRef': userRef,
-                  kTransitionInfoKey: TransitionStandards.detailTransition,
-                },
+              onPlayerTap: (userRef) => context.pushProfileUser(
+                userRef: userRef,
               ),
               onMatchChipTap: (userRef, displayName, photoUrl, memberMatch) =>
                   onOpenPremiumVibePage(
@@ -460,19 +448,16 @@ class GameJoinedDashboardContent extends StatelessWidget {
                   variant: AppButtonVariant.secondary,
                   size: AppButtonSize.medium,
                   fullWidth: true,
-                  onPressed: () => context.pushNamed(
-                    PlayerListWidget.routeName,
-                    extra: <String, dynamic>{
-                      'gameRef': screenGameRef,
-                      kTransitionInfoKey: const TransitionInfo(
-                        hasTransition: true,
-                        transitionType: AppTransitionType.fade,
-                        enterDuration: Duration(milliseconds: 200),
-                        exitDuration: Duration(milliseconds: 170),
-                        scaleOnPush: true,
-                      ),
-                    },
-                  ),
+                  onPressed: () {
+                    final gameRef = screenGameRef;
+                    if (gameRef == null) {
+                      return;
+                    }
+                    context.pushPlayerList(
+                      gameRef: gameRef,
+                      transition: TransitionStandards.detailTransition,
+                    );
+                  },
                 ),
               ),
             if (isOwner && playerCount < 4 && !isCancelled)
@@ -510,7 +495,7 @@ class GameJoinedDashboardContent extends StatelessWidget {
                             duration: Duration(seconds: 2),
                           ),
                         );
-                        context.goNamed(GamesJoinedWidget.routeName);
+                        context.goGamesJoined();
                       }
                     } on FirebaseException catch (error) {
                       if (!context.mounted) {
@@ -636,7 +621,7 @@ class GameJoinedDashboardContent extends StatelessWidget {
                         gameProvider.invalidateUserGamesCache(
                           userProvider.userId,
                         );
-                        context.goNamed(GamesListWidget.routeName);
+                        context.goGamesList();
                       }
                     } catch (error, stackTrace) {
                       AppLog.d('CancelGame failed: $error');

@@ -1,4 +1,5 @@
 import '/auth/firebase_auth/auth_util.dart';
+import '/core/utils/state_update.dart';
 import '/backend/backend.dart';
 import '/core/utils/app_log.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -15,10 +16,7 @@ import '/core/design_tokens/colors.dart';
 import '/core/design_tokens/typography.dart';
 import '/core/design_tokens/icon_size.dart';
 import '/core/form_field_controller.dart';
-import '/profile/main_profile/main_profile_widget.dart';
 import '/services/profile_setup_service.dart';
-import '/user_onboarding/vibe_onboarding_widget.dart';
-import '/user_auth/sign_in/sign_in_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
@@ -73,7 +71,7 @@ class _ProgressiveOnboardingWidgetState
     super.initState();
     _ensureUserRecord();
     _emailController.text = currentUserEmail;
-    // ✅ PERFORMANCE: Removed empty post-frame setState (no-op rebuild)
+    // ✅ PERFORMANCE: Removed empty post-frame updateState(this, no-op rebuild)
   }
 
   @override
@@ -147,7 +145,7 @@ class _ProgressiveOnboardingWidgetState
       return;
     }
 
-    setState(() => _isLoading = true);
+    updateState(this, () => _isLoading = true);
 
     try {
       final desiredUsername =
@@ -206,12 +204,8 @@ class _ProgressiveOnboardingWidgetState
                         size: AppButtonSize.small,
                         onPressed: () {
                           Navigator.of(ctx).pop();
-                          context.goNamed(
-                            SignInWidget.routeName,
-                            extra: <String, dynamic>{
-                              kTransitionInfoKey:
-                                  TransitionStandards.modalTransition,
-                            },
+                          context.goSignIn(
+                            transition: TransitionStandards.modalTransition,
                           );
                         },
                       ),
@@ -220,7 +214,7 @@ class _ProgressiveOnboardingWidgetState
                 },
               );
             }
-            setState(() => _isLoading = false);
+            updateState(this, () => _isLoading = false);
             return;
           }
         }
@@ -248,7 +242,7 @@ class _ProgressiveOnboardingWidgetState
               backgroundColor: AppColors.error,
             ),
           );
-          setState(() => _isLoading = false);
+          updateState(this, () => _isLoading = false);
           return;
         }
         try {
@@ -266,7 +260,7 @@ class _ProgressiveOnboardingWidgetState
               ),
             );
           }
-          setState(() => _isLoading = false);
+          updateState(this, () => _isLoading = false);
           return;
         }
       }
@@ -284,14 +278,9 @@ class _ProgressiveOnboardingWidgetState
           );
           return;
         }
-        context.goNamed(
-          VibeOnboardingWidget.routeName,
-          queryParameters: {
-            'next': MainProfileWidget.routeName,
-          },
-          extra: <String, dynamic>{
-            kTransitionInfoKey: TransitionStandards.modalTransition,
-          },
+        context.goVibeOnboarding(
+          next: AppRouteNames.mainProfile,
+          transition: TransitionStandards.modalTransition,
         );
       }
     } catch (e) {
@@ -305,7 +294,7 @@ class _ProgressiveOnboardingWidgetState
       }
     } finally {
       if (mounted) {
-        setState(() => _isLoading = false);
+        updateState(this, () => _isLoading = false);
       }
     }
   }
@@ -346,7 +335,7 @@ class _ProgressiveOnboardingWidgetState
                   controller: _pageController,
                   physics: NeverScrollableScrollPhysics(),
                   onPageChanged: (index) {
-                    setState(() => _currentStep = index);
+                    updateState(this, () => _currentStep = index);
                   },
                   children: [
                     _buildWelcomeStep(),
@@ -738,7 +727,8 @@ class _ProgressiveOnboardingWidgetState
                 controller: _homeCourseController ??=
                     FormFieldController<String>(null),
                 options: courses.map((e) => e.name).toList(),
-                onChanged: (val) => setState(() => _homeCourseValue = val),
+                onChanged: (val) =>
+                    updateState(this, () => _homeCourseValue = val),
                 width: double.infinity,
                 height: 56.0,
                 textStyle: AppTypography.bodyMedium,
@@ -800,7 +790,8 @@ class _ProgressiveOnboardingWidgetState
                   ),
                 ),
                 count: _handicapValue,
-                updateCount: (count) => setState(() => _handicapValue = count),
+                updateCount: (count) =>
+                    updateState(this, () => _handicapValue = count),
                 stepSize: 1,
                 minimum: -5,
                 maximum: 54,
@@ -851,28 +842,28 @@ class _ProgressiveOnboardingWidgetState
             'Music on the course',
             AppPhosphorIcons.music,
             _musicValue,
-            (count) => setState(() => _musicValue = count),
+            (count) => updateState(this, () => _musicValue = count),
           ),
           SizedBox(height: AppSpacing.lg),
           _buildPreferenceControl(
             'Drinks while playing',
             AppPhosphorIcons.drinks,
             _drinksValue,
-            (count) => setState(() => _drinksValue = count),
+            (count) => updateState(this, () => _drinksValue = count),
           ),
           SizedBox(height: AppSpacing.lg),
           _buildPreferenceControl(
             'Play for money',
             AppPhosphorIcons.betting,
             _playMoneyValue,
-            (count) => setState(() => _playMoneyValue = count),
+            (count) => updateState(this, () => _playMoneyValue = count),
           ),
           SizedBox(height: AppSpacing.lg),
           _buildPreferenceControl(
             'Pace of play',
             AppPhosphorIcons.pace,
             _paceValue,
-            (count) => setState(() => _paceValue = count),
+            (count) => updateState(this, () => _paceValue = count),
           ),
         ],
       ),

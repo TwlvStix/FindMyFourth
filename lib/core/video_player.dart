@@ -1,4 +1,5 @@
 import 'package:chewie/chewie.dart';
+import '/core/utils/state_update.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
@@ -163,7 +164,7 @@ class _AppVideoPlayerState extends State<AppVideoPlayer>
           if (otherPlayer != _videoPlayerController &&
               otherPlayer.value.isPlaying &&
               mounted) {
-            setState(() {
+            updateState(this, () {
               otherPlayer.pause();
             });
           }
@@ -186,7 +187,7 @@ class _AppVideoPlayerState extends State<AppVideoPlayer>
       _isFullScreen = _chewieController!.isFullScreen;
     });
     if (mounted) {
-      setState(() {});
+      updateState(this, () {});
     }
   }
 

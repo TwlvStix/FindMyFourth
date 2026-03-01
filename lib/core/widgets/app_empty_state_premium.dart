@@ -6,7 +6,6 @@ import '/core/design_tokens/icon_size.dart';
 import '/core/design_tokens/spacing.dart';
 import '/core/design_tokens/typography.dart';
 import '/core/motion/reduced_motion.dart';
-import '/core/widgets/app_icon.dart';
 
 /// Premium empty state widget matching the Friend Request empty state style.
 ///
@@ -16,40 +15,25 @@ import '/core/widgets/app_icon.dart';
 /// - Clean typography hierarchy
 /// - Designed for dark backgrounds
 ///
-/// Supports either Phosphor icons or SVG asset paths:
+/// Example:
 /// ```dart
-/// // Using Phosphor icon
 /// AppEmptyStatePremium(
 ///   icon: AppPhosphorIcons.notifications,
 ///   title: "You're all caught up",
 ///   message: "New activity will appear here.",
 /// )
-///
-/// // Using SVG asset
-/// AppEmptyStatePremium(
-///   assetPath: AppIcons.games,
-///   title: "No Games Yet",
-///   message: "Be the first to create a game.",
-/// )
 /// ```
 class AppEmptyStatePremium extends StatefulWidget {
   const AppEmptyStatePremium({
     super.key,
-    this.icon,
-    this.assetPath,
+    required this.icon,
     required this.title,
     this.message,
     this.animate = true,
-  }) : assert(
-         icon != null || assetPath != null,
-         'Either icon or assetPath must be provided',
-       );
+  });
 
-  /// Icon to display (Phosphor icon) - provide either this or assetPath
-  final PhosphorIconData? icon;
-
-  /// SVG asset path to display - provide either this or icon
-  final String? assetPath;
+  /// Phosphor icon to display.
+  final PhosphorIconData icon;
 
   /// Title text - displayed prominently
   final String title;
@@ -141,17 +125,11 @@ class _AppEmptyStatePremiumState extends State<AppEmptyStatePremium>
               ),
             ],
           ),
-          child: widget.assetPath != null
-              ? AppIcon(
-                  assetPath: widget.assetPath,
-                  size: AppIconSize.lg,
-                  color: AppColors.pure,
-                )
-              : Icon(
-                  widget.icon,
-                  size: AppIconSize.lg,
-                  color: AppColors.pure,
-                ),
+          child: Icon(
+            widget.icon,
+            size: AppIconSize.lg,
+            color: AppColors.pure,
+          ),
         ),
       ),
     );

@@ -24,6 +24,7 @@ export 'package:intl/intl.dart';
 export 'package:cloud_firestore/cloud_firestore.dart'
     show DocumentReference, FirebaseFirestore;
 export '../core/navigation/app_router.dart';
+export '../core/navigation/nav_extensions.dart';
 export '../core/utils/formatting_utils.dart';
 
 final RouteObserver<ModalRoute> routeObserver = RouteObserver<ModalRoute>();
@@ -108,7 +109,8 @@ Theme wrapInMaterialDatePickerTheme(
         dayForegroundColor: dateTimeMaterialStateForegroundColor,
         todayForegroundColor: dateTimeMaterialStateForegroundColor,
         yearForegroundColor: dateTimeMaterialStateForegroundColor,
-      ), dialogTheme: DialogThemeData(backgroundColor: pickerBackgroundColor),
+      ),
+      dialogTheme: DialogThemeData(backgroundColor: pickerBackgroundColor),
     ),
     child: child,
   );

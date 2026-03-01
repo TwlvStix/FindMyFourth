@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import '/core/utils/state_update.dart';
 import 'package:flutter/material.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 
@@ -64,7 +65,7 @@ class _PeerRatingScreenState extends State<PeerRatingScreen> {
           await _trustFlowService.loadPeerRatees(gameRef: widget.gameRef);
 
       if (mounted) {
-        setState(() {
+        updateState(this, () {
           _courseName = data.courseName;
           _ratees.addAll(
             data.ratees.map(
@@ -82,7 +83,7 @@ class _PeerRatingScreenState extends State<PeerRatingScreen> {
     } on StateError catch (e) {
       final code = e.message;
       if (mounted) {
-        setState(() {
+        updateState(this, () {
           _error = code == 'not_signed_in'
               ? 'Not signed in.'
               : code == 'game_not_found'
@@ -94,7 +95,7 @@ class _PeerRatingScreenState extends State<PeerRatingScreen> {
     } catch (e) {
       AppLog.d('PeerRatingScreen load error: $e');
       if (mounted) {
-        setState(() {
+        updateState(this, () {
           _error = 'Failed to load players. Please try again.';
           _loading = false;
         });
@@ -112,13 +113,13 @@ class _PeerRatingScreenState extends State<PeerRatingScreen> {
     }
 
     if (ratedMap.isEmpty) {
-      setState(() {
+      updateState(this, () {
         _error = 'Please rate at least one player before submitting.';
       });
       return;
     }
 
-    setState(() {
+    updateState(this, () {
       _submitting = true;
       _error = null;
     });
@@ -131,13 +132,13 @@ class _PeerRatingScreenState extends State<PeerRatingScreen> {
 
       if (result['success'] == true) {
         if (mounted)
-          setState(() {
+          updateState(this, () {
             _submitting = false;
             _submitted = true;
           });
       } else {
         if (mounted)
-          setState(() {
+          updateState(this, () {
             _submitting = false;
             _error = 'Submission failed. Please try again.';
           });
@@ -145,7 +146,7 @@ class _PeerRatingScreenState extends State<PeerRatingScreen> {
     } catch (e) {
       AppLog.d('PeerRatingScreen submit error: $e');
       if (mounted)
-        setState(() {
+        updateState(this, () {
           _submitting = false;
           _error = 'Something went wrong. Please try again.';
         });
@@ -324,7 +325,7 @@ class _PeerRatingScreenState extends State<PeerRatingScreen> {
                     ratee: ratee,
                     rating: _ratings[ratee.uid],
                     onRate: (val) {
-                      setState(() {
+                      updateState(this, () {
                         _ratings[ratee.uid] = val;
                       });
                     },

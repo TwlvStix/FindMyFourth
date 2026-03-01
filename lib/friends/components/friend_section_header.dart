@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:phosphor_flutter/phosphor_flutter.dart';
 import '/core/motion/motion_tokens.dart';
 import '/core/motion/reduced_motion.dart';
 import '/core/design_tokens/spacing.dart';
@@ -13,7 +14,7 @@ import '/core/widgets/app_icon.dart';
 /// Section header for grouped friend lists
 class FriendSectionHeader extends StatefulWidget {
   final IconData? icon;
-  final String? svgPath;
+  final PhosphorIconData? phosphorIcon;
   final String title;
   final int count;
   final Color color;
@@ -23,13 +24,13 @@ class FriendSectionHeader extends StatefulWidget {
   const FriendSectionHeader({
     super.key,
     this.icon,
-    this.svgPath,
+    this.phosphorIcon,
     required this.title,
     required this.count,
     this.color = AppColors.navy,
     this.isCollapsed = false,
     this.onTap,
-  }) : assert(icon != null || svgPath != null, 'Either icon or svgPath must be provided');
+  }) : assert(icon != null || phosphorIcon != null, 'Either icon or phosphorIcon must be provided');
 
   @override
   State<FriendSectionHeader> createState() => _FriendSectionHeaderState();
@@ -131,9 +132,9 @@ class _FriendSectionHeaderState extends State<FriendSectionHeader>
                     ),
                   ],
                 ),
-                child: widget.svgPath != null
+                child: widget.phosphorIcon != null
                     ? AppIcon(
-                        assetPath: widget.svgPath!,
+                        icon: widget.phosphorIcon!,
                         size: AppIconSize.button,
                         color: widget.color,
                       )

@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'package:flutter/foundation.dart';
 
-import '/backend/api_requests/game_service.dart';
+import '/services/game_service.dart';
 import '/backend/backend.dart';
 import '/core/request_manager.dart';
 import '/core/utils/app_log.dart';

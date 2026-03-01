@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
 import '/core/design_tokens/typography.dart';
+import '/core/navigation/nav_extensions.dart';
 import '/core/widgets/premium_back_button.dart';
 
 /// Premium gradient app bar with title and custom back button
@@ -22,8 +22,7 @@ class PremiumAppBar extends StatelessWidget implements PreferredSizeWidget {
       automaticallyImplyLeading: false,
       leading: PremiumBackButton(
         onTap: () {
-          final router = GoRouter.of(context);
-          router.go('/gamesList');
+          context.goGamesList();
         },
       ),
       title: Text(

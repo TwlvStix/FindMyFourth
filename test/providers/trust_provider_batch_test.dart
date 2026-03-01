@@ -2,7 +2,7 @@ import 'dart:async';
 
 import 'package:flutter_test/flutter_test.dart';
 
-import 'package:find_my_fourth/backend/api_requests/trust_repository.dart';
+import 'package:find_my_fourth/services/trust_repository.dart';
 import 'package:find_my_fourth/backend/schema/trust_profile.dart';
 import 'package:find_my_fourth/providers/trust_provider.dart';
 

@@ -11,8 +11,6 @@ import '/core/motion/motion_tokens.dart';
 import '/core/widgets/app_expandable_text.dart';
 import '/core/widgets/app_icon.dart';
 import '/utils/app_util.dart';
-import '/main_function/game_joined_detailed/game_joined_detailed_widget.dart';
-import '/main_function/join_game_detailed/join_game_detailed_widget.dart';
 import '/main_function/games_list/components/flexible_availability_summary.dart';
 import '/main_function/games_list/games_list_widget.dart'
     show CancelledGameHandling;
@@ -129,21 +127,13 @@ class _PremiumGameCardState extends State<PremiumGameCard>
           await widget.onFriendsOnlyTap?.call();
         } else if (isUserGame) {
           // Navigate to joined game detail (includes cancelled games user joined)
-          context.pushNamed(
-            GameJoinedDetailedWidget.routeName,
-            extra: <String, dynamic>{
-              'gameRef': game.reference,
-              kTransitionInfoKey: TransitionStandards.detailTransition,
-            },
+          context.pushGameJoinedDetailed(
+            gameRef: game.reference,
           );
         } else {
           // Navigate to join game detail (includes cancelled games - will show banner)
-          context.pushNamed(
-            JoinGameDetailedWidget.routeName,
-            extra: <String, dynamic>{
-              'gameRef': game.reference,
-              kTransitionInfoKey: TransitionStandards.detailTransition,
-            },
+          context.pushJoinGameDetailed(
+            gameRef: game.reference,
           );
         }
       },
@@ -162,39 +152,39 @@ class _PremiumGameCardState extends State<PremiumGameCard>
             boxShadow: [AppElevation.card],
           ),
           child: Column(
-          children: [
-            // Main content
-            Padding(
-              padding: EdgeInsets.all(AppSpacing.md),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Top row: Game Type Badge + Status + Spots indicator
-                  _buildTopRow(
-                    isLocked: isLocked,
-                    isUserGame: isUserGame,
-                    isCancelled: isCancelled,
-                    isExpired: isExpired,
-                    isOwner: isOwner,
-                  ),
-                  SizedBox(height: AppSpacing.md),
-                  // Course Name - Hero Element with icon
-                  _buildCourseSection(
-                    isUserGame: isUserGame,
-                    isLocked: isLocked,
-                    ownerRef: ownerRef,
-                  ),
-                  SizedBox(height: AppSpacing.md),
-                  // Date & Time with premium styling
-                  _buildDateTimeSection(
-                    isUserGame: isUserGame,
-                    isFull: isFull,
-                  ),
-                ],
+            children: [
+              // Main content
+              Padding(
+                padding: EdgeInsets.all(AppSpacing.md),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Top row: Game Type Badge + Status + Spots indicator
+                    _buildTopRow(
+                      isLocked: isLocked,
+                      isUserGame: isUserGame,
+                      isCancelled: isCancelled,
+                      isExpired: isExpired,
+                      isOwner: isOwner,
+                    ),
+                    SizedBox(height: AppSpacing.md),
+                    // Course Name - Hero Element with icon
+                    _buildCourseSection(
+                      isUserGame: isUserGame,
+                      isLocked: isLocked,
+                      ownerRef: ownerRef,
+                    ),
+                    SizedBox(height: AppSpacing.md),
+                    // Date & Time with premium styling
+                    _buildDateTimeSection(
+                      isUserGame: isUserGame,
+                      isFull: isFull,
+                    ),
+                  ],
+                ),
               ),
-            ),
-          ],
-        ),
+            ],
+          ),
         ),
       ),
     );

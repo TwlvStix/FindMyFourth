@@ -1,4 +1,5 @@
 import '/core/design_tokens/border_radius.dart';
+import '/core/utils/state_update.dart';
 import '/core/design_tokens/colors.dart';
 import '/core/design_tokens/spacing.dart';
 import '/core/design_tokens/typography.dart';
@@ -12,7 +13,6 @@ import '/core/widgets/fairway_background.dart';
 import 'package:flutter/services.dart';
 import '/models/vibe_profile.dart';
 import '/profile/edit_vibes/vibe_category_slider.dart';
-import '/profile/main_profile/main_profile_widget.dart';
 import '/services/vibe_repository.dart';
 import '/utils/app_util.dart';
 import '/utils/vibe_archetypes.dart';
@@ -55,8 +55,7 @@ class _VibeOnboardingWidgetState extends State<VibeOnboardingWidget> {
 
   VibeProfile _profile = VibeProfile.defaults();
   Map<VibeCategory, VibeImportance> _importance = {
-    for (final category in VibeCategory.values)
-      category: VibeImportance.normal,
+    for (final category in VibeCategory.values) category: VibeImportance.normal,
   };
   int _currentIndex = 0;
   bool _isLoading = true;
@@ -65,7 +64,6 @@ class _VibeOnboardingWidgetState extends State<VibeOnboardingWidget> {
 
   int get _topCount =>
       _importance.values.where((value) => value == VibeImportance.top).length;
-
 
   @override
   void initState() {
@@ -80,7 +78,7 @@ class _VibeOnboardingWidgetState extends State<VibeOnboardingWidget> {
   }
 
   Future<void> _loadProfile() async {
-    setState(() {
+    updateState(this, () {
       _isLoading = true;
     });
     try {
@@ -88,9 +86,10 @@ class _VibeOnboardingWidgetState extends State<VibeOnboardingWidget> {
       if (!mounted) {
         return;
       }
-      setState(() {
+      updateState(this, () {
         _profile = profile;
-        _importance = Map<VibeCategory, VibeImportance>.from(profile.importance);
+        _importance =
+            Map<VibeCategory, VibeImportance>.from(profile.importance);
       });
     } catch (_) {
       if (!mounted) {
@@ -100,7 +99,7 @@ class _VibeOnboardingWidgetState extends State<VibeOnboardingWidget> {
       if (!mounted) {
         return;
       }
-      setState(() {
+      updateState(this, () {
         _isLoading = false;
       });
     }
@@ -112,7 +111,7 @@ class _VibeOnboardingWidgetState extends State<VibeOnboardingWidget> {
   ) {
     final updatedPrefs = Map<VibeCategory, VibePreference>.from(_profile.prefs);
     updatedPrefs[category] = preference;
-    setState(() {
+    updateState(this, () {
       _profile = _profile.copyWith(prefs: updatedPrefs);
     });
   }
@@ -166,7 +165,7 @@ class _VibeOnboardingWidgetState extends State<VibeOnboardingWidget> {
 
     if (current == VibeImportance.top) {
       // Tapping a selected card deselects it
-      setState(() {
+      updateState(this, () {
         _importance = Map<VibeCategory, VibeImportance>.from(_importance)
           ..[category] = VibeImportance.normal;
       });
@@ -180,7 +179,7 @@ class _VibeOnboardingWidgetState extends State<VibeOnboardingWidget> {
         (c) => c != category && _importance[c] == VibeImportance.top,
         orElse: () => category,
       );
-      setState(() {
+      updateState(this, () {
         final updated = Map<VibeCategory, VibeImportance>.from(_importance);
         if (firstTop != category) {
           updated[firstTop] = VibeImportance.normal;
@@ -189,7 +188,7 @@ class _VibeOnboardingWidgetState extends State<VibeOnboardingWidget> {
         _importance = updated;
       });
     } else {
-      setState(() {
+      updateState(this, () {
         _importance = Map<VibeCategory, VibeImportance>.from(_importance)
           ..[category] = VibeImportance.top;
       });
@@ -235,7 +234,7 @@ class _VibeOnboardingWidgetState extends State<VibeOnboardingWidget> {
       inferred[priorityOrder[i]] = VibeImportance.top;
     }
 
-    setState(() {
+    updateState(this, () {
       _importance = inferred;
     });
   }
@@ -258,7 +257,7 @@ class _VibeOnboardingWidgetState extends State<VibeOnboardingWidget> {
     }
 
     if (updated != _importance) {
-      setState(() {
+      updateState(this, () {
         _importance = updated;
       });
     }
@@ -295,7 +294,7 @@ class _VibeOnboardingWidgetState extends State<VibeOnboardingWidget> {
       _autoInferImportance();
     }
 
-    setState(() {
+    updateState(this, () {
       _isCompleting = true;
     });
     try {
@@ -311,7 +310,7 @@ class _VibeOnboardingWidgetState extends State<VibeOnboardingWidget> {
       if (!mounted) {
         return;
       }
-      setState(() {
+      updateState(this, () {
         _isCompleting = false;
       });
     }
@@ -320,18 +319,13 @@ class _VibeOnboardingWidgetState extends State<VibeOnboardingWidget> {
   void _goToNext() {
     final nextRoute = GoRouterState.of(context).uri.queryParameters['next'];
     if (nextRoute != null && nextRoute.isNotEmpty) {
-      context.goNamed(
+      context.goWithTransition(
         nextRoute,
-        extra: <String, dynamic>{
-          kTransitionInfoKey: TransitionStandards.modalTransition,
-        },
+        transition: TransitionStandards.modalTransition,
       );
     } else {
-      context.goNamed(
-        MainProfileWidget.routeName,
-        extra: <String, dynamic>{
-          kTransitionInfoKey: TransitionStandards.modalTransition,
-        },
+      context.goMainProfile(
+        transition: TransitionStandards.modalTransition,
       );
     }
   }
@@ -350,7 +344,7 @@ class _VibeOnboardingWidgetState extends State<VibeOnboardingWidget> {
           GestureDetector(
             onTap: () {
               HapticFeedback.selectionClick();
-              setState(() => _archetypeExpanded = !_archetypeExpanded);
+              updateState(this, () => _archetypeExpanded = !_archetypeExpanded);
             },
             child: GlassCard(
               padding: const EdgeInsets.all(AppSpacing.md),
@@ -508,7 +502,7 @@ class _VibeOnboardingWidgetState extends State<VibeOnboardingWidget> {
       decoration: BoxDecoration(
         color: background,
         borderRadius: BorderRadius.circular(AppBorderRadius.full),
-        border: Border.all(color: color.withValues(alpha:0.3)),
+        border: Border.all(color: color.withValues(alpha: 0.3)),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -539,7 +533,8 @@ class _VibeOnboardingWidgetState extends State<VibeOnboardingWidget> {
     final List<Widget> rows = [];
     for (var i = 0; i < _priorityGridOrder.length; i += 2) {
       final first = _priorityGridOrder[i];
-      final second = i + 1 < _priorityGridOrder.length ? _priorityGridOrder[i + 1] : null;
+      final second =
+          i + 1 < _priorityGridOrder.length ? _priorityGridOrder[i + 1] : null;
 
       rows.add(
         Padding(
@@ -584,9 +579,7 @@ class _VibeOnboardingWidgetState extends State<VibeOnboardingWidget> {
               : AppColorsDark.navyLight.withValues(alpha: 0.3),
           borderRadius: BorderRadius.circular(AppBorderRadius.lg),
           border: Border.all(
-            color: isSelected
-                ? AppColorsDark.green
-                : AppColorsDark.glassBorder,
+            color: isSelected ? AppColorsDark.green : AppColorsDark.glassBorder,
             width: isSelected ? 1.5 : 1,
           ),
         ),
@@ -786,7 +779,8 @@ class _VibeOnboardingWidgetState extends State<VibeOnboardingWidget> {
                   child: LinearProgressIndicator(
                     value: (_currentIndex + 1) / (_categories.length + 1),
                     backgroundColor: AppColorsDark.navyLight,
-                    valueColor: AlwaysStoppedAnimation<Color>(AppColorsDark.green),
+                    valueColor:
+                        AlwaysStoppedAnimation<Color>(AppColorsDark.green),
                     minHeight: 6,
                   ),
                 ),
@@ -804,9 +798,10 @@ class _VibeOnboardingWidgetState extends State<VibeOnboardingWidget> {
                       )
                     : PageView.builder(
                         controller: _pageController,
-                        itemCount: _categories.length + 1, // 7 categories + 1 priorities
+                        itemCount: _categories.length +
+                            1, // 7 categories + 1 priorities
                         onPageChanged: (index) {
-                          setState(() {
+                          updateState(this, () {
                             _currentIndex = index;
                           });
                           // When user reaches the priorities page, pre-select dealbreaker categories
@@ -844,7 +839,8 @@ class _VibeOnboardingWidgetState extends State<VibeOnboardingWidget> {
                                       Expanded(
                                         child: Text(
                                           'We\'ll match you with golfers on the same wavelength.',
-                                          style: AppTypography.bodySmall.copyWith(
+                                          style:
+                                              AppTypography.bodySmall.copyWith(
                                             color: AppColorsDark.textSecondary,
                                           ),
                                         ),
@@ -863,7 +859,8 @@ class _VibeOnboardingWidgetState extends State<VibeOnboardingWidget> {
                                   onValueCommitted: (value) =>
                                       _commitValueChanged(category, value),
                                   onDealbreakerChanged: (value) =>
-                                      _handleDealbreakerChanged(category, value),
+                                      _handleDealbreakerChanged(
+                                          category, value),
                                 ),
                                 const SizedBox(height: AppSpacing.lg),
 
