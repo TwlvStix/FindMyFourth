@@ -2,6 +2,10 @@ import 'package:firebase_analytics/firebase_analytics.dart';
 
 import '/core/utils/app_log.dart';
 
+// Note: FirebaseAnalytics uses PlatformException (Flutter services layer),
+// not a Firebase-specific exception type. Generic catch is intentional here
+// since analytics is fire-and-forget and shouldn't surface errors to users.
+
 /// Analytics service for vibe floor events
 ///
 /// Tracks key events for the vibe floor feature to enable 90-day review.

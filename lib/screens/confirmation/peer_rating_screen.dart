@@ -1,5 +1,4 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 
@@ -13,6 +12,7 @@ import '/core/design_tokens/app_phosphor_icons.dart';
 import '/core/utils/app_log.dart';
 import '/core/widgets/app_avatar.dart';
 import '/core/widgets/app_button_enhanced.dart';
+import '/services/trust_flow_service.dart';
 
 /// PeerRatingScreen
 ///
@@ -37,6 +37,8 @@ class PeerRatingScreen extends StatefulWidget {
 }
 
 class _PeerRatingScreenState extends State<PeerRatingScreen> {
+  final _trustFlowService = TrustFlowService();
+
   bool _loading = true;
   bool _submitting = false;
   String? _error;
@@ -57,94 +59,35 @@ class _PeerRatingScreenState extends State<PeerRatingScreen> {
   }
 
   Future<void> _loadRatees() async {
-    final currentUid = FirebaseAuth.instance.currentUser?.uid;
-    if (currentUid == null) {
-      if (mounted) setState(() { _error = 'Not signed in.'; _loading = false; });
-      return;
-    }
-
     try {
-      // Load game data for course name
-      final gameSnap = await widget.gameRef.get();
-      if (!gameSnap.exists) {
-        if (mounted) setState(() { _error = 'Game not found.'; _loading = false; });
-        return;
-      }
-      final gameData = gameSnap.data() as Map<String, dynamic>;
-      _courseName = (gameData['course_play'] as String?) ?? 'your course';
-
-      // Load round_jobs to get attendance_records
-      final jobsSnap = await FirebaseFirestore.instance
-          .collection('round_jobs')
-          .where('game_ref', isEqualTo: widget.gameRef)
-          .limit(1)
-          .get();
-
-      Map<String, dynamic> attendanceRecords = {};
-      DocumentReference? roundRef;
-      if (jobsSnap.docs.isNotEmpty) {
-        final job = jobsSnap.docs.first.data();
-        roundRef = job['round_ref'] as DocumentReference?;
-        if (roundRef != null) {
-          final roundSnap = await roundRef.get();
-          if (roundSnap.exists) {
-            attendanceRecords =
-                (roundSnap.data() as Map<String, dynamic>)['attendance_records']
-                    as Map<String, dynamic>? ??
-                    {};
-          }
-        }
-      }
-
-      // Load game_participants for present app users
-      final participantsSnap = await FirebaseFirestore.instance
-          .collection('game_participants')
-          .where('game_ref', isEqualTo: widget.gameRef)
-          .where('status', isEqualTo: 'joined')
-          .get();
-
-      final entries = <_RateeEntry>[];
-
-      for (final doc in participantsSnap.docs) {
-        final d = doc.data();
-        final userRef = d['user_ref'] as DocumentReference?;
-        if (userRef == null) continue; // skip guests
-        if (userRef.id == currentUid) continue; // skip self
-
-        // Only include users marked 'present' (or attendance not set → default present)
-        final attendanceStatus = attendanceRecords[userRef.id] as String?;
-        if (attendanceStatus == 'no_show') continue;
-
-        final snapshot = d['profile_snapshot'] as Map<String, dynamic>?;
-        String displayName = '';
-        String photoUrl = '';
-
-        if (snapshot != null) {
-          displayName = (snapshot['display_name'] as String?) ?? '';
-          photoUrl = (snapshot['photo_url'] as String?) ?? '';
-        } else {
-          try {
-            final userSnap = await userRef.get();
-            if (userSnap.exists) {
-              final ud = userSnap.data() as Map<String, dynamic>;
-              displayName = (ud['display_name'] as String?) ??
-                  '${ud['first_name'] ?? ''} ${ud['last_name'] ?? ''}'.trim();
-              photoUrl = (ud['photo_url'] as String?) ?? '';
-            }
-          } catch (_) {}
-        }
-
-        entries.add(_RateeEntry(
-          uid: userRef.id,
-          displayName: displayName.isNotEmpty ? displayName : 'Player',
-          photoUrl: photoUrl,
-        ));
-        _ratings[userRef.id] = null; // unset until user taps
-      }
+      final data =
+          await _trustFlowService.loadPeerRatees(gameRef: widget.gameRef);
 
       if (mounted) {
         setState(() {
-          _ratees.addAll(entries);
+          _courseName = data.courseName;
+          _ratees.addAll(
+            data.ratees.map(
+              (ratee) => _RateeEntry(
+                uid: ratee.uid,
+                displayName: ratee.displayName,
+                photoUrl: ratee.photoUrl,
+              ),
+            ),
+          );
+          _ratings.addAll(data.initialRatings);
+          _loading = false;
+        });
+      }
+    } on StateError catch (e) {
+      final code = e.message;
+      if (mounted) {
+        setState(() {
+          _error = code == 'not_signed_in'
+              ? 'Not signed in.'
+              : code == 'game_not_found'
+                  ? 'Game not found.'
+                  : 'Failed to load players. Please try again.';
           _loading = false;
         });
       }
@@ -169,11 +112,16 @@ class _PeerRatingScreenState extends State<PeerRatingScreen> {
     }
 
     if (ratedMap.isEmpty) {
-      setState(() { _error = 'Please rate at least one player before submitting.'; });
+      setState(() {
+        _error = 'Please rate at least one player before submitting.';
+      });
       return;
     }
 
-    setState(() { _submitting = true; _error = null; });
+    setState(() {
+      _submitting = true;
+      _error = null;
+    });
 
     try {
       final result = await makeCloudCall('submitPeerRatings', {
@@ -182,13 +130,25 @@ class _PeerRatingScreenState extends State<PeerRatingScreen> {
       });
 
       if (result['success'] == true) {
-        if (mounted) setState(() { _submitting = false; _submitted = true; });
+        if (mounted)
+          setState(() {
+            _submitting = false;
+            _submitted = true;
+          });
       } else {
-        if (mounted) setState(() { _submitting = false; _error = 'Submission failed. Please try again.'; });
+        if (mounted)
+          setState(() {
+            _submitting = false;
+            _error = 'Submission failed. Please try again.';
+          });
       }
     } catch (e) {
       AppLog.d('PeerRatingScreen submit error: $e');
-      if (mounted) setState(() { _submitting = false; _error = 'Something went wrong. Please try again.'; });
+      if (mounted)
+        setState(() {
+          _submitting = false;
+          _error = 'Something went wrong. Please try again.';
+        });
     }
   }
 
@@ -211,7 +171,8 @@ class _PeerRatingScreenState extends State<PeerRatingScreen> {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  PhosphorIcon(AppPhosphorIcons.thumbsUp, color: AppColors.green, size: AppIconSize.hero),
+                  PhosphorIcon(AppPhosphorIcons.thumbsUp,
+                      color: AppColors.green, size: AppIconSize.hero),
                   SizedBox(height: AppSpacing.lg),
                   Text(
                     'Ratings submitted!',
@@ -248,7 +209,8 @@ class _PeerRatingScreenState extends State<PeerRatingScreen> {
           title: Text('Rate Your Group', style: AppTypography.titleMedium),
           centerTitle: true,
           leading: IconButton(
-            icon: PhosphorIcon(AppPhosphorIcons.back, color: AppColors.textPrimary),
+            icon: PhosphorIcon(AppPhosphorIcons.back,
+                color: AppColors.textPrimary),
             onPressed: () => Navigator.of(context).pop(),
           ),
         ),
@@ -275,7 +237,8 @@ class _PeerRatingScreenState extends State<PeerRatingScreen> {
         title: Text('Rate Your Group', style: AppTypography.titleMedium),
         centerTitle: true,
         leading: IconButton(
-          icon: PhosphorIcon(AppPhosphorIcons.back, color: AppColors.textPrimary),
+          icon:
+              PhosphorIcon(AppPhosphorIcons.back, color: AppColors.textPrimary),
           onPressed: () => Navigator.of(context).pop(),
         ),
       ),
@@ -297,7 +260,10 @@ class _PeerRatingScreenState extends State<PeerRatingScreen> {
             // Privacy notice
             Padding(
               padding: EdgeInsets.fromLTRB(
-                AppSpacing.xl, 0, AppSpacing.xl, AppSpacing.sm,
+                AppSpacing.xl,
+                0,
+                AppSpacing.xl,
+                AppSpacing.sm,
               ),
               child: Container(
                 padding: EdgeInsets.symmetric(
@@ -337,7 +303,8 @@ class _PeerRatingScreenState extends State<PeerRatingScreen> {
 
             if (_error != null)
               Padding(
-                padding: AppSpacing.symmetric(horizontal: AppSpacing.xl, vertical: AppSpacing.sm),
+                padding: AppSpacing.symmetric(
+                    horizontal: AppSpacing.xl, vertical: AppSpacing.sm),
                 child: Text(
                   _error!,
                   style: AppTypography.bodySmall.copyWith(
@@ -348,7 +315,8 @@ class _PeerRatingScreenState extends State<PeerRatingScreen> {
               ),
             Expanded(
               child: ListView.builder(
-                padding: AppSpacing.symmetric(horizontal: AppSpacing.lg, vertical: AppSpacing.sm),
+                padding: AppSpacing.symmetric(
+                    horizontal: AppSpacing.lg, vertical: AppSpacing.sm),
                 itemCount: _ratees.length,
                 itemBuilder: (context, i) {
                   final ratee = _ratees[i];
@@ -356,7 +324,9 @@ class _PeerRatingScreenState extends State<PeerRatingScreen> {
                     ratee: ratee,
                     rating: _ratings[ratee.uid],
                     onRate: (val) {
-                      setState(() { _ratings[ratee.uid] = val; });
+                      setState(() {
+                        _ratings[ratee.uid] = val;
+                      });
                     },
                   );
                 },
@@ -409,14 +379,17 @@ class _RateeRow extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       margin: AppSpacing.only(bottom: AppSpacing.sm),
-      padding: AppSpacing.symmetric(horizontal: AppSpacing.lg, vertical: AppSpacing.md),
+      padding: AppSpacing.symmetric(
+          horizontal: AppSpacing.lg, vertical: AppSpacing.md),
       decoration: BoxDecoration(
         color: AppColors.navy,
         borderRadius: BorderRadius.circular(AppBorderRadius.md),
         border: Border.all(
           color: rating == null
               ? AppColors.navyLight
-              : (rating! ? AppColors.green.withValues(alpha:0.4) : AppColors.error.withValues(alpha:0.4)),
+              : (rating!
+                  ? AppColors.green.withValues(alpha: 0.4)
+                  : AppColors.error.withValues(alpha: 0.4)),
           width: 1,
         ),
       ),
@@ -440,7 +413,9 @@ class _RateeRow extends StatelessWidget {
   }
 
   Widget _buildAvatar() {
-    final initials = ratee.displayName.trim().split(' ')
+    final initials = ratee.displayName
+        .trim()
+        .split(' ')
         .where((p) => p.isNotEmpty)
         .map((p) => p[0].toUpperCase())
         .take(2)
@@ -507,7 +482,9 @@ class _ThumbButton extends StatelessWidget {
           color: selected ? activeColor : Colors.transparent,
           shape: BoxShape.circle,
           border: Border.all(
-            color: selected ? activeColor : AppColors.textMuted.withValues(alpha:0.3),
+            color: selected
+                ? activeColor
+                : AppColors.textMuted.withValues(alpha: 0.3),
           ),
         ),
         child: PhosphorIcon(

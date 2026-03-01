@@ -328,7 +328,7 @@ class _RemoveFriendSheetState extends State<_RemoveFriendSheet> {
         borderRadius: BorderRadius.circular(AppBorderRadius.md),
         child: Container(
           width: double.infinity,
-          padding: const EdgeInsets.symmetric(vertical: 14),
+          padding: EdgeInsets.symmetric(vertical: AppSpacing.sm),
           decoration: BoxDecoration(
             color: _removeBg,
             border: Border.all(color: _removeBorder, width: 1),
@@ -343,7 +343,7 @@ class _RemoveFriendSheetState extends State<_RemoveFriendSheet> {
                 size: AppIconSize.button,
                 color: _removeText,
               ),
-              const SizedBox(width: 8),
+              AppSpacing.horizontalXsBox,
               Text(
                 'Remove Friend',
                 style: AppTypography.labelLarge.copyWith(
@@ -365,7 +365,7 @@ class _RemoveFriendSheetState extends State<_RemoveFriendSheet> {
 
     return Container(
       key: const ValueKey('confirmation'),
-      padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 16),
+      padding: EdgeInsets.symmetric(horizontal: AppSpacing.md, vertical: AppSpacing.md),
       decoration: BoxDecoration(
         color: _confirmBg,
         border: Border.all(color: _confirmBorder, width: 1),
@@ -394,7 +394,7 @@ class _RemoveFriendSheetState extends State<_RemoveFriendSheet> {
               ],
             ),
           ),
-          const SizedBox(height: 6),
+          SizedBox(height: AppSpacing.xxs),
 
           // Subtitle
           Text(
@@ -404,7 +404,7 @@ class _RemoveFriendSheetState extends State<_RemoveFriendSheet> {
               color: AppColors.textMuted.withValues(alpha: 0.7),
             ),
           ),
-          const SizedBox(height: 16),
+          AppSpacing.verticalMdBox,
 
           // Buttons row
           Row(
@@ -418,13 +418,13 @@ class _RemoveFriendSheetState extends State<_RemoveFriendSheet> {
                       HapticFeedback.lightImpact();
                       setState(() => _showConfirm = false);
                     },
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: BorderRadius.circular(AppBorderRadius.card),
                     child: Container(
-                      padding: const EdgeInsets.symmetric(vertical: 12),
+                      padding: AppSpacing.verticalSm,
                       decoration: BoxDecoration(
                         color: _cancelBg,
                         border: Border.all(color: _cancelBorder, width: 1),
-                        borderRadius: BorderRadius.circular(12),
+                        borderRadius: BorderRadius.circular(AppBorderRadius.card),
                       ),
                       child: Text(
                         'Cancel',
@@ -437,7 +437,7 @@ class _RemoveFriendSheetState extends State<_RemoveFriendSheet> {
                   ),
                 ),
               ),
-              const SizedBox(width: 10),
+              AppSpacing.horizontalXsBox,
 
               // Remove button
               Expanded(
@@ -448,13 +448,13 @@ class _RemoveFriendSheetState extends State<_RemoveFriendSheet> {
                       HapticFeedback.mediumImpact();
                       widget.onRemove();
                     },
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: BorderRadius.circular(AppBorderRadius.card),
                     child: Container(
-                      padding: const EdgeInsets.symmetric(vertical: 12),
+                      padding: AppSpacing.verticalSm,
                       decoration: BoxDecoration(
                         color: _removeBg,
                         border: Border.all(color: _removeBorder, width: 1),
-                        borderRadius: BorderRadius.circular(12),
+                        borderRadius: BorderRadius.circular(AppBorderRadius.card),
                       ),
                       child: Text(
                         'Remove',

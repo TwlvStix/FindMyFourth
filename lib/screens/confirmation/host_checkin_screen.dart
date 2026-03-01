@@ -12,6 +12,7 @@ import '/core/design_tokens/app_phosphor_icons.dart';
 import '/core/utils/app_log.dart';
 import '/core/widgets/app_avatar.dart';
 import '/core/widgets/app_button_enhanced.dart';
+import '/services/trust_flow_service.dart';
 
 /// HostCheckinScreen
 ///
@@ -34,6 +35,8 @@ class HostCheckinScreen extends StatefulWidget {
 }
 
 class _HostCheckinScreenState extends State<HostCheckinScreen> {
+  final _trustFlowService = TrustFlowService();
+
   bool _loading = true;
   bool _submitting = false;
   String? _error;
@@ -55,78 +58,36 @@ class _HostCheckinScreenState extends State<HostCheckinScreen> {
 
   Future<void> _loadParticipants() async {
     try {
-      // Load game data
-      final gameSnap = await widget.gameRef.get();
-      if (!gameSnap.exists) {
-        if (mounted) setState(() { _error = 'Game not found.'; _loading = false; });
-        return;
-      }
-      final gameData = gameSnap.data() as Map<String, dynamic>;
-      _courseName =
-          (gameData['course_play'] as String?) ?? 'your course';
-
-      // Load game_participants
-      final participantsSnap = await FirebaseFirestore.instance
-          .collection('game_participants')
-          .where('game_ref', isEqualTo: widget.gameRef)
-          .where('status', isEqualTo: 'joined')
-          .get();
-
-      final entries = <_ParticipantEntry>[];
-
-      for (final doc in participantsSnap.docs) {
-        final d = doc.data();
-        final userRef = d['user_ref'] as DocumentReference?;
-        final guestName = d['guest_name'] as String?;
-        final role = (d['role'] as String?) ?? 'player';
-
-        if (userRef != null) {
-          // App user — fetch display name and photo
-          final snapshot = d['profile_snapshot'] as Map<String, dynamic>?;
-          String displayName = '';
-          String photoUrl = '';
-
-          if (snapshot != null) {
-            displayName = (snapshot['display_name'] as String?) ?? '';
-            photoUrl = (snapshot['photo_url'] as String?) ?? '';
-          } else {
-            // Fall back to live fetch
-            try {
-              final userSnap = await userRef.get();
-              if (userSnap.exists) {
-                final ud = userSnap.data() as Map<String, dynamic>;
-                displayName = (ud['display_name'] as String?) ??
-                    '${ud['first_name'] ?? ''} ${ud['last_name'] ?? ''}'.trim();
-                photoUrl = (ud['photo_url'] as String?) ?? '';
-              }
-            } catch (_) {}
-          }
-
-          final key = userRef.id;
-          entries.add(_ParticipantEntry(
-            key: key,
-            displayName: displayName.isNotEmpty ? displayName : 'Player',
-            photoUrl: photoUrl,
-            isGuest: false,
-            role: role,
-          ));
-          _attendance[key] = true; // default: present
-        } else if (guestName != null && guestName.isNotEmpty) {
-          // Guest
-          entries.add(_ParticipantEntry(
-            key: guestName,
-            displayName: guestName,
-            photoUrl: '',
-            isGuest: true,
-            role: 'guest',
-          ));
-          _attendance[guestName] = true; // default: present
-        }
-      }
+      final data = await _trustFlowService.loadHostCheckinParticipants(
+        gameRef: widget.gameRef,
+      );
+      final entries = data.participants
+          .map(
+            (participant) => _ParticipantEntry(
+              key: participant.key,
+              displayName: participant.displayName,
+              photoUrl: participant.photoUrl,
+              isGuest: participant.isGuest,
+              role: participant.role,
+            ),
+          )
+          .toList(growable: false);
 
       if (mounted) {
         setState(() {
+          _courseName = data.courseName;
           _participants.addAll(entries);
+          _attendance.addAll(data.defaultAttendance);
+          _loading = false;
+        });
+      }
+    } on StateError catch (e) {
+      final code = e.message;
+      if (mounted) {
+        setState(() {
+          _error = code == 'game_not_found'
+              ? 'Game not found.'
+              : 'Failed to load participants. Please try again.';
           _loading = false;
         });
       }
@@ -142,7 +103,10 @@ class _HostCheckinScreenState extends State<HostCheckinScreen> {
   }
 
   Future<void> _submit() async {
-    setState(() { _submitting = true; _error = null; });
+    setState(() {
+      _submitting = true;
+      _error = null;
+    });
 
     try {
       final result = await makeCloudCall('submitHostCheckin', {
@@ -160,11 +124,19 @@ class _HostCheckinScreenState extends State<HostCheckinScreen> {
           });
         }
       } else {
-        if (mounted) setState(() { _submitting = false; _error = 'Submission failed. Please try again.'; });
+        if (mounted)
+          setState(() {
+            _submitting = false;
+            _error = 'Submission failed. Please try again.';
+          });
       }
     } catch (e) {
       AppLog.d('HostCheckinScreen submit error: $e');
-      if (mounted) setState(() { _submitting = false; _error = 'Something went wrong. Please try again.'; });
+      if (mounted)
+        setState(() {
+          _submitting = false;
+          _error = 'Something went wrong. Please try again.';
+        });
     }
   }
 
@@ -221,7 +193,8 @@ class _HostCheckinScreenState extends State<HostCheckinScreen> {
         ),
         centerTitle: true,
         leading: IconButton(
-          icon: PhosphorIcon(AppPhosphorIcons.back, color: AppColors.textPrimary),
+          icon:
+              PhosphorIcon(AppPhosphorIcons.back, color: AppColors.textPrimary),
           onPressed: () => Navigator.of(context).pop(),
         ),
       ),
@@ -242,7 +215,8 @@ class _HostCheckinScreenState extends State<HostCheckinScreen> {
             ),
             if (_error != null)
               Padding(
-                padding: AppSpacing.symmetric(horizontal: AppSpacing.xl, vertical: AppSpacing.sm),
+                padding: AppSpacing.symmetric(
+                    horizontal: AppSpacing.xl, vertical: AppSpacing.sm),
                 child: Text(
                   _error!,
                   style: AppTypography.bodySmall.copyWith(
@@ -253,7 +227,8 @@ class _HostCheckinScreenState extends State<HostCheckinScreen> {
               ),
             Expanded(
               child: ListView.builder(
-                padding: AppSpacing.symmetric(horizontal: AppSpacing.lg, vertical: AppSpacing.sm),
+                padding: AppSpacing.symmetric(
+                    horizontal: AppSpacing.lg, vertical: AppSpacing.sm),
                 itemCount: _participants.length,
                 itemBuilder: (context, i) {
                   final p = _participants[i];
@@ -262,7 +237,9 @@ class _HostCheckinScreenState extends State<HostCheckinScreen> {
                     participant: p,
                     isPresent: isPresent,
                     onToggle: (val) {
-                      setState(() { _attendance[p.key] = val; });
+                      setState(() {
+                        _attendance[p.key] = val;
+                      });
                     },
                   );
                 },
@@ -319,14 +296,15 @@ class _ParticipantRow extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       margin: AppSpacing.only(bottom: AppSpacing.sm),
-      padding: AppSpacing.symmetric(horizontal: AppSpacing.lg, vertical: AppSpacing.md),
+      padding: AppSpacing.symmetric(
+          horizontal: AppSpacing.lg, vertical: AppSpacing.md),
       decoration: BoxDecoration(
         color: AppColors.navy,
         borderRadius: BorderRadius.circular(AppBorderRadius.md),
         border: Border.all(
           color: isPresent
-              ? AppColors.green.withValues(alpha:0.3)
-              : AppColors.error.withValues(alpha:0.3),
+              ? AppColors.green.withValues(alpha: 0.3)
+              : AppColors.error.withValues(alpha: 0.3),
           width: 1,
         ),
       ),
@@ -365,7 +343,9 @@ class _ParticipantRow extends StatelessWidget {
   }
 
   Widget _buildAvatar() {
-    final initials = participant.displayName.trim().split(' ')
+    final initials = participant.displayName
+        .trim()
+        .split(' ')
         .where((p) => p.isNotEmpty)
         .map((p) => p[0].toUpperCase())
         .take(2)
@@ -426,12 +406,15 @@ class _ToggleChip extends StatelessWidget {
       onTap: onTap,
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 150),
-        padding: EdgeInsets.symmetric(horizontal: AppSpacing.sm - 2, vertical: AppSpacing.xs - 2),
+        padding: EdgeInsets.symmetric(
+            horizontal: AppSpacing.sm - 2, vertical: AppSpacing.xs - 2),
         decoration: BoxDecoration(
           color: selected ? selectedColor : Colors.transparent,
           borderRadius: BorderRadius.circular(AppBorderRadius.xl),
           border: Border.all(
-            color: selected ? selectedColor : AppColors.textMuted.withValues(alpha:0.4),
+            color: selected
+                ? selectedColor
+                : AppColors.textMuted.withValues(alpha: 0.4),
           ),
         ),
         child: Text(

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import '/auth/firebase_auth/auth_util.dart';
 import '/core/utils/app_log.dart';
 import '/core/design_tokens/app_phosphor_icons.dart';
 import '/core/design_tokens/colors.dart';
@@ -34,8 +35,7 @@ class _EditVibeImportanceWidgetState extends State<EditVibeImportanceWidget> {
   bool _isLoading = true;
   bool _isSaving = false;
   Map<VibeCategory, VibeImportance> _importance = {
-    for (final category in VibeCategory.values)
-      category: VibeImportance.normal,
+    for (final category in VibeCategory.values) category: VibeImportance.normal,
   };
 
   @override
@@ -51,7 +51,8 @@ class _EditVibeImportanceWidgetState extends State<EditVibeImportanceWidget> {
         return;
       }
       setState(() {
-        _importance = Map<VibeCategory, VibeImportance>.from(profile.importance);
+        _importance =
+            Map<VibeCategory, VibeImportance>.from(profile.importance);
         _isLoading = false;
       });
     } catch (_) {
@@ -138,7 +139,7 @@ class _EditVibeImportanceWidgetState extends State<EditVibeImportanceWidget> {
       _showSnack('Only one category can be least important.');
       return;
     }
-    if (FirebaseAuth.instance.currentUser == null) {
+    if (currentUserUid.isEmpty) {
       _showSnack('Please sign in to save priorities.');
       return;
     }
@@ -211,80 +212,82 @@ class _EditVibeImportanceWidgetState extends State<EditVibeImportanceWidget> {
                       AppSpacing.md,
                       AppSpacing.xxl,
                     ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'What makes or breaks your round?',
-                        style: AppTypography.headlineSmall.copyWith(
-                          color: AppColors.pure,
-                        ),
-                      ),
-                      const SizedBox(height: AppSpacing.xs),
-                      Text(
-                        'Pick the 2 things that matter most. Optional: pick 1 that matters least. You can change this anytime.',
-                        style: AppTypography.bodySmall.copyWith(
-                          color: AppColors.sand,
-                        ),
-                      ),
-                      const SizedBox(height: AppSpacing.md),
-                      Row(
-                        children: [
-                          _buildCountPill(
-                            label: 'Top',
-                            count: _topCount,
-                            max: 2,
-                            color: AppColors.navy,
-                            background: AppColors.navyLight.withValues(alpha:0.15),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'What makes or breaks your round?',
+                          style: AppTypography.headlineSmall.copyWith(
+                            color: AppColors.pure,
                           ),
-                          const SizedBox(width: AppSpacing.sm),
-                          _buildCountPill(
-                            label: 'Bottom',
-                            count: _bottomCount,
-                            max: 1,
-                            color: AppColors.gold,
-                            background: AppColors.gold.withValues(alpha:0.15),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: AppSpacing.lg),
-                      ..._orderedCategories.map(
-                        (category) => Padding(
-                          padding:
-                              const EdgeInsets.only(bottom: AppSpacing.sm),
-                          child: _buildImportanceCard(category),
                         ),
-                      ),
-                      const SizedBox(height: AppSpacing.lg),
-                      Row(
-                        children: [
-                          Expanded(
-                            child: AppButtonEnhanced(
-                              text: 'Clear',
-                              variant: AppButtonVariant.secondary,
-                              size: AppButtonSize.large,
-                              fullWidth: true,
-                              enabled: !_isSaving,
-                              onPressed: _clearImportance,
+                        const SizedBox(height: AppSpacing.xs),
+                        Text(
+                          'Pick the 2 things that matter most. Optional: pick 1 that matters least. You can change this anytime.',
+                          style: AppTypography.bodySmall.copyWith(
+                            color: AppColors.sand,
+                          ),
+                        ),
+                        const SizedBox(height: AppSpacing.md),
+                        Row(
+                          children: [
+                            _buildCountPill(
+                              label: 'Top',
+                              count: _topCount,
+                              max: 2,
+                              color: AppColors.navy,
+                              background:
+                                  AppColors.navyLight.withValues(alpha: 0.15),
                             ),
-                          ),
-                          const SizedBox(width: AppSpacing.sm),
-                          Expanded(
-                            child: AppButtonEnhanced(
-                              text: 'Save priorities',
-                              variant: AppButtonVariant.primary,
-                              size: AppButtonSize.large,
-                              fullWidth: true,
-                              isLoading: _isSaving,
-                              onPressed: _saveImportance,
+                            const SizedBox(width: AppSpacing.sm),
+                            _buildCountPill(
+                              label: 'Bottom',
+                              count: _bottomCount,
+                              max: 1,
+                              color: AppColors.gold,
+                              background:
+                                  AppColors.gold.withValues(alpha: 0.15),
                             ),
+                          ],
+                        ),
+                        const SizedBox(height: AppSpacing.lg),
+                        ..._orderedCategories.map(
+                          (category) => Padding(
+                            padding:
+                                const EdgeInsets.only(bottom: AppSpacing.sm),
+                            child: _buildImportanceCard(category),
                           ),
-                        ],
-                      ),
-                    ],
+                        ),
+                        const SizedBox(height: AppSpacing.lg),
+                        Row(
+                          children: [
+                            Expanded(
+                              child: AppButtonEnhanced(
+                                text: 'Clear',
+                                variant: AppButtonVariant.secondary,
+                                size: AppButtonSize.large,
+                                fullWidth: true,
+                                enabled: !_isSaving,
+                                onPressed: _clearImportance,
+                              ),
+                            ),
+                            const SizedBox(width: AppSpacing.sm),
+                            Expanded(
+                              child: AppButtonEnhanced(
+                                text: 'Save priorities',
+                                variant: AppButtonVariant.primary,
+                                size: AppButtonSize.large,
+                                fullWidth: true,
+                                isLoading: _isSaving,
+                                onPressed: _saveImportance,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
                   ),
                 ),
-              ),
         ),
       ),
     );
@@ -305,7 +308,7 @@ class _EditVibeImportanceWidgetState extends State<EditVibeImportanceWidget> {
       decoration: BoxDecoration(
         color: background,
         borderRadius: BorderRadius.circular(AppBorderRadius.full),
-        border: Border.all(color: color.withValues(alpha:0.3)),
+        border: Border.all(color: color.withValues(alpha: 0.3)),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -338,10 +341,10 @@ class _EditVibeImportanceWidgetState extends State<EditVibeImportanceWidget> {
     final isTop = importance == VibeImportance.top;
     final isBottom = importance == VibeImportance.bottom;
     final background = isTop
-        ? AppColors.navyDark.withValues(alpha:0.3)
+        ? AppColors.navyDark.withValues(alpha: 0.3)
         : isBottom
-            ? AppColors.gold.withValues(alpha:0.2)
-            : AppColors.slate.withValues(alpha:0.15);
+            ? AppColors.gold.withValues(alpha: 0.2)
+            : AppColors.slate.withValues(alpha: 0.15);
     final borderColor = isTop
         ? AppColors.navy
         : isBottom
@@ -359,7 +362,7 @@ class _EditVibeImportanceWidgetState extends State<EditVibeImportanceWidget> {
       decoration: BoxDecoration(
         color: background,
         borderRadius: BorderRadius.circular(AppBorderRadius.lg),
-        border: Border.all(color: borderColor.withValues(alpha:0.5)),
+        border: Border.all(color: borderColor.withValues(alpha: 0.5)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -381,7 +384,9 @@ class _EditVibeImportanceWidgetState extends State<EditVibeImportanceWidget> {
                     Text(
                       label,
                       style: AppTypography.labelSmall.copyWith(
-                        color: isTop || isBottom ? AppColors.sand : AppColors.stone,
+                        color: isTop || isBottom
+                            ? AppColors.sand
+                            : AppColors.stone,
                         letterSpacing: AppTypography.letterSpacingNormal,
                       ),
                     ),
@@ -439,7 +444,7 @@ class _EditVibeImportanceWidgetState extends State<EditVibeImportanceWidget> {
     final textColor = selected
         ? AppColors.pure
         : (onTap == null ? AppColors.slate : AppColors.onyx);
-    final bgColor = selected ? color : AppColors.sand.withValues(alpha:0.5);
+    final bgColor = selected ? color : AppColors.sand.withValues(alpha: 0.5);
 
     return InkWell(
       onTap: onTap,

@@ -19,6 +19,7 @@ import '/core/design_tokens/border_radius.dart';
 import '/core/form_field_controller.dart';
 import '/profile/change_photo/change_photo_widget.dart';
 import '/profile/main_profile/main_profile_widget.dart';
+import '/services/profile_setup_service.dart';
 import '/user_auth/sign_in/sign_in_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -39,6 +40,7 @@ class EditProfileWidget extends StatefulWidget {
 class _EditProfileWidgetState extends State<EditProfileWidget>
     with TickerProviderStateMixin {
   final formKey = GlobalKey<FormState>();
+  final _profileSetupService = ProfileSetupService();
 
   // Text Controllers
   FocusNode? firstNameFocusNode;
@@ -156,27 +158,21 @@ class _EditProfileWidgetState extends State<EditProfileWidget>
     }
 
     try {
-      await FirebaseFirestore.instance.runTransaction((transaction) async {
-        transaction.update(
-          currentUserReference!,
-          createUsersRecordData(
-            photoUrl: currentUserPhoto,
-            handicap: handicapValue,
-            golfCanadaNumber: () {
-              final golfCanadaRaw = golfCanadaTextController?.text.trim() ?? '';
-              return golfCanadaRaw.isEmpty ? null : golfCanadaRaw;
-            }(),
-            firstName: firstNameTextController!.text,
-            lastName: lastNameTextController!.text,
-            homeCourse: coursesValue,
-          ),
-        );
-        transaction.set(
-          currentUserReference!.collection('private').doc('info'),
-          {'phone_number': phoneNumTextController!.text},
-          SetOptions(merge: true),
-        );
-      });
+      await _profileSetupService.saveEditProfile(
+        userRef: currentUserReference!,
+        userData: createUsersRecordData(
+          photoUrl: currentUserPhoto,
+          handicap: handicapValue,
+          golfCanadaNumber: () {
+            final golfCanadaRaw = golfCanadaTextController?.text.trim() ?? '';
+            return golfCanadaRaw.isEmpty ? null : golfCanadaRaw;
+          }(),
+          firstName: firstNameTextController!.text,
+          lastName: lastNameTextController!.text,
+          homeCourse: coursesValue,
+        ),
+        phoneNumber: phoneNumTextController?.text,
+      );
       currentUserDocument =
           await UsersRecord.getDocumentOnce(currentUserReference!);
       _showSuccessAndNavigate();

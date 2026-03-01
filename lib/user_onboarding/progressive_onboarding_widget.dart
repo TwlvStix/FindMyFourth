@@ -16,6 +16,7 @@ import '/core/design_tokens/typography.dart';
 import '/core/design_tokens/icon_size.dart';
 import '/core/form_field_controller.dart';
 import '/profile/main_profile/main_profile_widget.dart';
+import '/services/profile_setup_service.dart';
 import '/user_onboarding/vibe_onboarding_widget.dart';
 import '/user_auth/sign_in/sign_in_widget.dart';
 import 'package:flutter/material.dart';
@@ -65,6 +66,7 @@ class _ProgressiveOnboardingWidgetState
   bool _isLoading = false;
 
   final scaffoldKey = GlobalKey<ScaffoldState>();
+  final _profileSetupService = ProfileSetupService();
 
   @override
   void initState() {
@@ -148,7 +150,8 @@ class _ProgressiveOnboardingWidgetState
     setState(() => _isLoading = true);
 
     try {
-      final desiredUsername = functions.usernameCreator(_usernameController.text);
+      final desiredUsername =
+          functions.usernameCreator(_usernameController.text);
       // Update user record
       final userRef = currentUserReference;
       if (userRef != null) {
@@ -182,11 +185,13 @@ class _ProgressiveOnboardingWidgetState
                     backgroundColor: AppColors.navy,
                     title: Text(
                       'Re-authentication required',
-                      style: AppTypography.titleMedium.copyWith(color: AppColors.textPrimary),
+                      style: AppTypography.titleMedium
+                          .copyWith(color: AppColors.textPrimary),
                     ),
                     content: Text(
                       'To update your email, please sign in again and retry.',
-                      style: AppTypography.bodyMedium.copyWith(color: AppColors.textSecondary),
+                      style: AppTypography.bodyMedium
+                          .copyWith(color: AppColors.textSecondary),
                     ),
                     actions: [
                       AppButtonEnhanced(
@@ -204,7 +209,8 @@ class _ProgressiveOnboardingWidgetState
                           context.goNamed(
                             SignInWidget.routeName,
                             extra: <String, dynamic>{
-                              kTransitionInfoKey: TransitionStandards.modalTransition,
+                              kTransitionInfoKey:
+                                  TransitionStandards.modalTransition,
                             },
                           );
                         },
@@ -218,49 +224,23 @@ class _ProgressiveOnboardingWidgetState
             return;
           }
         }
-        final usernamesRef = FirebaseFirestore.instance
-            .collection('usernames')
-            .doc(desiredUsername);
-
         try {
-          await FirebaseFirestore.instance.runTransaction((transaction) async {
-            final usernameSnap = await transaction.get(usernamesRef);
-            if (usernameSnap.exists) {
-              final existingRef =
-                  usernameSnap.get('uid') as DocumentReference?;
-              if (existingRef != null && existingRef.path != userRef.path) {
-                throw StateError('username_taken');
-              }
-            } else {
-              transaction.set(usernamesRef, {
-                'uid': userRef,
-                'created_at': FieldValue.serverTimestamp(),
-              });
-            }
-
-            transaction.update(
-              userRef,
-              createUsersRecordData(
-                displayName: desiredUsername,
-                firstName: _firstNameController.text,
-                lastName: _lastNameController.text,
-                homeCourse: _homeCourseValue,
-                handicap: _handicapValue,
-                drinks: _drinksValue,
-                music: _musicValue,
-                playForMoney: _playMoneyValue,
-                paceOfPlay: _paceValue,
-              ),
-            );
-            final phoneText = _phoneController.text;
-            if (phoneText.isNotEmpty) {
-              transaction.set(
-                userRef.collection('private').doc('info'),
-                {'phone_number': phoneText},
-                SetOptions(merge: true),
-              );
-            }
-          });
+          await _profileSetupService.saveProgressiveOnboarding(
+            userRef: userRef,
+            username: desiredUsername,
+            userData: createUsersRecordData(
+              displayName: desiredUsername,
+              firstName: _firstNameController.text,
+              lastName: _lastNameController.text,
+              homeCourse: _homeCourseValue,
+              handicap: _handicapValue,
+              drinks: _drinksValue,
+              music: _musicValue,
+              playForMoney: _playMoneyValue,
+              paceOfPlay: _paceValue,
+            ),
+            phoneNumber: _phoneController.text,
+          );
         } on StateError catch (_) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
@@ -331,7 +311,9 @@ class _ProgressiveOnboardingWidgetState
   }
 
   Future<bool> _ensureUserRecord() async {
-    final user = FirebaseAuth.instance.currentUser;
+    final user = await _profileSetupService.currentUserOrWait(
+      timeout: const Duration(seconds: 1),
+    );
     if (user == null) {
       return false;
     }
@@ -339,7 +321,8 @@ class _ProgressiveOnboardingWidgetState
       await ensureUserDocReady(user);
       return true;
     } catch (error, stackTrace) {
-      AppLog.d('❌ PROGRESSIVE ONBOARDING: unable to ensure user doc exists: $error');
+      AppLog.d(
+          '❌ PROGRESSIVE ONBOARDING: unable to ensure user doc exists: $error');
       AppLog.d('❌ PROGRESSIVE ONBOARDING: Stack trace: $stackTrace');
       return false;
     }
@@ -749,7 +732,8 @@ class _ProgressiveOnboardingWidgetState
                   ),
                 );
               }
-              final courses = snapshot.data!..sort((a, b) => a.name.compareTo(b.name));
+              final courses = snapshot.data!
+                ..sort((a, b) => a.name.compareTo(b.name));
               return AppDropDown<String>(
                 controller: _homeCourseController ??=
                     FormFieldController<String>(null),
@@ -801,16 +785,12 @@ class _ProgressiveOnboardingWidgetState
               child: AppCountController(
                 decrementIconBuilder: (enabled) => Icon(
                   AppPhosphorIcons.minus,
-                  color: enabled
-                      ? AppColors.navyDark
-                      : AppColors.pure,
+                  color: enabled ? AppColors.navyDark : AppColors.pure,
                   size: AppIconSize.button,
                 ),
                 incrementIconBuilder: (enabled) => Icon(
                   AppPhosphorIcons.plus,
-                  color: enabled
-                      ? AppColors.navyDark
-                      : AppColors.pure,
+                  color: enabled ? AppColors.navyDark : AppColors.pure,
                   size: AppIconSize.button,
                 ),
                 countBuilder: (count) => Text(
@@ -820,13 +800,13 @@ class _ProgressiveOnboardingWidgetState
                   ),
                 ),
                 count: _handicapValue,
-                updateCount: (count) =>
-                    setState(() => _handicapValue = count),
+                updateCount: (count) => setState(() => _handicapValue = count),
                 stepSize: 1,
                 minimum: -5,
                 maximum: 54,
                 editable: true,
-                formatValue: (count) => count < 0 ? '+${count.abs()}' : count.toString(),
+                formatValue: (count) =>
+                    count < 0 ? '+${count.abs()}' : count.toString(),
                 parseValue: (text) {
                   final trimmed = text.trim();
                   if (trimmed.startsWith('+')) {
@@ -940,16 +920,12 @@ class _ProgressiveOnboardingWidgetState
             child: AppCountController(
               decrementIconBuilder: (enabled) => Icon(
                 AppPhosphorIcons.minus,
-                color: enabled
-                    ? AppColors.navyDark
-                    : AppColors.pure,
+                color: enabled ? AppColors.navyDark : AppColors.pure,
                 size: AppIconSize.button,
               ),
               incrementIconBuilder: (enabled) => Icon(
                 AppPhosphorIcons.plus,
-                color: enabled
-                    ? AppColors.navyDark
-                    : AppColors.pure,
+                color: enabled ? AppColors.navyDark : AppColors.pure,
                 size: AppIconSize.button,
               ),
               countBuilder: (count) => Text(

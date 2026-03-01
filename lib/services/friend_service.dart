@@ -225,8 +225,8 @@ class FriendService {
         'senderName': senderName,
       });
       AppLog.d('✅ FriendService: Friend request notification sent');
-    } catch (e) {
-      AppLog.d('❌ FriendService.notifyFriendRequestSent error: $e');
+    } on FirebaseFunctionsException catch (e) {
+      AppLog.d('❌ FriendService.notifyFriendRequestSent error: ${e.code} - ${e.message}');
     }
   }
 
@@ -244,8 +244,8 @@ class FriendService {
         'acceptorName': acceptorName,
       });
       AppLog.d('✅ FriendService: Friend accepted notification sent');
-    } catch (e) {
-      AppLog.d('❌ FriendService.notifyFriendRequestAccepted error: $e');
+    } on FirebaseFunctionsException catch (e) {
+      AppLog.d('❌ FriendService.notifyFriendRequestAccepted error: ${e.code} - ${e.message}');
     }
   }
 }

@@ -1,7 +1,10 @@
 import 'dart:convert';
 
+import 'package:firebase_crashlytics/firebase_crashlytics.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import '/core/utils/app_log.dart';
 
 class AppState extends ChangeNotifier {
   static AppState _instance = AppState._internal();
@@ -19,11 +22,6 @@ class AppState extends ChangeNotifier {
   Future initializePersistedState() async {
     prefs = await SharedPreferences.getInstance();
     _safeInit(() {
-      _erorImagePlaceholderUrl =
-          prefs.getString('errorImagePlaceholderUrl') ??
-              _erorImagePlaceholderUrl;
-    });
-    _safeInit(() {
       final stored = prefs.getString('cancelledGameHandlingByPath');
       if (stored != null && stored.isNotEmpty) {
         final decoded = jsonDecode(stored);
@@ -33,7 +31,7 @@ class AppState extends ChangeNotifier {
           );
         }
       }
-    });
+    }, 'cancelledGameHandlingByPath');
     _safeInit(() {
       final stored = prefs.getString('cancelledGameHideAtByPath');
       if (stored != null && stored.isNotEmpty) {
@@ -47,10 +45,10 @@ class AppState extends ChangeNotifier {
           )..removeWhere((key, value) => value == 0);
         }
       }
-    });
+    }, 'cancelledGameHideAtByPath');
     _safeInit(() {
       _hideFriendsOnlyGames = prefs.getBool('hideFriendsOnlyGames') ?? false;
-    });
+    }, 'hideFriendsOnlyGames');
   }
 
   void update(VoidCallback callback) {
@@ -59,14 +57,6 @@ class AppState extends ChangeNotifier {
   }
 
   late SharedPreferences prefs;
-
-  String _erorImagePlaceholderUrl =
-      'https://plus.unsplash.com/premium_photo-1680553492268-516537c44d91?q=80&w=2940&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D';
-  String get erorImagePlaceholderUrl => _erorImagePlaceholderUrl;
-  set erorImagePlaceholderUrl(String value) {
-    _erorImagePlaceholderUrl = value;
-    prefs.setString('errorImagePlaceholderUrl', value);
-  }
 
   Map<String, String> _cancelledGameHandlingByPath = {};
   String? getCancelledGameHandling(String gamePath) =>
@@ -104,8 +94,18 @@ class AppState extends ChangeNotifier {
   }
 }
 
-void _safeInit(Function() initializeField) {
+void _safeInit(Function() initializeField, String fieldName) {
   try {
     initializeField();
-  } catch (_) {}
+  } catch (e, stackTrace) {
+    AppLog.d('❌ AppState._safeInit failed for $fieldName: $e');
+    if (!kIsWeb) {
+      FirebaseCrashlytics.instance.recordError(
+        e,
+        stackTrace,
+        reason: 'AppState._safeInit failed for $fieldName',
+        fatal: false,
+      );
+    }
+  }
 }

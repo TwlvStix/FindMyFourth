@@ -9,7 +9,6 @@ import '/core/design_tokens/colors.dart';
 import '/core/design_tokens/typography.dart';
 import '/core/design_tokens/app_phosphor_icons.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
@@ -156,14 +155,13 @@ class _TabFriendsWidgetState extends State<TabFriendsWidget> {
   }
 
   Future<void> _openDirectChat(UsersRecord user) async {
-    final currentUser = FirebaseAuth.instance.currentUser;
-    if (currentUser == null) {
+    final currentUserId = currentUserUid;
+    if (currentUserId.isEmpty) {
       if (mounted) {
         showSnackbar(context, 'Please sign in to chat.');
       }
       return;
     }
-    final currentUserId = currentUser.uid;
     final otherUserId = user.reference.id;
     try {
       final chatRef = await context.read<ChatProvider>().createOrGetDirectChat(
@@ -191,11 +189,10 @@ class _TabFriendsWidgetState extends State<TabFriendsWidget> {
       // Optimistically update local state for immediate UI feedback
       // Use existing optimistic state if available, otherwise use server state
       setState(() {
-        final currentList = _optimisticFriendsList ??
-            (currentUserDocument?.friends ?? []);
-        _optimisticFriendsList = currentList
-            .where((ref) => ref.id != user.reference.id)
-            .toList();
+        final currentList =
+            _optimisticFriendsList ?? (currentUserDocument?.friends ?? []);
+        _optimisticFriendsList =
+            currentList.where((ref) => ref.id != user.reference.id).toList();
       });
 
       await context.read<UserProvider>().removeFriend(user.reference);
@@ -466,12 +463,12 @@ class _TabFriendsWidgetState extends State<TabFriendsWidget> {
               return AuthUserStreamWidget(
                 builder: (context) {
                   final userProvider = context.watch<UserProvider>();
-                  final isFriend =
-                      (currentUserDocument?.friends.toList() ?? [])
-                          .contains(listViewUsersRecord.reference);
+                  final isFriend = (currentUserDocument?.friends.toList() ?? [])
+                      .contains(listViewUsersRecord.reference);
                   final isOutgoingPending = listViewUsersRecord.friendRequests
                           .contains(currentUserReference) ||
-                      userProvider.hasPendingOutgoingRequest(listViewUsersRecord.uid);
+                      userProvider
+                          .hasPendingOutgoingRequest(listViewUsersRecord.uid);
                   final isIncomingPending =
                       (currentUserDocument?.friendRequests.toList() ?? [])
                           .contains(listViewUsersRecord.reference);
@@ -516,7 +513,8 @@ class _TabFriendsWidgetState extends State<TabFriendsWidget> {
                         : hasPending
                             ? (isOutgoingPending
                                 ? () async {
-                                    await _cancelFriendRequest(listViewUsersRecord);
+                                    await _cancelFriendRequest(
+                                        listViewUsersRecord);
                                   }
                                 : () async {})
                             : () async {
@@ -634,7 +632,8 @@ class _TabFriendsWidgetState extends State<TabFriendsWidget> {
                   return Consumer<ProfileProvider>(
                     key: ValueKey(requestRef.id),
                     builder: (context, profileProvider, _) {
-                      final user = profileProvider.getCachedProfile(requestRef.id);
+                      final user =
+                          profileProvider.getCachedProfile(requestRef.id);
 
                       if (user == null) {
                         return const FriendCardSkeleton();

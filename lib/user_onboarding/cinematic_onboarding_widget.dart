@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import '/backend/backend.dart';
 import '/core/utils/app_log.dart';
 import '/utils/app_util.dart';
 import '/profile/create_profile/create_profile_widget.dart';
 import '/main_function/games_list/games_list_widget.dart';
+import '/services/profile_setup_service.dart';
 import '../core/design_tokens/colors.dart';
 import '../core/design_tokens/spacing.dart';
 import '../core/design_tokens/border_radius.dart';
@@ -28,6 +28,7 @@ class CinematicOnboardingWidget extends StatefulWidget {
 
 class _CinematicOnboardingWidgetState extends State<CinematicOnboardingWidget>
     with TickerProviderStateMixin {
+  final _profileSetupService = ProfileSetupService();
   late PageController _pageController;
   int _currentPage = 0;
   final int _totalPages = 4;
@@ -158,7 +159,9 @@ class _CinematicOnboardingWidgetState extends State<CinematicOnboardingWidget>
   }
 
   Future<bool> _ensureUserRecord() async {
-    final user = FirebaseAuth.instance.currentUser;
+    final user = await _profileSetupService.currentUserOrWait(
+      timeout: const Duration(seconds: 1),
+    );
     if (user == null) {
       return false;
     }
@@ -298,7 +301,8 @@ class _Slide1FindYourGame extends StatelessWidget {
                           maxHeight: constraints.maxHeight,
                         ),
                         decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(AppBorderRadius.xl),
+                          borderRadius:
+                              BorderRadius.circular(AppBorderRadius.xl),
                           boxShadow: [
                             BoxShadow(
                               color: Colors.black.withValues(alpha: 0.12),
@@ -308,7 +312,8 @@ class _Slide1FindYourGame extends StatelessWidget {
                           ],
                         ),
                         child: ClipRRect(
-                          borderRadius: BorderRadius.circular(AppBorderRadius.xl),
+                          borderRadius:
+                              BorderRadius.circular(AppBorderRadius.xl),
                           child: Image.asset(
                             'assets/images/Slide #1 - GameDetailed.png',
                             fit: BoxFit.contain,
@@ -326,17 +331,17 @@ class _Slide1FindYourGame extends StatelessWidget {
           Text(
             'Find the Game You Actually Want to Play',
             style: AppTypography.headlineMedium.copyWith(
-                  fontWeight: FontWeight.bold,
-                  color: AppColors.textPrimary,
-                ),
+              fontWeight: FontWeight.bold,
+              color: AppColors.textPrimary,
+            ),
             textAlign: TextAlign.center,
           ),
           SizedBox(height: AppSpacing.md),
           Text(
             'Choose your format, stakes, and vibe - before you show up.',
             style: AppTypography.bodyLarge.copyWith(
-                  color: AppColors.textSecondary,
-                ),
+              color: AppColors.textSecondary,
+            ),
             textAlign: TextAlign.center,
           ),
           SizedBox(height: AppSpacing.xl),
@@ -413,17 +418,19 @@ class _Slide2RightGroup extends StatelessWidget {
                           maxHeight: constraints.maxHeight,
                         ),
                         decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(AppBorderRadius.xl),
+                          borderRadius:
+                              BorderRadius.circular(AppBorderRadius.xl),
                           boxShadow: [
                             BoxShadow(
-                              color: Colors.black.withValues(alpha:0.12),
+                              color: Colors.black.withValues(alpha: 0.12),
                               blurRadius: 40,
                               offset: const Offset(0, 12),
                             ),
                           ],
                         ),
                         child: ClipRRect(
-                          borderRadius: BorderRadius.circular(AppBorderRadius.xl),
+                          borderRadius:
+                              BorderRadius.circular(AppBorderRadius.xl),
                           child: Image.asset(
                             'assets/images/Slide #2 - Vibe Match.png',
                             fit: BoxFit.contain,
@@ -441,17 +448,17 @@ class _Slide2RightGroup extends StatelessWidget {
           Text(
             'Golf Is Better When the Group Is Right',
             style: AppTypography.headlineMedium.copyWith(
-                  fontWeight: FontWeight.bold,
-                  color: AppColors.textPrimary,
-                ),
+              fontWeight: FontWeight.bold,
+              color: AppColors.textPrimary,
+            ),
             textAlign: TextAlign.center,
           ),
           SizedBox(height: AppSpacing.md),
           Text(
             'Match with players who value the same kind of round you do.',
             style: AppTypography.bodyLarge.copyWith(
-                  color: AppColors.textSecondary,
-                ),
+              color: AppColors.textSecondary,
+            ),
             textAlign: TextAlign.center,
           ),
           SizedBox(height: AppSpacing.xl),
@@ -544,17 +551,20 @@ class _Slide3GetAlerted extends StatelessWidget {
                                   maxHeight: constraints.maxHeight,
                                 ),
                                 decoration: BoxDecoration(
-                                  borderRadius: BorderRadius.circular(AppBorderRadius.xl),
+                                  borderRadius:
+                                      BorderRadius.circular(AppBorderRadius.xl),
                                   boxShadow: [
                                     BoxShadow(
-                                      color: Colors.black.withValues(alpha:0.12),
+                                      color:
+                                          Colors.black.withValues(alpha: 0.12),
                                       blurRadius: 40,
                                       offset: const Offset(0, 12),
                                     ),
                                   ],
                                 ),
                                 child: ClipRRect(
-                                  borderRadius: BorderRadius.circular(AppBorderRadius.xl),
+                                  borderRadius:
+                                      BorderRadius.circular(AppBorderRadius.xl),
                                   child: Image.asset(
                                     'assets/images/Slide #3 -Notification.png',
                                     fit: BoxFit.contain,
@@ -586,17 +596,17 @@ class _Slide3GetAlerted extends StatelessWidget {
           Text(
             'The Right Game Finds You',
             style: AppTypography.headlineMedium.copyWith(
-                  fontWeight: FontWeight.bold,
-                  color: AppColors.textPrimary,
-                ),
+              fontWeight: FontWeight.bold,
+              color: AppColors.textPrimary,
+            ),
             textAlign: TextAlign.center,
           ),
           SizedBox(height: AppSpacing.md),
           Text(
             'Set your format, stakes, and vibe. When your game drops, you\'ll be the first to know — not the last to see it already full.',
             style: AppTypography.bodyLarge.copyWith(
-                  color: AppColors.textSecondary,
-                ),
+              color: AppColors.textSecondary,
+            ),
             textAlign: TextAlign.center,
           ),
           SizedBox(height: AppSpacing.xl),
@@ -697,17 +707,20 @@ class _Slide4FillFoursome extends StatelessWidget {
                                   maxHeight: constraints.maxHeight,
                                 ),
                                 decoration: BoxDecoration(
-                                  borderRadius: BorderRadius.circular(AppBorderRadius.xl),
+                                  borderRadius:
+                                      BorderRadius.circular(AppBorderRadius.xl),
                                   boxShadow: [
                                     BoxShadow(
-                                      color: Colors.black.withValues(alpha:0.12),
+                                      color:
+                                          Colors.black.withValues(alpha: 0.12),
                                       blurRadius: 40,
                                       offset: const Offset(0, 12),
                                     ),
                                   ],
                                 ),
                                 child: ClipRRect(
-                                  borderRadius: BorderRadius.circular(AppBorderRadius.xl),
+                                  borderRadius:
+                                      BorderRadius.circular(AppBorderRadius.xl),
                                   child: Image.asset(
                                     'assets/images/Slide #4 - GameList.png',
                                     fit: BoxFit.contain,
@@ -745,17 +758,17 @@ class _Slide4FillFoursome extends StatelessWidget {
           Text(
             'Buddy Bailed? You are Covered.',
             style: AppTypography.headlineMedium.copyWith(
-                  fontWeight: FontWeight.bold,
-                  color: AppColors.textPrimary,
-                ),
+              fontWeight: FontWeight.bold,
+              color: AppColors.textPrimary,
+            ),
             textAlign: TextAlign.center,
           ),
           SizedBox(height: AppSpacing.md),
           Text(
             'Post your open spot and fill it fast with someone who actually fits your game.',
             style: AppTypography.bodyLarge.copyWith(
-                  color: AppColors.textSecondary,
-                ),
+              color: AppColors.textSecondary,
+            ),
             textAlign: TextAlign.center,
           ),
           SizedBox(height: AppSpacing.xl),
@@ -887,7 +900,7 @@ class _FoursomeCompleteToast extends StatelessWidget {
           borderRadius: BorderRadius.circular(AppBorderRadius.md),
           boxShadow: [
             BoxShadow(
-              color: AppColors.navyDark.withValues(alpha:0.3),
+              color: AppColors.navyDark.withValues(alpha: 0.3),
               blurRadius: 20,
               offset: const Offset(0, 6),
             ),
@@ -971,9 +984,7 @@ class _ProgressDots extends StatelessWidget {
             width: isActive ? 28 : 8,
             height: 8,
             decoration: BoxDecoration(
-              color: isActive
-                  ? AppColors.navyDark
-                  : AppColors.cloud,
+              color: isActive ? AppColors.navyDark : AppColors.cloud,
               borderRadius: BorderRadius.circular(AppBorderRadius.full),
             ),
           ),

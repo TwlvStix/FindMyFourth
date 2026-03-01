@@ -1,3 +1,5 @@
+import 'package:firebase_crashlytics/firebase_crashlytics.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 
@@ -110,8 +112,16 @@ class _GameAlertsPageWidgetState extends State<GameAlertsPageWidget> {
   Future<List<Course>> _loadAllCourses() async {
     try {
       return await _courseService.loadAllCourses();
-    } catch (e) {
+    } catch (e, stackTrace) {
       AppLog.d('❌ Error loading courses: $e');
+      if (!kIsWeb) {
+        FirebaseCrashlytics.instance.recordError(
+          e,
+          stackTrace,
+          reason: 'GameAlertsPage._loadAllCourses failed',
+          fatal: false,
+        );
+      }
       return [];
     }
   }

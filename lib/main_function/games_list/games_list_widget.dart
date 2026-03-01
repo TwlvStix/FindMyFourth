@@ -15,6 +15,7 @@ import '/core/widgets/app_stream_builder.dart';
 import '/core/widgets/app_button_enhanced.dart';
 import '/core/widgets/fairway_background.dart';
 import '/utils/app_util.dart';
+import '/auth/firebase_auth/auth_util.dart';
 import '/main_function/create_game/create_game_widget.dart';
 import '/main_function/games_list/components/game_list_filter_bottom_sheet.dart';
 import '/main_function/games_list/components/premium_game_card.dart';
@@ -29,7 +30,6 @@ import '/providers/user_provider.dart';
 import '/core/utils/app_log.dart';
 import '/backend/backend.dart';
 import '/notifications/notifications_list/notifications_list_widget.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
@@ -548,11 +548,13 @@ class _GamesListWidgetState extends State<GamesListWidget> {
           backgroundColor: AppColors.navy,
           title: Text(
             'Game cancelled',
-            style: AppTypography.titleMedium.copyWith(color: AppColors.textPrimary),
+            style: AppTypography.titleMedium
+                .copyWith(color: AppColors.textPrimary),
           ),
           content: Text(
             'How would you like to handle this game?',
-            style: AppTypography.bodyMedium.copyWith(color: AppColors.textSecondary),
+            style: AppTypography.bodyMedium
+                .copyWith(color: AppColors.textSecondary),
           ),
           actions: [
             AppButtonEnhanced(
@@ -613,7 +615,8 @@ class _GamesListWidgetState extends State<GamesListWidget> {
       variant: PremiumDialogVariant.informational,
       icon: PhosphorIconsRegular.lock,
       title: 'Friends Only Game',
-      body: 'This game is visible to friends only. Add the host as a friend to view details.',
+      body:
+          'This game is visible to friends only. Add the host as a friend to view details.',
       actionLabel: 'Got It',
     );
   }
@@ -648,10 +651,9 @@ class _GamesListWidgetState extends State<GamesListWidget> {
 
   @override
   Widget build(BuildContext context) {
-    final currentUser = FirebaseAuth.instance.currentUser;
-    final currentUserReference = currentUser == null
+    final currentUserReference = currentUserUid.isEmpty
         ? null
-        : FirebaseFirestore.instance.collection('users').doc(currentUser.uid);
+        : UsersRecord.collection.doc(currentUserUid);
     return GestureDetector(
       onTap: () {
         FocusScope.of(context).unfocus();
@@ -744,13 +746,13 @@ class _GamesListWidgetState extends State<GamesListWidget> {
               padding: EdgeInsets.only(right: AppSpacing.sm),
               child: AppIconButton(
                 borderColor: _filters.hasActiveFilters
-                    ? AppColors.navy.withValues(alpha:0.2)
+                    ? AppColors.navy.withValues(alpha: 0.2)
                     : Colors.transparent,
                 borderRadius: 30.0,
                 borderWidth: _filters.hasActiveFilters ? 2.0 : 1.0,
                 buttonSize: 44.0,
                 fillColor: _filters.hasActiveFilters
-                    ? AppColors.navy.withValues(alpha:0.12)
+                    ? AppColors.navy.withValues(alpha: 0.12)
                     : Colors.transparent,
                 tooltip: 'Filter games',
                 icon: AppIcon(
@@ -877,12 +879,10 @@ class _GamesListWidgetState extends State<GamesListWidget> {
                       // ═══════════════════════════════════════════════════════
                       // Split games into flexible and scheduled
                       // ═══════════════════════════════════════════════════════
-                      final flexibleGames = joinableGames
-                          .where((g) => g.isFlexible)
-                          .toList();
-                      final scheduledGames = joinableGames
-                          .where((g) => !g.isFlexible)
-                          .toList();
+                      final flexibleGames =
+                          joinableGames.where((g) => g.isFlexible).toList();
+                      final scheduledGames =
+                          joinableGames.where((g) => !g.isFlexible).toList();
 
                       // Sort scheduled by date ascending (soonest first)
                       scheduledGames.sort((a, b) {
@@ -895,8 +895,8 @@ class _GamesListWidgetState extends State<GamesListWidget> {
                       });
 
                       // Sort flexible by readiness (most players first)
-                      flexibleGames.sort((a, b) =>
-                          b.joinedPlayers.length.compareTo(a.joinedPlayers.length));
+                      flexibleGames.sort((a, b) => b.joinedPlayers.length
+                          .compareTo(a.joinedPlayers.length));
 
                       // ═══════════════════════════════════════════════════════
                       // PERFORMANCE FIX #7: Batch-warm profiles for locked games
@@ -971,12 +971,16 @@ class _GamesListWidgetState extends State<GamesListWidget> {
                             // ════════════════════════════════════════════════════
                             // Global Empty State (only when ALL sections empty)
                             // ════════════════════════════════════════════════════
-                            if (flexibleGames.isEmpty && scheduledGames.isEmpty && lockedGames.isEmpty)
+                            if (flexibleGames.isEmpty &&
+                                scheduledGames.isEmpty &&
+                                lockedGames.isEmpty)
                               SliverToBoxAdapter(
                                 child: Padding(
                                   padding: EdgeInsets.only(
                                     top: AppSpacing.xl,
-                                    bottom: MediaQuery.of(context).padding.bottom + 128.0,
+                                    bottom:
+                                        MediaQuery.of(context).padding.bottom +
+                                            128.0,
                                   ),
                                   child: Column(
                                     mainAxisAlignment: MainAxisAlignment.center,
@@ -984,7 +988,8 @@ class _GamesListWidgetState extends State<GamesListWidget> {
                                       AppEmptyStatePremium(
                                         assetPath: AppIcons.games,
                                         title: 'No Games Yet',
-                                        message: 'Join or create a game to get started.',
+                                        message:
+                                            'Join or create a game to get started.',
                                       ),
                                       SizedBox(height: AppSpacing.lg),
                                       SizedBox(
@@ -998,7 +1003,8 @@ class _GamesListWidgetState extends State<GamesListWidget> {
                                               CreateGameWidget.routeName,
                                               extra: <String, dynamic>{
                                                 kTransitionInfoKey:
-                                                    TransitionStandards.detailTransition,
+                                                    TransitionStandards
+                                                        .detailTransition,
                                               },
                                             );
                                           },
@@ -1017,7 +1023,9 @@ class _GamesListWidgetState extends State<GamesListWidget> {
                                   padding: EdgeInsets.only(
                                     left: AppSpacing.md,
                                     right: AppSpacing.md,
-                                    top: flexibleGames.isEmpty ? AppSpacing.md : 0,
+                                    top: flexibleGames.isEmpty
+                                        ? AppSpacing.md
+                                        : 0,
                                     bottom: AppSpacing.sm,
                                   ),
                                   child: Row(
@@ -1033,7 +1041,8 @@ class _GamesListWidgetState extends State<GamesListWidget> {
                                       SizedBox(width: AppSpacing.xs),
                                       Text(
                                         'Fixed Games',
-                                        style: AppTypography.titleSmall.copyWith(
+                                        style:
+                                            AppTypography.titleSmall.copyWith(
                                           color: AppColors.textPrimary,
                                           fontWeight: FontWeight.w600,
                                         ),
@@ -1051,7 +1060,8 @@ class _GamesListWidgetState extends State<GamesListWidget> {
                                   top: 0,
                                   // Only add large bottom padding if no locked games section follows
                                   bottom: lockedGames.isEmpty
-                                      ? MediaQuery.of(context).padding.bottom + 128.0
+                                      ? MediaQuery.of(context).padding.bottom +
+                                          128.0
                                       : AppSpacing.md,
                                 ),
                                 sliver: SliverList(
@@ -1063,17 +1073,21 @@ class _GamesListWidgetState extends State<GamesListWidget> {
                                           index == scheduledGames.length - 1;
                                       return Padding(
                                         padding: EdgeInsets.only(
-                                          bottom:
-                                              isLast ? 0.0 : AppSpacing.sm,
+                                          bottom: isLast ? 0.0 : AppSpacing.sm,
                                         ),
                                         child: PremiumGameCard(
                                           game: containerVarItem,
-                                          currentUserReference: currentUserReference,
-                                          getCancelledHandling: _getCancelledHandling,
-                                          onCancelledGameTap: _showCancelledGameOptions,
-                                          onFriendsOnlyTap: _showFriendsOnlyDialog,
+                                          currentUserReference:
+                                              currentUserReference,
+                                          getCancelledHandling:
+                                              _getCancelledHandling,
+                                          onCancelledGameTap:
+                                              _showCancelledGameOptions,
+                                          onFriendsOnlyTap:
+                                              _showFriendsOnlyDialog,
                                           animationIndex: index,
-                                          staggerDelay: Duration(milliseconds: 24 * index),
+                                          staggerDelay: Duration(
+                                              milliseconds: 24 * index),
                                         ),
                                       );
                                     },
@@ -1094,7 +1108,8 @@ class _GamesListWidgetState extends State<GamesListWidget> {
                                     bottom: AppSpacing.sm,
                                   ),
                                   child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
                                     children: [
                                       Row(
                                         children: [
@@ -1111,7 +1126,8 @@ class _GamesListWidgetState extends State<GamesListWidget> {
                                           // Title
                                           Text(
                                             'Friends-Only Games',
-                                            style: AppTypography.titleSmall.copyWith(
+                                            style: AppTypography.titleSmall
+                                                .copyWith(
                                               color: AppColors.textPrimary,
                                               fontWeight: FontWeight.w600,
                                             ),
@@ -1128,7 +1144,8 @@ class _GamesListWidgetState extends State<GamesListWidget> {
                                           GestureDetector(
                                             onTap: () {
                                               AppState().hideFriendsOnlyGames =
-                                                  !AppState().hideFriendsOnlyGames;
+                                                  !AppState()
+                                                      .hideFriendsOnlyGames;
                                               if (mounted) {
                                                 setState(() {});
                                               }
@@ -1140,9 +1157,13 @@ class _GamesListWidgetState extends State<GamesListWidget> {
                                                 horizontal: AppSpacing.xs,
                                               ),
                                               child: Text(
-                                                AppState().hideFriendsOnlyGames ? 'Show' : 'Hide',
-                                                style: AppTypography.labelSmall.copyWith(
-                                                  color: AppColors.textSecondary,
+                                                AppState().hideFriendsOnlyGames
+                                                    ? 'Show'
+                                                    : 'Hide',
+                                                style: AppTypography.labelSmall
+                                                    .copyWith(
+                                                  color:
+                                                      AppColors.textSecondary,
                                                   fontWeight: FontWeight.w500,
                                                 ),
                                               ),
@@ -1154,7 +1175,8 @@ class _GamesListWidgetState extends State<GamesListWidget> {
                                       // Subtitle (muted caption)
                                       Text(
                                         'Become friends with the host to join.',
-                                        style: AppTypography.labelSmall.copyWith(
+                                        style:
+                                            AppTypography.labelSmall.copyWith(
                                           color: AppColors.textMuted,
                                         ),
                                       ),
@@ -1165,16 +1187,18 @@ class _GamesListWidgetState extends State<GamesListWidget> {
                             // ════════════════════════════════════════════════════
                             // Friends-Only Games List
                             // ════════════════════════════════════════════════════
-                            if (!AppState().hideFriendsOnlyGames && lockedGames.isNotEmpty)
+                            if (!AppState().hideFriendsOnlyGames &&
+                                lockedGames.isNotEmpty)
                               Consumer<UserProvider>(
                                 builder: (context, userProvider, _) {
                                   return SliverPadding(
                                     padding: EdgeInsets.only(
                                       top: AppSpacing.sm,
                                       // Account for bottom nav bar (56) + FAB (56) + spacing (16) + safe area
-                                      bottom:
-                                          MediaQuery.of(context).padding.bottom +
-                                              128.0,
+                                      bottom: MediaQuery.of(context)
+                                              .padding
+                                              .bottom +
+                                          128.0,
                                     ),
                                     sliver: SliverList(
                                       delegate: SliverChildBuilderDelegate(
@@ -1183,26 +1207,37 @@ class _GamesListWidgetState extends State<GamesListWidget> {
                                           final isLast =
                                               index == lockedGames.length - 1;
                                           final hostRef = lockedGame.userRef;
-                                          final hasPendingRequest = hostRef != null
-                                              ? userProvider.hasPendingOutgoingRequest(hostRef.id)
+                                          final hasPendingRequest = hostRef !=
+                                                  null
+                                              ? userProvider
+                                                  .hasPendingOutgoingRequest(
+                                                      hostRef.id)
                                               : false;
                                           return Padding(
                                             padding: EdgeInsets.only(
-                                              bottom: isLast ? 0.0 : AppSpacing.sm,
+                                              bottom:
+                                                  isLast ? 0.0 : AppSpacing.sm,
                                             ),
                                             child: PremiumGameCard(
                                               game: lockedGame,
-                                              currentUserReference: currentUserReference,
+                                              currentUserReference:
+                                                  currentUserReference,
                                               isLocked: true,
-                                              hasPendingFriendRequest: hasPendingRequest,
+                                              hasPendingFriendRequest:
+                                                  hasPendingRequest,
                                               onAddFriend: hostRef != null
-                                                  ? () => _sendFriendRequest(context, hostRef)
+                                                  ? () => _sendFriendRequest(
+                                                      context, hostRef)
                                                   : null,
-                                              getCancelledHandling: _getCancelledHandling,
-                                              onCancelledGameTap: _showCancelledGameOptions,
-                                              onFriendsOnlyTap: _showFriendsOnlyDialog,
+                                              getCancelledHandling:
+                                                  _getCancelledHandling,
+                                              onCancelledGameTap:
+                                                  _showCancelledGameOptions,
+                                              onFriendsOnlyTap:
+                                                  _showFriendsOnlyDialog,
                                               animationIndex: index,
-                                              staggerDelay: Duration(milliseconds: 24 * index),
+                                              staggerDelay: Duration(
+                                                  milliseconds: 24 * index),
                                             ),
                                           );
                                         },

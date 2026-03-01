@@ -302,7 +302,6 @@ void main() {
       expect(spotsAvailable, 1);
 
       // With atomic transactions, only 1 approval can succeed
-      const attemptedApprovals = 2;
       const expectedSuccesses = 1;
 
       expect(expectedSuccesses, lessThanOrEqualTo(spotsAvailable));

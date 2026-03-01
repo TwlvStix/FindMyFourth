@@ -1,5 +1,5 @@
 import '/utils/app_util.dart';
-import '/core/utils/app_log.dart';
+import '/auth/firebase_auth/auth_util.dart';
 import '/core/widgets/app_button_enhanced.dart';
 import '/core/widgets/fairway_background.dart';
 import '/core/design_tokens/spacing.dart';
@@ -9,12 +9,9 @@ import '/core/design_tokens/border_radius.dart';
 import 'dart:ui';
 import '/main_function/game_joined_detailed/game_joined_detailed_widget.dart';
 import '/models/game.dart';
-import 'package:firebase_auth/firebase_auth.dart';
+import '/providers/provider_extensions.dart';
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
-
-import '/providers/chat_provider.dart';
-import '/backend/backend.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class JoinGameWidget extends StatefulWidget {
   const JoinGameWidget({
@@ -96,7 +93,8 @@ class _JoinGameWidgetState extends State<JoinGameWidget> {
                               height: 3.0,
                               decoration: BoxDecoration(
                                 color: AppColors.cloud,
-                                borderRadius: BorderRadius.circular(AppBorderRadius.xs),
+                                borderRadius:
+                                    BorderRadius.circular(AppBorderRadius.xs),
                               ),
                             ),
                           ],
@@ -137,88 +135,35 @@ class _JoinGameWidgetState extends State<JoinGameWidget> {
                           ),
                           child: AppButtonEnhanced(
                             onPressed: () async {
-                              final currentUser =
-                                  FirebaseAuth.instance.currentUser;
-                              if (currentUser == null) {
+                              final currentUserRef = currentUserReference;
+                              if (currentUserRef == null) {
                                 showSnackbar(
                                   context,
                                   'Please sign in to join this game.',
                                 );
                                 return;
                               }
-                              final friendGameValue =
-                                  widget.gameRef.friendGame.trim();
-                              final friendGameLower = friendGameValue.toLowerCase();
-                              final isFriendsOnly = friendGameLower == 'friends';
-                              bool isCreatorFriend = false;
-                              if (isFriendsOnly) {
-                                try {
-                                  final ownerRef = widget.gameRef.userRef;
-                                  if (ownerRef != null) {
-                                    final ownerSnap = await ownerRef.get();
-                                    final ownerData =
-                                        ownerSnap.data() as Map<String, dynamic>? ?? {};
-                                    final friends = ownerData['friends'];
-                                    if (friends is List) {
-                                      final currentUserRef = FirebaseFirestore.instance
-                                          .collection('users')
-                                          .doc(currentUser.uid);
-                                      final currentUserId = currentUserRef.id;
-                                      String? normalizeFriendEntry(Object? entry) {
-                                        if (entry is DocumentReference) {
-                                          return entry.id;
-                                        }
-                                        if (entry is String) {
-                                          if (entry.contains('/')) {
-                                            final parts = entry.split('/');
-                                            return parts.isNotEmpty ? parts.last : entry;
-                                          }
-                                          return entry;
-                                        }
-                                        return null;
-                                      }
-                                      isCreatorFriend = friends.any(
-                                        (entry) =>
-                                            normalizeFriendEntry(entry) == currentUserId,
-                                      );
-                                    }
-                                  }
-                                } catch (error) {
-                                  AppLog.d(
-                                    'JoinGame: friend check failed $error',
-                                  );
-                                }
-                                if (!isCreatorFriend) {
-                                  showSnackbar(
-                                    context,
-                                    'You must be friends with the game creator to join this game.',
-                                  );
-                                  return;
-                                }
-                              }
-                              final currentUserRef = FirebaseFirestore.instance
-                                  .collection('users')
-                                  .doc(currentUser.uid);
-                              try {
-                                await widget.gameRef.reference.update({
-                                  'joined_players':
-                                      FieldValue.arrayUnion([currentUserRef]),
-                                });
+                              final currentUserId = currentUserRef.id;
+                              final friendGameLower = widget.gameRef.friendGame
+                                  .trim()
+                                  .toLowerCase();
+                              final isFriendsOnly =
+                                  friendGameLower == 'friends';
 
-                                if (widget.gameRef.chatRef != null) {
-                                  await context
-                                      .read<ChatProvider>()
-                                      .addMember(
-                                        chatId: widget.gameRef.chatRef!.id,
-                                        uid: currentUser.uid,
-                                      );
-                                }
+                              try {
+                                await context.gameProvider.joinGame(
+                                  widget.gameRef.reference.id,
+                                  currentUserId,
+                                  userGender:
+                                      context.userProvider.currentUser?.gender,
+                                );
                               } on FirebaseException catch (error) {
                                 if (!mounted) {
                                   return;
                                 }
-                                final message = error.code == 'permission-denied'
-                                    ? (isFriendsOnly && !isCreatorFriend
+                                final message = error.code ==
+                                        'permission-denied'
+                                    ? (isFriendsOnly
                                         ? 'You must be friends with the game creator to join this game.'
                                         : 'You do not have permission to join this game.')
                                     : 'Unable to join the game right now. Please try again.';
@@ -244,12 +189,12 @@ class _JoinGameWidgetState extends State<JoinGameWidget> {
                                 extra: <String, dynamic>{
                                   'gameRef': widget.gameRef.reference,
                                   kTransitionInfoKey: TransitionInfo(
-                  hasTransition: true,
-                  transitionType: AppTransitionType.fade,
-                  enterDuration: Duration(milliseconds: 200),
-                  exitDuration: Duration(milliseconds: 170),
-                  scaleOnPush: true,
-                ),
+                                    hasTransition: true,
+                                    transitionType: AppTransitionType.fade,
+                                    enterDuration: Duration(milliseconds: 200),
+                                    exitDuration: Duration(milliseconds: 170),
+                                    scaleOnPush: true,
+                                  ),
                                 },
                               );
                             },

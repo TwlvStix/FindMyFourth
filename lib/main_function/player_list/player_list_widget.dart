@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import '/auth/firebase_auth/auth_util.dart';
 import '/core/utils/app_log.dart';
 import '/utils/app_util.dart';
 import '/core/widgets/app_button_enhanced.dart';
@@ -17,8 +18,8 @@ import '/models/game.dart';
 import '/models/player_eligibility.dart';
 import '/models/user_profile.dart';
 import '/services/game_eligibility_service.dart';
+import '/services/player_search_service.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
@@ -61,7 +62,8 @@ class _PlayerListWidgetState extends State<PlayerListWidget> {
       playersJoinedUID.removeAt(index);
   void insertAtIndexInPlayersJoinedUID(int index, String item) =>
       playersJoinedUID.insert(index, item);
-  void updatePlayersJoinedUIDAtIndex(int index, String Function(String) updateFn) =>
+  void updatePlayersJoinedUIDAtIndex(
+          int index, String Function(String) updateFn) =>
       playersJoinedUID[index] = updateFn(playersJoinedUID[index]);
 
   final formKey = GlobalKey<FormState>();
@@ -88,6 +90,7 @@ class _PlayerListWidgetState extends State<PlayerListWidget> {
   final Map<String, String> _labelCache = {};
   StateSetter? _modalSetState;
   BuildContext? _modalContext;
+  final _playerSearchService = PlayerSearchService();
 
   void _refreshModalIfOpen() {
     final modalSetState = _modalSetState;
@@ -138,7 +141,10 @@ class _PlayerListWidgetState extends State<PlayerListWidget> {
     });
   }
 
-  void _addPlayerToSlot(int slotIndex, {UserProfile? profile, bool isGuest = false, PlayerEligibility eligibility = PlayerEligibility.openToAll}) {
+  void _addPlayerToSlot(int slotIndex,
+      {UserProfile? profile,
+      bool isGuest = false,
+      PlayerEligibility eligibility = PlayerEligibility.openToAll}) {
     if (isGuest) {
       // Guests are always allowed - trust the owner to add eligible guests
       setState(() {
@@ -161,7 +167,8 @@ class _PlayerListWidgetState extends State<PlayerListWidget> {
       userGender: profile.gender,
     );
     if (!eligibilityResult.allowed) {
-      final restrictionType = eligibility == PlayerEligibility.womenOnly ? 'women' : 'men';
+      final restrictionType =
+          eligibility == PlayerEligibility.womenOnly ? 'women' : 'men';
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('This round is open to $restrictionType only'),
@@ -172,7 +179,8 @@ class _PlayerListWidgetState extends State<PlayerListWidget> {
     }
 
     // Check if player already selected in any slot
-    final alreadySelected = _playerSlots.values.any((slot) => slot['uid'] == uid);
+    final alreadySelected =
+        _playerSlots.values.any((slot) => slot['uid'] == uid);
     if (alreadySelected) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -191,7 +199,8 @@ class _PlayerListWidgetState extends State<PlayerListWidget> {
         'photoUrl': profile.photoUrl,
         'gender': profile.gender, // Store gender for submission validation
       };
-      _labelCache[uid] = profile.displayName.isNotEmpty ? profile.displayName : 'Player';
+      _labelCache[uid] =
+          profile.displayName.isNotEmpty ? profile.displayName : 'Player';
     });
   }
 
@@ -219,25 +228,14 @@ class _PlayerListWidgetState extends State<PlayerListWidget> {
     }
 
     try {
-      Query<Map<String, dynamic>> baseQuery = FirebaseFirestore.instance
-          .collection('users')
-          .orderBy('display_name_lowercase')
-          .startAt([query])
-          .endAt(['$query\uf8ff'])
-          .limit(_pageSize);
-
-      if (!reset && _lastDocument != null) {
-        baseQuery = baseQuery.startAfterDocument(_lastDocument!);
-      }
-
-      final snapshot = await baseQuery.get();
+      final page = await _playerSearchService.searchPlayers(
+        query: query,
+        pageSize: _pageSize,
+        startAfter: reset ? null : _lastDocument,
+      );
       if (!mounted || searchToken != _searchToken) return;
 
-      final currentUserId = FirebaseAuth.instance.currentUser?.uid;
-      final results = snapshot.docs
-          .map(UserProfile.fromDoc)
-          .where((profile) => profile.uid != currentUserId)
-          .toList();
+      final results = page.results;
 
       for (final profile in results) {
         _labelCache[profile.uid] =
@@ -245,9 +243,8 @@ class _PlayerListWidgetState extends State<PlayerListWidget> {
       }
 
       setState(() {
-        _lastDocument =
-            snapshot.docs.isNotEmpty ? snapshot.docs.last : _lastDocument;
-        _hasMoreResults = snapshot.docs.length == _pageSize;
+        _lastDocument = page.lastDocument;
+        _hasMoreResults = page.hasMoreResults;
         if (reset) {
           _searchResults = results;
         } else {
@@ -286,7 +283,8 @@ class _PlayerListWidgetState extends State<PlayerListWidget> {
     await _runSearch(query: _activeQuery, reset: false);
   }
 
-  Future<void> _showAddPlayerModal(int slotIndex, Set<String> joinedPlayerIds, PlayerEligibility eligibility) async {
+  Future<void> _showAddPlayerModal(int slotIndex, Set<String> joinedPlayerIds,
+      PlayerEligibility eligibility) async {
     // Reset search for modal
     _searchController.clear();
     _activeQuery = '';
@@ -321,17 +319,20 @@ class _PlayerListWidgetState extends State<PlayerListWidget> {
                     children: [
                       // Handle bar
                       Container(
-                        margin: EdgeInsets.only(top: AppSpacing.sm, bottom: AppSpacing.xs),
+                        margin: EdgeInsets.only(
+                            top: AppSpacing.sm, bottom: AppSpacing.xs),
                         width: 40.0,
                         height: 4.0,
                         decoration: BoxDecoration(
                           color: AppColors.mist,
-                          borderRadius: BorderRadius.circular(AppBorderRadius.xxs),
+                          borderRadius:
+                              BorderRadius.circular(AppBorderRadius.xxs),
                         ),
                       ),
                       // Header
                       Padding(
-                        padding: EdgeInsets.symmetric(horizontal: AppSpacing.lg, vertical: AppSpacing.sm),
+                        padding: EdgeInsets.symmetric(
+                            horizontal: AppSpacing.lg, vertical: AppSpacing.sm),
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
@@ -386,21 +387,24 @@ class _PlayerListWidgetState extends State<PlayerListWidget> {
                               vertical: AppSpacing.sm,
                             ),
                             border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(AppBorderRadius.sm),
+                              borderRadius:
+                                  BorderRadius.circular(AppBorderRadius.sm),
                               borderSide: BorderSide(
                                 color: AppColors.inputBorderIdle,
                                 width: 1.0,
                               ),
                             ),
                             enabledBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(AppBorderRadius.sm),
+                              borderRadius:
+                                  BorderRadius.circular(AppBorderRadius.sm),
                               borderSide: BorderSide(
                                 color: AppColors.inputBorderIdle,
                                 width: 1.0,
                               ),
                             ),
                             focusedBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(AppBorderRadius.sm),
+                              borderRadius:
+                                  BorderRadius.circular(AppBorderRadius.sm),
                               borderSide: BorderSide(
                                 color: AppColors.inputBorderFocused,
                                 width: 2.0,
@@ -411,7 +415,8 @@ class _PlayerListWidgetState extends State<PlayerListWidget> {
                       ),
                       // Helper text
                       Padding(
-                        padding: EdgeInsets.symmetric(horizontal: AppSpacing.lg),
+                        padding:
+                            EdgeInsets.symmetric(horizontal: AppSpacing.lg),
                         child: Align(
                           alignment: Alignment.centerLeft,
                           child: Text(
@@ -428,10 +433,12 @@ class _PlayerListWidgetState extends State<PlayerListWidget> {
                       Expanded(
                         child: ListView.builder(
                           controller: scrollController,
-                          padding: EdgeInsets.symmetric(horizontal: AppSpacing.lg),
+                          padding:
+                              EdgeInsets.symmetric(horizontal: AppSpacing.lg),
                           itemCount: _calculateItemCount(),
                           itemBuilder: (context, index) {
-                            return _buildListItem(context, index, slotIndex, joinedPlayerIds, eligibility);
+                            return _buildListItem(context, index, slotIndex,
+                                joinedPlayerIds, eligibility);
                           },
                         ),
                       ),
@@ -470,7 +477,8 @@ class _PlayerListWidgetState extends State<PlayerListWidget> {
     return count;
   }
 
-  Widget _buildListItem(BuildContext context, int index, int slotIndex, Set<String> joinedPlayerIds, PlayerEligibility eligibility) {
+  Widget _buildListItem(BuildContext context, int index, int slotIndex,
+      Set<String> joinedPlayerIds, PlayerEligibility eligibility) {
     // Index 0: Guest option (always allowed - trust owner to add eligible guests)
     if (index == 0) {
       return Column(
@@ -482,7 +490,8 @@ class _PlayerListWidgetState extends State<PlayerListWidget> {
             photoUrl: null,
             isGuest: true,
             onTap: () {
-              _addPlayerToSlot(slotIndex, isGuest: true, eligibility: eligibility);
+              _addPlayerToSlot(slotIndex,
+                  isGuest: true, eligibility: eligibility);
               Navigator.pop(context);
             },
           ),
@@ -532,7 +541,8 @@ class _PlayerListWidgetState extends State<PlayerListWidget> {
       if (contentIndex < _searchResults.length) {
         final profile = _searchResults[contentIndex];
         final isInGame = joinedPlayerIds.contains(profile.uid);
-        final isSelected = _playerSlots.values.any((slot) => slot['uid'] == profile.uid);
+        final isSelected =
+            _playerSlots.values.any((slot) => slot['uid'] == profile.uid);
 
         // Check gender eligibility
         final eligibilityResult = checkPlayerEligibility(
@@ -561,10 +571,13 @@ class _PlayerListWidgetState extends State<PlayerListWidget> {
           subtitle: subtitle,
           photoUrl: profile.photoUrl,
           isGuest: false,
-          onTap: canAdd ? () {
-            _addPlayerToSlot(slotIndex, profile: profile, eligibility: eligibility);
-            Navigator.pop(context);
-          } : null,
+          onTap: canAdd
+              ? () {
+                  _addPlayerToSlot(slotIndex,
+                      profile: profile, eligibility: eligibility);
+                  Navigator.pop(context);
+                }
+              : null,
         );
       } else if (_hasMoreResults) {
         // Load more button
@@ -608,7 +621,8 @@ class _PlayerListWidgetState extends State<PlayerListWidget> {
         duration: const Duration(milliseconds: 200),
         child: Container(
           margin: EdgeInsets.only(bottom: AppSpacing.xs),
-          padding: EdgeInsets.symmetric(horizontal: AppSpacing.md, vertical: AppSpacing.sm + 2),
+          padding: EdgeInsets.symmetric(
+              horizontal: AppSpacing.md, vertical: AppSpacing.sm + 2),
           decoration: BoxDecoration(
             color: AppColors.navyLight,
             borderRadius: BorderRadius.circular(AppBorderRadius.lg),
@@ -738,9 +752,11 @@ class _PlayerListWidgetState extends State<PlayerListWidget> {
     // ── Empty slot — "Add" placeholder ──────────────────────────────────
     if (isEmpty) {
       return GestureDetector(
-        onTap: () => _showAddPlayerModal(slotIndex, joinedPlayerIds, eligibility),
+        onTap: () =>
+            _showAddPlayerModal(slotIndex, joinedPlayerIds, eligibility),
         child: Container(
-          padding: EdgeInsets.symmetric(horizontal: AppSpacing.md, vertical: AppSpacing.sm + 2),
+          padding: EdgeInsets.symmetric(
+              horizontal: AppSpacing.md, vertical: AppSpacing.sm + 2),
           decoration: BoxDecoration(
             color: AppColors.navyLight,
             borderRadius: BorderRadius.circular(AppBorderRadius.lg),
@@ -809,7 +825,8 @@ class _PlayerListWidgetState extends State<PlayerListWidget> {
     final String? photoUrl = playerData['photoUrl'] as String?;
 
     return Container(
-      padding: EdgeInsets.symmetric(horizontal: AppSpacing.md, vertical: AppSpacing.sm + 2),
+      padding: EdgeInsets.symmetric(
+          horizontal: AppSpacing.md, vertical: AppSpacing.sm + 2),
       decoration: BoxDecoration(
         color: AppColors.navy,
         borderRadius: BorderRadius.circular(AppBorderRadius.lg),
@@ -915,7 +932,8 @@ class _PlayerListWidgetState extends State<PlayerListWidget> {
       canPop: !_isSubmitting,
       onPopInvokedWithResult: (didPop, result) {
         if (_isSubmitting) {
-          AppLog.d('⚠️ PLAYER LIST: Back navigation blocked - submission in progress');
+          AppLog.d(
+              '⚠️ PLAYER LIST: Back navigation blocked - submission in progress');
           WidgetsBinding.instance.addPostFrameCallback((_) {
             if (!mounted) return;
             ScaffoldMessenger.of(context).showSnackBar(
@@ -930,106 +948,101 @@ class _PlayerListWidgetState extends State<PlayerListWidget> {
       child: StreamBuilder<DocumentSnapshot>(
         stream: widget.gameRef.snapshots(),
         builder: (context, snapshot) {
-        if (!snapshot.hasData) {
-          return Scaffold(
-            key: scaffoldKey,
-            backgroundColor: AppColors.pure,
-            body: Center(
-              child: SizedBox(
-                width: 50.0,
-                height: 50.0,
-                child: SpinKitWanderingCubes(
-                  color: AppColors.navy,
-                  size: 50.0,
+          if (!snapshot.hasData) {
+            return Scaffold(
+              key: scaffoldKey,
+              backgroundColor: AppColors.pure,
+              body: Center(
+                child: SizedBox(
+                  width: 50.0,
+                  height: 50.0,
+                  child: SpinKitWanderingCubes(
+                    color: AppColors.navy,
+                    size: 50.0,
+                  ),
                 ),
               ),
-            ),
-          );
-        }
+            );
+          }
 
-        final game = Game.fromDoc(snapshot.data!);
-        final currentUser = FirebaseAuth.instance.currentUser;
-        final currentUserRef = currentUser == null
-            ? null
-            : FirebaseFirestore.instance
-                .collection('users')
-                .doc(currentUser.uid);
+          final game = Game.fromDoc(snapshot.data!);
+          final currentUserRef = currentUserReference;
 
-        final currentPlayerCount =
-            game.joinedPlayers.length + game.guestPlayers.length;
-        final joinedPlayerIds =
-            game.joinedPlayers.map((player) => player.id).toSet();
-        final remainingSlots =
-            (game.maxPlayers - currentPlayerCount).clamp(0, game.maxPlayers);
+          final currentPlayerCount =
+              game.joinedPlayers.length + game.guestPlayers.length;
+          final joinedPlayerIds =
+              game.joinedPlayers.map((player) => player.id).toSet();
+          final remainingSlots =
+              (game.maxPlayers - currentPlayerCount).clamp(0, game.maxPlayers);
 
-        AppLog.d(
-            'PlayerList: current=$currentPlayerCount/${game.maxPlayers}, remaining=$remainingSlots');
+          AppLog.d(
+              'PlayerList: current=$currentPlayerCount/${game.maxPlayers}, remaining=$remainingSlots');
 
-        return GestureDetector(
-          onTap: () {
-            FocusScope.of(context).unfocus();
-            FocusManager.instance.primaryFocus?.unfocus();
-          },
-          child: Scaffold(
-            key: scaffoldKey,
-            extendBodyBehindAppBar: true,
-            appBar: AppBar(
-              backgroundColor: Colors.transparent,
-              surfaceTintColor: Colors.transparent,
-              scrolledUnderElevation: 0.0,
-              elevation: 0.0,
-              shadowColor: Colors.transparent,
-              automaticallyImplyLeading: false,
-              leading: const PremiumBackButton(),
-              title: Text(
-                'Add Your Group',
-                style: AppTypography.sectionHeader.copyWith(
-                  color: AppColors.textPrimary,
+          return GestureDetector(
+            onTap: () {
+              FocusScope.of(context).unfocus();
+              FocusManager.instance.primaryFocus?.unfocus();
+            },
+            child: Scaffold(
+              key: scaffoldKey,
+              extendBodyBehindAppBar: true,
+              appBar: AppBar(
+                backgroundColor: Colors.transparent,
+                surfaceTintColor: Colors.transparent,
+                scrolledUnderElevation: 0.0,
+                elevation: 0.0,
+                shadowColor: Colors.transparent,
+                automaticallyImplyLeading: false,
+                leading: const PremiumBackButton(),
+                title: Text(
+                  'Add Your Group',
+                  style: AppTypography.sectionHeader.copyWith(
+                    color: AppColors.textPrimary,
+                  ),
                 ),
+                actions: [],
+                centerTitle: true,
               ),
-              actions: [],
-              centerTitle: true,
-            ),
-            body: FairwayBackgroundDark(
-              showOrganic: true,
-              showTexture: true,
-              child: SafeArea(
-                top: false,
-                child: Column(
-                  children: [
-                    // Top spacing for AppBar
-                    SizedBox(height: MediaQuery.of(context).padding.top + 56),
-                    // Subtitle section
-                    Padding(
-                      padding: EdgeInsets.all(AppSpacing.md),
-                      child: Text(
-                        'Build your group by adding friends or guests',
-                        style: AppTypography.bodySmall.copyWith(
-                          color: AppColors.textSecondary,
+              body: FairwayBackgroundDark(
+                showOrganic: true,
+                showTexture: true,
+                child: SafeArea(
+                  top: false,
+                  child: Column(
+                    children: [
+                      // Top spacing for AppBar
+                      SizedBox(height: MediaQuery.of(context).padding.top + 56),
+                      // Subtitle section
+                      Padding(
+                        padding: EdgeInsets.all(AppSpacing.md),
+                        child: Text(
+                          'Build your group by adding friends or guests',
+                          style: AppTypography.bodySmall.copyWith(
+                            color: AppColors.textSecondary,
+                          ),
+                          textAlign: TextAlign.center,
                         ),
-                        textAlign: TextAlign.center,
                       ),
-                    ),
-                    // Content area
-                    Expanded(
-                      child: SingleChildScrollView(
-                        padding: AppSpacing.allMd,
-                        child: Column(
-                          children: [
-                            // Main content card
-                            Container(
-                              width: double.infinity,
-                              decoration: BoxDecoration(
-                                color: AppColors.navy,
-                                borderRadius: BorderRadius.circular(AppBorderRadius.lg),
-                                boxShadow: [AppElevation.lg],
-                              ),
+                      // Content area
+                      Expanded(
+                        child: SingleChildScrollView(
+                          padding: AppSpacing.allMd,
+                          child: Column(
+                            children: [
+                              // Main content card
+                              Container(
+                                width: double.infinity,
+                                decoration: BoxDecoration(
+                                  color: AppColors.navy,
+                                  borderRadius:
+                                      BorderRadius.circular(AppBorderRadius.lg),
+                                  boxShadow: [AppElevation.lg],
+                                ),
                                 child: Padding(
                                   padding: AppSpacing.allLg,
                                   child: Form(
                                     key: formKey,
-                                    autovalidateMode:
-                                        AutovalidateMode.disabled,
+                                    autovalidateMode: AutovalidateMode.disabled,
                                     child: Column(
                                       crossAxisAlignment:
                                           CrossAxisAlignment.start,
@@ -1037,15 +1050,15 @@ class _PlayerListWidgetState extends State<PlayerListWidget> {
                                         // Section header
                                         Text(
                                           'Your Group',
-                                          style: AppTypography.titleSmall.copyWith(
+                                          style:
+                                              AppTypography.titleSmall.copyWith(
                                             color: AppColors.goldLight,
                                           ),
                                         ),
                                         SizedBox(height: AppSpacing.md),
                                         // Current user card
                                         StreamBuilder<DocumentSnapshot>(
-                                          stream:
-                                              currentUserRef?.snapshots(),
+                                          stream: currentUserRef?.snapshots(),
                                           builder: (context, userSnapshot) {
                                             final profile = userSnapshot.hasData
                                                 ? UserProfile.fromDoc(
@@ -1056,7 +1069,8 @@ class _PlayerListWidgetState extends State<PlayerListWidget> {
                                               decoration: BoxDecoration(
                                                 color: AppColors.navyLight,
                                                 borderRadius:
-                                                    BorderRadius.circular(AppBorderRadius.md),
+                                                    BorderRadius.circular(
+                                                        AppBorderRadius.md),
                                                 border: Border.all(
                                                   color: AppColors.glassBorder,
                                                   width: 1.0,
@@ -1069,15 +1083,24 @@ class _PlayerListWidgetState extends State<PlayerListWidget> {
                                                     height: 48.0,
                                                     decoration: BoxDecoration(
                                                       color: AppColors.navyDark,
-                                                      borderRadius: BorderRadius.circular(AppBorderRadius.xxl),
+                                                      borderRadius:
+                                                          BorderRadius.circular(
+                                                              AppBorderRadius
+                                                                  .xxl),
                                                       border: Border.all(
-                                                        color: AppColors.glassBorder,
+                                                        color: AppColors
+                                                            .glassBorder,
                                                         width: 1.5,
                                                       ),
                                                     ),
                                                     child: ClipRRect(
-                                                      borderRadius: BorderRadius.circular(AppBorderRadius.xxl),
-                                                      child: profile?.photoUrl.isNotEmpty ?? false
+                                                      borderRadius:
+                                                          BorderRadius.circular(
+                                                              AppBorderRadius
+                                                                  .xxl),
+                                                      child: profile?.photoUrl
+                                                                  .isNotEmpty ??
+                                                              false
                                                           ? Image.network(
                                                               profile!.photoUrl,
                                                               width: 48.0,
@@ -1085,16 +1108,28 @@ class _PlayerListWidgetState extends State<PlayerListWidget> {
                                                               fit: BoxFit.cover,
                                                               cacheWidth: 96,
                                                               cacheHeight: 96,
-                                                              errorBuilder: (_, __, ___) => AppIcon(
-                                                                icon: AppPhosphorIcons.profile,
-                                                                color: AppColors.textMuted,
-                                                                size: AppIconSize.md,
+                                                              errorBuilder: (_,
+                                                                      __,
+                                                                      ___) =>
+                                                                  AppIcon(
+                                                                icon:
+                                                                    AppPhosphorIcons
+                                                                        .profile,
+                                                                color: AppColors
+                                                                    .textMuted,
+                                                                size:
+                                                                    AppIconSize
+                                                                        .md,
                                                               ),
                                                             )
                                                           : AppIcon(
-                                                              icon: AppPhosphorIcons.profile,
-                                                              color: AppColors.textMuted,
-                                                              size: AppIconSize.md,
+                                                              icon:
+                                                                  AppPhosphorIcons
+                                                                      .profile,
+                                                              color: AppColors
+                                                                  .textMuted,
+                                                              size: AppIconSize
+                                                                  .md,
                                                             ),
                                                     ),
                                                   ),
@@ -1112,16 +1147,22 @@ class _PlayerListWidgetState extends State<PlayerListWidget> {
                                                               ? profile!
                                                                   .displayName
                                                               : 'You',
-                                                          style: AppTypography.titleSmall.copyWith(
-                                                            color: AppColors.textPrimary,
+                                                          style: AppTypography
+                                                              .titleSmall
+                                                              .copyWith(
+                                                            color: AppColors
+                                                                .textPrimary,
                                                           ),
                                                         ),
                                                         SizedBox(height: 2.0),
                                                         Text(
                                                           'Game Creator',
-                                                          style: AppTypography.labelSmall.copyWith(
+                                                          style: AppTypography
+                                                              .labelSmall
+                                                              .copyWith(
                                                             fontSize: 13,
-                                                            color: AppColors.textMuted,
+                                                            color: AppColors
+                                                                .textMuted,
                                                           ),
                                                         ),
                                                       ],
@@ -1134,15 +1175,20 @@ class _PlayerListWidgetState extends State<PlayerListWidget> {
                                                       vertical: 6.0,
                                                     ),
                                                     decoration: BoxDecoration(
-                                                      color: AppColors.greenDark,
+                                                      color:
+                                                          AppColors.greenDark,
                                                       borderRadius:
                                                           BorderRadius.circular(
-                                                              AppBorderRadius.xl),
+                                                              AppBorderRadius
+                                                                  .xl),
                                                     ),
                                                     child: Text(
                                                       'You',
-                                                      style: AppTypography.labelSmall.copyWith(
-                                                        color: AppColors.textPrimary,
+                                                      style: AppTypography
+                                                          .labelSmall
+                                                          .copyWith(
+                                                        color: AppColors
+                                                            .textPrimary,
                                                       ),
                                                     ),
                                                   ),
@@ -1155,17 +1201,20 @@ class _PlayerListWidgetState extends State<PlayerListWidget> {
                                         // Player slots section
                                         if (remainingSlots > 0) ...[
                                           Row(
-                                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.spaceBetween,
                                             children: [
                                               Text(
                                                 'Add Friends',
-                                                style: AppTypography.titleSmall.copyWith(
+                                                style: AppTypography.titleSmall
+                                                    .copyWith(
                                                   color: AppColors.goldLight,
                                                 ),
                                               ),
                                               Text(
                                                 'Tap a slot to add',
-                                                style: AppTypography.labelSmall.copyWith(
+                                                style: AppTypography.labelSmall
+                                                    .copyWith(
                                                   fontSize: 13,
                                                   color: AppColors.stone,
                                                 ),
@@ -1174,10 +1223,13 @@ class _PlayerListWidgetState extends State<PlayerListWidget> {
                                           ),
                                           SizedBox(height: AppSpacing.md),
                                         ],
-                                        for (var i = 0; i < remainingSlots; i++) ...[
+                                        for (var i = 0;
+                                            i < remainingSlots;
+                                            i++) ...[
                                           _buildPlayerSlotCard(
                                             slotIndex: i,
-                                            slotLabel: 'Player ${currentPlayerCount + i + 1}',
+                                            slotLabel:
+                                                'Player ${currentPlayerCount + i + 1}',
                                             playerData: _playerSlots[i],
                                             joinedPlayerIds: joinedPlayerIds,
                                             eligibility: game.playerEligibility,
@@ -1188,7 +1240,8 @@ class _PlayerListWidgetState extends State<PlayerListWidget> {
                                         if (remainingSlots == 0) ...[
                                           Text(
                                             'This game is already full.',
-                                            style: AppTypography.labelSmall.copyWith(
+                                            style: AppTypography.labelSmall
+                                                .copyWith(
                                               fontSize: 13,
                                               color: AppColors.stone,
                                             ),
@@ -1200,159 +1253,228 @@ class _PlayerListWidgetState extends State<PlayerListWidget> {
                                         SizedBox(
                                           width: double.infinity,
                                           child: AppButtonEnhanced(
-                                            onPressed: _isSubmitting ? null : () async {
-                                              // Prevent double submission
-                                              if (_isSubmitting) {
-                                                AppLog.d('⚠️ PLAYER LIST: Already submitting, ignoring click');
-                                                return;
-                                              }
+                                            onPressed: _isSubmitting
+                                                ? null
+                                                : () async {
+                                                    // Prevent double submission
+                                                    if (_isSubmitting) {
+                                                      AppLog.d(
+                                                          '⚠️ PLAYER LIST: Already submitting, ignoring click');
+                                                      return;
+                                                    }
 
-                                              setState(() {
-                                                _isSubmitting = true;
-                                              });
-
-                                              AppLog.d('👥 PLAYER LIST: Starting player submission');
-                                              AppLog.d('👥 PLAYER LIST: Current game max players: ${game.maxPlayers}');
-                                              AppLog.d('👥 PLAYER LIST: Current joined players: ${game.joinedPlayers.length}');
-                                              AppLog.d('👥 PLAYER LIST: Current guest players: ${game.guestPlayers.length}');
-
-                                              // Calculate current player count
-                                              final currentPlayerCount = game.joinedPlayers.length + game.guestPlayers.length;
-                                              AppLog.d('👥 PLAYER LIST: Current total players: $currentPlayerCount / ${game.maxPlayers}');
-
-                                              // Validate we haven't exceeded max players
-                                              if (currentPlayerCount >= game.maxPlayers) {
-                                                AppLog.d('❌ PLAYER LIST: Game is already full!');
-                                                ScaffoldMessenger.of(context).showSnackBar(
-                                                  SnackBar(
-                                                    content: Text('Game is already full (${game.maxPlayers} players)'),
-                                                    backgroundColor: AppColors.error,
-                                                  ),
-                                                );
-                                                setState(() {
-                                                  _isSubmitting = false;
-                                                });
-                                                return;
-                                              }
-
-                                              final joinedPlayersToAdd =
-                                                  <DocumentReference>[];
-                                              final guestPlayersToAdd =
-                                                  <String>[];
-
-                                              for (final slotData in _playerSlots.values) {
-                                                final uid = slotData['uid'] as String?;
-                                                final isGuest = slotData['isGuest'] == true;
-
-                                                if (isGuest) {
-                                                  guestPlayersToAdd.add(
-                                                    'Guest ${game.guestPlayers.length + guestPlayersToAdd.length + 1}',
-                                                  );
-                                                } else if (uid != null && uid.isNotEmpty) {
-                                                  final playerRef =
-                                                      FirebaseFirestore
-                                                          .instance
-                                                          .collection('users')
-                                                          .doc(uid);
-                                                  joinedPlayersToAdd.add(playerRef);
-                                                }
-                                              }
-
-                                              AppLog.d('👥 PLAYER LIST: Adding ${joinedPlayersToAdd.length} joined players');
-                                              AppLog.d('👥 PLAYER LIST: Adding ${guestPlayersToAdd.length} guest players');
-
-                                              // Validate total count won't exceed max
-                                              final newPlayerCount = currentPlayerCount + joinedPlayersToAdd.length + guestPlayersToAdd.length;
-                                              if (newPlayerCount > game.maxPlayers) {
-                                                AppLog.d('❌ PLAYER LIST: Would exceed max players: $newPlayerCount > ${game.maxPlayers}');
-                                                ScaffoldMessenger.of(context).showSnackBar(
-                                                  SnackBar(
-                                                    content: Text('Cannot add ${joinedPlayersToAdd.length + guestPlayersToAdd.length} players - would exceed max (${game.maxPlayers})'),
-                                                    backgroundColor: AppColors.error,
-                                                  ),
-                                                );
-                                                setState(() {
-                                                  _isSubmitting = false;
-                                                });
-                                                return;
-                                              }
-
-                                              // Defensive: Validate all non-guest players meet eligibility
-                                              if (game.playerEligibility != PlayerEligibility.openToAll) {
-                                                for (final slotData in _playerSlots.values) {
-                                                  final isGuest = slotData['isGuest'] == true;
-                                                  if (isGuest) continue; // Guests are always allowed
-
-                                                  final playerGender = slotData['gender'] as String?;
-                                                  final eligibilityResult = checkPlayerEligibility(
-                                                    eligibility: game.playerEligibility,
-                                                    userGender: playerGender,
-                                                  );
-                                                  if (!eligibilityResult.allowed) {
-                                                    final restrictionType = game.playerEligibility == PlayerEligibility.womenOnly ? 'women' : 'men';
-                                                    final playerName = slotData['name'] ?? 'A player';
-                                                    AppLog.d('❌ PLAYER LIST: $playerName does not meet eligibility (gender: $playerGender)');
-                                                    ScaffoldMessenger.of(context).showSnackBar(
-                                                      SnackBar(
-                                                        content: Text('$playerName cannot join - this round is open to $restrictionType only'),
-                                                        backgroundColor: AppColors.error,
-                                                      ),
-                                                    );
                                                     setState(() {
-                                                      _isSubmitting = false;
+                                                      _isSubmitting = true;
                                                     });
-                                                    return;
-                                                  }
-                                                }
-                                              }
 
-                                              try {
-                                                if (joinedPlayersToAdd
-                                                        .isNotEmpty ||
-                                                    guestPlayersToAdd
-                                                        .isNotEmpty) {
-                                                  await widget.gameRef
-                                                      .update({
-                                                    if (joinedPlayersToAdd
-                                                        .isNotEmpty)
-                                                      'joined_players':
-                                                          FieldValue.arrayUnion(
-                                                              joinedPlayersToAdd),
-                                                    if (guestPlayersToAdd
-                                                        .isNotEmpty)
-                                                      'guest_players':
-                                                          FieldValue.arrayUnion(
-                                                              guestPlayersToAdd),
-                                                  });
-                                                  AppLog.d('✅ PLAYER LIST: Players added successfully');
-                                                } else {
-                                                  AppLog.d('ℹ️ PLAYER LIST: No players selected, proceeding anyway');
-                                                }
+                                                    AppLog.d(
+                                                        '👥 PLAYER LIST: Starting player submission');
+                                                    AppLog.d(
+                                                        '👥 PLAYER LIST: Current game max players: ${game.maxPlayers}');
+                                                    AppLog.d(
+                                                        '👥 PLAYER LIST: Current joined players: ${game.joinedPlayers.length}');
+                                                    AppLog.d(
+                                                        '👥 PLAYER LIST: Current guest players: ${game.guestPlayers.length}');
 
-                                                // Navigate to Game List
-                                                // This replaces the current location and prevents back navigation issues
-                                                AppLog.d('🚀 PLAYER LIST: Navigating to Game List');
+                                                    // Calculate current player count
+                                                    final currentPlayerCount =
+                                                        game.joinedPlayers
+                                                                .length +
+                                                            game.guestPlayers
+                                                                .length;
+                                                    AppLog.d(
+                                                        '👥 PLAYER LIST: Current total players: $currentPlayerCount / ${game.maxPlayers}');
 
-                                                if (!mounted) return;
+                                                    // Validate we haven't exceeded max players
+                                                    if (currentPlayerCount >=
+                                                        game.maxPlayers) {
+                                                      AppLog.d(
+                                                          '❌ PLAYER LIST: Game is already full!');
+                                                      ScaffoldMessenger.of(
+                                                              context)
+                                                          .showSnackBar(
+                                                        SnackBar(
+                                                          content: Text(
+                                                              'Game is already full (${game.maxPlayers} players)'),
+                                                          backgroundColor:
+                                                              AppColors.error,
+                                                        ),
+                                                      );
+                                                      setState(() {
+                                                        _isSubmitting = false;
+                                                      });
+                                                      return;
+                                                    }
 
-                                                // Use context.goNamed for standard API
-                                                context.goNamed(GamesListWidget.routeName);
-                                              } catch (e) {
-                                                AppLog.d('❌ PLAYER LIST: Error adding players: $e');
-                                                ScaffoldMessenger.of(context).showSnackBar(
-                                                  SnackBar(
-                                                    content: Text('Error adding players: $e'),
-                                                    backgroundColor: AppColors.error,
-                                                  ),
-                                                );
-                                                setState(() {
-                                                  _isSubmitting = false;
-                                                });
-                                              }
-                                            },
-                                            text: _isSubmitting ? 'Adding...' : 'Add to Group',
-                                            variant:
-                                                AppButtonVariant.primary,
+                                                    final joinedPlayerUidsToAdd =
+                                                        <String>[];
+                                                    final guestPlayersToAdd =
+                                                        <String>[];
+
+                                                    for (final slotData
+                                                        in _playerSlots
+                                                            .values) {
+                                                      final uid =
+                                                          slotData['uid']
+                                                              as String?;
+                                                      final isGuest =
+                                                          slotData['isGuest'] ==
+                                                              true;
+
+                                                      if (isGuest) {
+                                                        guestPlayersToAdd.add(
+                                                          'Guest ${game.guestPlayers.length + guestPlayersToAdd.length + 1}',
+                                                        );
+                                                      } else if (uid != null &&
+                                                          uid.isNotEmpty) {
+                                                        joinedPlayerUidsToAdd
+                                                            .add(uid);
+                                                      }
+                                                    }
+
+                                                    AppLog.d(
+                                                        '👥 PLAYER LIST: Adding ${joinedPlayerUidsToAdd.length} joined players');
+                                                    AppLog.d(
+                                                        '👥 PLAYER LIST: Adding ${guestPlayersToAdd.length} guest players');
+
+                                                    // Validate total count won't exceed max
+                                                    final newPlayerCount =
+                                                        currentPlayerCount +
+                                                            joinedPlayerUidsToAdd
+                                                                .length +
+                                                            guestPlayersToAdd
+                                                                .length;
+                                                    if (newPlayerCount >
+                                                        game.maxPlayers) {
+                                                      AppLog.d(
+                                                          '❌ PLAYER LIST: Would exceed max players: $newPlayerCount > ${game.maxPlayers}');
+                                                      ScaffoldMessenger.of(
+                                                              context)
+                                                          .showSnackBar(
+                                                        SnackBar(
+                                                          content: Text(
+                                                              'Cannot add ${joinedPlayerUidsToAdd.length + guestPlayersToAdd.length} players - would exceed max (${game.maxPlayers})'),
+                                                          backgroundColor:
+                                                              AppColors.error,
+                                                        ),
+                                                      );
+                                                      setState(() {
+                                                        _isSubmitting = false;
+                                                      });
+                                                      return;
+                                                    }
+
+                                                    // Defensive: Validate all non-guest players meet eligibility
+                                                    if (game.playerEligibility !=
+                                                        PlayerEligibility
+                                                            .openToAll) {
+                                                      for (final slotData
+                                                          in _playerSlots
+                                                              .values) {
+                                                        final isGuest = slotData[
+                                                                'isGuest'] ==
+                                                            true;
+                                                        if (isGuest)
+                                                          continue; // Guests are always allowed
+
+                                                        final playerGender =
+                                                            slotData['gender']
+                                                                as String?;
+                                                        final eligibilityResult =
+                                                            checkPlayerEligibility(
+                                                          eligibility: game
+                                                              .playerEligibility,
+                                                          userGender:
+                                                              playerGender,
+                                                        );
+                                                        if (!eligibilityResult
+                                                            .allowed) {
+                                                          final restrictionType =
+                                                              game.playerEligibility ==
+                                                                      PlayerEligibility
+                                                                          .womenOnly
+                                                                  ? 'women'
+                                                                  : 'men';
+                                                          final playerName =
+                                                              slotData[
+                                                                      'name'] ??
+                                                                  'A player';
+                                                          AppLog.d(
+                                                              '❌ PLAYER LIST: $playerName does not meet eligibility (gender: $playerGender)');
+                                                          ScaffoldMessenger.of(
+                                                                  context)
+                                                              .showSnackBar(
+                                                            SnackBar(
+                                                              content: Text(
+                                                                  '$playerName cannot join - this round is open to $restrictionType only'),
+                                                              backgroundColor:
+                                                                  AppColors
+                                                                      .error,
+                                                            ),
+                                                          );
+                                                          setState(() {
+                                                            _isSubmitting =
+                                                                false;
+                                                          });
+                                                          return;
+                                                        }
+                                                      }
+                                                    }
+
+                                                    try {
+                                                      if (joinedPlayerUidsToAdd
+                                                              .isNotEmpty ||
+                                                          guestPlayersToAdd
+                                                              .isNotEmpty) {
+                                                        await _playerSearchService
+                                                            .addPlayersToGame(
+                                                          gameRef:
+                                                              widget.gameRef,
+                                                          joinedPlayerUids:
+                                                              joinedPlayerUidsToAdd,
+                                                          guestPlayers:
+                                                              guestPlayersToAdd,
+                                                        );
+                                                        AppLog.d(
+                                                            '✅ PLAYER LIST: Players added successfully');
+                                                      } else {
+                                                        AppLog.d(
+                                                            'ℹ️ PLAYER LIST: No players selected, proceeding anyway');
+                                                      }
+
+                                                      // Navigate to Game List
+                                                      // This replaces the current location and prevents back navigation issues
+                                                      AppLog.d(
+                                                          '🚀 PLAYER LIST: Navigating to Game List');
+
+                                                      if (!mounted) return;
+
+                                                      // Use context.goNamed for standard API
+                                                      context.goNamed(
+                                                          GamesListWidget
+                                                              .routeName);
+                                                    } catch (e) {
+                                                      AppLog.d(
+                                                          '❌ PLAYER LIST: Error adding players: $e');
+                                                      ScaffoldMessenger.of(
+                                                              context)
+                                                          .showSnackBar(
+                                                        SnackBar(
+                                                          content: Text(
+                                                              'Error adding players: $e'),
+                                                          backgroundColor:
+                                                              AppColors.error,
+                                                        ),
+                                                      );
+                                                      setState(() {
+                                                        _isSubmitting = false;
+                                                      });
+                                                    }
+                                                  },
+                                            text: _isSubmitting
+                                                ? 'Adding...'
+                                                : 'Add to Group',
+                                            variant: AppButtonVariant.primary,
                                             size: AppButtonSize.medium,
                                           ),
                                         ),
@@ -1368,7 +1490,8 @@ class _PlayerListWidgetState extends State<PlayerListWidget> {
                                 padding: EdgeInsets.all(AppSpacing.md),
                                 decoration: BoxDecoration(
                                   color: AppColors.navy,
-                                  borderRadius: BorderRadius.circular(AppBorderRadius.md),
+                                  borderRadius:
+                                      BorderRadius.circular(AppBorderRadius.md),
                                   border: Border.all(
                                     color: AppColors.glassBorder,
                                     width: 1.0,
@@ -1387,7 +1510,8 @@ class _PlayerListWidgetState extends State<PlayerListWidget> {
                                         SizedBox(width: AppSpacing.xs),
                                         Text(
                                           'Game Summary',
-                                          style: AppTypography.titleSmall.copyWith(
+                                          style:
+                                              AppTypography.titleSmall.copyWith(
                                             color: AppColors.goldLight,
                                           ),
                                         ),
@@ -1400,35 +1524,39 @@ class _PlayerListWidgetState extends State<PlayerListWidget> {
                                     ),
                                     SizedBox(height: AppSpacing.xs),
                                     _buildInfoRow(
-                                      phosphorIcon: AppPhosphorIcons.calendarCheck,
-                                      text: '${dateTimeFormat("EEEE, MMM d", game.date)} • ${dateTimeFormat("jm", game.date)}',
+                                      phosphorIcon:
+                                          AppPhosphorIcons.calendarCheck,
+                                      text:
+                                          '${dateTimeFormat("EEEE, MMM d", game.date)} • ${dateTimeFormat("jm", game.date)}',
                                     ),
                                     SizedBox(height: AppSpacing.xs),
                                     _buildInfoRow(
                                       phosphorIcon: AppPhosphorIcons.golfers,
-                                      text: '$currentPlayerCount confirmed, $remainingSlots ${remainingSlots == 1 ? 'spot' : 'spots'} open',
+                                      text:
+                                          '$currentPlayerCount confirmed, $remainingSlots ${remainingSlots == 1 ? 'spot' : 'spots'} open',
                                     ),
                                     if (game.gameType.isNotEmpty) ...[
                                       SizedBox(height: AppSpacing.xs),
                                       _buildInfoRow(
-                                        phosphorIcon: AppPhosphorIcons.golfCourse,
+                                        phosphorIcon:
+                                            AppPhosphorIcons.golfCourse,
                                         text: game.gameType,
                                       ),
                                     ],
                                   ],
                                 ),
-                            ),
-                          ],
+                              ),
+                            ],
+                          ),
                         ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
             ),
-          ),
-        );
-      },
+          );
+        },
       ),
     );
   }

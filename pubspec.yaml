@@ -27,14 +27,14 @@ dependencies:
     sdk: flutter
   flutter_web_plugins:
     sdk: flutter
-  app_settings: ^5.1.1
+  app_settings: ^7.0.0
   auto_size_text: 3.0.0
   cached_network_image: 3.4.1
   chewie: 1.13.0
   cloud_firestore: 6.1.2
   cloud_functions: 6.0.6
   collection: 1.19.1
-  connectivity_plus: ^6.1.2
+  connectivity_plus: ^7.0.0
   dropdown_button2: 2.3.9
   easy_debounce: 2.0.3
   file_picker: 10.3.10
@@ -91,9 +91,9 @@ dependency_overrides:
 
 dev_dependencies:
   flutter_launcher_icons: 0.13.1
-  flutter_lints: 4.0.0
+  flutter_lints: 6.0.0
   image: 4.8.0
-  lints: 4.0.0
+  lints: 6.0.0
   test: ^1.24.0
   fake_cloud_firestore: ^4.0.1
   firebase_auth_mocks: ^0.15.1

@@ -1,4 +1,5 @@
 import '/utils/app_util.dart';
+import '/auth/firebase_auth/auth_util.dart';
 import '/core/widgets/app_button_enhanced.dart';
 import '/core/widgets/fairway_background.dart';
 import '/core/design_tokens/border_radius.dart';
@@ -10,12 +11,9 @@ import '/main_function/success_page/success_page_widget.dart';
 import '/models/game.dart';
 import '/screens/trust/cancellation_warning_modal.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
-
-import '/providers/chat_provider.dart';
 import '/providers/provider_extensions.dart';
+
 class LeaveGameWidget extends StatefulWidget {
   const LeaveGameWidget({
     super.key,
@@ -96,7 +94,8 @@ class _LeaveGameWidgetState extends State<LeaveGameWidget> {
                               height: 3.0,
                               decoration: BoxDecoration(
                                 color: AppColors.cloud,
-                                borderRadius: BorderRadius.circular(AppBorderRadius.xs),
+                                borderRadius:
+                                    BorderRadius.circular(AppBorderRadius.xs),
                               ),
                             ),
                           ],
@@ -154,47 +153,51 @@ class _LeaveGameWidgetState extends State<LeaveGameWidget> {
                               );
                               if (confirmed != true) return;
 
-                              final currentUser =
-                                  FirebaseAuth.instance.currentUser;
-                              if (currentUser == null) {
+                              final currentUserId = currentUserUid;
+                              if (currentUserId.isEmpty) {
                                 showSnackbar(
                                   context,
                                   'Please sign in to leave this game.',
                                 );
                                 return;
                               }
-                              final currentUserRef = FirebaseFirestore.instance
-                                  .collection('users')
-                                  .doc(currentUser.uid);
-                              final removeValues = <Object>[
-                                currentUserRef,
-                                currentUser.uid,
-                              ];
-                              await widget.gameRef.reference.update({
-                                'joined_players':
-                                    FieldValue.arrayRemove(removeValues),
-                              });
-
-                              if (widget.gameRef.chatRef != null) {
-                                await context
-                                    .read<ChatProvider>()
-                                    .removeMember(
-                                      chatId: widget.gameRef.chatRef!.id,
-                                      uid: currentUser.uid,
-                                    );
+                              try {
+                                await context.gameProvider.leaveGame(
+                                  widget.gameRef.reference.id,
+                                  currentUserId,
+                                  chatId: widget.gameRef.chatRef?.id,
+                                );
+                              } on FirebaseException catch (error) {
+                                if (!mounted) {
+                                  return;
+                                }
+                                final message = error.code ==
+                                        'permission-denied'
+                                    ? 'You do not have permission to leave this game.'
+                                    : 'Unable to leave the game right now. Please try again.';
+                                showSnackbar(context, message);
+                                return;
+                              } catch (_) {
+                                if (!mounted) {
+                                  return;
+                                }
+                                showSnackbar(
+                                  context,
+                                  'Unable to leave the game right now. Please try again.',
+                                );
+                                return;
                               }
-                              context.gameProvider.invalidateUserGamesCache(context.userProvider.userId);
 
                               context.pushNamed(
                                 SuccessPageWidget.routeName,
                                 extra: <String, dynamic>{
                                   kTransitionInfoKey: TransitionInfo(
-                  hasTransition: true,
-                  transitionType: AppTransitionType.fade,
-                  enterDuration: Duration(milliseconds: 200),
-                  exitDuration: Duration(milliseconds: 170),
-                  scaleOnPush: true,
-                ),
+                                    hasTransition: true,
+                                    transitionType: AppTransitionType.fade,
+                                    enterDuration: Duration(milliseconds: 200),
+                                    exitDuration: Duration(milliseconds: 170),
+                                    scaleOnPush: true,
+                                  ),
                                 },
                               );
                             },

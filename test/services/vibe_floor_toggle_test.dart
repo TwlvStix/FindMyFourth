@@ -124,8 +124,6 @@ void main() {
       // - No vibe check is performed
       // - All players can auto-join regardless of vibe score
       const requireVibeMatch = false;
-      const anyScore = 0.0;
-      const anyFloor = 100;
 
       // With toggle OFF, score vs floor comparison is bypassed
       if (!requireVibeMatch) {

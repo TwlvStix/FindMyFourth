@@ -147,7 +147,7 @@ class _ProfileUserFirebaseWidgetState extends State<ProfileUserFirebaseWidget>
 
     try {
       final futures = mutualUids.map((uid) => UsersRecord.getDocumentOnce(
-            FirebaseFirestore.instance.collection('users').doc(uid),
+            UsersRecord.collection.doc(uid),
           ));
       final results = await Future.wait(futures);
 
@@ -411,7 +411,8 @@ class _ProfileUserFirebaseWidgetState extends State<ProfileUserFirebaseWidget>
 
   /// Compact circular FAB for friend actions on avatar
   /// Positioned at bottom-right of avatar, only shown on public profiles
-  Widget _buildAvatarFriendFab(BuildContext context, Map<String, dynamic> data) {
+  Widget _buildAvatarFriendFab(
+      BuildContext context, Map<String, dynamic> data) {
     return AuthUserStreamWidget(
       builder: (context) {
         final userProvider = context.watch<UserProvider>();
@@ -981,7 +982,8 @@ class _ProfileUserFirebaseWidgetState extends State<ProfileUserFirebaseWidget>
                       padding: EdgeInsets.all(AppSpacing.md),
                       child: Align(
                         alignment: Alignment.centerLeft,
-                        child: PremiumBackButton(onTap: () => Navigator.of(context).pop()),
+                        child: PremiumBackButton(
+                            onTap: () => Navigator.of(context).pop()),
                       ),
                     ),
                     Expanded(
@@ -991,17 +993,21 @@ class _ProfileUserFirebaseWidgetState extends State<ProfileUserFirebaseWidget>
                           child: Column(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              Icon(AppPhosphorIcons.error, color: AppColors.glassTextTertiary, size: AppIconSize.xxl),
+                              Icon(AppPhosphorIcons.error,
+                                  color: AppColors.glassTextTertiary,
+                                  size: AppIconSize.xxl),
                               SizedBox(height: AppSpacing.md),
                               Text(
                                 'Unable to load profile',
-                                style: AppTypography.titleMedium.copyWith(color: AppColors.textPrimary),
+                                style: AppTypography.titleMedium
+                                    .copyWith(color: AppColors.textPrimary),
                                 textAlign: TextAlign.center,
                               ),
                               SizedBox(height: AppSpacing.xs),
                               Text(
                                 'Please try again later',
-                                style: AppTypography.bodySmall.copyWith(color: AppColors.glassTextTertiary),
+                                style: AppTypography.bodySmall.copyWith(
+                                    color: AppColors.glassTextTertiary),
                                 textAlign: TextAlign.center,
                               ),
                             ],
@@ -1027,12 +1033,14 @@ class _ProfileUserFirebaseWidgetState extends State<ProfileUserFirebaseWidget>
                       padding: EdgeInsets.all(AppSpacing.md),
                       child: Align(
                         alignment: Alignment.centerLeft,
-                        child: PremiumBackButton(onTap: () => Navigator.of(context).pop()),
+                        child: PremiumBackButton(
+                            onTap: () => Navigator.of(context).pop()),
                       ),
                     ),
                     Expanded(
                       child: Center(
-                        child: CircularProgressIndicator(color: AppColors.textPrimary),
+                        child: CircularProgressIndicator(
+                            color: AppColors.textPrimary),
                       ),
                     ),
                   ],
@@ -1081,9 +1089,8 @@ class _ProfileUserFirebaseWidgetState extends State<ProfileUserFirebaseWidget>
           final phoneNumber = isSelf && currentPhoneNumber.isNotEmpty
               ? currentPhoneNumber
               : null;
-          final email = isSelf && currentUserEmail.isNotEmpty
-              ? currentUserEmail
-              : null;
+          final email =
+              isSelf && currentUserEmail.isNotEmpty ? currentUserEmail : null;
           final homeCourse = userRecord.homeCourse.isNotEmpty
               ? userRecord.homeCourse
               : 'Not set';
@@ -1133,7 +1140,9 @@ class _ProfileUserFirebaseWidgetState extends State<ProfileUserFirebaseWidget>
                         name: displayTitle.isNotEmpty ? displayTitle : 'Golfer',
                         handle: handle,
                         age: _calculateAge(userRecord.dateOfBirth) ?? 0,
-                        gender: userRecord.gender.isNotEmpty ? userRecord.gender : '',
+                        gender: userRecord.gender.isNotEmpty
+                            ? userRecord.gender
+                            : '',
                         isSelf: isSelf,
                         data: data,
                         showVibeMatch: !isSelf,
@@ -1171,7 +1180,8 @@ class _ProfileUserFirebaseWidgetState extends State<ProfileUserFirebaseWidget>
                               height: 4,
                               decoration: BoxDecoration(
                                 color: AppColors.navyLight,
-                                borderRadius: BorderRadius.circular(AppBorderRadius.xxs),
+                                borderRadius:
+                                    BorderRadius.circular(AppBorderRadius.xxs),
                               ),
                             ),
                             SizedBox(height: AppSpacing.lg),
@@ -1266,9 +1276,7 @@ class MutualFriendsSheet extends StatelessWidget {
                     borderRadius: BorderRadius.circular(AppBorderRadius.full),
                   ),
                   child: Text(
-                    mutualFriends.length > 3
-                        ? '3+'
-                        : '${mutualFriends.length}',
+                    mutualFriends.length > 3 ? '3+' : '${mutualFriends.length}',
                     style: AppTypography.labelSmall.copyWith(
                       color: AppColors.textSecondary,
                       fontWeight: FontWeight.w600,
@@ -1375,8 +1383,9 @@ class MutualFriendsSheet extends StatelessWidget {
                             vertical: 4,
                           ),
                           decoration: BoxDecoration(
-                            color: AppColors.gold.withValues(alpha:0.12),
-                            borderRadius: BorderRadius.circular(AppBorderRadius.sm),
+                            color: AppColors.gold.withValues(alpha: 0.12),
+                            borderRadius:
+                                BorderRadius.circular(AppBorderRadius.sm),
                           ),
                           child: Text(
                             handicapStr,

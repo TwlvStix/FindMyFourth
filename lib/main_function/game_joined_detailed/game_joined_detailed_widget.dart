@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import '/auth/firebase_auth/auth_util.dart';
 import '/backend/backend.dart';
 import '/backend/push_notifications/push_notifications_util.dart';
 import '/core/content/app_copy.dart';
@@ -20,7 +21,6 @@ import '/providers/provider_extensions.dart';
 import '/services/vibe_group_matcher.dart';
 import '/services/vibe_repository.dart';
 import '/utils/app_util.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:provider/provider.dart';
@@ -190,10 +190,7 @@ class _GameJoinedDetailedWidgetState extends State<GameJoinedDetailedWidget>
       );
     }
 
-    final currentUser = FirebaseAuth.instance.currentUser;
-    final currentUserRef = currentUser == null
-        ? null
-        : FirebaseFirestore.instance.collection('users').doc(currentUser.uid);
+    final currentUserRef = currentUserReference;
 
     return StreamBuilder<GamesRecord?>(
       stream: context.read<GameProvider>().watchGame(gameRef.id),
@@ -346,10 +343,7 @@ class _GameJoinedDetailedWidgetState extends State<GameJoinedDetailedWidget>
     String? guestName,
     required Game gameRecord,
   }) async {
-    final currentUser = FirebaseAuth.instance.currentUser;
-    final currentUserRef = currentUser == null
-        ? null
-        : FirebaseFirestore.instance.collection('users').doc(currentUser.uid);
+    final currentUserRef = currentUserReference;
 
     if (!isGuest && playerRef == currentUserRef) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -514,7 +508,7 @@ class _GameJoinedDetailedWidgetState extends State<GameJoinedDetailedWidget>
         },
       );
 
-      final currentUserUid = FirebaseAuth.instance.currentUser?.uid;
+      final currentUserUid = currentUserReference?.id;
       final recipients = gameRecord.joinedPlayers
           .where((ref) => ref.id != currentUserUid)
           .toList();

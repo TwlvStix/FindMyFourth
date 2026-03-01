@@ -1,9 +1,9 @@
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 
+import '/auth/firebase_auth/auth_util.dart';
 import '/core/utils/app_log.dart';
 import '/core/design_tokens/border_radius.dart';
 import '/core/design_tokens/elevation.dart';
@@ -41,7 +41,8 @@ class _ChatWidgetState extends State<ChatWidget> {
   }
 
   String? _currentUserId() {
-    return FirebaseAuth.instance.currentUser?.uid;
+    final uid = currentUserUid;
+    return uid.isEmpty ? null : uid;
   }
 
   void _safeHaptic() {
@@ -83,9 +84,8 @@ class _ChatWidgetState extends State<ChatWidget> {
                 : AppColors.navyLight,
             width: unreadCount > 0 ? 2 : 1,
           ),
-          boxShadow: unreadCount > 0
-              ? [AppElevation.glowGold]
-              : [AppElevation.xs],
+          boxShadow:
+              unreadCount > 0 ? [AppElevation.glowGold] : [AppElevation.xs],
         ),
         padding: EdgeInsets.all(AppSpacing.md),
         child: Row(
@@ -163,7 +163,8 @@ class _ChatWidgetState extends State<ChatWidget> {
                                 AppColors.goldLight,
                               ],
                             ),
-                            borderRadius: BorderRadius.circular(AppBorderRadius.md),
+                            borderRadius:
+                                BorderRadius.circular(AppBorderRadius.md),
                             boxShadow: [AppElevation.sm],
                           ),
                           constraints: BoxConstraints(minWidth: 24),
@@ -337,7 +338,8 @@ class _ChatWidgetState extends State<ChatWidget> {
             children: [
               SuggestedGolfersSection(
                 currentUserId: currentUserId,
-                onGolferTap: (user) => _openDirectChatForUser(user, currentUserId),
+                onGolferTap: (user) =>
+                    _openDirectChatForUser(user, currentUserId),
               ),
               SizedBox(height: AppSpacing.lg),
               Padding(
@@ -425,7 +427,8 @@ class _ChatWidgetState extends State<ChatWidget> {
         AppLog.d('💬 ChatList: Received ${chatRows.length} chat row(s)');
 
         if (chatRows.isEmpty) {
-          AppLog.d('💬 ChatList: Chat rows array is empty, showing empty state');
+          AppLog.d(
+              '💬 ChatList: Chat rows array is empty, showing empty state');
           return SliverToBoxAdapter(
             child: Padding(
               padding: EdgeInsets.symmetric(vertical: AppSpacing.xxl),

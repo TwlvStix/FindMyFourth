@@ -20,10 +20,10 @@ import '/core/design_tokens/icon_size.dart';
 import '/core/design_tokens/border_radius.dart';
 import '/core/form_field_controller.dart';
 import '/main_function/games_list/games_list_widget.dart';
+import '/services/profile_setup_service.dart';
 import '/profile/change_photo/change_photo_widget.dart';
 import '/core/custom_functions.dart' as functions;
 import '/user_onboarding/vibe_onboarding_widget.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
@@ -70,6 +70,7 @@ class _CreateProfileWidgetState extends State<CreateProfileWidget>
   late List<Animation<double>> _fadeAnimations;
 
   final scaffoldKey = GlobalKey<ScaffoldState>();
+  final _profileSetupService = ProfileSetupService();
 
   @override
   void initState() {
@@ -102,9 +103,12 @@ class _CreateProfileWidgetState extends State<CreateProfileWidget>
         ? List.generate(
             3,
             (index) {
-              final totalMs = _fadeController.duration!.inMilliseconds.toDouble();
-              final staggerMs = MotionTokens.staggerDelay.inMilliseconds.toDouble();
-              final revealMs = MotionTokens.contentReveal.inMilliseconds.toDouble();
+              final totalMs =
+                  _fadeController.duration!.inMilliseconds.toDouble();
+              final staggerMs =
+                  MotionTokens.staggerDelay.inMilliseconds.toDouble();
+              final revealMs =
+                  MotionTokens.contentReveal.inMilliseconds.toDouble();
 
               return Tween<double>(begin: 0.0, end: 1.0).animate(
                 CurvedAnimation(
@@ -219,15 +223,7 @@ class _CreateProfileWidgetState extends State<CreateProfileWidget>
     // Create username
     final desiredUsername =
         functions.usernameCreator(usernameTextController!.text);
-    var firebaseUser = FirebaseAuth.instance.currentUser;
-    if (firebaseUser == null) {
-      try {
-        firebaseUser = await FirebaseAuth.instance
-            .authStateChanges()
-            .firstWhere((user) => user != null)
-            .timeout(const Duration(seconds: 5));
-      } catch (_) {}
-    }
+    final firebaseUser = await _profileSetupService.currentUserOrWait();
     if (firebaseUser == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -248,9 +244,6 @@ class _CreateProfileWidgetState extends State<CreateProfileWidget>
     if (desiredUsername.isEmpty) {
       return;
     }
-    final usernamesRef = FirebaseFirestore.instance
-        .collection('usernames')
-        .doc(desiredUsername);
     if (desiredUsername.isNotEmpty &&
         !RegExp(kTextValidatorUsernameRegex).hasMatch(desiredUsername)) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -287,59 +280,37 @@ class _CreateProfileWidgetState extends State<CreateProfileWidget>
     }
 
     try {
-      await FirebaseFirestore.instance.runTransaction((transaction) async {
-        final usernameSnap = await transaction.get(usernamesRef);
-        if (usernameSnap.exists) {
-          final existingRef = usernameSnap.get('uid') as DocumentReference?;
-          if (existingRef != null && existingRef.path != userRef.path) {
-            throw StateError('username_taken');
-          }
-        } else {
-          transaction.set(usernamesRef, {
-            'uid': userRef,
-            'created_at': FieldValue.serverTimestamp(),
-          });
-        }
-      });
+      await _profileSetupService.reserveUsername(
+        username: desiredUsername,
+        userRef: userRef,
+      );
       try {
         final golfCanadaRaw = golfCanadaTextController?.text.trim() ?? '';
         AppLog.d('Creating user document with friend fields initialized...');
         final phoneText = phoneNumTextController!.text;
-        await Future.wait([
-          userRef.set(
-            createUsersRecordData(
-              photoUrl: currentUserPhoto,
-              handicap: handicapValue,
-              golfCanadaNumber:
-                  golfCanadaRaw.isEmpty ? null : golfCanadaRaw,
-              homeCourse: coursesValue,
-              firstName: firstNameTextController!.text,
-              lastName: lastNameTextController!.text,
-              displayName: desiredUsername,
-              gender: genderValue,
-              dateOfBirth: dateOfBirth,
-              friends: [],
-              friendRequests: [],
-            ),
-            SetOptions(merge: true),
+        await _profileSetupService.saveCreateProfileData(
+          userRef: userRef,
+          userData: createUsersRecordData(
+            photoUrl: currentUserPhoto,
+            handicap: handicapValue,
+            golfCanadaNumber: golfCanadaRaw.isEmpty ? null : golfCanadaRaw,
+            homeCourse: coursesValue,
+            firstName: firstNameTextController!.text,
+            lastName: lastNameTextController!.text,
+            displayName: desiredUsername,
+            gender: genderValue,
+            dateOfBirth: dateOfBirth,
+            friends: [],
+            friendRequests: [],
           ),
-          if (phoneText.isNotEmpty)
-            userRef.collection('private').doc('info').set(
-              {'phone_number': phoneText},
-              SetOptions(merge: true),
-            ),
-        ]);
+          phoneNumber: phoneText,
+        );
         AppLog.d('User document created with friend fields initialized');
       } catch (e) {
-        try {
-          final usernameDoc = await usernamesRef.get();
-          final existingRef = usernameDoc.get('uid') as DocumentReference?;
-          if (usernameDoc.exists &&
-              existingRef != null &&
-              existingRef.path == userRef.path) {
-            await usernamesRef.delete();
-          }
-        } catch (_) {}
+        await _profileSetupService.releaseUsernameIfOwned(
+          username: desiredUsername,
+          userRef: userRef,
+        );
         rethrow;
       }
       currentUserDocument = await UsersRecord.getDocumentOnce(userRef);
@@ -441,12 +412,12 @@ class _CreateProfileWidgetState extends State<CreateProfileWidget>
       },
       extra: <String, dynamic>{
         kTransitionInfoKey: TransitionInfo(
-                  hasTransition: true,
-                  transitionType: AppTransitionType.fade,
-                  enterDuration: Duration(milliseconds: 200),
-                  exitDuration: Duration(milliseconds: 170),
-                  scaleOnPush: true,
-                ),
+          hasTransition: true,
+          transitionType: AppTransitionType.fade,
+          enterDuration: Duration(milliseconds: 200),
+          exitDuration: Duration(milliseconds: 170),
+          scaleOnPush: true,
+        ),
       },
     );
   }
@@ -574,7 +545,8 @@ class _CreateProfileWidgetState extends State<CreateProfileWidget>
                           height: 4,
                           decoration: BoxDecoration(
                             color: AppColors.navyLight,
-                            borderRadius: BorderRadius.circular(AppBorderRadius.xxs),
+                            borderRadius:
+                                BorderRadius.circular(AppBorderRadius.xxs),
                           ),
                         ),
 
@@ -584,7 +556,8 @@ class _CreateProfileWidgetState extends State<CreateProfileWidget>
                         FadeTransition(
                           opacity: _fadeAnimations[0],
                           child: Padding(
-                            padding: EdgeInsets.fromLTRB(AppSpacing.lg, 0, AppSpacing.lg, AppSpacing.lg),
+                            padding: EdgeInsets.fromLTRB(
+                                AppSpacing.lg, 0, AppSpacing.lg, AppSpacing.lg),
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
@@ -606,7 +579,8 @@ class _CreateProfileWidgetState extends State<CreateProfileWidget>
                                         label: 'First Name *',
                                         icon: AppPhosphorIcons.profile,
                                         validator: (context, val) {
-                                          if (val == null || val.trim().isEmpty) {
+                                          if (val == null ||
+                                              val.trim().isEmpty) {
                                             return 'First name is required';
                                           }
                                           return null;
@@ -641,7 +615,9 @@ class _CreateProfileWidgetState extends State<CreateProfileWidget>
                                   label: 'Phone',
                                   icon: AppPhosphorIcons.phone,
                                   keyboardType: TextInputType.phone,
-                                  inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                                  inputFormatters: [
+                                    FilteringTextInputFormatter.digitsOnly
+                                  ],
                                 ),
                                 SizedBox(height: AppSpacing.md),
 
@@ -663,7 +639,8 @@ class _CreateProfileWidgetState extends State<CreateProfileWidget>
                                       child: Container(
                                         decoration: BoxDecoration(
                                           color: AppColors.inputBackground,
-                                          borderRadius: BorderRadius.circular(AppBorderRadius.md),
+                                          borderRadius: BorderRadius.circular(
+                                              AppBorderRadius.md),
                                           border: Border.all(
                                             color: AppColors.inputBorderIdle,
                                           ),
@@ -676,7 +653,8 @@ class _CreateProfileWidgetState extends State<CreateProfileWidget>
                                               setState(() => genderValue = val),
                                           width: double.infinity,
                                           height: 56,
-                                          textStyle: AppTypography.bodyMedium.copyWith(
+                                          textStyle:
+                                              AppTypography.bodyMedium.copyWith(
                                             color: AppColors.textPrimary,
                                           ),
                                           hintText: 'Gender *',
@@ -690,7 +668,8 @@ class _CreateProfileWidgetState extends State<CreateProfileWidget>
                                           borderColor: Colors.transparent,
                                           borderWidth: 0,
                                           borderRadius: 12,
-                                          margin: EdgeInsetsDirectional.only(start: AppSpacing.md),
+                                          margin: EdgeInsetsDirectional.only(
+                                              start: AppSpacing.md),
                                         ),
                                       ),
                                     ),
@@ -702,58 +681,107 @@ class _CreateProfileWidgetState extends State<CreateProfileWidget>
                                           final now = DateTime.now();
                                           final picked = await showDatePicker(
                                             context: context,
-                                            initialDate: dateOfBirth ?? DateTime(now.year - 25, now.month, now.day),
+                                            initialDate: dateOfBirth ??
+                                                DateTime(now.year - 25,
+                                                    now.month, now.day),
                                             firstDate: DateTime(1920),
-                                            lastDate: DateTime(now.year - 13, now.month, now.day),
+                                            lastDate: DateTime(now.year - 13,
+                                                now.month, now.day),
                                             helpText: 'SELECT DATE OF BIRTH',
                                             builder: (context, child) {
                                               return Theme(
-                                                data: Theme.of(context).copyWith(
+                                                data:
+                                                    Theme.of(context).copyWith(
                                                   colorScheme: ColorScheme.dark(
                                                     primary: AppColors.green,
-                                                    onPrimary: AppColors.textPrimary,
+                                                    onPrimary:
+                                                        AppColors.textPrimary,
                                                     surface: AppColors.navy,
-                                                    onSurface: AppColors.textPrimary,
-                                                    onSurfaceVariant: AppColors.textPrimary,
+                                                    onSurface:
+                                                        AppColors.textPrimary,
+                                                    onSurfaceVariant:
+                                                        AppColors.textPrimary,
                                                     secondary: AppColors.green,
-                                                    onSecondary: AppColors.textPrimary,
+                                                    onSecondary:
+                                                        AppColors.textPrimary,
                                                   ),
                                                   dialogTheme: DialogThemeData(
-                                                    backgroundColor: AppColors.navy,
+                                                    backgroundColor:
+                                                        AppColors.navy,
                                                   ),
                                                   // Text theme for year picker text elements
-                                                  textTheme: Theme.of(context).textTheme.apply(
-                                                    bodyColor: AppColors.textPrimary,
-                                                    displayColor: AppColors.textPrimary,
-                                                  ),
+                                                  textTheme: Theme.of(context)
+                                                      .textTheme
+                                                      .apply(
+                                                        bodyColor: AppColors
+                                                            .textPrimary,
+                                                        displayColor: AppColors
+                                                            .textPrimary,
+                                                      ),
                                                   // Input decoration for manual date entry mode
-                                                  inputDecorationTheme: InputDecorationTheme(
-                                                    labelStyle: TextStyle(color: AppColors.textPrimary),
-                                                    hintStyle: TextStyle(color: AppColors.textMuted),
-                                                    floatingLabelStyle: TextStyle(color: AppColors.green),
-                                                    enabledBorder: UnderlineInputBorder(
-                                                      borderSide: BorderSide(color: AppColors.textMuted),
+                                                  inputDecorationTheme:
+                                                      InputDecorationTheme(
+                                                    labelStyle: TextStyle(
+                                                        color: AppColors
+                                                            .textPrimary),
+                                                    hintStyle: TextStyle(
+                                                        color: AppColors
+                                                            .textMuted),
+                                                    floatingLabelStyle:
+                                                        TextStyle(
+                                                            color: AppColors
+                                                                .green),
+                                                    enabledBorder:
+                                                        UnderlineInputBorder(
+                                                      borderSide: BorderSide(
+                                                          color: AppColors
+                                                              .textMuted),
                                                     ),
-                                                    focusedBorder: UnderlineInputBorder(
-                                                      borderSide: BorderSide(color: AppColors.green),
+                                                    focusedBorder:
+                                                        UnderlineInputBorder(
+                                                      borderSide: BorderSide(
+                                                          color:
+                                                              AppColors.green),
                                                     ),
                                                   ),
                                                   // DatePicker-specific theme for year picker
-                                                  datePickerTheme: DatePickerThemeData(
-                                                    backgroundColor: AppColors.navy,
-                                                    headerBackgroundColor: AppColors.navy,
-                                                    headerForegroundColor: AppColors.textPrimary,
-                                                    yearStyle: TextStyle(color: AppColors.textPrimary),
-                                                    yearForegroundColor: WidgetStateProperty.all(AppColors.textPrimary),
-                                                    yearBackgroundColor: WidgetStateProperty.resolveWith((states) {
-                                                      if (states.contains(WidgetState.selected)) {
+                                                  datePickerTheme:
+                                                      DatePickerThemeData(
+                                                    backgroundColor:
+                                                        AppColors.navy,
+                                                    headerBackgroundColor:
+                                                        AppColors.navy,
+                                                    headerForegroundColor:
+                                                        AppColors.textPrimary,
+                                                    yearStyle: TextStyle(
+                                                        color: AppColors
+                                                            .textPrimary),
+                                                    yearForegroundColor:
+                                                        WidgetStateProperty.all(
+                                                            AppColors
+                                                                .textPrimary),
+                                                    yearBackgroundColor:
+                                                        WidgetStateProperty
+                                                            .resolveWith(
+                                                                (states) {
+                                                      if (states.contains(
+                                                          WidgetState
+                                                              .selected)) {
                                                         return AppColors.green;
                                                       }
                                                       return Colors.transparent;
                                                     }),
-                                                    dayForegroundColor: WidgetStateProperty.all(AppColors.textPrimary),
-                                                    dayBackgroundColor: WidgetStateProperty.resolveWith((states) {
-                                                      if (states.contains(WidgetState.selected)) {
+                                                    dayForegroundColor:
+                                                        WidgetStateProperty.all(
+                                                            AppColors
+                                                                .textPrimary),
+                                                    dayBackgroundColor:
+                                                        WidgetStateProperty
+                                                            .resolveWith(
+                                                                (states) {
+                                                      if (states.contains(
+                                                          WidgetState
+                                                              .selected)) {
                                                         return AppColors.green;
                                                       }
                                                       return Colors.transparent;
@@ -765,16 +793,21 @@ class _CreateProfileWidgetState extends State<CreateProfileWidget>
                                             },
                                           );
                                           if (picked != null) {
-                                            setState(() => dateOfBirth = picked);
+                                            setState(
+                                                () => dateOfBirth = picked);
                                           }
                                         },
                                         child: Container(
                                           height: 56,
-                                          padding: EdgeInsets.symmetric(horizontal: AppSpacing.md),
+                                          padding: EdgeInsets.symmetric(
+                                              horizontal: AppSpacing.md),
                                           decoration: BoxDecoration(
                                             color: AppColors.inputBackground,
-                                            borderRadius: BorderRadius.circular(AppBorderRadius.md),
-                                            border: Border.all(color: AppColors.inputBorderIdle),
+                                            borderRadius: BorderRadius.circular(
+                                                AppBorderRadius.md),
+                                            border: Border.all(
+                                                color:
+                                                    AppColors.inputBorderIdle),
                                           ),
                                           child: Row(
                                             children: [
@@ -789,12 +822,15 @@ class _CreateProfileWidgetState extends State<CreateProfileWidget>
                                                   dateOfBirth != null
                                                       ? '${dateOfBirth!.month.toString().padLeft(2, '0')}/${dateOfBirth!.day.toString().padLeft(2, '0')}/${dateOfBirth!.year}'
                                                       : 'Birthday *',
-                                                  style: AppTypography.bodyMedium.copyWith(
+                                                  style: AppTypography
+                                                      .bodyMedium
+                                                      .copyWith(
                                                     color: dateOfBirth != null
                                                         ? AppColors.textPrimary
                                                         : AppColors.textMuted,
                                                   ),
-                                                  overflow: TextOverflow.ellipsis,
+                                                  overflow:
+                                                      TextOverflow.ellipsis,
                                                 ),
                                               ),
                                             ],
@@ -813,7 +849,8 @@ class _CreateProfileWidgetState extends State<CreateProfileWidget>
                         FadeTransition(
                           opacity: _fadeAnimations[1],
                           child: Padding(
-                            padding: EdgeInsets.fromLTRB(AppSpacing.lg, 0, AppSpacing.lg, AppSpacing.lg),
+                            padding: EdgeInsets.fromLTRB(
+                                AppSpacing.lg, 0, AppSpacing.lg, AppSpacing.lg),
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
@@ -835,8 +872,10 @@ class _CreateProfileWidgetState extends State<CreateProfileWidget>
                                         height: 56,
                                         decoration: BoxDecoration(
                                           color: AppColors.inputBackground,
-                                          borderRadius: BorderRadius.circular(AppBorderRadius.md),
-                                          border: Border.all(color: AppColors.inputBorderIdle),
+                                          borderRadius: BorderRadius.circular(
+                                              AppBorderRadius.md),
+                                          border: Border.all(
+                                              color: AppColors.inputBorderIdle),
                                         ),
                                         alignment: Alignment.center,
                                         child: CircularProgressIndicator(
@@ -846,22 +885,28 @@ class _CreateProfileWidgetState extends State<CreateProfileWidget>
                                       );
                                     }
 
-                                    List<CourseRecord> courses = snapshot.data!..sort((a, b) => a.name.compareTo(b.name));
+                                    List<CourseRecord> courses = snapshot.data!
+                                      ..sort(
+                                          (a, b) => a.name.compareTo(b.name));
                                     return Container(
                                       decoration: BoxDecoration(
                                         color: AppColors.inputBackground,
-                                        borderRadius: BorderRadius.circular(AppBorderRadius.md),
-                                        border: Border.all(color: AppColors.inputBorderIdle),
+                                        borderRadius: BorderRadius.circular(
+                                            AppBorderRadius.md),
+                                        border: Border.all(
+                                            color: AppColors.inputBorderIdle),
                                       ),
                                       child: AppDropDown<String>(
                                         controller: coursesValueController ??=
                                             FormFieldController<String>(null),
-                                        options: courses.map((c) => c.name).toList(),
+                                        options:
+                                            courses.map((c) => c.name).toList(),
                                         onChanged: (val) =>
                                             setState(() => coursesValue = val),
                                         width: double.infinity,
                                         height: 56,
-                                        textStyle: AppTypography.bodyMedium.copyWith(
+                                        textStyle:
+                                            AppTypography.bodyMedium.copyWith(
                                           color: AppColors.textPrimary,
                                         ),
                                         hintText: 'Select Home Course',
@@ -875,7 +920,8 @@ class _CreateProfileWidgetState extends State<CreateProfileWidget>
                                         borderColor: Colors.transparent,
                                         borderWidth: 0,
                                         borderRadius: 12,
-                                        margin: EdgeInsetsDirectional.only(start: AppSpacing.md),
+                                        margin: EdgeInsetsDirectional.only(
+                                            start: AppSpacing.md),
                                       ),
                                     );
                                   },
@@ -887,8 +933,10 @@ class _CreateProfileWidgetState extends State<CreateProfileWidget>
                                   padding: EdgeInsets.all(AppSpacing.md),
                                   decoration: BoxDecoration(
                                     color: AppColors.inputBackground,
-                                    borderRadius: BorderRadius.circular(AppBorderRadius.md),
-                                    border: Border.all(color: AppColors.inputBorderIdle),
+                                    borderRadius: BorderRadius.circular(
+                                        AppBorderRadius.md),
+                                    border: Border.all(
+                                        color: AppColors.inputBorderIdle),
                                   ),
                                   child: Row(
                                     children: [
@@ -897,11 +945,15 @@ class _CreateProfileWidgetState extends State<CreateProfileWidget>
                                         height: 40,
                                         decoration: BoxDecoration(
                                           gradient: LinearGradient(
-                                            colors: [AppColors.gold, AppColors.goldLight],
+                                            colors: [
+                                              AppColors.gold,
+                                              AppColors.goldLight
+                                            ],
                                             begin: Alignment.topLeft,
                                             end: Alignment.bottomRight,
                                           ),
-                                          borderRadius: BorderRadius.circular(AppBorderRadius.sm),
+                                          borderRadius: BorderRadius.circular(
+                                              AppBorderRadius.sm),
                                         ),
                                         child: Icon(
                                           AppPhosphorIcons.flagCheckered,
@@ -912,18 +964,21 @@ class _CreateProfileWidgetState extends State<CreateProfileWidget>
                                       SizedBox(width: AppSpacing.md),
                                       Expanded(
                                         child: Column(
-                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
                                           children: [
                                             Text(
                                               'Handicap',
-                                              style: AppTypography.labelSmall.copyWith(
+                                              style: AppTypography.labelSmall
+                                                  .copyWith(
                                                 color: AppColors.textMuted,
                                               ),
                                             ),
                                             SizedBox(height: AppSpacing.xxs),
                                             Text(
                                               'Your official handicap index',
-                                              style: AppTypography.bodySmall.copyWith(
+                                              style: AppTypography.bodySmall
+                                                  .copyWith(
                                                 color: AppColors.textSecondary,
                                               ),
                                             ),
@@ -931,38 +986,49 @@ class _CreateProfileWidgetState extends State<CreateProfileWidget>
                                         ),
                                       ),
                                       AppCountController(
-                                        decrementIconBuilder: (enabled) => Container(
+                                        decrementIconBuilder: (enabled) =>
+                                            Container(
                                           width: 32,
                                           height: 32,
                                           decoration: BoxDecoration(
                                             color: enabled
                                                 ? AppColors.navyLight
-                                                : AppColors.navyLight.withValues(alpha: 0.5),
-                                            borderRadius: BorderRadius.circular(AppBorderRadius.sm),
+                                                : AppColors.navyLight
+                                                    .withValues(alpha: 0.5),
+                                            borderRadius: BorderRadius.circular(
+                                                AppBorderRadius.sm),
                                           ),
                                           child: Icon(
                                             AppPhosphorIcons.minus,
-                                            color: enabled ? AppColors.textPrimary : AppColors.textMuted,
+                                            color: enabled
+                                                ? AppColors.textPrimary
+                                                : AppColors.textMuted,
                                             size: AppIconSize.button,
                                           ),
                                         ),
-                                        incrementIconBuilder: (enabled) => Container(
+                                        incrementIconBuilder: (enabled) =>
+                                            Container(
                                           width: 32,
                                           height: 32,
                                           decoration: BoxDecoration(
                                             color: enabled
                                                 ? AppColors.navyLight
-                                                : AppColors.navyLight.withValues(alpha: 0.5),
-                                            borderRadius: BorderRadius.circular(AppBorderRadius.sm),
+                                                : AppColors.navyLight
+                                                    .withValues(alpha: 0.5),
+                                            borderRadius: BorderRadius.circular(
+                                                AppBorderRadius.sm),
                                           ),
                                           child: Icon(
                                             AppPhosphorIcons.plus,
-                                            color: enabled ? AppColors.textPrimary : AppColors.textMuted,
+                                            color: enabled
+                                                ? AppColors.textPrimary
+                                                : AppColors.textMuted,
                                             size: AppIconSize.button,
                                           ),
                                         ),
                                         countBuilder: (count) => Container(
-                                          constraints: BoxConstraints(minWidth: 56),
+                                          constraints:
+                                              BoxConstraints(minWidth: 56),
                                           alignment: Alignment.center,
                                           child: Text(
                                             formatHandicap(count),
@@ -970,15 +1036,17 @@ class _CreateProfileWidgetState extends State<CreateProfileWidget>
                                             softWrap: false,
                                             overflow: TextOverflow.clip,
                                             textAlign: TextAlign.center,
-                                            style: AppTypography.monoLarge.copyWith(
-                                              color: AppColors.textPrimary.withValues(alpha: 0.85),
+                                            style: AppTypography.monoLarge
+                                                .copyWith(
+                                              color: AppColors.textPrimary
+                                                  .withValues(alpha: 0.85),
                                               fontWeight: FontWeight.w400,
                                             ),
                                           ),
                                         ),
                                         count: handicapValue ?? 0,
-                                        updateCount: (count) =>
-                                            setState(() => handicapValue = count),
+                                        updateCount: (count) => setState(
+                                            () => handicapValue = count),
                                         stepSize: 1,
                                         minimum: -5,
                                         maximum: 54,
@@ -987,7 +1055,8 @@ class _CreateProfileWidgetState extends State<CreateProfileWidget>
                                         parseValue: (text) {
                                           final trimmed = text.trim();
                                           if (trimmed.startsWith('+')) {
-                                            final num = int.tryParse(trimmed.substring(1));
+                                            final num = int.tryParse(
+                                                trimmed.substring(1));
                                             return num != null ? -num : null;
                                           }
                                           return int.tryParse(trimmed);
@@ -1004,7 +1073,9 @@ class _CreateProfileWidgetState extends State<CreateProfileWidget>
                                   label: 'Golf Canada #',
                                   icon: AppPhosphorIcons.verified,
                                   keyboardType: TextInputType.number,
-                                  inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                                  inputFormatters: [
+                                    FilteringTextInputFormatter.digitsOnly
+                                  ],
                                 ),
                               ],
                             ),
@@ -1017,7 +1088,8 @@ class _CreateProfileWidgetState extends State<CreateProfileWidget>
                         FadeTransition(
                           opacity: _fadeAnimations[2],
                           child: Padding(
-                            padding: EdgeInsets.symmetric(horizontal: AppSpacing.lg),
+                            padding:
+                                EdgeInsets.symmetric(horizontal: AppSpacing.lg),
                             child: AppButtonEnhanced(
                               text: 'Create Profile',
                               leadingIcon: AppPhosphorIcons.successFill,
