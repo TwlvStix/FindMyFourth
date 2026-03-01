@@ -99,13 +99,19 @@ class NotificationPermissionService {
     AppLog.d('[NotificationService] Initializing notification service');
     _initialized = true;
 
-    // Load current permission status
+    // Check current status first
     await refreshPermissionStatus();
+
+    // If not yet granted, request permission (triggers iOS prompt)
+    if (_cachedStatus == NotificationPermissionStatus.denied) {
+      await requestPermissionAndRegister();
+    }
 
     // Set up token refresh listener (only once)
     _setupTokenRefreshListener(uid);
 
-    AppLog.d('[NotificationService] Notification service initialized successfully');
+    AppLog.d(
+        '[NotificationService] Notification service initialized successfully');
   }
 
   /// Refresh permission status from system and update cache
@@ -153,14 +159,16 @@ class NotificationPermissionService {
       AppLog.d('[NotificationService] Permission status refreshed: $status');
       return status;
     } catch (e) {
-      AppLog.d('[NotificationService] Error getting notification permission status: $e');
+      AppLog.d(
+          '[NotificationService] Error getting notification permission status: $e');
       _cachedStatus = NotificationPermissionStatus.error;
       return _cachedStatus!;
     }
   }
 
   /// Get detailed notification permission status (DEPRECATED - use cachedStatus or refreshPermissionStatus)
-  @Deprecated('Use cachedStatus for synchronous access or refreshPermissionStatus() to update cache')
+  @Deprecated(
+      'Use cachedStatus for synchronous access or refreshPermissionStatus() to update cache')
   Future<NotificationPermissionStatus> getDetailedStatus() async {
     return refreshPermissionStatus();
   }
@@ -201,9 +209,10 @@ class NotificationPermissionService {
 
       if (!authorized) {
         await _markPermissionDenied(user.uid);
-        final status = settings.authorizationStatus == AuthorizationStatus.denied
-            ? NotificationPermissionStatus.permanentlyDenied
-            : NotificationPermissionStatus.denied;
+        final status =
+            settings.authorizationStatus == AuthorizationStatus.denied
+                ? NotificationPermissionStatus.permanentlyDenied
+                : NotificationPermissionStatus.denied;
         _cachedStatus = status;
         AppLog.d('[NotificationService] Permission denied: $status');
         return status;
@@ -248,7 +257,8 @@ class NotificationPermissionService {
   /// Set up token refresh listener (idempotent - safe to call multiple times)
   void _setupTokenRefreshListener(String uid) {
     if (_tokenRefreshSub != null) {
-      AppLog.d('[NotificationService] Token refresh listener already active, skipping');
+      AppLog.d(
+          '[NotificationService] Token refresh listener already active, skipping');
       return;
     }
 
@@ -256,7 +266,8 @@ class NotificationPermissionService {
       if (token.isEmpty) {
         return;
       }
-      AppLog.d('[NotificationService] FCM token refreshed, updating backend (uid=$uid)');
+      AppLog.d(
+          '[NotificationService] FCM token refreshed, updating backend (uid=$uid)');
       _upsertDeviceToken(uid, token);
     });
 
@@ -353,7 +364,8 @@ class NotificationPermissionService {
       }
     } catch (e) {
       // Non-fatal — user can still receive push, alertSub will be created when they visit settings
-      AppLog.d('[NotificationService] Failed to write permission granted state: $e');
+      AppLog.d(
+          '[NotificationService] Failed to write permission granted state: $e');
     }
   }
 
