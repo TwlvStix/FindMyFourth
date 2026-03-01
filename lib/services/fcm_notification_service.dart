@@ -80,6 +80,9 @@ class FcmNotificationService implements NotificationService {
     // Single global tap subscription (NOT in widget lifecycle to avoid duplicates)
     _onTapSub = LocalNotificationsService().onTapStream.listen(_handleTap);
 
+    final apnsToken = await FirebaseMessaging.instance.getAPNSToken();
+    AppLog.d('🍎 APNs Token: $apnsToken');
+
     final token = await FirebaseMessaging.instance.getToken();
     AppLog.d('🔔 FcmNotificationService: FCM Token: $token');
 
