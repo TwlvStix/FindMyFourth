@@ -2,7 +2,6 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
-import 'app_router.dart' show TransitionInfo;
 import 'transition_standards.dart';
 
 /// Canonical route-name constants for typed navigation helpers.

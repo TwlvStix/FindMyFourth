@@ -1,6 +1,64 @@
 import 'package:flutter/material.dart';
-import 'app_router.dart';
+import 'package:go_router/go_router.dart';
+
 import '/core/motion/motion_tokens.dart';
+import '/core/motion/reduced_motion.dart';
+
+/// Key for storing transition info in route extra data.
+const kTransitionInfoKey = '__transition_info__';
+
+/// Custom transition type to replace page_transition package dependency.
+/// Currently only supports fade transitions as that's all the app uses.
+enum AppTransitionType {
+  fade,
+}
+
+/// Configuration for route transitions.
+///
+/// Used to specify how a route should animate when pushed or popped.
+/// For standard transitions, use constants from [TransitionStandards]:
+/// - [TransitionStandards.modalTransition] - Modal-like screens (create, edit)
+/// - [TransitionStandards.detailTransition] - Detail views (game details, profiles)
+/// - [TransitionStandards.dismissalTransition] - Success/dismissal screens
+/// - [TransitionStandards.tabTransition] - Tab navigation
+class TransitionInfo {
+  const TransitionInfo({
+    required this.hasTransition,
+    this.transitionType = AppTransitionType.fade,
+    this.enterDuration,
+    this.exitDuration,
+    this.scaleOnPush = false,
+    this.alignment,
+  });
+
+  final bool hasTransition;
+  final AppTransitionType transitionType;
+  final Duration? enterDuration;
+  final Duration? exitDuration;
+  final bool scaleOnPush;
+  final Alignment? alignment;
+
+  /// Backward compatibility getter for old duration field.
+  /// Returns enterDuration if set, otherwise default 300ms.
+  Duration get duration => enterDuration ?? const Duration(milliseconds: 300);
+
+  /// Get effective enter duration with reduced motion applied.
+  Duration getEnterDuration() {
+    return ReducedMotionService.adjust(
+      enterDuration ?? const Duration(milliseconds: 300),
+    );
+  }
+
+  /// Get effective exit duration with reduced motion applied.
+  Duration getExitDuration() {
+    return ReducedMotionService.adjust(
+      exitDuration ?? enterDuration ?? const Duration(milliseconds: 300),
+    );
+  }
+
+  /// Default transition (no transition).
+  static TransitionInfo appDefault() => TransitionInfo(hasTransition: false);
+}
 
 /// Standard transition configurations for consistent navigation throughout the app.
 ///
