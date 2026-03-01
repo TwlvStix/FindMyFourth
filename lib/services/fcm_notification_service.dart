@@ -31,7 +31,8 @@ class FcmNotificationService implements NotificationService {
 
   // Broadcast controllers that persist across init/dispose cycles.
   // Do NOT close these in dispose() - they're reused after logout/login.
-  final _receivedController = StreamController<TestableNotification>.broadcast();
+  final _receivedController =
+      StreamController<TestableNotification>.broadcast();
   final _tappedController = StreamController<TestableNotification>.broadcast();
 
   @override
@@ -65,24 +66,30 @@ class FcmNotificationService implements NotificationService {
     // Disable iOS system foreground presentation.
     // We show notifications via flutter_local_notifications instead for
     // consistent behavior and smart suppression.
-    await FirebaseMessaging.instance.setForegroundNotificationPresentationOptions(
+    await FirebaseMessaging.instance
+        .setForegroundNotificationPresentationOptions(
       alert: false,
       badge: true,
       sound: false,
     );
 
     // Listen to foreground messages
-    _onMessageSub = FirebaseMessaging.onMessage.listen(_handleForegroundMessage);
+    _onMessageSub =
+        FirebaseMessaging.onMessage.listen(_handleForegroundMessage);
 
     // Single global tap subscription (NOT in widget lifecycle to avoid duplicates)
     _onTapSub = LocalNotificationsService().onTapStream.listen(_handleTap);
+
+    final token = await FirebaseMessaging.instance.getToken();
+    AppLog.d('🔔 FcmNotificationService: FCM Token: $token');
 
     _initialized = true;
     AppLog.d('🔔 FcmNotificationService: Initialized successfully');
   }
 
   void _handleForegroundMessage(RemoteMessage message) {
-    AppLog.d('🔔 FcmNotificationService: Received foreground message id=${message.messageId}');
+    AppLog.d(
+        '🔔 FcmNotificationService: Received foreground message id=${message.messageId}');
 
     final notification = message.notification;
     if (notification == null) {
@@ -110,7 +117,8 @@ class FcmNotificationService implements NotificationService {
 
     // Check if we should suppress this notification
     if (_shouldSuppressNotification(testableNotification)) {
-      AppLog.d('🔔 FcmNotificationService: Suppressing notification (user on relevant screen)');
+      AppLog.d(
+          '🔔 FcmNotificationService: Suppressing notification (user on relevant screen)');
       return;
     }
 
@@ -150,7 +158,8 @@ class FcmNotificationService implements NotificationService {
         final chatId = normalizedData['threadId'] ?? normalizedData['chatId'];
         // Route is /chat/:chatId - compare path only (ignore query params)
         if (chatId != null && currentPath == '/chat/$chatId') {
-          AppLog.d('🔔 FcmNotificationService: Suppressing chat notification for chatId=$chatId');
+          AppLog.d(
+              '🔔 FcmNotificationService: Suppressing chat notification for chatId=$chatId');
           return true;
         }
       }
@@ -185,20 +194,25 @@ class FcmNotificationService implements NotificationService {
       final context = appNavigatorKey.currentContext;
       if (context != null) {
         // Await navigation to ensure async errors are caught by this try/catch
-        await handleNotificationNavigation(context, normalizedData, messageId: messageId);
+        await handleNotificationNavigation(context, normalizedData,
+            messageId: messageId);
       } else {
         // Retry once after next frame (context may not be ready during app init)
-        AppLog.d('🔔 FcmNotificationService: No navigator context, scheduling retry');
+        AppLog.d(
+            '🔔 FcmNotificationService: No navigator context, scheduling retry');
         WidgetsBinding.instance.addPostFrameCallback((_) async {
           final retryContext = appNavigatorKey.currentContext;
           if (retryContext != null) {
             try {
-              await handleNotificationNavigation(retryContext, normalizedData, messageId: messageId);
+              await handleNotificationNavigation(retryContext, normalizedData,
+                  messageId: messageId);
             } catch (e) {
-              AppLog.d('🔔 FcmNotificationService: Error in retry navigation: $e');
+              AppLog.d(
+                  '🔔 FcmNotificationService: Error in retry navigation: $e');
             }
           } else {
-            AppLog.d('🔔 FcmNotificationService: No navigator context after retry, skipping');
+            AppLog.d(
+                '🔔 FcmNotificationService: No navigator context after retry, skipping');
           }
         });
       }

@@ -6,12 +6,12 @@ import '/core/request_manager.dart';
 import '/core/utils/app_log.dart';
 import '/models/chat.dart';
 import '/models/chat_message.dart';
+import '/models/chat_message_view_model.dart';
 import '/providers/profile_provider.dart';
 import '/services/chat_service.dart';
 
 class ChatProvider extends ChangeNotifier {
-  ChatProvider({ChatService? service})
-      : _service = service ?? ChatService();
+  ChatProvider({ChatService? service}) : _service = service ?? ChatService();
 
   final ChatService _service;
 
@@ -26,10 +26,12 @@ class ChatProvider extends ChangeNotifier {
   final Map<String, List<ChatMessage>> _messagesCache = {};
 
   // StreamRequestManagers for message streams (by chat ID)
-  final Map<String, StreamRequestManager<List<ChatMessage>>> _messageStreamManagers = {};
+  final Map<String, StreamRequestManager<List<ChatMessage>>>
+      _messageStreamManagers = {};
 
   // StreamRequestManager for chat list streams (by user ID)
-  final Map<String, StreamRequestManager<List<Chat>>> _chatListStreamManagers = {};
+  final Map<String, StreamRequestManager<List<Chat>>> _chatListStreamManagers =
+      {};
 
   // Query result cache for chat lists (by query key)
   final Map<String, List<Chat>> _chatListCache = {};
@@ -87,10 +89,12 @@ class ChatProvider extends ChangeNotifier {
       _chatListStreamManagers[queryKey] = StreamRequestManager<List<Chat>>(5);
     }
 
-    return _chatListStreamManagers[queryKey]!.performRequest(
+    return _chatListStreamManagers[queryKey]!
+        .performRequest(
       uniqueQueryKey: queryKey,
       requestFn: () => _service.getChatListStream(uid: uid, limit: limit),
-    ).map((chats) {
+    )
+        .map((chats) {
       // Cache query results when they come through the stream
       _chatListCache[queryKey] = chats;
       _chatListCacheTimestamps[queryKey] = DateTime.now();
@@ -131,17 +135,20 @@ class ChatProvider extends ChangeNotifier {
   }) {
     // Use StreamRequestManager for caching message streams (5-minute TTL)
     if (!_messageStreamManagers.containsKey(chatId)) {
-      _messageStreamManagers[chatId] = StreamRequestManager<List<ChatMessage>>(5);
+      _messageStreamManagers[chatId] =
+          StreamRequestManager<List<ChatMessage>>(5);
     }
 
     return _messageStreamManagers[chatId]!.performRequest(
       uniqueQueryKey: 'messages_${chatId}_$limit',
-      requestFn: () => _service.getMessagesStream(
+      requestFn: () => _service
+          .getMessagesStream(
         chatId: chatId,
         limit: limit,
         startAfter: startAfter,
         visibleAfter: visibleAfter,
-      ).map((messages) {
+      )
+          .map((messages) {
         // Cache messages when they come through the stream
         _messagesCache[chatId] = messages;
         _messagesCacheTimestamps[chatId] = DateTime.now();
@@ -189,7 +196,8 @@ class ChatProvider extends ChangeNotifier {
         currentUid: currentUid,
         otherUid: otherUid,
       );
-      AppLog.d('✅ ChatProvider: createOrGetDirectChat success, chatId=${result.id}');
+      AppLog.d(
+          '✅ ChatProvider: createOrGetDirectChat success, chatId=${result.id}');
       return result;
     } catch (e) {
       AppLog.d('❌ ChatProvider.createOrGetDirectChat error: $e');
@@ -502,10 +510,12 @@ class ChatProvider extends ChangeNotifier {
     DateTime? visibleAfter,
   }) {
     if (kDebugMode) {
-      AppLog.d('🔵 ChatProvider: Creating VM stream for chatId=$chatId (should happen once per screen)');
+      AppLog.d(
+          '🔵 ChatProvider: Creating VM stream for chatId=$chatId (should happen once per screen)');
     }
 
-    return messagesSnapshotStream(chatId: chatId, limit: limit, visibleAfter: visibleAfter)
+    return messagesSnapshotStream(
+            chatId: chatId, limit: limit, visibleAfter: visibleAfter)
         .asyncMap((snapshot) async {
       final docs = snapshot.docs;
 
@@ -517,13 +527,11 @@ class ChatProvider extends ChangeNotifier {
       final messages = docs.map(ChatMessage.fromDoc).toList();
 
       // Derive unique sender IDs
-      final senderIds = messages
-          .map((msg) => msg.senderId)
-          .toSet()
-          .toList();
+      final senderIds = messages.map((msg) => msg.senderId).toSet().toList();
 
       if (kDebugMode) {
-        AppLog.d('🔵 ChatProvider: VM stream emit - ${messages.length} messages, ${senderIds.length} unique senders');
+        AppLog.d(
+            '🔵 ChatProvider: VM stream emit - ${messages.length} messages, ${senderIds.length} unique senders');
       }
 
       // Fetch profiles using ProfileProvider's memoized cache
@@ -539,7 +547,8 @@ class ChatProvider extends ChangeNotifier {
                 .where((id) => !profileProvider.isProfileCacheValid(id))
                 .toList();
             if (newSenderIds.isNotEmpty) {
-              AppLog.d('🆕 ChatProvider: Profile fetch triggered for new senderIds: $newSenderIds');
+              AppLog.d(
+                  '🆕 ChatProvider: Profile fetch triggered for new senderIds: $newSenderIds');
             }
           }
         } catch (e) {
@@ -578,7 +587,8 @@ class ChatProvider extends ChangeNotifier {
     int limit = 50,
   }) {
     if (kDebugMode) {
-      AppLog.d('💬 ChatProvider: Creating chat rows VM stream for userId=$currentUserId (should happen once per screen)');
+      AppLog.d(
+          '💬 ChatProvider: Creating chat rows VM stream for userId=$currentUserId (should happen once per screen)');
     }
 
     return chatListStream(uid: currentUserId, limit: limit)
@@ -601,7 +611,8 @@ class ChatProvider extends ChangeNotifier {
       }
 
       if (kDebugMode) {
-        AppLog.d('💬 ChatProvider: Chat rows VM emit - ${chats.length} chats, ${directUserIds.length} direct chat profiles needed');
+        AppLog.d(
+            '💬 ChatProvider: Chat rows VM emit - ${chats.length} chats, ${directUserIds.length} direct chat profiles needed');
       }
 
       // Fetch profiles using ProfileProvider's memoized cache
@@ -609,7 +620,8 @@ class ChatProvider extends ChangeNotifier {
       Map<String, UsersRecord> profileMap = {};
       if (directUserIds.isNotEmpty) {
         try {
-          profileMap = await profileProvider.batchGetProfiles(directUserIds.toList());
+          profileMap =
+              await profileProvider.batchGetProfiles(directUserIds.toList());
 
           // Log which profiles were fetched vs cached
           if (kDebugMode) {
@@ -617,7 +629,8 @@ class ChatProvider extends ChangeNotifier {
                 .where((id) => !profileProvider.isProfileCacheValid(id))
                 .toList();
             if (newUserIds.isNotEmpty) {
-              AppLog.d('🆕 ChatProvider: Profile fetch triggered for new userIds: $newUserIds');
+              AppLog.d(
+                  '🆕 ChatProvider: Profile fetch triggered for new userIds: $newUserIds');
             }
           }
         } catch (e) {
@@ -689,36 +702,6 @@ class ChatProvider extends ChangeNotifier {
 
     super.dispose();
   }
-}
-
-// ========================================
-// VIEW MODEL (AUDIT #5 FIX)
-// ========================================
-
-/// View model for chat messages with resolved profile data
-///
-/// This class combines ChatMessage with resolved user profile data,
-/// avoiding the need for nested builders in the UI.
-class ChatMessageViewModel {
-  ChatMessageViewModel({
-    required this.message,
-    required this.senderDisplayName,
-    required this.senderPhotoUrl,
-  });
-
-  final ChatMessage message;
-  final String senderDisplayName;
-  final String senderPhotoUrl;
-
-  // Convenience getters for common message fields
-  String get id => message.id;
-  String get senderId => message.senderId;
-  String get text => message.text;
-  String get imageUrl => message.imageUrl;
-  String get videoUrl => message.videoUrl;
-  DateTime? get createdAt => message.createdAt;
-  Map<String, List<String>> get reactions => message.reactions;
-  List<String> get readBy => message.readBy;
 }
 
 // ========================================

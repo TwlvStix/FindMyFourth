@@ -15,41 +15,31 @@ import '/auth/firebase_auth/auth_util.dart';
 import '/backend/backend.dart';
 import '/models/chat.dart';
 import '/models/chat_message.dart';
+import '/models/chat_message_view_model.dart';
 import '/providers/chat_provider.dart';
 import '/providers/game_provider.dart';
 import '/providers/profile_provider.dart';
 import '/core/widgets/app_premium_dialog.dart';
 import '/core/motion/motion_helpers.dart';
 import '/core/design_tokens/colors.dart';
-import '/core/design_tokens/elevation.dart';
-import '/core/design_tokens/spacing.dart';
-import '/core/design_tokens/typography.dart';
-import '/core/design_tokens/icon_size.dart';
 import '/core/design_tokens/border_radius.dart';
 import '/core/design_tokens/app_phosphor_icons.dart';
-import '/core/widgets/app_button_enhanced.dart';
-import '/core/widgets/app_icon.dart';
 import '/core/widgets/app_popup_menu.dart';
 import '/core/widgets/app_text.dart';
 import '/core/widgets/fairway_background.dart';
 import '/core/widgets/premium_back_button.dart';
-import 'components/chat_date_divider.dart';
-import 'components/chat_message_bubble.dart';
 import 'components/chat_header_title.dart';
 import 'components/chat_input_bar.dart';
-
-class _PendingUpload {
-  final String id;
-  final Uint8List previewBytes;
-  final double progress; // 0.0–1.0
-  const _PendingUpload({
-    required this.id,
-    required this.previewBytes,
-    this.progress = 0.0,
-  });
-  _PendingUpload copyWith({double? progress}) => _PendingUpload(
-      id: id, previewBytes: previewBytes, progress: progress ?? this.progress);
-}
+import 'components/chat_image_source_sheet.dart';
+import 'components/chat_image_viewer.dart';
+import 'components/chat_info_banner.dart';
+import 'components/chat_message_list.dart';
+import 'components/chat_pending_upload_bubble.dart';
+import 'components/chat_pending_upload_stack.dart';
+import 'components/chat_reaction_picker.dart';
+import 'components/chat_scroll_fab.dart';
+import 'components/chat_typing_indicator.dart';
+import 'controllers/chat_details_controller.dart';
 
 class GameChatDetailsWidget extends StatefulWidget {
   const GameChatDetailsWidget({
@@ -73,18 +63,16 @@ class _GameChatDetailsWidgetState extends State<GameChatDetailsWidget>
   Stream<QuerySnapshot>? _messagesStream;
   Stream<List<ChatMessageViewModel>>? _messageViewModelsStream;
   StreamSubscription<Chat?>? _chatUiSubscription;
+  StreamSubscription<QuerySnapshot>? _messagesSnapshotSubscription;
   // Visibility cutoff from memberJoinedAt — set when the first chat event arrives.
   DateTime? _visibleAfter;
   bool _streamsInitialized = false;
   static const int _initialPageSize = 40;
   static const int _pageSize = 30;
-  final List<ChatMessage> _olderMessages = [];
   final List<ChatMessageViewModel> _latestMessageVMs = [];
-  final Set<String> _olderMessageIds = {};
   DocumentSnapshot? _lastStreamDoc;
-  DocumentSnapshot? _lastLoadedDoc;
-  bool _isLoadingOlder = false;
-  bool _hasMoreOlder = true;
+  final ChatDetailsController<DocumentSnapshot> _detailsController =
+      ChatDetailsController<DocumentSnapshot>();
   bool _showScrollToBottom = false;
   bool _isTyping = false;
   Timer? _typingTimer;
@@ -98,7 +86,7 @@ class _GameChatDetailsWidgetState extends State<GameChatDetailsWidget>
   String? _gameIdForOwnerLookup;
   Future<GamesRecord?>? _gameOwnerFuture;
   bool _didMarkSeen = false;
-  final List<_PendingUpload> _pendingUploads = [];
+  final List<PendingUploadItem> _pendingUploads = [];
 
   String? get _currentUserId {
     final uid = currentUserUid;
@@ -147,6 +135,8 @@ class _GameChatDetailsWidgetState extends State<GameChatDetailsWidget>
     }
     _typingTimer?.cancel();
     _chatUiSubscription?.cancel();
+    _messagesSnapshotSubscription?.cancel();
+    _detailsController.reset();
     _messageController.dispose();
     _messageFocusNode.dispose();
     _scrollController.dispose();
@@ -204,73 +194,35 @@ class _GameChatDetailsWidgetState extends State<GameChatDetailsWidget>
     return typingUserIds;
   }
 
+  String? _typingTextForChat(Chat chat) {
+    final typingUserIds = _getTypingUserNames(chat);
+    if (typingUserIds.isEmpty) {
+      return null;
+    }
+
+    final profileProvider = context.read<ProfileProvider>();
+    final names = typingUserIds.map((uid) {
+      final profile = profileProvider.getCachedProfile(uid);
+      return profile?.displayName ?? 'Someone';
+    }).toList();
+
+    if (names.length == 1) {
+      return '${names[0]} is typing...';
+    }
+    if (names.length == 2) {
+      return '${names[0]} and ${names[1]} are typing...';
+    }
+    return 'Several people are typing...';
+  }
+
   void _showImageFullscreen(String imageUrl) {
     showAppDialog(
       context: context,
       barrierColor: Colors.black87,
-      builder: (BuildContext context) {
-        return Dialog(
-          backgroundColor: Colors.transparent,
-          insetPadding: EdgeInsets.all(10),
-          child: Stack(
-            children: [
-              Center(
-                child: InteractiveViewer(
-                  minScale: 0.5,
-                  maxScale: 4.0,
-                  child: Image.network(
-                    imageUrl,
-                    fit: BoxFit.contain,
-                    loadingBuilder: (context, child, loadingProgress) {
-                      if (loadingProgress == null) return child;
-                      return Center(
-                        child: CircularProgressIndicator(
-                          value: loadingProgress.expectedTotalBytes != null
-                              ? loadingProgress.cumulativeBytesLoaded /
-                                  loadingProgress.expectedTotalBytes!
-                              : null,
-                          color: Colors.white,
-                        ),
-                      );
-                    },
-                    errorBuilder: (context, error, stackTrace) {
-                      return Center(
-                        child: Column(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            AppIcon(
-                              icon: AppPhosphorIcons.error,
-                              color: AppColors.textPrimary,
-                              size: AppIconSize.xxl,
-                            ),
-                            SizedBox(height: 16),
-                            Text(
-                              'Failed to load image',
-                              style: TextStyle(color: AppColors.textPrimary),
-                            ),
-                          ],
-                        ),
-                      );
-                    },
-                  ),
-                ),
-              ),
-              Positioned(
-                top: 10,
-                right: 10,
-                child: IconButton(
-                  icon: AppIcon(
-                      icon: AppPhosphorIcons.close,
-                      color: AppColors.textPrimary,
-                      size: AppIconSize.md),
-                  tooltip: 'Close image',
-                  onPressed: () => Navigator.of(context).pop(),
-                ),
-              ),
-            ],
-          ),
-        );
-      },
+      builder: (BuildContext dialogContext) => ChatImageViewer(
+        imageUrl: imageUrl,
+        onClose: () => Navigator.of(dialogContext).pop(),
+      ),
     );
   }
 
@@ -300,95 +252,15 @@ class _GameChatDetailsWidgetState extends State<GameChatDetailsWidget>
     final currentUserId = _currentUserId;
     if (currentUserId == null) return;
 
-    final quickReactions = ['👍', '❤️', '😂', '😮', '😢', '🙏'];
-
     showAppBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
-      builder: (BuildContext context) {
-        return Container(
-          decoration: BoxDecoration(
-            color: AppColors.navyDark,
-            borderRadius: BorderRadius.only(
-              topLeft: Radius.circular(AppBorderRadius.xl),
-              topRight: Radius.circular(AppBorderRadius.xl),
-            ),
-          ),
-          padding: EdgeInsets.all(AppSpacing.lg),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Container(
-                width: 40,
-                height: 4,
-                decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.3),
-                  borderRadius: BorderRadius.circular(AppBorderRadius.xxs),
-                ),
-              ),
-              SizedBox(height: AppSpacing.md),
-              Text(
-                'React to message',
-                style: AppTypography.titleMedium,
-              ),
-              SizedBox(height: AppSpacing.lg),
-              Wrap(
-                spacing: AppSpacing.md,
-                runSpacing: AppSpacing.md,
-                children: quickReactions.map((emoji) {
-                  final hasReacted =
-                      message.reactions[emoji]?.contains(currentUserId) ??
-                          false;
-
-                  return GestureDetector(
-                    onTap: () async {
-                      Navigator.pop(context);
-                      if (hasReacted) {
-                        await context.read<ChatProvider>().removeReaction(
-                              chatId: widget.chatId,
-                              messageId: message.id,
-                              emoji: emoji,
-                              uid: currentUserId,
-                            );
-                      } else {
-                        await context.read<ChatProvider>().addReaction(
-                              chatId: widget.chatId,
-                              messageId: message.id,
-                              emoji: emoji,
-                              uid: currentUserId,
-                            );
-                      }
-                    },
-                    child: Container(
-                      width: 60,
-                      height: 60,
-                      decoration: BoxDecoration(
-                        color: hasReacted
-                            ? AppColors.navyDark.withValues(alpha: 0.3)
-                            : AppColors.navy,
-                        borderRadius: BorderRadius.circular(AppBorderRadius.md),
-                        border: hasReacted
-                            ? Border.all(
-                                color: AppColors.navyDark,
-                                width: 2,
-                              )
-                            : null,
-                      ),
-                      child: Center(
-                        child: Text(
-                          emoji,
-                          style: TextStyle(fontSize: 32),
-                        ),
-                      ),
-                    ),
-                  );
-                }).toList(),
-              ),
-              SizedBox(height: AppSpacing.md),
-            ],
-          ),
-        );
-      },
+      builder: (BuildContext context) => ChatReactionPicker(
+        message: message,
+        currentUserId: currentUserId,
+        onReactionToggled: (emoji, hasReacted) =>
+            _handleReaction(message, emoji, hasReacted),
+      ),
     );
   }
 
@@ -431,6 +303,11 @@ class _GameChatDetailsWidgetState extends State<GameChatDetailsWidget>
 
   void _updateChatUiState(Chat? chat) {
     if (chat == null) {
+      _messagesSnapshotSubscription?.cancel();
+      _messagesSnapshotSubscription = null;
+      _detailsController.reset();
+      _lastStreamDoc = null;
+      _streamsInitialized = false;
       updateState(this, () {
         _chatLoaded = true;
         _chatError = null;
@@ -451,12 +328,23 @@ class _GameChatDetailsWidgetState extends State<GameChatDetailsWidget>
       final currentUserId = _currentUserId;
       _visibleAfter =
           currentUserId != null ? chat.memberJoinedAt[currentUserId] : null;
+      _detailsController.initializeSession(
+        chatId: widget.chatId,
+        pageSize: _pageSize,
+        visibleAfterCutoff: _visibleAfter,
+      );
       final chatProvider = context.read<ChatProvider>();
       final profileProvider = context.read<ProfileProvider>();
       _messagesStream = chatProvider.messagesSnapshotStream(
         chatId: widget.chatId,
         limit: _initialPageSize,
         visibleAfter: _visibleAfter,
+      );
+      _messagesSnapshotSubscription?.cancel();
+      _messagesSnapshotSubscription = _messagesStream!.listen(
+        (snapshot) {
+          _lastStreamDoc = snapshot.docs.isNotEmpty ? snapshot.docs.last : null;
+        },
       );
       _messageViewModelsStream = chatProvider.gameChatMessageViewModelsStream(
         chatId: widget.chatId,
@@ -715,41 +603,15 @@ class _GameChatDetailsWidgetState extends State<GameChatDetailsWidget>
         borderRadius:
             BorderRadius.vertical(top: Radius.circular(AppBorderRadius.lg)),
       ),
-      builder: (sheetCtx) => SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(vertical: 8),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              ListTile(
-                leading: AppIcon(
-                    icon: AppPhosphorIcons.imageGallery,
-                    color: AppColors.textPrimary,
-                    size: AppIconSize.md),
-                title: Text('Photo Library',
-                    style: AppTypography.bodyMedium
-                        .copyWith(color: AppColors.textPrimary)),
-                onTap: () {
-                  Navigator.of(sheetCtx).pop();
-                  _pickAndSendImage(ImageSource.gallery);
-                },
-              ),
-              ListTile(
-                leading: AppIcon(
-                    icon: AppPhosphorIcons.camera,
-                    color: AppColors.textPrimary,
-                    size: AppIconSize.md),
-                title: Text('Take Photo',
-                    style: AppTypography.bodyMedium
-                        .copyWith(color: AppColors.textPrimary)),
-                onTap: () {
-                  Navigator.of(sheetCtx).pop();
-                  _pickAndSendImage(ImageSource.camera);
-                },
-              ),
-            ],
-          ),
-        ),
+      builder: (sheetCtx) => ChatImageSourceSheet(
+        onGallerySelected: () {
+          Navigator.of(sheetCtx).pop();
+          _pickAndSendImage(ImageSource.gallery);
+        },
+        onCameraSelected: () {
+          Navigator.of(sheetCtx).pop();
+          _pickAndSendImage(ImageSource.camera);
+        },
       ),
     );
   }
@@ -782,7 +644,7 @@ class _GameChatDetailsWidgetState extends State<GameChatDetailsWidget>
     final uploadId = DateTime.now().millisecondsSinceEpoch.toString();
     if (!mounted) return;
     updateState(this, () {
-      _pendingUploads.add(_PendingUpload(id: uploadId, previewBytes: bytes));
+      _pendingUploads.add(PendingUploadItem(id: uploadId, previewBytes: bytes));
     });
 
     try {
@@ -823,11 +685,13 @@ class _GameChatDetailsWidgetState extends State<GameChatDetailsWidget>
           );
 
       if (!mounted) return;
-      updateState(this, () => _pendingUploads.removeWhere((u) => u.id == uploadId));
+      updateState(
+          this, () => _pendingUploads.removeWhere((u) => u.id == uploadId));
     } catch (error, stackTrace) {
       AppLog.d('📷 Image upload error: $error\n$stackTrace');
       if (!mounted) return;
-      updateState(this, () => _pendingUploads.removeWhere((u) => u.id == uploadId));
+      updateState(
+          this, () => _pendingUploads.removeWhere((u) => u.id == uploadId));
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
@@ -842,45 +706,6 @@ class _GameChatDetailsWidgetState extends State<GameChatDetailsWidget>
         ),
       );
     }
-  }
-
-  Widget _buildPendingUploadBubble(_PendingUpload upload) {
-    return Padding(
-      padding: EdgeInsets.only(
-        right: AppSpacing.md,
-        left: 60,
-        bottom: AppSpacing.xs,
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.end,
-        children: [
-          ClipRRect(
-            borderRadius: BorderRadius.circular(AppBorderRadius.lg),
-            child: Stack(
-              alignment: Alignment.center,
-              children: [
-                Image.memory(
-                  upload.previewBytes,
-                  width: 200,
-                  height: 200,
-                  fit: BoxFit.cover,
-                ),
-                Container(
-                  width: 200,
-                  height: 200,
-                  color: Colors.black.withValues(alpha: 0.45),
-                ),
-                CircularProgressIndicator(
-                  value: upload.progress > 0 ? upload.progress : null,
-                  color: Colors.white,
-                  strokeWidth: 3,
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
   }
 
   Future<void> _sendMessage() async {
@@ -930,82 +755,59 @@ class _GameChatDetailsWidgetState extends State<GameChatDetailsWidget>
   }
 
   Future<void> _loadOlderMessages() async {
-    if (_isLoadingOlder || !_hasMoreOlder) {
-      return;
-    }
-    updateState(this, () {
-      _isLoadingOlder = true;
-    });
-    try {
-      final page = await context.read<ChatProvider>().messagesPage(
-            chatId: widget.chatId,
-            limit: _pageSize,
-            startAfter: _lastLoadedDoc ?? _lastStreamDoc,
-            visibleAfter: _visibleAfter,
-          );
-      if (page.messages.isEmpty) {
-        _hasMoreOlder = false;
-      } else {
-        for (final message in page.messages) {
-          if (_olderMessageIds.add(message.id)) {
-            _olderMessages.add(message);
-          }
-        }
-        _lastLoadedDoc = page.lastDoc;
-        if (page.messages.length < _pageSize) {
-          _hasMoreOlder = false;
-        }
-      }
-    } catch (error, stackTrace) {
-      if (!mounted) return;
-      context
-          .read<ChatProvider>()
-          .logError('loadOlderMessages failed', error, stackTrace);
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Unable to load older messages.'),
-          ),
+    final chatProvider = context.read<ChatProvider>();
+    final profileProvider = context.read<ProfileProvider>();
+    final statusFuture = _detailsController.loadOlderMessages(
+      startAfterCursor: _lastStreamDoc,
+      fetchPage: ({
+        required String chatId,
+        required int pageSize,
+        required DateTime? visibleAfter,
+        required DocumentSnapshot? startAfter,
+      }) async {
+        final page = await chatProvider.messagesPage(
+          chatId: chatId,
+          limit: pageSize,
+          startAfter: startAfter,
+          visibleAfter: visibleAfter,
         );
-      }
-    } finally {
-      if (mounted) {
-        updateState(this, () {
-          _isLoadingOlder = false;
-        });
-      }
-    }
-  }
+        final pageVMs = page.messages.map((message) {
+          final profile = profileProvider.getCachedProfile(message.senderId);
+          return ChatMessageViewModel(
+            message: message,
+            senderDisplayName: profile?.displayName ?? '',
+            senderPhotoUrl: profile?.photoUrl ?? '',
+          );
+        }).toList();
+        return OlderPageData<DocumentSnapshot>(
+          messages: pageVMs,
+          hasMore: page.messages.length >= pageSize,
+          lastCursor: page.lastDoc,
+        );
+      },
+    );
+    if (!mounted) return;
+    updateState(this, () {});
 
-  // AUDIT #5 FIX: Removed old _mergeMessages, using _mergeMessageVMs instead
-  List<ChatMessageViewModel> _mergeMessageVMs(
-      List<ChatMessageViewModel> latestVMs) {
-    final merged = <ChatMessageViewModel>[];
-    final ids = <String>{};
+    final status = await statusFuture;
+    if (!mounted) return;
 
-    // Add latest view models first
-    for (final vm in latestVMs) {
-      if (ids.add(vm.id)) {
-        merged.add(vm);
-      }
-    }
-
-    // Add older messages as view models (profiles already resolved on first fetch)
-    for (final message in _olderMessages) {
-      if (ids.add(message.id)) {
-        // For older messages, we need to create VMs with profile lookup
-        // ProfileProvider cache should have these already
-        final profile =
-            context.read<ProfileProvider>().getCachedProfile(message.senderId);
-        merged.add(ChatMessageViewModel(
-          message: message,
-          senderDisplayName: profile?.displayName ?? '',
-          senderPhotoUrl: profile?.photoUrl ?? '',
-        ));
-      }
+    if (status.isError) {
+      chatProvider.logError(
+        'loadOlderMessages failed',
+        status.error ?? Exception(status.errorMessage ?? 'Unknown error'),
+        status.stackTrace ?? StackTrace.current,
+      );
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Unable to load older messages.'),
+        ),
+      );
     }
 
-    return merged;
+    if (mounted) {
+      updateState(this, () {});
+    }
   }
 
   @override
@@ -1065,133 +867,18 @@ class _GameChatDetailsWidgetState extends State<GameChatDetailsWidget>
                   children: [
                     Column(
                       children: [
-                        if (_bannerText.isNotEmpty || _isArchived)
-                          Container(
-                            width: double.infinity,
-                            margin: EdgeInsets.fromLTRB(
-                              AppSpacing.md,
-                              AppSpacing.md,
-                              AppSpacing.md,
-                              0,
-                            ),
-                            padding: EdgeInsets.all(AppSpacing.md),
-                            decoration: BoxDecoration(
-                              color: AppColors.navyDark,
-                              borderRadius:
-                                  BorderRadius.circular(AppBorderRadius.md),
-                              border: Border.all(
-                                color:
-                                    AppColors.navyDark.withValues(alpha: 0.2),
-                              ),
-                            ),
-                            child: Row(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                AppIcon(
-                                  icon: AppPhosphorIcons.info,
-                                  color: AppColors.textSecondary,
-                                  size: AppIconSize.button,
-                                ),
-                                SizedBox(width: AppSpacing.sm),
-                                Expanded(
-                                  child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        _bannerText.isNotEmpty
-                                            ? _bannerText
-                                            : 'This chat is archived.',
-                                        style: AppTypography.bodyMedium,
-                                      ),
-                                      if (_isArchived)
-                                        Padding(
-                                          padding: EdgeInsets.only(
-                                            top: AppSpacing.xs,
-                                          ),
-                                          child: Text(
-                                            'Messages are disabled.',
-                                            style: AppTypography.labelMedium,
-                                          ),
-                                        ),
-                                    ],
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        // Typing Indicator (AUDIT #5 FIX: removed nested FutureBuilder)
-                        ClipRect(
-                          child: AnimatedSize(
-                            duration: const Duration(milliseconds: 150),
-                            curve: Curves.easeOut,
-                            alignment: Alignment.topCenter,
-                            child: StreamBuilder<Chat?>(
-                              stream: _chatStream,
-                              builder: (context, chatSnapshot) {
-                                if (!chatSnapshot.hasData) {
-                                  return const SizedBox(height: 0);
-                                }
-
-                                final typingUserIds =
-                                    _getTypingUserNames(chatSnapshot.data!);
-                                if (typingUserIds.isEmpty) {
-                                  return const SizedBox(height: 0);
-                                }
-
-                                // AUDIT #5 FIX: Use synchronous cache lookup instead of Future
-                                // ProfileProvider's cache should already have these profiles
-                                // from the main message stream
-                                final profileProvider =
-                                    context.read<ProfileProvider>();
-                                final names = typingUserIds.map((uid) {
-                                  final profile =
-                                      profileProvider.getCachedProfile(uid);
-                                  return profile?.displayName ?? 'Someone';
-                                }).toList();
-
-                                String typingText;
-                                if (names.length == 1) {
-                                  typingText = '${names[0]} is typing...';
-                                } else if (names.length == 2) {
-                                  typingText =
-                                      '${names[0]} and ${names[1]} are typing...';
-                                } else {
-                                  typingText = 'Several people are typing...';
-                                }
-
-                                return Container(
-                                  padding: EdgeInsets.symmetric(
-                                    horizontal: AppSpacing.md,
-                                    vertical: AppSpacing.xs,
-                                  ),
-                                  child: Row(
-                                    children: [
-                                      SizedBox(
-                                        width: 20,
-                                        height: 20,
-                                        child: CircularProgressIndicator(
-                                          strokeWidth: 2,
-                                          valueColor:
-                                              AlwaysStoppedAnimation<Color>(
-                                            AppColors.glassTextSecondary,
-                                          ),
-                                        ),
-                                      ),
-                                      SizedBox(width: AppSpacing.sm),
-                                      Text(
-                                        typingText,
-                                        style: AppTypography.bodySmall.copyWith(
-                                          color: AppColors.glassTextSecondary,
-                                          fontStyle: FontStyle.italic,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                );
-                              },
-                            ),
-                          ),
+                        ChatInfoBanner(
+                          bannerText: _bannerText,
+                          isArchived: _isArchived,
+                        ),
+                        StreamBuilder<Chat?>(
+                          stream: _chatStream,
+                          builder: (context, chatSnapshot) {
+                            final typingText = chatSnapshot.hasData
+                                ? _typingTextForChat(chatSnapshot.data!)
+                                : null;
+                            return ChatTypingIndicator(typingText: typingText);
+                          },
                         ),
                         Expanded(
                           child: _chatError != null
@@ -1242,7 +929,9 @@ class _GameChatDetailsWidgetState extends State<GameChatDetailsWidget>
 
                                             final hasCachedMessages =
                                                 _latestMessageVMs.isNotEmpty ||
-                                                    _olderMessages.isNotEmpty;
+                                                    _detailsController
+                                                        .olderMessages
+                                                        .isNotEmpty;
 
                                             if (!snapshot.hasData) {
                                               if (kDebugMode) {
@@ -1286,24 +975,26 @@ class _GameChatDetailsWidgetState extends State<GameChatDetailsWidget>
                                                 ..addAll(latestVMs);
                                             }
 
-                                            // Merge with older messages
-                                            final messageVMs = latestVMs
-                                                    .isNotEmpty
-                                                ? _mergeMessageVMs(latestVMs)
-                                                : _latestMessageVMs;
+                                            final profileProvider =
+                                                context.read<ProfileProvider>();
+                                            final baseLatest =
+                                                latestVMs.isNotEmpty
+                                                    ? latestVMs
+                                                    : _latestMessageVMs;
+                                            final messageVMs =
+                                                _detailsController
+                                                    .mergeMessageVMs(
+                                              latestVMs: baseLatest,
+                                              resolveDisplayName: (uid) {
+                                                final profile = profileProvider
+                                                    .getCachedProfile(uid);
+                                                return profile?.displayName;
+                                              },
+                                            );
 
                                             if (kDebugMode) {
                                               AppLog.d(
                                                   '📨 UI: After merging: ${messageVMs.length} message VMs');
-                                            }
-
-                                            final itemCount =
-                                                messageVMs.length +
-                                                    (_hasMoreOlder ? 1 : 0);
-
-                                            if (kDebugMode) {
-                                              AppLog.d(
-                                                  '📨 UI: Rendering ListView with $itemCount items');
                                             }
 
                                             if (messageVMs.isNotEmpty &&
@@ -1319,226 +1010,45 @@ class _GameChatDetailsWidgetState extends State<GameChatDetailsWidget>
                                             }
 
                                             final chat = _chatUi!;
-                                            final totalMembers =
-                                                chat.memberIds.length;
-                                            final isGroupChat =
-                                                chat.type == 'game';
-
-                                            return ListView.builder(
-                                              controller: _scrollController,
-                                              padding: EdgeInsets.symmetric(
-                                                vertical: AppSpacing.md,
-                                              ),
-                                              reverse: true,
-                                              itemCount: itemCount,
-                                              itemBuilder: (context, index) {
-                                                if (_hasMoreOlder &&
-                                                    index ==
-                                                        messageVMs.length) {
-                                                  return Padding(
-                                                    padding:
-                                                        EdgeInsets.symmetric(
-                                                      vertical: AppSpacing.sm,
-                                                      horizontal: AppSpacing.md,
-                                                    ),
-                                                    child: Center(
-                                                      child: AppButtonEnhanced(
-                                                        text:
-                                                            'Load earlier messages',
-                                                        variant:
-                                                            AppButtonVariant
-                                                                .ghost,
-                                                        size:
-                                                            AppButtonSize.small,
-                                                        isLoading:
-                                                            _isLoadingOlder,
-                                                        onPressed:
-                                                            _loadOlderMessages,
-                                                      ),
-                                                    ),
-                                                  );
-                                                }
-
-                                                final vm = messageVMs[index];
-                                                final message = vm.message;
-                                                final isMe = message.senderId ==
-                                                    _currentUserId;
-
-                                                // Helper method to check date divider
-                                                final showDateDivider = () {
-                                                  if (index >=
-                                                      messageVMs.length - 1) {
-                                                    return true;
-                                                  }
-                                                  final currentMsg =
-                                                      messageVMs[index].message;
-                                                  final nextMsg =
-                                                      messageVMs[index + 1]
-                                                          .message;
-                                                  if (currentMsg.createdAt ==
-                                                          null ||
-                                                      nextMsg.createdAt ==
-                                                          null) {
-                                                    return false;
-                                                  }
-                                                  final currentDate = DateTime(
-                                                    currentMsg.createdAt!.year,
-                                                    currentMsg.createdAt!.month,
-                                                    currentMsg.createdAt!.day,
-                                                  );
-                                                  final nextDate = DateTime(
-                                                    nextMsg.createdAt!.year,
-                                                    nextMsg.createdAt!.month,
-                                                    nextMsg.createdAt!.day,
-                                                  );
-                                                  return currentDate !=
-                                                      nextDate;
-                                                }();
-
-                                                // Helper method to check first in group
-                                                final isFirstInGroup = () {
-                                                  if (index >=
-                                                      messageVMs.length - 1) {
-                                                    return true;
-                                                  }
-                                                  final currentMsg =
-                                                      messageVMs[index].message;
-                                                  final nextMsg =
-                                                      messageVMs[index + 1]
-                                                          .message;
-                                                  if (currentMsg.senderId !=
-                                                      nextMsg.senderId) {
-                                                    return true;
-                                                  }
-                                                  if (currentMsg.createdAt !=
-                                                          null &&
-                                                      nextMsg.createdAt !=
-                                                          null) {
-                                                    final timeDiff = currentMsg
-                                                        .createdAt!
-                                                        .difference(
-                                                            nextMsg.createdAt!);
-                                                    if (timeDiff.inMinutes >
-                                                        2) {
-                                                      return true;
-                                                    }
-                                                  }
-                                                  return false;
-                                                }();
-
-                                                // Helper method to check last in group
-                                                final isLastInGroup = () {
-                                                  if (index == 0) {
-                                                    return true;
-                                                  }
-                                                  final currentMsg =
-                                                      messageVMs[index].message;
-                                                  final previousMsg =
-                                                      messageVMs[index - 1]
-                                                          .message;
-                                                  if (currentMsg.senderId !=
-                                                      previousMsg.senderId) {
-                                                    return true;
-                                                  }
-                                                  if (currentMsg.createdAt !=
-                                                          null &&
-                                                      previousMsg.createdAt !=
-                                                          null) {
-                                                    final timeDiff = previousMsg
-                                                        .createdAt!
-                                                        .difference(currentMsg
-                                                            .createdAt!);
-                                                    if (timeDiff.inMinutes >
-                                                        2) {
-                                                      return true;
-                                                    }
-                                                  }
-                                                  return false;
-                                                }();
-
-                                                // Use resolved profile data from view model
-                                                final senderName = isMe
-                                                    ? null
-                                                    : vm.senderDisplayName
-                                                            .trim()
-                                                            .isNotEmpty
-                                                        ? vm.senderDisplayName
-                                                        : 'Golfer';
-                                                final senderPhotoUrl = isMe
-                                                    ? null
-                                                    : vm.senderPhotoUrl;
-
-                                                return Column(
-                                                  children: [
-                                                    ChatMessageBubble(
-                                                      isSentByCurrentUser: isMe,
-                                                      messageText: message.text,
-                                                      imageUrl:
-                                                          message.imageUrl,
-                                                      imageWidth:
-                                                          message.imageWidth,
-                                                      imageHeight:
-                                                          message.imageHeight,
-                                                      timestamp:
-                                                          message.createdAt,
-                                                      isFirstInGroup:
-                                                          isFirstInGroup,
-                                                      isLastInGroup:
-                                                          isLastInGroup,
-                                                      senderId:
-                                                          message.senderId,
-                                                      senderName: senderName,
-                                                      senderPhotoUrl:
-                                                          senderPhotoUrl,
-                                                      isGroupChat: isGroupChat,
-                                                      message: message,
-                                                      totalMembers:
-                                                          totalMembers,
-                                                      currentUserId:
-                                                          _currentUserId,
-                                                      onLongPress: () =>
-                                                          _showReactionPicker(
-                                                              message),
-                                                      onReplySwipe: () {
-                                                        updateState(this, () {
-                                                          _replyToMessage =
-                                                              message;
-                                                        });
-                                                        _messageFocusNode
-                                                            .requestFocus();
-                                                      },
-                                                      onImageTap: message
-                                                              .imageUrl
-                                                              .isNotEmpty
-                                                          ? () =>
-                                                              _showImageFullscreen(
-                                                                  message
-                                                                      .imageUrl)
-                                                          : null,
-                                                      onReactionTap:
-                                                          (emoji, hasReacted) =>
-                                                              _handleReaction(
-                                                                  message,
-                                                                  emoji,
-                                                                  hasReacted),
-                                                    ),
-                                                    if (showDateDivider &&
-                                                        message.createdAt !=
-                                                            null)
-                                                      ChatDateDivider(
-                                                        date:
-                                                            message.createdAt!,
-                                                      ),
-                                                  ],
-                                                );
+                                            return ChatMessageList(
+                                              scrollController:
+                                                  _scrollController,
+                                              messageVMs: messageVMs,
+                                              hasMoreOlder: _detailsController
+                                                  .hasMoreOlder,
+                                              isLoadingOlder: _detailsController
+                                                  .isLoadingOlder,
+                                              currentUserId: _currentUserId,
+                                              isGroupChat: chat.type == 'game',
+                                              totalMembers:
+                                                  chat.memberIds.length,
+                                              onLoadOlderMessages:
+                                                  _loadOlderMessages,
+                                              onMessageLongPress:
+                                                  _showReactionPicker,
+                                              onReplySwipe: (message) {
+                                                updateState(this, () {
+                                                  _replyToMessage = message;
+                                                });
+                                                _messageFocusNode
+                                                    .requestFocus();
                                               },
+                                              onImageTap: _showImageFullscreen,
+                                              onReactionTap: _handleReaction,
+                                              showDateDivider:
+                                                  _detailsController
+                                                      .showDateDivider,
+                                              isFirstInGroup: _detailsController
+                                                  .isFirstInGroup,
+                                              isLastInGroup: _detailsController
+                                                  .isLastInGroup,
                                             );
                                           },
                                         ),
                         ),
-                        // Pending image upload bubbles
-                        if (_pendingUploads.isNotEmpty)
-                          ..._pendingUploads.map(_buildPendingUploadBubble),
+                        ChatPendingUploadStack(
+                          pendingUploads: _pendingUploads,
+                        ),
                         ChatInputBar(
                           messageController: _messageController,
                           messageFocusNode: _messageFocusNode,
@@ -1562,42 +1072,7 @@ class _GameChatDetailsWidgetState extends State<GameChatDetailsWidget>
                       Positioned(
                         bottom: 90,
                         right: 16,
-                        child: Semantics(
-                          button: true,
-                          label: 'Scroll to bottom',
-                          child: Material(
-                            elevation: 4,
-                            borderRadius:
-                                BorderRadius.circular(AppBorderRadius.lg),
-                            color: Colors.transparent,
-                            child: Container(
-                              decoration: BoxDecoration(
-                                gradient: LinearGradient(
-                                  colors: [
-                                    AppColors.navyDark,
-                                    AppColors.navyDark.withValues(alpha: 0.8),
-                                  ],
-                                ),
-                                borderRadius:
-                                    BorderRadius.circular(AppBorderRadius.lg),
-                                boxShadow: [AppElevation.md],
-                              ),
-                              child: InkWell(
-                                onTap: _scrollToBottom,
-                                borderRadius:
-                                    BorderRadius.circular(AppBorderRadius.lg),
-                                child: Padding(
-                                  padding: EdgeInsets.all(12),
-                                  child: AppIcon(
-                                    icon: AppPhosphorIcons.arrowDown,
-                                    color: AppColors.textPrimary,
-                                    size: AppIconSize.md,
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ),
-                        ),
+                        child: ChatScrollFab(onPressed: _scrollToBottom),
                       ),
                   ],
                 ),
