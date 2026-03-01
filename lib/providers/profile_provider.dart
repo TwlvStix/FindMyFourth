@@ -15,8 +15,8 @@ import '/core/utils/app_log.dart';
 /// - Debounced notifyListeners for performance
 ///
 /// Usage:
-/// - Access via Provider.of<ProfileProvider>(context)
-/// - Or use Consumer<ProfileProvider> for reactive updates
+/// - Access via `Provider.of<ProfileProvider>(context)`
+/// - Or use `Consumer<ProfileProvider>` for reactive updates
 class ProfileProvider extends ChangeNotifier {
   ProfileProvider({ProfileService? service})
       : _service = service ?? ProfileService();
@@ -172,7 +172,7 @@ class ProfileProvider extends ChangeNotifier {
 
   /// Batch get multiple user profiles with caching
   ///
-  /// Returns Map<String, UsersRecord> where key is userId
+  /// Returns `Map<String, UsersRecord>` where key is userId
   /// Uses cache when possible, fetches missing profiles
   Future<Map<String, UsersRecord>> batchGetProfiles(
       List<String> userIds) async {

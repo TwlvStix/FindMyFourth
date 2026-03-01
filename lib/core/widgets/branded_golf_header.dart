@@ -235,10 +235,10 @@ class BrandedGolfHeader extends StatelessWidget {
   final String courseName;
 
   const BrandedGolfHeader({
-    Key? key,
+    super.key,
     required this.username,
     required this.courseName,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

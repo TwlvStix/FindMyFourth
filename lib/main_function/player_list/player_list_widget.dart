@@ -1374,8 +1374,9 @@ class _PlayerListWidgetState extends State<PlayerListWidget> {
                                                         final isGuest = slotData[
                                                                 'isGuest'] ==
                                                             true;
-                                                        if (isGuest)
+                                                        if (isGuest) {
                                                           continue; // Guests are always allowed
+                                                        }
 
                                                         final playerGender =
                                                             slotData['gender']

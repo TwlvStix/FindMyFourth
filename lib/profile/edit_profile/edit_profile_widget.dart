@@ -825,11 +825,11 @@ class _EditProfileWidgetState extends State<EditProfileWidget>
                             size: AppIconSize.button,
                           ),
                         ),
-                        countBuilder: (count) => Container(
+                        countBuilder: (value) => Container(
                           constraints: BoxConstraints(minWidth: 56),
                           alignment: Alignment.center,
                           child: Text(
-                            formatHandicap(count),
+                            formatHandicap(value),
                             maxLines: 1,
                             softWrap: false,
                             overflow: TextOverflow.clip,
@@ -843,8 +843,8 @@ class _EditProfileWidgetState extends State<EditProfileWidget>
                         ),
                         count: handicapValue ??
                             valueOrDefault(currentUserDocument?.handicap, 0),
-                        updateCount: (count) =>
-                            updateState(this, () => handicapValue = count),
+                        updateCount: (value) =>
+                            updateState(this, () => handicapValue = value),
                         stepSize: 1,
                         minimum: -5,
                         maximum: 54,

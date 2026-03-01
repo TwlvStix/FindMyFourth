@@ -5,7 +5,7 @@ import 'app_icon.dart';
 
 class AppIconButton extends StatefulWidget {
   const AppIconButton({
-    Key? key,
+    super.key,
     required this.icon,
     this.borderColor,
     this.borderRadius,
@@ -22,7 +22,7 @@ class AppIconButton extends StatefulWidget {
     this.showLoadingIndicator = false,
     this.focusBorderSide,
     this.focusBorderRadius,
-  }) : super(key: key);
+  });
 
   final Widget icon;
   final double? borderRadius;
@@ -184,7 +184,7 @@ class _AppIconButtonState extends State<AppIconButton> {
           ignoring: (widget.showLoadingIndicator && loading),
           child: IconButton(
             icon: (widget.showLoadingIndicator && loading)
-                ? Container(
+                ? SizedBox(
                     width: iconSize,
                     height: iconSize,
                     child: CircularProgressIndicator(

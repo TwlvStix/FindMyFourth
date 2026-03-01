@@ -32,7 +32,7 @@ class GameService {
   /// - styleFilter: filter by game style
   /// - dateFilter: filter by games on or after this date
   ///
-  /// Returns Stream<List<GamesRecord>> for reactive updates
+  /// Returns `Stream<List<GamesRecord>>` for reactive updates
   Stream<List<GamesRecord>> queryAvailableGames({
     String? courseFilter,
     String? styleFilter,
@@ -152,7 +152,7 @@ class GameService {
 
   /// Stream a single game by ID for reactive updates
   ///
-  /// Returns Stream<GamesRecord?> that emits null if game doesn't exist
+  /// Returns `Stream<GamesRecord?>` that emits null if game doesn't exist
   Stream<GamesRecord?> watchGameById(String gameId) {
     try {
       return _firestore

@@ -13,36 +13,30 @@ class AppException implements Exception {
 
 /// Game operation failures
 class GameOperationException extends AppException {
-  GameOperationException(String message, {String? code, dynamic cause})
-      : super(message, code: code, cause: cause);
+  GameOperationException(super.message, {super.code, super.cause});
 }
 
 /// Friend/social operation failures
 class FriendOperationException extends AppException {
-  FriendOperationException(String message, {String? code, dynamic cause})
-      : super(message, code: code, cause: cause);
+  FriendOperationException(super.message, {super.code, super.cause});
 }
 
 /// Chat operation failures
 class ChatOperationException extends AppException {
-  ChatOperationException(String message, {String? code, dynamic cause})
-      : super(message, code: code, cause: cause);
+  ChatOperationException(super.message, {super.code, super.cause});
 }
 
 /// Permission/authorization failures
 class PermissionException extends AppException {
-  PermissionException(String message, {String? code, dynamic cause})
-      : super(message, code: code, cause: cause);
+  PermissionException(super.message, {super.code, super.cause});
 }
 
 /// Network/connectivity failures
 class NetworkException extends AppException {
-  NetworkException(String message, {String? code, dynamic cause})
-      : super(message, code: code, cause: cause);
+  NetworkException(super.message, {super.code, super.cause});
 }
 
 /// Join request operation failures
 class JoinRequestException extends AppException {
-  JoinRequestException(String message, {String? code, dynamic cause})
-      : super(message, code: code, cause: cause);
+  JoinRequestException(super.message, {super.code, super.cause});
 }

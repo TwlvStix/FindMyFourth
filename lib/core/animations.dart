@@ -15,16 +15,16 @@ class AnimationInfo {
     this.applyInitialState = true,
   });
   final AnimationTrigger trigger;
-  final List<Effect> Function()? effectsBuilder;
+  final List<Effect<dynamic>> Function()? effectsBuilder;
   final bool applyInitialState;
   final bool loop;
   final bool reverse;
   late AnimationController controller;
 
-  List<Effect>? _effects;
-  List<Effect> get effects => _effects ??= effectsBuilder!();
+  List<Effect<dynamic>>? _effects;
+  List<Effect<dynamic>> get effects => _effects ??= effectsBuilder!();
 
-  void maybeUpdateEffects(List<Effect>? updatedEffects) {
+  void maybeUpdateEffects(List<Effect<dynamic>>? updatedEffects) {
     if (updatedEffects != null) {
       _effects = updatedEffects;
     }
@@ -37,13 +37,15 @@ void createAnimation(AnimationInfo animation, TickerProvider vsync) {
 }
 
 void setupAnimations(Iterable<AnimationInfo> animations, TickerProvider vsync) {
-  animations.forEach((animation) => createAnimation(animation, vsync));
+  for (var animation in animations) {
+    createAnimation(animation, vsync);
+  }
 }
 
 extension AnimatedWidgetExtension on Widget {
   Widget animateOnPageLoad(
     AnimationInfo animationInfo, {
-    List<Effect>? effects,
+    List<Effect<dynamic>>? effects,
   }) {
     animationInfo.maybeUpdateEffects(effects);
     return Animate(
@@ -60,7 +62,7 @@ extension AnimatedWidgetExtension on Widget {
 
   Widget animateOnActionTrigger(
     AnimationInfo animationInfo, {
-    List<Effect>? effects,
+    List<Effect<dynamic>>? effects,
     bool hasBeenTriggered = false,
   }) {
     animationInfo.maybeUpdateEffects(effects);
@@ -76,15 +78,12 @@ extension AnimatedWidgetExtension on Widget {
 
 class TiltEffect extends Effect<Offset> {
   const TiltEffect({
-    Duration? delay,
-    Duration? duration,
-    Curve? curve,
+    super.delay,
+    super.duration,
+    super.curve,
     Offset? begin,
     Offset? end,
   }) : super(
-          delay: delay,
-          duration: duration,
-          curve: curve,
           begin: begin ?? const Offset(0.0, 0.0),
           end: end ?? const Offset(0.0, 0.0),
         );

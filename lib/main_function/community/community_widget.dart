@@ -72,9 +72,9 @@ class KeepAliveWidgetWrapper extends StatefulWidget {
   final Widget Function(BuildContext) builder;
 
   const KeepAliveWidgetWrapper({
-    Key? key,
+    super.key,
     required this.builder,
-  }) : super(key: key);
+  });
 
   @override
   State<KeepAliveWidgetWrapper> createState() =>

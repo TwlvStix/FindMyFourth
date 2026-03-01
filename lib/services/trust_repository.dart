@@ -45,7 +45,7 @@ class TrustRepository {
   /// Batch fetch trust profiles for multiple users.
   ///
   /// Uses Firestore whereIn with 10-item chunking.
-  /// Returns Map<userId, TrustProfile?> - null for users without trust data.
+  /// Returns `Map<userId, TrustProfile?>` - null for users without trust data.
   Future<Map<String, TrustProfile?>> batchGetTrustProfiles(
     List<String> userIds,
   ) async {

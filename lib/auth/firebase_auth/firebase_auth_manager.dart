@@ -72,12 +72,12 @@ class FirebaseAuthManager extends AuthManager
   }
 
   @override
-  Future signOut() {
+  Future<void> signOut() {
     return FirebaseAuth.instance.signOut();
   }
 
   @override
-  Future deleteUser(BuildContext context) async {
+  Future<void> deleteUser(BuildContext context) async {
     try {
       if (!loggedIn) {
         AppLog.d('Error: delete user attempted with no logged in user!');
@@ -100,7 +100,7 @@ class FirebaseAuthManager extends AuthManager
   }
 
   @override
-  Future updateEmail({
+  Future<void> updateEmail({
     required String email,
     required BuildContext context,
   }) async {
@@ -127,7 +127,7 @@ class FirebaseAuthManager extends AuthManager
   }
 
   @override
-  Future updatePassword({
+  Future<void> updatePassword({
     required String newPassword,
     required BuildContext context,
   }) async {
@@ -252,7 +252,7 @@ class FirebaseAuthManager extends AuthManager
   }
 
   @override
-  Future beginPhoneAuth({
+  Future<void> beginPhoneAuth({
     required BuildContext context,
     required String phoneNumber,
     required void Function(BuildContext) onCodeSent,
@@ -304,11 +304,11 @@ class FirebaseAuthManager extends AuthManager
       codeAutoRetrievalTimeout: (_) {},
     );
 
-    return completer.future;
+    await completer.future;
   }
 
   @override
-  Future verifySmsCode({
+  Future<void> verifySmsCode({
     required BuildContext context,
     required String smsCode,
   }) {

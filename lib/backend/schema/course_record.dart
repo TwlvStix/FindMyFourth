@@ -9,9 +9,9 @@ import '/utils/app_util.dart';
 
 class CourseRecord extends FirestoreRecord {
   CourseRecord._(
-    DocumentReference reference,
-    Map<String, dynamic> data,
-  ) : super(reference, data) {
+    super.reference,
+    super.data,
+  ) {
     _initializeFields();
   }
 

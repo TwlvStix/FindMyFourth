@@ -117,7 +117,7 @@ class _SignInWidgetState extends State<SignInWidget> {
                                 Padding(
                                   padding: EdgeInsetsDirectional.fromSTEB(
                                       0.0, 0.0, 0.0, AppSpacing.md),
-                                  child: Container(
+                                  child: SizedBox(
                                     width: double.infinity,
                                     child: TextFormField(
                                       controller: emailAddressTextController,
@@ -180,7 +180,7 @@ class _SignInWidgetState extends State<SignInWidget> {
                                 Padding(
                                   padding: EdgeInsetsDirectional.fromSTEB(
                                       0.0, 0.0, 0.0, AppSpacing.md),
-                                  child: Container(
+                                  child: SizedBox(
                                     width: double.infinity,
                                     child: TextFormField(
                                       controller: passwordTextController,
@@ -309,7 +309,7 @@ class _SignInWidgetState extends State<SignInWidget> {
                                 Padding(
                                   padding: EdgeInsetsDirectional.fromSTEB(
                                       0.0, 0.0, 0.0, AppSpacing.xl),
-                                  child: Container(
+                                  child: SizedBox(
                                     width: double.infinity,
                                     child: Stack(
                                       alignment: AlignmentDirectional(0.0, 0.0),

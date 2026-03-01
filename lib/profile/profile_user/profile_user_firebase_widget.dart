@@ -202,12 +202,11 @@ class _ProfileUserFirebaseWidgetState extends State<ProfileUserFirebaseWidget>
         _vibeMatchResult = null;
       });
     } finally {
-      if (!mounted) {
-        return;
+      if (mounted) {
+        updateState(this, () {
+          _isVibeMatchLoading = false;
+        });
       }
-      updateState(this, () {
-        _isVibeMatchLoading = false;
-      });
     }
   }
 
@@ -513,7 +512,7 @@ class _ProfileUserFirebaseWidgetState extends State<ProfileUserFirebaseWidget>
   }) {
     // Get vibe match score for public profiles
     final result = !isSelf ? _vibeMatchResult : null;
-    final vibeScore = result == null ? null : result.myFitPercent.round();
+    final vibeScore = result?.myFitPercent.round();
     final canOpenVibe = vibeScore != null;
 
     // Dynamic color based on vibe score: green (80+), gold (50-79), muted (<50)

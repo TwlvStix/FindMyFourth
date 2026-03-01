@@ -11,8 +11,8 @@ import '/services/friend_service.dart';
 /// UserProvider manages global user state and provides cached access to user data
 ///
 /// Usage:
-/// - Access via Provider.of<UserProvider>(context)
-/// - Or use Consumer<UserProvider> for reactive updates
+/// - Access via `Provider.of<UserProvider>(context)`
+/// - Or use `Consumer<UserProvider>` for reactive updates
 ///
 /// Features:
 /// - Reactive user state updates
@@ -338,7 +338,7 @@ class UserProvider extends ChangeNotifier {
     if (!isLoggedIn || friends.isEmpty) return Stream.value([]);
 
     return _friendsManager.performRequest(
-      uniqueQueryKey: 'friends_${userId}',
+      uniqueQueryKey: 'friends_$userId',
       overrideCache: overrideCache,
       requestFn: () => _queryUsersByRefs(friends),
     );
@@ -351,7 +351,7 @@ class UserProvider extends ChangeNotifier {
     if (!isLoggedIn || friendRequests.isEmpty) return Stream.value([]);
 
     return _friendRequestsManager.performRequest(
-      uniqueQueryKey: 'friend_requests_${userId}',
+      uniqueQueryKey: 'friend_requests_$userId',
       overrideCache: overrideCache,
       requestFn: () => _queryUsersByRefs(friendRequests),
     );
@@ -359,13 +359,13 @@ class UserProvider extends ChangeNotifier {
 
   /// Refresh friends cache
   void refreshFriends() {
-    _friendsManager.clearRequest('friends_${userId}');
+    _friendsManager.clearRequest('friends_$userId');
     _scheduleNotify();
   }
 
   /// Refresh friend requests cache
   void refreshFriendRequests() {
-    _friendRequestsManager.clearRequest('friend_requests_${userId}');
+    _friendRequestsManager.clearRequest('friend_requests_$userId');
     _scheduleNotify();
   }
 

@@ -96,9 +96,10 @@ Future<void> handleNotificationNavigation(
   if (initialPageName == 'JoinGameDetailed') {
     final shouldBlock = await _shouldBlockFriendsOnlyGame(initialParameterData);
     if (shouldBlock) {
+      // ignore: use_build_context_synchronously - mounted check handles this safely
       final dialogContext =
           context.mounted ? context : appNavigatorKey.currentContext;
-      if (dialogContext != null) {
+      if (dialogContext != null && dialogContext.mounted) {
         await _showFriendsOnlyDialog(dialogContext);
       }
       return;
@@ -279,13 +280,12 @@ class _PushRoute {
 }
 
 class PushNotificationsHandler extends StatefulWidget {
-  const PushNotificationsHandler({Key? key, required this.child})
-      : super(key: key);
+  const PushNotificationsHandler({super.key, required this.child});
 
   final Widget child;
 
   @override
-  _PushNotificationsHandlerState createState() =>
+  State<PushNotificationsHandler> createState() =>
       _PushNotificationsHandlerState();
 }
 
@@ -296,7 +296,7 @@ class _PushNotificationsHandlerState extends State<PushNotificationsHandler> {
   // Static flag to ensure only ONE listener per app session
   static bool _listenerInitialized = false;
 
-  Future handleOpenedPushNotification() async {
+  Future<void> handleOpenedPushNotification() async {
     if (isWeb) {
       return;
     }
@@ -316,7 +316,7 @@ class _PushNotificationsHandlerState extends State<PushNotificationsHandler> {
     FirebaseMessaging.onMessageOpenedApp.listen(_handlePushNotification);
   }
 
-  Future _handlePushNotification(RemoteMessage message) async {
+  Future<void> _handlePushNotification(RemoteMessage message) async {
     // Keep loading UI for background taps (user expectation for app cold start)
     if (mounted) {
       setState(() => _loading = true);

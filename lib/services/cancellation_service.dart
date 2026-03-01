@@ -2,6 +2,7 @@
 ///
 /// Determines the penalty tier for a cancellation based on how much time
 /// remains before the scheduled tee time.
+library;
 
 enum CancellationType {
   /// 36+ hours before tee time — no penalty

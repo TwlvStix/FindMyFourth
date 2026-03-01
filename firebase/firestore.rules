@@ -459,6 +459,8 @@ service cloud.firestore {
           'game_type',
           'course_play',
           'member_discount',
+          'has_side_games',
+          'is_2v2',
           'scoring',
           'friend_game',
           'max_players',

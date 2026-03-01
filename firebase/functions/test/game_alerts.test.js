@@ -133,6 +133,9 @@ describe('doesAlertSubMatchGame', () => {
     style_game: 'No Money',
     game_type: 'Stroke Play',
     scoring: 'Net',
+    has_side_games: false,
+    is_2v2: false,
+    member_discount: 'No',
     player_eligibility: 'open_to_all',
   };
 
@@ -163,5 +166,95 @@ describe('doesAlertSubMatchGame', () => {
   it('does not match when stakes filter does not match game', () => {
     const sub = { ...baseSubscription, stakes: ['High Stakes'] };
     expect(doesAlertSubMatchGame(sub, baseGame)).toBe(false);
+  });
+
+  it('matches when special.games is enabled and game has side games', () => {
+    const sub = {
+      ...baseSubscription,
+      special: { ...baseSubscription.special, games: true },
+    };
+    const game = { ...baseGame, has_side_games: true };
+    expect(doesAlertSubMatchGame(sub, game)).toBe(true);
+  });
+
+  it('does not match when special.games is enabled and game has no side games', () => {
+    const sub = {
+      ...baseSubscription,
+      special: { ...baseSubscription.special, games: true },
+    };
+    expect(doesAlertSubMatchGame(sub, baseGame)).toBe(false);
+  });
+
+  it('matches when special.twoVTwo is enabled and game is 2v2', () => {
+    const sub = {
+      ...baseSubscription,
+      special: { ...baseSubscription.special, twoVTwo: true },
+    };
+    const game = { ...baseGame, is_2v2: true };
+    expect(doesAlertSubMatchGame(sub, game)).toBe(true);
+  });
+
+  it('does not match when special.twoVTwo is enabled and game is not 2v2', () => {
+    const sub = {
+      ...baseSubscription,
+      special: { ...baseSubscription.special, twoVTwo: true },
+    };
+    expect(doesAlertSubMatchGame(sub, baseGame)).toBe(false);
+  });
+
+  it('matches when special.discount is enabled and member discount is yes', () => {
+    const sub = {
+      ...baseSubscription,
+      special: { ...baseSubscription.special, discount: true },
+    };
+    const game = { ...baseGame, member_discount: 'Yes' };
+    expect(doesAlertSubMatchGame(sub, game)).toBe(true);
+  });
+
+  it('matches when special.discount is enabled and member discount is case-insensitive yes', () => {
+    const sub = {
+      ...baseSubscription,
+      special: { ...baseSubscription.special, discount: true },
+    };
+    const game = { ...baseGame, member_discount: '  yEs  ' };
+    expect(doesAlertSubMatchGame(sub, game)).toBe(true);
+  });
+
+  it('does not match when special.discount is enabled and member discount is no', () => {
+    const sub = {
+      ...baseSubscription,
+      special: { ...baseSubscription.special, discount: true },
+    };
+    expect(doesAlertSubMatchGame(sub, baseGame)).toBe(false);
+  });
+
+  it('does not match discount for legacy truthy non-contract values', () => {
+    const sub = {
+      ...baseSubscription,
+      special: { ...baseSubscription.special, discount: true },
+    };
+
+    expect(doesAlertSubMatchGame(sub, { ...baseGame, member_discount: true })).toBe(false);
+    expect(doesAlertSubMatchGame(sub, { ...baseGame, member_discount: 1 })).toBe(false);
+    expect(doesAlertSubMatchGame(sub, { ...baseGame, member_discount: 'true' })).toBe(false);
+    expect(doesAlertSubMatchGame(sub, { ...baseGame, member_discount: '1' })).toBe(false);
+  });
+
+  it('requires all enabled special filters to pass', () => {
+    const sub = {
+      ...baseSubscription,
+      special: { games: true, twoVTwo: true, discount: true },
+    };
+
+    const fullMatchGame = {
+      ...baseGame,
+      has_side_games: true,
+      is_2v2: true,
+      member_discount: 'Yes',
+    };
+    expect(doesAlertSubMatchGame(sub, fullMatchGame)).toBe(true);
+
+    const missingOne = { ...fullMatchGame, is_2v2: false };
+    expect(doesAlertSubMatchGame(sub, missingOne)).toBe(false);
   });
 });

@@ -218,9 +218,9 @@ class _AppDropDownState<T> extends State<AppDropDown<T>> {
       ? Text(widget.hintText!, style: widget.textStyle)
       : null;
 
-  ValueKey _getItemKey(T option) {
-    final widgetKey = (widget.key as ValueKey).value;
-    return ValueKey('$widgetKey ${widget.options.indexOf(option)}');
+  ValueKey<String> _getItemKey(T option) {
+    final widgetKey = (widget.key as ValueKey<dynamic>).value;
+    return ValueKey<String>('$widgetKey ${widget.options.indexOf(option)}');
   }
 
   List<DropdownMenuItem<T>> _createMenuItems() => widget.options

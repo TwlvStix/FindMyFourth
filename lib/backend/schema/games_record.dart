@@ -10,9 +10,9 @@ import '/utils/app_util.dart';
 
 class GamesRecord extends FirestoreRecord {
   GamesRecord._(
-    DocumentReference reference,
-    Map<String, dynamic> data,
-  ) : super(reference, data) {
+    super.reference,
+    super.data,
+  ) {
     _initializeFields();
   }
 
@@ -75,6 +75,16 @@ class GamesRecord extends FirestoreRecord {
   String? _friendGame;
   String get friendGame => _friendGame ?? '';
   bool hasFriendGame() => _friendGame != null;
+
+  // "has_side_games" field.
+  bool? _hasSideGames;
+  bool get hasSideGames => _hasSideGames ?? false;
+  bool hasHasSideGames() => _hasSideGames != null;
+
+  // "is_2v2" field.
+  bool? _is2v2;
+  bool get is2v2 => _is2v2 ?? false;
+  bool hasIs2v2() => _is2v2 != null;
 
   // "joined_players" field.
   List<DocumentReference>? _joinedPlayers;
@@ -200,6 +210,8 @@ class GamesRecord extends FirestoreRecord {
     _maxPlayers = castToType<int>(snapshotData['max_players']);
     _courseRef = snapshotData['courseRef'] as DocumentReference?;
     _friendGame = snapshotData['friend_game'] as String?;
+    _hasSideGames = snapshotData['has_side_games'] as bool?;
+    _is2v2 = snapshotData['is_2v2'] as bool?;
     _joinedPlayers = getDataList(snapshotData['joined_players']);
     _guestPlayers = getDataList(snapshotData['guest_players']);
     _rulesSetting = snapshotData['rules_setting'] as String?;
@@ -270,6 +282,8 @@ Map<String, dynamic> createGamesRecordData({
   int? maxPlayers,
   DocumentReference? courseRef,
   String? friendGame,
+  bool? hasSideGames,
+  bool? is2v2,
   List<String>? guestPlayers,
   String? rulesSetting,
   DocumentReference? userRef,
@@ -306,6 +320,8 @@ Map<String, dynamic> createGamesRecordData({
       'max_players': maxPlayers,
       'courseRef': courseRef,
       'friend_game': friendGame,
+      'has_side_games': hasSideGames,
+      'is_2v2': is2v2,
       'guest_players': guestPlayers,
       'rules_setting': rulesSetting,
       'userRef': userRef,
@@ -351,6 +367,8 @@ class GamesRecordDocumentEquality implements Equality<GamesRecord> {
         e1?.maxPlayers == e2?.maxPlayers &&
         e1?.courseRef == e2?.courseRef &&
         e1?.friendGame == e2?.friendGame &&
+        e1?.hasSideGames == e2?.hasSideGames &&
+        e1?.is2v2 == e2?.is2v2 &&
         listEquality.equals(e1?.joinedPlayers, e2?.joinedPlayers) &&
         e1?.rulesSetting == e2?.rulesSetting &&
         e1?.userRef == e2?.userRef &&
@@ -384,6 +402,8 @@ class GamesRecordDocumentEquality implements Equality<GamesRecord> {
         e?.maxPlayers,
         e?.courseRef,
         e?.friendGame,
+        e?.hasSideGames,
+        e?.is2v2,
         e?.joinedPlayers,
         e?.rulesSetting,
         e?.userRef,

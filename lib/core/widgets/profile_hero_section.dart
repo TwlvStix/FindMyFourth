@@ -20,11 +20,11 @@ class ProfileHeroSection extends StatefulWidget {
   final VoidCallback onEditPhoto;
 
   const ProfileHeroSection({
-    Key? key,
+    super.key,
     required this.photoUrl,
     required this.displayName,
     required this.onEditPhoto,
-  }) : super(key: key);
+  });
 
   @override
   State<ProfileHeroSection> createState() => _ProfileHeroSectionState();

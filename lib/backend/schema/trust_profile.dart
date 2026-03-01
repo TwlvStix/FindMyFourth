@@ -2,6 +2,7 @@
 ///
 /// Public trust data is sourced from UsersRecord fields.
 /// Use TrustProfile.fromUsersRecord(record) to construct.
+library;
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Enums

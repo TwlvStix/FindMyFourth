@@ -103,17 +103,21 @@ function doesAlertSubMatchGame(subscription, gameData) {
   }
 
   // 6. Special options
-  // TODO: Add has_side_games and is_2v2 fields to game documents
-  // if (special.games) {
-  //   if (!gameData.has_side_games) return false;
-  // }
-  // if (special.twoVTwo) {
-  //   if (!gameData.is_2v2) return false;
-  // }
+  if (special.games) {
+    if (gameData.has_side_games !== true) {
+      return false;
+    }
+  }
 
-  // 7. Discount (member_discount is non-null when a discount is applied)
+  if (special.twoVTwo) {
+    if (gameData.is_2v2 !== true) {
+      return false;
+    }
+  }
+
+  // 7. Discount
   if (special.discount) {
-    if (gameData.member_discount == null || gameData.member_discount === undefined) {
+    if (!hasMemberDiscount(gameData.member_discount)) {
       return false;
     }
   }
@@ -139,6 +143,18 @@ function matchesAny(values, target) {
   }
 
   return false;
+}
+
+/**
+ * Returns true if member_discount indicates an applied discount.
+ */
+function hasMemberDiscount(memberDiscount) {
+  if (typeof memberDiscount !== "string") {
+    return false;
+  }
+
+  const normalized = memberDiscount.toLowerCase().trim();
+  return normalized === "yes";
 }
 
 /**

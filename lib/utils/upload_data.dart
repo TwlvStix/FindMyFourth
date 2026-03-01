@@ -61,8 +61,7 @@ Future<List<SelectedFile>?> selectMediaWithSourceBottomSheet({
 }) async {
   final effectiveTextColor = textColor ?? AppColors.onyx;
   final effectiveBgColor = backgroundColor ?? AppColors.cloud;
-  final createUploadMediaListTile =
-      (String label, MediaSource mediaSource) => ListTile(
+  ListTile createUploadMediaListTile(String label, MediaSource mediaSource) => ListTile(
             title: Text(
               label,
               textAlign: TextAlign.center,
@@ -300,7 +299,7 @@ List<SelectedFile> selectedFilesFromUploadedFiles(
         final file = entry.value;
         return SelectedFile(
             storagePath: _getStoragePath(
-              storageFolderPath != null ? storageFolderPath : null,
+              storageFolderPath,
               file.name!,
               false,
               isMultiData ? index : null,

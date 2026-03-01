@@ -17,7 +17,7 @@ const int _storageEmulatorPort =
 
 const Set<String> _validAppEnvironments = {'dev', 'staging', 'prod'};
 
-Future initFirebase() async {
+Future<void> initFirebase() async {
   if (!_validAppEnvironments.contains(kAppEnv)) {
     throw StateError(
         'Invalid APP_ENV value "$kAppEnv". Expected one of: dev, staging, prod.');

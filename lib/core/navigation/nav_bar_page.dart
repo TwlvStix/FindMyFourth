@@ -15,19 +15,19 @@ import '/main_function/games_list/games_list_widget.dart';
 import '/profile/main_profile/main_profile_widget.dart';
 
 class NavBarPage extends StatefulWidget {
-  NavBarPage({
-    Key? key,
+  const NavBarPage({
+    super.key,
     this.initialPage,
     this.page,
     this.disableResizeToAvoidBottomInset = false,
-  }) : super(key: key);
+  });
 
   final String? initialPage;
   final Widget? page;
   final bool disableResizeToAvoidBottomInset;
 
   @override
-  _NavBarPageState createState() => _NavBarPageState();
+  State<NavBarPage> createState() => _NavBarPageState();
 }
 
 /// This is the private State class that goes with NavBarPage.

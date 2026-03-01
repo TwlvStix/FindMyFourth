@@ -8,6 +8,7 @@ export '../base_auth_user_provider.dart';
 class FindMyFourthFirebaseUser extends BaseAuthUser {
   FindMyFourthFirebaseUser(this.user);
   User? user;
+  @override
   bool get loggedIn => user != null;
 
   @override
@@ -20,20 +21,20 @@ class FindMyFourthFirebaseUser extends BaseAuthUser {
       );
 
   @override
-  Future? delete() => user?.delete();
+  Future<void>? delete() => user?.delete();
 
   @override
-  Future? updateEmail(String email) async {
+  Future<void>? updateEmail(String email) async {
     await user?.verifyBeforeUpdateEmail(email);
   }
 
   @override
-  Future? updatePassword(String newPassword) async {
+  Future<void>? updatePassword(String newPassword) async {
     await user?.updatePassword(newPassword);
   }
 
   @override
-  Future? sendEmailVerification() => user?.sendEmailVerification();
+  Future<void>? sendEmailVerification() => user?.sendEmailVerification();
 
   @override
   bool get emailVerified {
@@ -46,7 +47,7 @@ class FindMyFourthFirebaseUser extends BaseAuthUser {
   }
 
   @override
-  Future refreshUser() async {
+  Future<void> refreshUser() async {
     await FirebaseAuth.instance.currentUser
         ?.reload()
         .then((_) => user = FirebaseAuth.instance.currentUser);
@@ -61,8 +62,8 @@ class FindMyFourthFirebaseUser extends BaseAuthUser {
 Stream<BaseAuthUser> findMyFourthFirebaseUserStream() => FirebaseAuth.instance
         .authStateChanges()
         .debounce((user) => user == null && !loggedIn
-            ? TimerStream(true, const Duration(seconds: 1))
-            : Stream.value(user))
+            ? Future<void>.delayed(const Duration(seconds: 1)).asStream()
+            : const Stream<void>.empty())
         .map<BaseAuthUser>(
       (user) {
         currentUser = FindMyFourthFirebaseUser(user);

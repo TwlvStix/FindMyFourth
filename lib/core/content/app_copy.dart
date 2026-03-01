@@ -12,6 +12,7 @@
 /// - Sentence case everywhere
 /// - Short, complete sentences
 /// - Clear over clever
+library;
 
 // =============================================================================
 // CONFIRMATIONS

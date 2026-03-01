@@ -19,14 +19,14 @@ class AppStreamBuilder<T> extends StatelessWidget {
   final T? initialData;
 
   const AppStreamBuilder({
-    Key? key,
+    super.key,
     required this.stream,
     required this.builder,
     this.loadingBuilder,
     this.errorBuilder,
     this.onRetry,
     this.initialData,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -42,7 +42,7 @@ class AppStreamBuilder<T> extends StatelessWidget {
 
         // Data state
         if (snapshot.hasData) {
-          return builder(context, snapshot.data!);
+          return builder(context, snapshot.data as T);
         }
 
         // Loading state

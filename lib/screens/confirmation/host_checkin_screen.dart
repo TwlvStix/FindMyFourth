@@ -125,19 +125,21 @@ class _HostCheckinScreenState extends State<HostCheckinScreen> {
           });
         }
       } else {
-        if (mounted)
+        if (mounted) {
           updateState(this, () {
             _submitting = false;
             _error = 'Submission failed. Please try again.';
           });
+        }
       }
     } catch (e) {
       AppLog.d('HostCheckinScreen submit error: $e');
-      if (mounted)
+      if (mounted) {
         updateState(this, () {
           _submitting = false;
           _error = 'Something went wrong. Please try again.';
         });
+      }
     }
   }
 

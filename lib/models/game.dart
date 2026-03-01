@@ -15,6 +15,8 @@ class Game {
     required this.scoring,
     required this.memberDiscount,
     required this.friendGame,
+    this.hasSideGames = false,
+    this.is2v2 = false,
     required this.numPlayers,
     required this.maxPlayers,
     required this.joinedPlayers,
@@ -47,6 +49,8 @@ class Game {
   final String scoring;
   final String memberDiscount;
   final String friendGame;
+  final bool hasSideGames;
+  final bool is2v2;
   final int numPlayers;
   final int maxPlayers;
   final List<DocumentReference> joinedPlayers;
@@ -161,6 +165,8 @@ class Game {
       scoring: (data['scoring'] as String?) ?? '',
       memberDiscount: (data['member_discount'] as String?) ?? '',
       friendGame: (data['friend_game'] as String?) ?? '',
+      hasSideGames: (data['has_side_games'] as bool?) ?? false,
+      is2v2: (data['is_2v2'] as bool?) ?? false,
       numPlayers: (data['num_players'] as int?) ?? 0,
       maxPlayers: (data['max_players'] as int?) ?? 0,
       joinedPlayers: (data['joined_players'] as List<dynamic>?)
@@ -185,9 +191,8 @@ class Game {
       playerEligibility: PlayerEligibilityExtension.fromFirestoreValue(
         data['player_eligibility'] as String?,
       ),
-      flexibleDays: (data['flexible_days'] as List<dynamic>?)
-              ?.whereType<int>()
-              .toList(),
+      flexibleDays:
+          (data['flexible_days'] as List<dynamic>?)?.whereType<int>().toList(),
       flexibleTimeOfDay: data['flexible_time_of_day'] as String?,
       flexibleWeek: data['flexible_week'] as String?,
       flexibleStartDate: flexibleStartDate,
@@ -219,6 +224,8 @@ class Game {
       scoring: record.scoring,
       memberDiscount: record.memberDiscount,
       friendGame: record.friendGame,
+      hasSideGames: record.hasSideGames,
+      is2v2: record.is2v2,
       numPlayers: record.numPlayers,
       maxPlayers: record.maxPlayers,
       joinedPlayers: record.joinedPlayers,

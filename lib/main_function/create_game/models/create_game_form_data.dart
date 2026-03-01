@@ -292,6 +292,8 @@ class CreateGameFormData {
       'guest_players': [],
       'uid': uid,
       'is_fun_game': isJustForFun,
+      'is_2v2': is2v2,
+      'has_side_games': selectedGames.isNotEmpty,
       'schedule_type': scheduleType,
       'player_eligibility': playerEligibility,
       'require_vibe_match': requireVibeMatch,

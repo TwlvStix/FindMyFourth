@@ -2,7 +2,6 @@ import 'dart:convert';
 
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:flutter/foundation.dart';
-import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '/core/utils/app_log.dart';
 
@@ -19,7 +18,7 @@ class AppState extends ChangeNotifier {
     _instance = AppState._internal();
   }
 
-  Future initializePersistedState() async {
+  Future<void> initializePersistedState() async {
     prefs = await SharedPreferences.getInstance();
     _safeInit(() {
       final stored = prefs.getString('cancelledGameHandlingByPath');

@@ -37,7 +37,7 @@ class ProfileService {
 
   /// Watch a user profile by ID for reactive updates
   ///
-  /// Returns Stream<UsersRecord?> that emits null if user doesn't exist
+  /// Returns `Stream<UsersRecord?>` that emits null if user doesn't exist
   Stream<UsersRecord?> watchUserProfile(String userId) {
     try {
       return _firestore
@@ -148,7 +148,7 @@ class ProfileService {
 
   /// Query users by name (search)
   ///
-  /// Returns Stream<List<UsersRecord>> matching the search query
+  /// Returns `Stream<List<UsersRecord>>` matching the search query
   /// Note: Firestore text search is limited - this uses >= and <= for prefix matching
   Stream<List<UsersRecord>> searchUsersByName(String searchQuery) {
     try {
@@ -180,7 +180,7 @@ class ProfileService {
 
   /// Batch get multiple user profiles by IDs
   ///
-  /// Returns Map<String, UsersRecord> where key is userId
+  /// Returns `Map<String, UsersRecord>` where key is userId
   /// Efficiently fetches multiple users in a single read batch
   Future<Map<String, UsersRecord>> batchGetUserProfiles(
       List<String> userIds) async {

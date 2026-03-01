@@ -19,7 +19,7 @@ enum VideoType {
   network,
 }
 
-Set<VideoPlayerController> _videoPlayers = Set();
+Set<VideoPlayerController> _videoPlayers = {};
 
 class AppVideoPlayer extends StatefulWidget {
   const AppVideoPlayer({
@@ -122,7 +122,7 @@ class _AppVideoPlayerState extends State<AppVideoPlayer>
     _chewieController?.dispose();
   }
 
-  Future _initializePlayer() async {
+  Future<void> _initializePlayer() async {
     _videoPlayerController = widget.videoType == VideoType.network
         ? VideoPlayerController.networkUrl(Uri.parse(widget.path))
         : VideoPlayerController.asset(widget.path);
@@ -160,7 +160,7 @@ class _AppVideoPlayerState extends State<AppVideoPlayer>
       }
       // Stop all other players when one video is playing.
       if (_videoPlayerController!.value.isPlaying) {
-        _videoPlayers.forEach((otherPlayer) {
+        for (var otherPlayer in _videoPlayers) {
           if (otherPlayer != _videoPlayerController &&
               otherPlayer.value.isPlaying &&
               mounted) {
@@ -168,7 +168,7 @@ class _AppVideoPlayerState extends State<AppVideoPlayer>
               otherPlayer.pause();
             });
           }
-        });
+        }
       }
     });
 
@@ -194,7 +194,7 @@ class _AppVideoPlayerState extends State<AppVideoPlayer>
   @override
   Widget build(BuildContext context) => FittedBox(
         fit: BoxFit.cover,
-        child: Container(
+        child: SizedBox(
           height: height,
           width: width,
           child: _chewieController != null &&

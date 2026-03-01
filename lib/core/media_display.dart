@@ -7,7 +7,7 @@ bool _isVideoPath(String path) =>
     _kSupportedVideoMimes.contains(mime(path.split('?').first));
 
 class MediaDisplay extends StatelessWidget {
-  const MediaDisplay({
+  const MediaDisplay({super.key, 
     required this.path,
     required this.imageBuilder,
     required this.videoPlayerBuilder,

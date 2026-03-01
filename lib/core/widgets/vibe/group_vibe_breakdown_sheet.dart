@@ -155,7 +155,7 @@ class GroupVibeBreakdownSheet extends StatelessWidget {
                   padding: EdgeInsets.only(bottom: AppSpacing.sm),
                   child: _GroupMatchRow(memberResult: memberResult),
                 );
-              }).toList(),
+              }),
             ],
           ),
         ),

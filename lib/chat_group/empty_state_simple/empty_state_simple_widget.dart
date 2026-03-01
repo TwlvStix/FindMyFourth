@@ -8,8 +8,8 @@ class EmptyStateSimpleWidget extends StatefulWidget {
     this.icon,
     String? title,
     String? body,
-  })  : this.title = title ?? 'No Comments',
-        this.body = body ?? 'There are no comments associated with this post.';
+  })  : title = title ?? 'No Comments',
+        body = body ?? 'There are no comments associated with this post.';
 
   final Widget? icon;
   final String title;

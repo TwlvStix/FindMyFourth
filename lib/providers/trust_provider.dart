@@ -17,8 +17,8 @@ import '/core/utils/app_log.dart';
 /// - Safe disposal guard
 ///
 /// Usage:
-///   Provider.of<TrustProvider>(context)
-///   Consumer<TrustProvider>
+///   `Provider.of<TrustProvider>(context)`
+///   `Consumer<TrustProvider>`
 class TrustProvider extends ChangeNotifier {
   TrustProvider() : _repo = const TrustRepository();
 
@@ -101,7 +101,7 @@ class TrustProvider extends ChangeNotifier {
   /// Batch fetch trust profiles with caching.
   ///
   /// Checks cache first, only fetches missing profiles from repository.
-  /// Returns Map<userId, TrustProfile?> with cached values where valid.
+  /// Returns `Map<userId, TrustProfile?>` with cached values where valid.
   Future<Map<String, TrustProfile?>> batchGetTrustProfiles(
     List<String> userIds,
   ) async {

@@ -111,7 +111,7 @@ class VibeFullBreakdownSection extends StatelessWidget {
                   ],
                 ),
               );
-            }).toList(),
+            }),
           ],
         ],
       ),

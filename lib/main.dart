@@ -175,12 +175,14 @@ void triggerInternalCrashForTesting() {
 }
 
 class MyApp extends StatefulWidget {
+  const MyApp({super.key});
+
   // This widget is the root of your application.
   @override
-  State<MyApp> createState() => _MyAppState();
+  State<MyApp> createState() => MyAppState();
 
-  static _MyAppState of(BuildContext context) =>
-      context.findAncestorStateOfType<_MyAppState>()!;
+  static MyAppState of(BuildContext context) =>
+      context.findAncestorStateOfType<MyAppState>()!;
 }
 
 final GlobalKey<ScaffoldMessengerState> scaffoldMessengerKey =
@@ -194,7 +196,7 @@ class MyAppScrollBehavior extends MaterialScrollBehavior {
       };
 }
 
-class _MyAppState extends State<MyApp> {
+class MyAppState extends State<MyApp> {
   ThemeMode _themeMode = ThemeMode.system;
   final NotificationOrchestrationService _notificationOrchestrationService =
       NotificationOrchestrationService();
@@ -383,12 +385,12 @@ class _MyAppState extends State<MyApp> {
           thickness: WidgetStateProperty.all(5.0),
           thumbColor: WidgetStateProperty.resolveWith((states) {
             if (states.contains(WidgetState.dragged)) {
-              return Color(4282393936);
+              return Color(0xff402550);
             }
             if (states.contains(WidgetState.hovered)) {
-              return Color(4282393936);
+              return Color(0xff402550);
             }
-            return Color(4282393936);
+            return Color(0xff402550);
           }),
         ),
         useMaterial3: false,

@@ -72,25 +72,24 @@ class AlertMatcher {
 
     // 6. Special options
     // Games: OFF = don't care, ON = game must have side games
-    // NOTE: In the current Game model, we don't have a field for "has side games"
-    // This would need to be added to the game document (e.g., has_side_games: bool)
-    // For now, we'll assume this check is not implemented
-    // TODO: Add `has_side_games` field to Game model if needed
     if (sub.special.games) {
-      // Check if game has side games
-      // Since Game model doesn't have this field yet, we'll skip this check
-      // In production, you'd check: if (!game.hasSideGames) return false;
+      if (!game.hasSideGames) {
+        return false;
+      }
     }
 
     // 2v2: OFF = don't care, ON = game must be 2v2
-    // NOTE: In the current Game model, we don't have a field for "is2v2"
-    // This would need to be added to the game document (e.g., is_2v2: bool)
-    // For now, we'll assume this check is not implemented
-    // TODO: Add `is_2v2` field to Game model if needed
     if (sub.special.twoVTwo) {
-      // Check if game is 2v2
-      // Since Game model doesn't have this field yet, we'll skip this check
-      // In production, you'd check: if (!game.is2v2) return false;
+      if (!game.is2v2) {
+        return false;
+      }
+    }
+
+    // Discount: OFF = don't care, ON = game must have member discount
+    if (sub.special.discount) {
+      if (!_hasMemberDiscount(game.memberDiscount)) {
+        return false;
+      }
     }
 
     // All categories matched (or were empty)
@@ -113,6 +112,11 @@ class AlertMatcher {
     }
 
     return false;
+  }
+
+  static bool _hasMemberDiscount(String memberDiscount) {
+    final normalized = memberDiscount.trim().toLowerCase();
+    return normalized == 'yes';
   }
 
   /// Get a debug string explaining why a subscription didn't match
@@ -162,6 +166,18 @@ class AlertMatcher {
         failures.add(
             'Course mismatch: wanted [${sub.courses.join(', ')}], got "$gameCourseId"');
       }
+    }
+
+    if (sub.special.games && !game.hasSideGames) {
+      failures.add('Special mismatch: wanted side games');
+    }
+
+    if (sub.special.twoVTwo && !game.is2v2) {
+      failures.add('Special mismatch: wanted 2v2');
+    }
+
+    if (sub.special.discount && !_hasMemberDiscount(game.memberDiscount)) {
+      failures.add('Special mismatch: wanted member discount');
     }
 
     if (failures.isEmpty) {

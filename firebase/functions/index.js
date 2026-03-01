@@ -14,6 +14,7 @@ const firestore = admin.firestore();
 const trustSystem = require("./trust_system");
 const confirmationFlow = require("./confirmation_flow");
 const trustProfileModule = require("./trust_profile");
+const gameAlerts = require("./game_alerts");
 const {
   scheduleFlexibleNudges,
   cancelFlexibleNudges,
@@ -684,6 +685,9 @@ exports.sendGameCreatedNotifications = functions
       throw error;
     }
   });
+
+// Use the modularized game alerts implementation as the exported source of truth.
+exports.sendGameCreatedNotifications = gameAlerts.sendGameCreatedNotifications;
 
 exports.sendChatMessageNotifications = functions
   .region("us-west2")

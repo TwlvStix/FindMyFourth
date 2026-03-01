@@ -6,7 +6,7 @@ import '/core/design_tokens/border_radius.dart';
 
 class AppCountController extends StatefulWidget {
   const AppCountController({
-    Key? key,
+    super.key,
     required this.decrementIconBuilder,
     required this.incrementIconBuilder,
     required this.countBuilder,
@@ -19,7 +19,7 @@ class AppCountController extends StatefulWidget {
     this.editable = false,
     this.formatValue,
     this.parseValue,
-  }) : super(key: key);
+  });
 
   final Widget Function(bool enabled) decrementIconBuilder;
   final Widget Function(bool enabled) incrementIconBuilder;
@@ -44,7 +44,7 @@ class AppCountController extends StatefulWidget {
   final int? Function(String)? parseValue;
 
   @override
-  _AppCountControllerState createState() => _AppCountControllerState();
+  State<AppCountController> createState() => _AppCountControllerState();
 }
 
 class _AppCountControllerState extends State<AppCountController> {

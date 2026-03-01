@@ -229,7 +229,7 @@ class VibeRepository {
   /// Batch fetch vibe profiles for multiple users.
   ///
   /// Uses Firestore whereIn with 10-item chunking.
-  /// Returns Map<userId, VibeProfile> - defaults for users without vibe data.
+  /// Returns `Map<userId, VibeProfile>` - defaults for users without vibe data.
   Future<Map<String, VibeProfile>> batchGetVibeProfiles(
     List<String> userIds,
   ) async {

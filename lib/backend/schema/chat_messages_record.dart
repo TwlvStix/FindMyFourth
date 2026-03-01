@@ -9,9 +9,9 @@ import '/utils/app_util.dart';
 
 class ChatMessagesRecord extends FirestoreRecord {
   ChatMessagesRecord._(
-    DocumentReference reference,
-    Map<String, dynamic> data,
-  ) : super(reference, data) {
+    super.reference,
+    super.data,
+  ) {
     _initializeFields();
   }
 

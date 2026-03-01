@@ -87,8 +87,9 @@ extension UserProviderHelpers on UserProvider {
   /// Get a user-friendly handicap display
   String get handicapDisplay {
     if (handicap == 0) return 'Not set';
-    if (handicap < 0)
+    if (handicap < 0) {
       return '+${handicap.abs()}'; // Plus handicap: +1, +2, etc.
+    }
     return handicap.toString();
   }
 

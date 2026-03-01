@@ -64,6 +64,6 @@ DateTime? getCurrentTime() {
 }
 
 DateTime? nullableDatetiume(DateTime? date) {
-  return date != null ? date : null;
+  return date;
 }
 

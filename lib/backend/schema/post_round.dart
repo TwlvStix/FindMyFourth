@@ -1,6 +1,7 @@
 /// Post-round flow data models — plain Dart value objects.
 ///
 /// Used by HostCheckinScreen and PlayerRatingScreen.
+library;
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Host Check-In Models

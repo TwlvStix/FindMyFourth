@@ -5,7 +5,7 @@ import '/core/design_tokens/spacing.dart';
 
 class AutocompleteOptionsList extends StatelessWidget {
   const AutocompleteOptionsList({
-    Key? key,
+    super.key,
     required this.textFieldKey,
     required this.textController,
     required this.options,
@@ -17,7 +17,7 @@ class AutocompleteOptionsList extends StatelessWidget {
     this.textHighlightStyle,
     this.maxHeight,
     this.elevation = 4.0,
-  }) : super(key: key);
+  });
 
   final GlobalKey textFieldKey;
   final TextEditingController textController;

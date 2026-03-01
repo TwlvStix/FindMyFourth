@@ -1,3 +1,5 @@
+// ignore_for_file: avoid_print
+
 import 'dart:math';
 
 import 'package:test/test.dart';
@@ -681,7 +683,7 @@ void printArchetypeBreakdown(List<MatchPair> pairs) {
 
   for (final threshold in [30, 40]) {
     print('');
-    print('Pairings with >50% block rate at ${threshold}% floor:');
+    print('Pairings with >50% block rate at $threshold% floor:');
 
     final problems = <String>[];
     for (final ownerArchetype in GolferArchetype.values) {
@@ -711,7 +713,7 @@ void printArchetypeBreakdown(List<MatchPair> pairs) {
 
   for (final threshold in [30, 40]) {
     print('');
-    print('At ${threshold}% floor - average block rate by player archetype:');
+    print('At $threshold% floor - average block rate by player archetype:');
 
     for (final playerArchetype in GolferArchetype.values) {
       final playerPairs = pairs.where((p) => p.player.archetype == playerArchetype).toList();
@@ -813,7 +815,7 @@ void printRecommendation(List<MatchPair> pairs) {
   print('');
   if (recommended != null) {
     final analysis = candidates[recommended]!;
-    print('RECOMMENDATION: ${recommended}% vibe floor');
+    print('RECOMMENDATION: $recommended% vibe floor');
     print('');
     print('  Expected outcomes:');
     print('  - ${analysis.blockRate.toStringAsFixed(1)}% of join attempts require owner approval');

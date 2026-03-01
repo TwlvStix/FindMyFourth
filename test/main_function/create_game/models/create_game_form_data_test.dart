@@ -73,7 +73,11 @@ void main() {
     test('toFirestoreMap uses hydrated courseRef and derived member value', () {
       final courseRef = _FakeDocumentReference('course/pebble');
       final userRef = _FakeDocumentReference('users/test-user');
-      final data = CreateGameFormData(memberDiscount: true);
+      final data = CreateGameFormData(
+        memberDiscount: true,
+        is2v2: true,
+        selectedGames: {'Skins'},
+      );
 
       data.setSelectedCourse(
           Course(reference: courseRef, name: 'Pebble Beach'));
@@ -86,6 +90,26 @@ void main() {
 
       expect(firestore['courseRef'], same(courseRef));
       expect(firestore['member_discount'], 'Yes');
+      expect(firestore['is_2v2'], isTrue);
+      expect(firestore['has_side_games'], isTrue);
+    });
+
+    test('toFirestoreMap sets has_side_games false when no side games selected',
+        () {
+      final userRef = _FakeDocumentReference('users/test-user');
+      final data = CreateGameFormData(
+        memberDiscount: false,
+        is2v2: false,
+      );
+
+      final firestore = data.toFirestoreMap(
+        uid: 'test-user',
+        userRef: userRef,
+        chatRef: null,
+      );
+
+      expect(firestore['is_2v2'], isFalse);
+      expect(firestore['has_side_games'], isFalse);
     });
   });
 }

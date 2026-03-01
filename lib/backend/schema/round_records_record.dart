@@ -9,9 +9,9 @@ import '/utils/app_util.dart';
 
 class RoundRecordsRecord extends FirestoreRecord {
   RoundRecordsRecord._(
-    DocumentReference reference,
-    Map<String, dynamic> data,
-  ) : super(reference, data) {
+    super.reference,
+    super.data,
+  ) {
     _initializeFields();
   }
 
@@ -94,7 +94,7 @@ class RoundRecordsRecord extends FirestoreRecord {
     if (snapshotsRaw is List) {
       // mapFromFirestore already converts nested Timestamps to DateTime.
       _participantSnapshots = snapshotsRaw
-          .whereType<Map>()
+          .whereType<Map<dynamic, dynamic>>()
           .map((m) => Map<String, dynamic>.from(m))
           .toList();
     }

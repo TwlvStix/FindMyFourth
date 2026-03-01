@@ -429,7 +429,7 @@ class _GolferSearchSectionState extends State<GolferSearchSection> {
         queryBuilder: (usersRecord) => usersRecord
             .orderBy('display_name_lowercase')
             .startAt([searchTerm])
-            .endAt(['${searchTerm}\uf8ff'])
+            .endAt(['$searchTerm\uf8ff'])
             .limit(25),
       ),
       builder: (context, snapshot) {

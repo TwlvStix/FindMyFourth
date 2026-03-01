@@ -32,17 +32,17 @@ String uploadedFileToString(UploadedFile uploadedFile) =>
 /// Converts the input value into a value that can be JSON encoded.
 dynamic serializeParameter(dynamic value) {
   switch (value.runtimeType) {
-    case DateTime:
+    case const (DateTime):
       return (value as DateTime).millisecondsSinceEpoch;
-    case DateTimeRange:
+    case const (DateTimeRange):
       return dateTimeRangeToString(value as DateTimeRange);
-    case LatLng:
+    case const (LatLng):
       return (value as LatLng).serialize();
-    case Color:
+    case const (Color):
       return (value as Color).toCssString();
-    case Place:
+    case const (Place):
       return placeToString(value as Place);
-    case UploadedFile:
+    case const (UploadedFile):
       return uploadedFileToString(value as UploadedFile);
   }
 
@@ -126,21 +126,21 @@ T? getParameter<T>(Map<String, dynamic> data, String paramName) {
     }
     final param = data[paramName];
     switch (T) {
-      case String:
+      case const (String):
         return param as T;
-      case double:
+      case const (double):
         return (param as num).toDouble() as T;
-      case DateTime:
+      case const (DateTime):
         return DateTime.fromMillisecondsSinceEpoch(param as int) as T;
-      case DateTimeRange:
+      case const (DateTimeRange):
         return dateTimeRangeFromString(param as String) as T;
-      case LatLng:
+      case const (LatLng):
         return latLngFromString(param as String?) as T;
-      case Color:
+      case const (Color):
         return fromCssColor(param as String) as T;
-      case Place:
+      case const (Place):
         return placeFromString(param as String) as T;
-      case UploadedFile:
+      case const (UploadedFile):
         return uploadedFileFromString(param as String) as T;
     }
     if (param is String) {

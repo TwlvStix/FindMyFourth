@@ -785,21 +785,21 @@ class _ProgressiveOnboardingWidgetState
                   color: enabled ? AppColors.navyDark : AppColors.pure,
                   size: AppIconSize.button,
                 ),
-                countBuilder: (count) => Text(
-                  count < 0 ? '+${count.abs()}' : count.toString(),
+                countBuilder: (value) => Text(
+                  value < 0 ? '+${value.abs()}' : value.toString(),
                   style: AppTypography.headlineSmallSans.copyWith(
                     letterSpacing: 0.0,
                   ),
                 ),
                 count: _handicapValue,
-                updateCount: (count) =>
-                    updateState(this, () => _handicapValue = count),
+                updateCount: (value) =>
+                    updateState(this, () => _handicapValue = value),
                 stepSize: 1,
                 minimum: -5,
                 maximum: 54,
                 editable: true,
-                formatValue: (count) =>
-                    count < 0 ? '+${count.abs()}' : count.toString(),
+                formatValue: (value) =>
+                    value < 0 ? '+${value.abs()}' : value.toString(),
                 parseValue: (text) {
                   final trimmed = text.trim();
                   if (trimmed.startsWith('+')) {
@@ -844,28 +844,28 @@ class _ProgressiveOnboardingWidgetState
             'Music on the course',
             AppPhosphorIcons.music,
             _musicValue,
-            (count) => updateState(this, () => _musicValue = count),
+            (value) => updateState(this, () => _musicValue = value),
           ),
           SizedBox(height: AppSpacing.lg),
           _buildPreferenceControl(
             'Drinks while playing',
             AppPhosphorIcons.drinks,
             _drinksValue,
-            (count) => updateState(this, () => _drinksValue = count),
+            (value) => updateState(this, () => _drinksValue = value),
           ),
           SizedBox(height: AppSpacing.lg),
           _buildPreferenceControl(
             'Play for money',
             AppPhosphorIcons.betting,
             _playMoneyValue,
-            (count) => updateState(this, () => _playMoneyValue = count),
+            (value) => updateState(this, () => _playMoneyValue = value),
           ),
           SizedBox(height: AppSpacing.lg),
           _buildPreferenceControl(
             'Pace of play',
             AppPhosphorIcons.pace,
             _paceValue,
-            (count) => updateState(this, () => _paceValue = count),
+            (value) => updateState(this, () => _paceValue = value),
           ),
         ],
       ),
@@ -921,8 +921,8 @@ class _ProgressiveOnboardingWidgetState
                 color: enabled ? AppColors.navyDark : AppColors.pure,
                 size: AppIconSize.button,
               ),
-              countBuilder: (count) => Text(
-                count.toString(),
+              countBuilder: (val) => Text(
+                val.toString(),
                 style: AppTypography.headlineSmallSans.copyWith(
                   letterSpacing: 0.0,
                 ),

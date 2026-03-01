@@ -22,7 +22,7 @@ Future<Map<String, dynamic>> makeCloudCall(
       'Message: ${e.message}',
     );
   } catch (e) {
-    AppLog.d('Cloud call error:${callName} $e');
+    AppLog.d('Cloud call error:$callName $e');
   }
   return {};
 }

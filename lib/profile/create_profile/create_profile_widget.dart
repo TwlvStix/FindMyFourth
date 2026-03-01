@@ -1020,12 +1020,12 @@ class _CreateProfileWidgetState extends State<CreateProfileWidget>
                                             size: AppIconSize.button,
                                           ),
                                         ),
-                                        countBuilder: (count) => Container(
+                                        countBuilder: (value) => Container(
                                           constraints:
                                               BoxConstraints(minWidth: 56),
                                           alignment: Alignment.center,
                                           child: Text(
-                                            formatHandicap(count),
+                                            formatHandicap(value),
                                             maxLines: 1,
                                             softWrap: false,
                                             overflow: TextOverflow.clip,
@@ -1039,8 +1039,8 @@ class _CreateProfileWidgetState extends State<CreateProfileWidget>
                                           ),
                                         ),
                                         count: handicapValue ?? 0,
-                                        updateCount: (count) => setState(
-                                            () => handicapValue = count),
+                                        updateCount: (value) => setState(
+                                            () => handicapValue = value),
                                         stepSize: 1,
                                         minimum: -5,
                                         maximum: 54,

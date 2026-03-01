@@ -131,25 +131,28 @@ class _PeerRatingScreenState extends State<PeerRatingScreen> {
       });
 
       if (result['success'] == true) {
-        if (mounted)
+        if (mounted) {
           updateState(this, () {
             _submitting = false;
             _submitted = true;
           });
+        }
       } else {
-        if (mounted)
+        if (mounted) {
           updateState(this, () {
             _submitting = false;
             _error = 'Submission failed. Please try again.';
           });
+        }
       }
     } catch (e) {
       AppLog.d('PeerRatingScreen submit error: $e');
-      if (mounted)
+      if (mounted) {
         updateState(this, () {
           _submitting = false;
           _error = 'Something went wrong. Please try again.';
         });
+      }
     }
   }
 

@@ -96,12 +96,11 @@ class _VibeOnboardingWidgetState extends State<VibeOnboardingWidget> {
         return;
       }
     } finally {
-      if (!mounted) {
-        return;
+      if (mounted) {
+        updateState(this, () {
+          _isLoading = false;
+        });
       }
-      updateState(this, () {
-        _isLoading = false;
-      });
     }
   }
 
@@ -307,12 +306,11 @@ class _VibeOnboardingWidgetState extends State<VibeOnboardingWidget> {
       }
       showSnackbar(context, 'Unable to finish setup. Please try again.');
     } finally {
-      if (!mounted) {
-        return;
+      if (mounted) {
+        updateState(this, () {
+          _isCompleting = false;
+        });
       }
-      updateState(this, () {
-        _isCompleting = false;
-      });
     }
   }
 

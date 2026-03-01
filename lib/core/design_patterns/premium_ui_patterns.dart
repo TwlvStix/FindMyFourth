@@ -12,6 +12,7 @@
 /// - Gradient accents for emphasis
 /// - Subtle animations for delight
 /// ═══════════════════════════════════════════════════════════════════════════
+library;
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';

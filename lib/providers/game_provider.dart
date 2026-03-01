@@ -18,8 +18,8 @@ import '/services/vibe_floor_service.dart';
 /// - Debounced notifyListeners for performance
 ///
 /// Usage:
-/// - Access via Provider.of<GameProvider>(context)
-/// - Or use Consumer<GameProvider> for reactive updates
+/// - Access via `Provider.of<GameProvider>(context)`
+/// - Or use `Consumer<GameProvider>` for reactive updates
 class GameProvider extends ChangeNotifier {
   GameProvider({
     GameService? service,

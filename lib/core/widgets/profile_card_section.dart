@@ -20,11 +20,11 @@ class ProfileCardSection extends StatelessWidget {
   final EdgeInsets? padding;
 
   const ProfileCardSection({
-    Key? key,
+    super.key,
     required this.title,
     required this.child,
     this.padding,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -73,12 +73,12 @@ class ProfilePreferenceItem extends StatelessWidget {
   final Color iconColor;
 
   const ProfilePreferenceItem({
-    Key? key,
+    super.key,
     required this.icon,
     required this.label,
     required this.valueWidget,
     this.iconColor = AppColors.navy,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

@@ -45,13 +45,11 @@ enum VibeImportance {
 class VibePreference {
   VibePreference({
     required int value,
-    required bool dealbreaker,
+    required this.dealbreaker,
     required int threshold,
-    required bool isDefault,
+    required this.isDefault,
   })  : value = _clamp(value),
-        dealbreaker = dealbreaker,
-        threshold = _clamp(threshold),
-        isDefault = isDefault;
+        threshold = _clamp(threshold);
 
   static const int minValue = 0;
   static const int maxValue = 5;
@@ -135,12 +133,11 @@ class VibeProfile {
     required Map<VibeCategory, VibePreference> prefs,
     Map<VibeCategory, VibeImportance>? importance,
     int? importanceVersion,
-    DateTime? importanceUpdatedAt,
+    this.importanceUpdatedAt,
     this.confirmedAt,
   })  : prefs = Map.unmodifiable(prefs),
         importance = Map.unmodifiable(importance ?? _defaultImportanceMap()),
-        importanceVersion = importanceVersion ?? 1,
-        importanceUpdatedAt = importanceUpdatedAt;
+        importanceVersion = importanceVersion ?? 1;
 
   final Map<VibeCategory, VibePreference> prefs;
   final Map<VibeCategory, VibeImportance> importance;

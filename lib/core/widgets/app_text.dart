@@ -28,8 +28,8 @@ class AppText extends StatelessWidget {
     this.textAlign,
     this.maxLines,
     this.overflow,
-    Key? key,
-  }) : super(key: key);
+    super.key,
+  });
 
   // Named constructors for semantic styles
 

@@ -318,7 +318,7 @@ class _YourStandingScreenState extends State<YourStandingScreen> {
                 ),
               ),
               Text(
-                '${weighted.toStringAsFixed(1)}',
+                weighted.toStringAsFixed(1),
                 style: AppTypography.monoMedium.copyWith(
                   color: Colors.white,
                   fontWeight: FontWeight.w700,

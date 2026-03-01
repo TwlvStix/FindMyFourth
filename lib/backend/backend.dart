@@ -98,7 +98,7 @@ Future<FirestorePage<UsersRecord>> queryUsersRecordPage({
   required int pageSize,
   required bool isStream,
   required PagingController<DocumentSnapshot?, UsersRecord> controller,
-  List<StreamSubscription?>? streamSubscriptions,
+  List<StreamSubscription<dynamic>?>? streamSubscriptions,
 }) =>
     firestoreRepository
         .queryCollectionPage(
@@ -167,7 +167,7 @@ Future<FirestorePage<CourseRecord>> queryCourseRecordPage({
   required int pageSize,
   required bool isStream,
   required PagingController<DocumentSnapshot?, CourseRecord> controller,
-  List<StreamSubscription?>? streamSubscriptions,
+  List<StreamSubscription<dynamic>?>? streamSubscriptions,
 }) =>
     firestoreRepository
         .queryCollectionPage(
@@ -236,7 +236,7 @@ Future<FirestorePage<ChatMessagesRecord>> queryChatMessagesRecordPage({
   required int pageSize,
   required bool isStream,
   required PagingController<DocumentSnapshot?, ChatMessagesRecord> controller,
-  List<StreamSubscription?>? streamSubscriptions,
+  List<StreamSubscription<dynamic>?>? streamSubscriptions,
 }) =>
     firestoreRepository
         .queryCollectionPage(
@@ -305,7 +305,7 @@ Future<FirestorePage<ChatsRecord>> queryChatsRecordPage({
   required int pageSize,
   required bool isStream,
   required PagingController<DocumentSnapshot?, ChatsRecord> controller,
-  List<StreamSubscription?>? streamSubscriptions,
+  List<StreamSubscription<dynamic>?>? streamSubscriptions,
 }) =>
     firestoreRepository
         .queryCollectionPage(
@@ -374,7 +374,7 @@ Future<FirestorePage<GamesRecord>> queryGamesRecordPage({
   required int pageSize,
   required bool isStream,
   required PagingController<DocumentSnapshot?, GamesRecord> controller,
-  List<StreamSubscription?>? streamSubscriptions,
+  List<StreamSubscription<dynamic>?>? streamSubscriptions,
 }) =>
     firestoreRepository
         .queryCollectionPage(
@@ -443,7 +443,7 @@ Future<FirestorePage<FriendRequestRecord>> queryFriendRequestRecordPage({
   required int pageSize,
   required bool isStream,
   required PagingController<DocumentSnapshot?, FriendRequestRecord> controller,
-  List<StreamSubscription?>? streamSubscriptions,
+  List<StreamSubscription<dynamic>?>? streamSubscriptions,
 }) =>
     firestoreRepository
         .queryCollectionPage(
@@ -546,32 +546,32 @@ Future<List<T>> queryCollectionOnce<T>(
   });
 }
 
-Filter filterIn(String field, List? list) => (list?.isEmpty ?? true)
+Filter filterIn(String field, List<dynamic>? list) => (list?.isEmpty ?? true)
     ? Filter(field, whereIn: null)
     : Filter(field, whereIn: list);
 
-Filter filterArrayContainsAny(String field, List? list) =>
+Filter filterArrayContainsAny(String field, List<dynamic>? list) =>
     (list?.isEmpty ?? true)
         ? Filter(field, arrayContainsAny: null)
         : Filter(field, arrayContainsAny: list);
 
 extension QueryExtension on Query {
-  Query whereIn(String field, List? list) => (list?.isEmpty ?? true)
+  Query whereIn(String field, List<dynamic>? list) => (list?.isEmpty ?? true)
       ? where(field, whereIn: null)
       : where(field, whereIn: list);
 
-  Query whereNotIn(String field, List? list) => (list?.isEmpty ?? true)
+  Query whereNotIn(String field, List<dynamic>? list) => (list?.isEmpty ?? true)
       ? where(field, whereNotIn: null)
       : where(field, whereNotIn: list);
 
-  Query whereArrayContainsAny(String field, List? list) =>
+  Query whereArrayContainsAny(String field, List<dynamic>? list) =>
       (list?.isEmpty ?? true)
           ? where(field, arrayContainsAny: null)
           : where(field, arrayContainsAny: list);
 }
 
 // Creates a Firestore document representing the logged in user if it doesn't yet exist
-Future maybeCreateUser(User user) async {
+Future<void> maybeCreateUser(User user) async {
   final userRecord = UsersRecord.collection.doc(user.uid);
   final userExists = await userRecord.get().then((u) => u.exists);
   if (userExists) {
@@ -597,7 +597,7 @@ Future maybeCreateUser(User user) async {
     if (phoneNumber != null) 'phone_number': phoneNumber,
   };
 
-  final futures = <Future>[
+  final futures = <Future<void>>[
     userRecord.set(userData),
     if (privData.isNotEmpty)
       userRecord.collection('private').doc('info').set(privData),
@@ -606,11 +606,11 @@ Future maybeCreateUser(User user) async {
   currentUserDocument = UsersRecord.getDocumentFromData(userData, userRecord);
 }
 
-Future ensureUserDocReady(User user) async {
+Future<void> ensureUserDocReady(User user) async {
   await maybeCreateUser(user);
 }
 
-Future updateUserDocument({String? email}) async {
+Future<void> updateUserDocument({String? email}) async {
   if (email != null && currentUserDocument?.reference != null) {
     await currentUserDocument!.reference
         .collection('private')

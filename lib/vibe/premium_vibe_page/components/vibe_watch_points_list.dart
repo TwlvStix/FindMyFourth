@@ -64,7 +64,7 @@ class VibeWatchPointsList extends StatelessWidget {
                 insight: insight,
               ),
             );
-          }).toList(),
+          }),
         ],
       ),
     );

@@ -1,8 +1,9 @@
 /// Player standing data models — plain Dart value objects (not FirestoreRecord).
 ///
 /// Private standing data — only the owning user should see this.
-/// Constructed from the Map<String, dynamic> returned by the getMyStanding
+/// Constructed from the `Map<String, dynamic>` returned by the getMyStanding
 /// cloud function.
+library;
 
 import 'trust_profile.dart';
 

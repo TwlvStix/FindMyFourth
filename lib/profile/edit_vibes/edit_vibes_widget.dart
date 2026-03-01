@@ -106,12 +106,11 @@ class _EditVibesWidgetState extends State<EditVibesWidget> {
       }
       showSnackbar(context, 'Unable to load vibes. Please try again.');
     } finally {
-      if (!mounted) {
-        return;
+      if (mounted) {
+        updateState(this, () {
+          _isLoading = false;
+        });
       }
-      updateState(this, () {
-        _isLoading = false;
-      });
     }
   }
 
@@ -239,12 +238,11 @@ class _EditVibesWidgetState extends State<EditVibesWidget> {
       }
       showSnackbar(context, 'Vibes were not confirmed. Please try again.');
     } finally {
-      if (!mounted) {
-        return;
+      if (mounted) {
+        updateState(this, () {
+          _isConfirming = false;
+        });
       }
-      updateState(this, () {
-        _isConfirming = false;
-      });
     }
   }
 

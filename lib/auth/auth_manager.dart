@@ -3,14 +3,14 @@ import 'package:flutter/material.dart';
 import 'base_auth_user_provider.dart';
 
 abstract class AuthManager {
-  Future signOut();
-  Future deleteUser(BuildContext context);
-  Future updateEmail({required String email, required BuildContext context});
-  Future updatePassword({required String newPassword, required BuildContext context});
+  Future<void> signOut();
+  Future<void> deleteUser(BuildContext context);
+  Future<void> updateEmail({required String email, required BuildContext context});
+  Future<void> updatePassword({required String newPassword, required BuildContext context});
   Future<bool> resetPassword(
       {required String email, required BuildContext context});
-  Future sendEmailVerification() async => currentUser?.sendEmailVerification();
-  Future refreshUser() async => currentUser?.refreshUser();
+  Future<void> sendEmailVerification() async => currentUser?.sendEmailVerification();
+  Future<void> refreshUser() async => currentUser?.refreshUser();
 }
 
 mixin EmailSignInManager on AuthManager {
@@ -47,13 +47,13 @@ mixin JwtSignInManager on AuthManager {
 }
 
 mixin PhoneSignInManager on AuthManager {
-  Future beginPhoneAuth({
+  Future<void> beginPhoneAuth({
     required BuildContext context,
     required String phoneNumber,
     required void Function(BuildContext) onCodeSent,
   });
 
-  Future verifySmsCode({
+  Future<void> verifySmsCode({
     required BuildContext context,
     required String smsCode,
   });

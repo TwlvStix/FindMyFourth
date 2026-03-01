@@ -137,7 +137,7 @@ class _SignUpAccountWidgetState extends State<SignUpAccountWidget> {
                                     padding: EdgeInsets.only(
                                       bottom: AppSpacing.md,
                                     ),
-                                    child: Container(
+                                    child: SizedBox(
                                       width: double.infinity,
                                       child: TextFormField(
                                         controller: emailAddressTextController,
@@ -205,9 +205,10 @@ class _SignUpAccountWidgetState extends State<SignUpAccountWidget> {
                                                       onTap: () async {
                                                         emailAddressTextController
                                                             ?.clear();
-                                                        if (mounted)
+                                                        if (mounted) {
                                                           updateState(
                                                               this, () {});
+                                                        }
                                                       },
                                                       child: Icon(
                                                         AppPhosphorIcons.close,
@@ -235,7 +236,7 @@ class _SignUpAccountWidgetState extends State<SignUpAccountWidget> {
                                     padding: EdgeInsets.only(
                                       bottom: AppSpacing.md,
                                     ),
-                                    child: Container(
+                                    child: SizedBox(
                                       width: double.infinity,
                                       child: TextFormField(
                                         controller: passwordTextController,
@@ -321,7 +322,7 @@ class _SignUpAccountWidgetState extends State<SignUpAccountWidget> {
                                     padding: EdgeInsets.only(
                                       bottom: AppSpacing.md,
                                     ),
-                                    child: Container(
+                                    child: SizedBox(
                                       width: double.infinity,
                                       child: TextFormField(
                                         controller:
@@ -473,7 +474,7 @@ class _SignUpAccountWidgetState extends State<SignUpAccountWidget> {
                                     padding: EdgeInsets.only(
                                       bottom: AppSpacing.lg,
                                     ),
-                                    child: Container(
+                                    child: SizedBox(
                                       width: double.infinity,
                                       child: Stack(
                                         alignment:
