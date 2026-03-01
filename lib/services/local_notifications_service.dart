@@ -121,6 +121,7 @@ class LocalNotificationsService {
     required String body,
     required String payload,
   }) async {
+    AppLog.d('🔔 [DIAG-LOCAL] show() entered - initialized=$_initialized, kIsWeb=$kIsWeb');
     if (!_initialized || kIsWeb) {
       AppLog.d('🔔 LocalNotificationsService: Not initialized or web, skipping show');
       return;
@@ -156,6 +157,7 @@ class LocalNotificationsService {
       notificationDetails: details,
       payload: payload,
     );
+    AppLog.d('🔔 [DIAG-LOCAL] show() SUCCESS - id=$id');
     AppLog.d('🔔 LocalNotificationsService: Displayed notification id=$id title="$title"');
   }
 

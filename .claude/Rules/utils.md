@@ -1,0 +1,25 @@
+---
+paths: lib/utils/**/*.dart
+---
+# Utility File Rules
+
+Utility files provide shared helper functions used across the app. They must NOT become a dumping ground for service-layer logic.
+
+## No Direct Firebase
+- NEVER call `FirebaseFirestore.instance`, `FirebaseAuth.instance`, or any Firebase service directly
+- If a utility needs Firestore data, accept it as a parameter — let the calling service fetch it
+- Utilities transform, format, or compute — they do not read or write to backends
+
+**Known debt**: `initialize_friend_fields.dart` and `app_util.dart` have direct Firebase calls. Refactor to accept data as parameters when next modified.
+
+## Pure Functions Preferred
+- Utility methods should be pure functions where possible (same input → same output, no side effects)
+- If state is needed, the utility probably belongs in a service or provider instead
+
+## Logging
+- Use `AppLog.d()` if logging is needed, never `print()` or `debugPrint()`
+
+## Location
+- General-purpose utilities go in `lib/utils/`
+- Core framework utilities go in `lib/core/utils/`
+- Feature-specific helpers should live in their feature folder, not in a shared utils directory

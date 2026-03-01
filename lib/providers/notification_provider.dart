@@ -57,6 +57,7 @@ class NotificationProvider extends ChangeNotifier {
   SyncStatus _syncStatus = SyncStatus.idle;
   String? _errorMessage;
   NotificationError? _lastBackendError;
+  bool _disposed = false;
 
   // Offline queue
   final Queue<PendingUpdate> _pendingUpdates = Queue();
@@ -150,6 +151,7 @@ class NotificationProvider extends ChangeNotifier {
 
       // Auto-hide synced status after 3 seconds
       Future.delayed(const Duration(seconds: 3), () {
+        if (_disposed) return; // Guard against calling notifyListeners() after disposal
         if (_syncStatus == SyncStatus.synced) {
           _syncStatus = SyncStatus.idle;
           notifyListeners();
@@ -358,6 +360,7 @@ class NotificationProvider extends ChangeNotifier {
 
   @override
   void dispose() {
+    _disposed = true;
     _connectivitySub?.cancel();
     super.dispose();
   }

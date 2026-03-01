@@ -37,6 +37,8 @@ class CreateGameWidget extends StatefulWidget {
 
 class _CreateGameWidgetState extends State<CreateGameWidget>
     with TickerProviderStateMixin {
+  static const List<int> _mondayFirstDayOrder = [1, 2, 3, 4, 5, 6, 0];
+
   final _courseService = CourseService();
   final _controller = CreateGameController(
     draftService: CreateGameDraftService(),
@@ -219,12 +221,11 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
     final now = DateTime.now();
     switch (_formData.flexibleWeek) {
       case 'this_week':
-        final todayDayIndex = now.weekday % 7;
-        return List.generate(7, (i) => i)
-            .where((d) => d >= todayDayIndex)
-            .toList();
+        final todayDayIndex = now.weekday == DateTime.sunday ? 0 : now.weekday;
+        final todayPosition = _mondayFirstDayOrder.indexOf(todayDayIndex);
+        return _mondayFirstDayOrder.sublist(todayPosition);
       case 'this_weekend':
-        return [0, 6];
+        return [6, 0];
       case 'next_week':
       case 'next_2_weeks':
       default:

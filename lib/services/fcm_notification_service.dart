@@ -76,9 +76,11 @@ class FcmNotificationService implements NotificationService {
     // Listen to foreground messages
     _onMessageSub =
         FirebaseMessaging.onMessage.listen(_handleForegroundMessage);
+    AppLog.d('🔔 [DIAG-FCM] onMessage listener SUBSCRIBED');
 
     // Single global tap subscription (NOT in widget lifecycle to avoid duplicates)
     _onTapSub = LocalNotificationsService().onTapStream.listen(_handleTap);
+    AppLog.d('🔔 [DIAG-FCM] onTapStream listener SUBSCRIBED');
 
     final apnsToken = await FirebaseMessaging.instance.getAPNSToken();
     AppLog.d('🍎 APNs Token: $apnsToken');
@@ -91,6 +93,9 @@ class FcmNotificationService implements NotificationService {
   }
 
   void _handleForegroundMessage(RemoteMessage message) {
+    AppLog.d('🔔 [DIAG-FG] Received: id=${message.messageId}, type=${message.data['type']}');
+    AppLog.d('🔔 [DIAG-FG] notification: ${message.notification?.title} / ${message.notification?.body}');
+    AppLog.d('🔔 [DIAG-FG] data keys: ${message.data.keys.toList()}');
     AppLog.d(
         '🔔 FcmNotificationService: Received foreground message id=${message.messageId}');
 
@@ -132,6 +137,7 @@ class FcmNotificationService implements NotificationService {
     };
 
     // Show local notification
+    AppLog.d('🔔 [DIAG-FG] Calling LocalNotificationsService.show(title: $title)');
     LocalNotificationsService().show(
       title: title,
       body: body,
@@ -226,6 +232,8 @@ class FcmNotificationService implements NotificationService {
 
   @override
   void dispose() {
+    AppLog.d('🔔 [DIAG-FCM] dispose() CALLED - cancelling listeners');
+    AppLog.d('🔔 [DIAG-FCM] Stack: ${StackTrace.current}');
     // Cancel subscriptions but do NOT close controllers
     // (controllers persist across login/logout cycles)
     _onMessageSub?.cancel();

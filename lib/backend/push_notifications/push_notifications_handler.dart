@@ -9,10 +9,17 @@ import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
-import '/core/design_tokens/colors.dart';
 import '/core/widgets/app_premium_dialog.dart';
 
-final _handledMessageIds = <String>{};
+/// TTL-based deduplication cache with 5-minute expiry.
+/// Prevents duplicate navigation while allowing legitimate taps to same destination.
+final _handledMessageCache = <String, DateTime>{};
+
+/// Prune stale entries from deduplication cache (older than 5 minutes).
+void _pruneStaleDedupeEntries() {
+  final cutoff = DateTime.now().subtract(const Duration(minutes: 5));
+  _handledMessageCache.removeWhere((_, timestamp) => timestamp.isBefore(cutoff));
+}
 
 /// Compute a content-based hash for deduplication when messageId is null.
 ///
@@ -70,12 +77,18 @@ Future<void> handleNotificationNavigation(
   Map<String, dynamic> rawData, {
   required String? messageId,
 }) async {
-  // Dedupe check - use messageId if available, otherwise fall back to content-based hash
+  // Prune stale entries and check for duplicates
+  _pruneStaleDedupeEntries();
   final dedupeKey = messageId ?? _computeContentHash(rawData);
-  if (_handledMessageIds.contains(dedupeKey)) {
+
+  AppLog.d('🔔 [DIAG-BG] handleNotificationNavigation - messageId=$messageId');
+  AppLog.d('🔔 [DIAG-BG] dedupeKey=$dedupeKey, alreadyHandled=${_handledMessageCache.containsKey(dedupeKey)}');
+
+  if (_handledMessageCache.containsKey(dedupeKey)) {
+    AppLog.d('🔔 [DIAG-BG] BLOCKED by deduplication');
     return;
   }
-  _handledMessageIds.add(dedupeKey);
+  _handledMessageCache[dedupeKey] = DateTime.now();
 
   // Normalize keys BEFORE routing
   final data = normalizeNotificationPayload(rawData);
@@ -85,7 +98,10 @@ Future<void> handleNotificationNavigation(
   final initialPageName = resolvedRoute?.pageName ??
       (rawPageName is String && rawPageName.isNotEmpty ? rawPageName : null);
 
+  AppLog.d('🔔 [DIAG-BG] resolvedRoute: ${resolvedRoute?.pageName}, initialPageName=$initialPageName');
+
   if (initialPageName == null) {
+    AppLog.d('🔔 [DIAG-BG] No page name resolved, skipping navigation');
     return;
   }
 
@@ -171,9 +187,28 @@ _PushRoute? _resolveRouteFromType(Map<String, dynamic> data) {
     }
   }
   // Join request notifications (vibe floor)
-  if (type == 'join_request_new' ||
-      type == 'join_request_approved' ||
-      type == 'join_request_declined') {
+  // Host receives new request - route to their game view
+  if (type == 'join_request_new') {
+    final gameId = data['game_id'] ?? data['gameId'];
+    if (gameId is String && gameId.isNotEmpty) {
+      return _PushRoute(
+        pageName: 'GameJoinedDetailed',
+        parameterData: {'gameRef': 'games/$gameId'},
+      );
+    }
+  }
+  // User approved - they're now a participant, show their game view
+  if (type == 'join_request_approved') {
+    final gameId = data['game_id'] ?? data['gameId'];
+    if (gameId is String && gameId.isNotEmpty) {
+      return _PushRoute(
+        pageName: 'GameJoinedDetailed',
+        parameterData: {'gameRef': 'games/$gameId'},
+      );
+    }
+  }
+  // User declined - show game details with disabled button
+  if (type == 'join_request_declined') {
     final gameId = data['game_id'] ?? data['gameId'];
     if (gameId is String && gameId.isNotEmpty) {
       return _PushRoute(
@@ -303,9 +338,6 @@ class PushNotificationsHandler extends StatefulWidget {
 }
 
 class _PushNotificationsHandlerState extends State<PushNotificationsHandler> {
-  bool _loading = false;
-  Timer? _loadingTimeout;
-
   // Static flag to ensure only ONE listener per app session
   static bool _listenerInitialized = false;
 
@@ -322,36 +354,56 @@ class _PushNotificationsHandlerState extends State<PushNotificationsHandler> {
 
     final notification = await FirebaseMessaging.instance.getInitialMessage();
     if (notification != null) {
-      await _handlePushNotification(notification);
+      // Use global context for cold start - widget context may not be ready
+      final navContext = appNavigatorKey.currentContext;
+      if (navContext != null && navContext.mounted) {
+        try {
+          await handleNotificationNavigation(
+            navContext,
+            notification.data,
+            messageId: notification.messageId,
+          );
+        } catch (e) {
+          AppLog.d('🔔 PushNotificationsHandler: Error handling initial message: $e');
+        }
+      } else {
+        AppLog.d('🔔 PushNotificationsHandler: No navigator context for initial message');
+      }
     }
 
     // Listen for push notifications opened from background
+    // IMPORTANT: Use global navigator context, not widget context, because this
+    // listener persists across widget rebuilds and the original widget may be disposed.
     FirebaseMessaging.onMessageOpenedApp.listen(_handlePushNotification);
   }
 
   Future<void> _handlePushNotification(RemoteMessage message) async {
-    // Keep loading UI for background taps (user expectation for app cold start)
-    if (mounted) {
-      setState(() => _loading = true);
-      _loadingTimeout?.cancel();
-      _loadingTimeout = Timer(const Duration(seconds: 3), () {
-        if (mounted && _loading) {
-          setState(() => _loading = false);
-        }
-      });
+    AppLog.d('🔔 [DIAG-BG] _handlePushNotification - messageId=${message.messageId}');
+    AppLog.d('🔔 [DIAG-BG] data: ${message.data}');
+
+    // Use global navigator context instead of potentially stale widget context.
+    // This widget is wrapped around every route page, so the original instance
+    // that set up the listener may be disposed when subsequent routes are pushed.
+    final navContext = appNavigatorKey.currentContext;
+    if (navContext == null) {
+      AppLog.d('🔔 PushNotificationsHandler: No navigator context, skipping');
+      return;
     }
+    if (!navContext.mounted) {
+      AppLog.d('🔔 PushNotificationsHandler: Navigator context not mounted, skipping');
+      return;
+    }
+
+    AppLog.d('🔔 [DIAG-BG] navContext.mounted=${navContext.mounted}');
+
     try {
-      // Delegate to shared navigation logic
       await handleNotificationNavigation(
-        context,
+        navContext,
         message.data,
         messageId: message.messageId,
       );
     } catch (e) {
-      AppLog.d('Error: $e');
-    } finally {
-      _loadingTimeout?.cancel();
-      if (mounted) setState(() => _loading = false);
+      AppLog.d('🔔 PushNotificationsHandler: Error handling notification: $e');
     }
   }
 
@@ -359,29 +411,22 @@ class _PushNotificationsHandlerState extends State<PushNotificationsHandler> {
   void initState() {
     super.initState();
     SchedulerBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return; // Hygiene check
       handleOpenedPushNotification();
     });
   }
 
   @override
   void dispose() {
-    _loadingTimeout?.cancel();
     // Note: The onMessageOpenedApp listener is not cancelled here as it
     // persists for the app lifetime and is deduplicated by _listenerInitialized.
+    // The listener now uses appNavigatorKey.currentContext so it doesn't
+    // reference this disposed widget's context.
     super.dispose();
   }
 
   @override
-  Widget build(BuildContext context) => _loading
-      ? Container(
-          color: AppColors.navyDark,
-          child: Center(
-            child: CircularProgressIndicator(
-              color: AppColors.green,
-            ),
-          ),
-        )
-      : widget.child;
+  Widget build(BuildContext context) => widget.child;
 }
 
 class ParameterData {

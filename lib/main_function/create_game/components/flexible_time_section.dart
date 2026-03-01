@@ -26,6 +26,17 @@ class FlexibleTimeData {
 
 /// Section for selecting flexible tee time preferences.
 class FlexibleTimeSection extends StatelessWidget {
+  static const List<int> _mondayFirstDayOrder = [1, 2, 3, 4, 5, 6, 0];
+  static const List<String> _dayNames = [
+    'Sun',
+    'Mon',
+    'Tue',
+    'Wed',
+    'Thu',
+    'Fri',
+    'Sat',
+  ];
+
   final FlexibleTimeData data;
   final ValueChanged<String> onWeekChanged;
   final ValueChanged<Set<int>> onDaysChanged;
@@ -44,19 +55,25 @@ class FlexibleTimeSection extends StatelessWidget {
         fontWeight: FontWeight.w500,
       );
 
+  int _mondayFirstSortKey(int dayIndex) {
+    return dayIndex == 0 ? 7 : dayIndex;
+  }
+
   List<int> _getAvailableDays() {
     switch (data.flexibleWeek) {
       case 'this_week':
-        final today = DateTime.now().weekday % 7;
-        return List.generate(7 - today, (i) => (today + i) % 7);
+        final now = DateTime.now();
+        final todayDayIndex = now.weekday == DateTime.sunday ? 0 : now.weekday;
+        final todayPosition = _mondayFirstDayOrder.indexOf(todayDayIndex);
+        return _mondayFirstDayOrder.sublist(todayPosition);
       case 'this_weekend':
-        return [0, 6]; // Sun, Sat
+        return [6, 0]; // Sat, Sun
       case 'next_week':
-        return [0, 1, 2, 3, 4, 5, 6];
+        return _mondayFirstDayOrder;
       case 'next_2_weeks':
-        return [0, 1, 2, 3, 4, 5, 6];
+        return _mondayFirstDayOrder;
       default:
-        return [0, 1, 2, 3, 4, 5, 6];
+        return _mondayFirstDayOrder;
     }
   }
 
@@ -81,11 +98,12 @@ class FlexibleTimeSection extends StatelessWidget {
         weekLabel = data.flexibleWeek;
     }
 
-    final dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-    final selectedDaysSorted = data.selectedDays.toList()..sort();
+    final selectedDaysSorted = data.selectedDays.toList()
+      ..sort(
+          (a, b) => _mondayFirstSortKey(a).compareTo(_mondayFirstSortKey(b)));
     final daysLabel = selectedDaysSorted.isEmpty
         ? ''
-        : ' • ${selectedDaysSorted.map((d) => dayNames[d]).join(', ')}';
+        : ' • ${selectedDaysSorted.map((d) => _dayNames[d]).join(', ')}';
 
     String timeLabel = '';
     if (data.flexibleTimesOfDay.contains('anytime')) {
@@ -229,13 +247,13 @@ class FlexibleTimeSection extends StatelessWidget {
 
   Widget _buildDayChips() {
     final allDays = [
-      {'value': 0, 'label': 'Sun'},
       {'value': 1, 'label': 'Mon'},
       {'value': 2, 'label': 'Tue'},
       {'value': 3, 'label': 'Wed'},
       {'value': 4, 'label': 'Thu'},
       {'value': 5, 'label': 'Fri'},
       {'value': 6, 'label': 'Sat'},
+      {'value': 0, 'label': 'Sun'},
     ];
 
     final availableDayIndices = _getAvailableDays().toSet();
@@ -352,7 +370,8 @@ class FlexibleTimeSection extends StatelessWidget {
               } else {
                 newTimes.remove('anytime');
                 newTimes.add(value);
-                if (newTimes.containsAll({'morning', 'afternoon', 'twilight'})) {
+                if (newTimes
+                    .containsAll({'morning', 'afternoon', 'twilight'})) {
                   newTimes.clear();
                   newTimes.add('anytime');
                 }

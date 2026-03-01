@@ -290,7 +290,7 @@ Key collections:
 
 ### Dart/Flutter
 - **Imports**: Use absolute imports with leading slash (e.g., `import '/models/game.dart'`), not `package:` imports for project files
-- **Lint rules**: Minimal — `flutter_lints` 4.0.0 with default rules. `lib/custom_code/**` is excluded from analysis. Do not add stricter lint rules without discussion.
+- **Lint rules**: `flutter_lints` 6.0.0 with strict rules enabled (strict-casts, strict-raw-types, use_build_context_synchronously, cancel_subscriptions). See `analysis_options.yaml`. `lib/custom_code/**` is excluded from analysis.
 - **Widget structure**: Each screen lives in a feature folder with a main `*_widget.dart` file and a `components/` subfolder for sub-widgets. Screens are suffixed `Widget` (e.g., `GamesListWidget`, `CreateGameWidget`)
 - **Reusable widgets**: Live in `lib/core/widgets/` and are prefixed with `app_` (e.g., `app_button.dart`, `app_card.dart`, `app_text_field.dart`)
 - **Naming**: Files use `snake_case`. Classes use `PascalCase`. Route names match widget class names.
@@ -400,6 +400,11 @@ When adding a new feature, the typical file set is:
 - **Don't use `debugPrint()` or `print()`** — use `AppLog.d()` everywhere
 - **Don't catch generic exceptions in services** — catch `FirebaseException` specifically
 - **Don't hardcode design values** — use design tokens for colors, typography, spacing, border radius, shadows, icon sizes. Use `AppIcon` with `AppPhosphorIcons`, not raw `Icon()`. Use `AppBorderRadius`, not `BorderRadius.circular(12)`. Use `AppSpacing` tokens, not literal `EdgeInsets`.
+- **Don't create widgets over 300 lines** — decompose into sub-widgets in a `components/` subfolder
+- **Don't use `setState` after `await` without a mounted check** — always add `if (!mounted) return;`
+- **Don't use empty `setState(() {})`** — use targeted state updates via Provider
+- **Don't forget to cancel `StreamSubscription`** — every subscription declared in a widget or provider must be cancelled in `dispose()`
+- **Don't put direct Firebase calls in controllers** — controllers extract logic from widgets but still delegate to services via providers
 - **`lib/custom_code/`** is excluded from analysis — avoid depending on it for new features
 - **`lib/app_state.dart`** is legacy — only holds SharedPreferences-backed cancelled game state; use domain providers instead
 

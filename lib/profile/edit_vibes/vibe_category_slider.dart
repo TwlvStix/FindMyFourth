@@ -100,15 +100,18 @@ class _VibeCategorySliderState extends State<VibeCategorySlider> {
     _dealbreakerPromptTimer?.cancel();
 
     if (_isExtremeValue) {
+      if (_showDealbreakerPrompt) return;
+
       // If already confirmed as dealbreaker at this extreme, don't re-prompt
       if (_dealbreakerConfirmed && _currentDealbreaker) return;
 
       // Wait 400ms before showing prompt (user might still be sliding)
       _dealbreakerPromptTimer = Timer(const Duration(milliseconds: 400), () {
-        if (mounted && _isExtremeValue) {
+        if (mounted && _isExtremeValue && !_showDealbreakerPrompt) {
           updateState(this, () {
             _showDealbreakerPrompt = true;
           });
+          HapticFeedback.mediumImpact();
         }
       });
     } else {
@@ -128,7 +131,6 @@ class _VibeCategorySliderState extends State<VibeCategorySlider> {
 
   /// User tapped "Yes, it's a must"
   void _confirmDealbreaker() {
-    HapticFeedback.mediumImpact();
     updateState(this, () {
       _currentDealbreaker = true;
       _dealbreakerConfirmed = true;
@@ -182,6 +184,7 @@ class _VibeCategorySliderState extends State<VibeCategorySlider> {
                   text: "Yes, it's a must",
                   variant: AppButtonVariant.primary,
                   size: AppButtonSize.small,
+                  hapticFeedback: false,
                   onPressed: _confirmDealbreaker,
                 ),
                 const SizedBox(height: AppSpacing.xs),
@@ -189,6 +192,7 @@ class _VibeCategorySliderState extends State<VibeCategorySlider> {
                   text: 'No, just a preference',
                   variant: AppButtonVariant.ghostDark,
                   size: AppButtonSize.small,
+                  hapticFeedback: false,
                   onPressed: _declineDealbreaker,
                 ),
               ],
@@ -400,7 +404,6 @@ class _VibeCategorySliderState extends State<VibeCategorySlider> {
               min: VibePreference.minValue.toDouble(),
               max: VibePreference.maxValue.toDouble(),
               onChanged: (value) {
-                HapticFeedback.selectionClick();
                 _handleValueChanged(value);
               },
               onChangeEnd: _handleValueChangeEnd,

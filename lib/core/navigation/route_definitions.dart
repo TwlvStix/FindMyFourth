@@ -34,6 +34,7 @@ import '/user_onboarding/progressive_onboarding_widget.dart';
 import '/user_onboarding/vibe_onboarding_widget.dart';
 import '/vibe/premium_vibe_page/premium_vibe_page_data.dart';
 import '/vibe/premium_vibe_page/premium_vibe_page_widget.dart';
+import '/debug/notification_routing_test_screen.dart';
 
 import '/core/navigation/app_router.dart'
     show AppStateNotifier, buildRedirect, buildPageWithTransition;
@@ -513,6 +514,18 @@ List<GoRoute> buildRoutes(AppStateNotifier appStateNotifier) => [
               : FallbackConfirmationScreen(
                   gameRef: gameRefFromState(state)!,
                 ),
+        ),
+      ),
+      // Debug routes
+      GoRoute(
+        name: NotificationRoutingTestScreen.routeName,
+        path: NotificationRoutingTestScreen.routePath,
+        redirect: buildRedirect(appStateNotifier, requireAuth: true),
+        pageBuilder: (context, state) => buildPageWithTransition(
+          context,
+          state,
+          appStateNotifier,
+          const NotificationRoutingTestScreen(),
         ),
       ),
     ];

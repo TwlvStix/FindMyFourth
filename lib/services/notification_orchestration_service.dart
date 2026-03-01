@@ -84,12 +84,16 @@ class NotificationOrchestrationService {
   bool _disposed = false;
 
   Future<void> onUserChanged(String? uid) async {
+    AppLog.d('[DIAG-ORCH] onUserChanged: uid=$uid, activeUid=$_activeUid, initializingUid=$_initializingUid, disposed=$_disposed');
+
     if (_disposed) {
+      AppLog.d('[DIAG-ORCH] onUserChanged: SKIPPED - disposed');
       return;
     }
 
     final normalizedUid = uid?.trim();
     if (normalizedUid == null || normalizedUid.isEmpty) {
+      AppLog.d('[DIAG-ORCH] onUserChanged: calling shutdown (null/empty uid)');
       shutdown();
       return;
     }
@@ -102,6 +106,7 @@ class NotificationOrchestrationService {
     }
 
     if (_activeUid != null || _initializingUid != null) {
+      AppLog.d('[DIAG-ORCH] onUserChanged: calling shutdown before initialize (switching users)');
       shutdown();
     }
 
@@ -110,17 +115,19 @@ class NotificationOrchestrationService {
 
   Future<void> initialize(String uid) async {
     if (_disposed || uid.trim().isEmpty) {
+      AppLog.d('[DIAG-ORCH] initialize: SKIPPED - disposed=$_disposed, uid="${uid.trim()}"');
       return;
     }
     final normalizedUid = uid.trim();
     if (_activeUid == normalizedUid || _initializingUid == normalizedUid) {
+      AppLog.d('[DIAG-ORCH] initialize: SKIPPED - already active/initializing');
       return;
     }
 
     final generation = ++_generation;
     _initializingUid = normalizedUid;
 
-    AppLog.d('[NotificationOrchestration] Initializing for uid=$normalizedUid');
+    AppLog.d('[DIAG-ORCH] initialize: starting for uid=$normalizedUid, generation=$generation');
 
     try {
       await _permissionCoordinator.init(normalizedUid);
@@ -153,6 +160,9 @@ class NotificationOrchestrationService {
   }
 
   bool _shouldAbort(int generation, String expectedUid, String phase) {
+    final currentUid = _currentUidProvider();
+    AppLog.d('[DIAG-ORCH] _shouldAbort: phase=$phase, disposed=$_disposed, generation=$generation vs $_generation, expectedUid=$expectedUid vs currentUid=$currentUid');
+
     if (_disposed) {
       AppLog.d(
         '[NotificationOrchestration] Aborting $phase for uid=$expectedUid: disposed',
@@ -166,7 +176,6 @@ class NotificationOrchestrationService {
       return true;
     }
 
-    final currentUid = _currentUidProvider();
     if (currentUid != expectedUid) {
       AppLog.d(
         '[NotificationOrchestration] Aborting $phase for uid=$expectedUid: current uid=$currentUid',
@@ -178,7 +187,10 @@ class NotificationOrchestrationService {
   }
 
   void shutdown() {
+    AppLog.d('[DIAG-ORCH] shutdown: activeUid=$_activeUid, initializingUid=$_initializingUid');
+
     if (_activeUid == null && _initializingUid == null) {
+      AppLog.d('[DIAG-ORCH] shutdown: SKIPPED - no active or initializing uid');
       return;
     }
 
@@ -187,8 +199,11 @@ class NotificationOrchestrationService {
     _activeUid = null;
     _initializingUid = null;
 
+    AppLog.d('[DIAG-ORCH] shutdown: calling fcmCoordinator.dispose()');
     _fcmCoordinator.dispose();
+    AppLog.d('[DIAG-ORCH] shutdown: calling localCoordinator.dispose()');
     _localCoordinator.dispose();
+    AppLog.d('[DIAG-ORCH] shutdown: calling permissionCoordinator.reset()');
     _permissionCoordinator.reset();
 
     AppLog.d(

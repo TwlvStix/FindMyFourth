@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
@@ -924,6 +925,19 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                     );
                   },
                 ),
+                // Debug: Notification routing test (only in debug mode)
+                if (kDebugMode) ...[
+                  Divider(height: 1, color: AppColors.navyLight, indent: 56),
+                  _buildSettingsRow(
+                    context,
+                    phosphorIcon: PhosphorIconsRegular.bug,
+                    label: 'Test Notification Routing',
+                    onTap: () {
+                      HapticFeedback.lightImpact();
+                      context.push('/debug/notification-routing');
+                    },
+                  ),
+                ],
                 Divider(height: 1, color: AppColors.navyLight, indent: 56),
                 _buildSettingsRow(
                   context,
