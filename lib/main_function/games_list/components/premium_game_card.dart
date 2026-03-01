@@ -12,7 +12,7 @@ import '/core/widgets/app_expandable_text.dart';
 import '/core/widgets/app_icon.dart';
 import '/utils/app_util.dart';
 import '/main_function/games_list/components/flexible_availability_summary.dart';
-import '/main_function/games_list/games_list_widget.dart'
+import '/main_function/games_list/utils/cancelled_game_handler.dart'
     show CancelledGameHandling;
 import '/models/game.dart';
 import '/models/player_eligibility.dart';

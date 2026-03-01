@@ -4,7 +4,6 @@ import '/core/design_tokens/colors.dart';
 import '/core/design_tokens/typography.dart';
 import '/core/design_tokens/app_phosphor_icons.dart';
 import '/core/design_tokens/icon_size.dart';
-import '/core/widgets/app_empty_state_premium.dart';
 import '/core/widgets/app_icon.dart';
 import '/core/widgets/app_premium_dialog.dart';
 import '/core/widgets/trust/restriction_banner.dart';
@@ -17,9 +16,14 @@ import '/core/widgets/fairway_background.dart';
 import '/utils/app_util.dart';
 import '/auth/firebase_auth/auth_util.dart';
 import '/main_function/games_list/components/game_list_filter_bottom_sheet.dart';
-import '/main_function/games_list/components/premium_game_card.dart';
 import '/main_function/games_list/components/flexible_games_shelf.dart';
 import '/main_function/games_list/components/flexible_games_bottom_sheet.dart';
+import '/main_function/games_list/components/games_list_empty_state.dart';
+import '/main_function/games_list/components/fixed_games_section.dart';
+import '/main_function/games_list/components/friends_only_games_section.dart';
+import '/main_function/games_list/utils/game_canonicalization.dart';
+import '/main_function/games_list/utils/game_filtering.dart';
+import '/main_function/games_list/utils/cancelled_game_handler.dart';
 import '/models/game.dart';
 import '/models/player_eligibility.dart';
 import '/providers/game_provider.dart';
@@ -32,13 +36,6 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:provider/provider.dart';
-
-enum CancelledGameHandling {
-  removeNow,
-  removeEndOfDay,
-  removeAfter7Days,
-  keepInList,
-}
 
 /// Immutable metadata derived from the current games snapshot.
 /// Computed once per build to avoid repeated state mutations.
@@ -134,13 +131,6 @@ class _GamesListWidgetState extends State<GamesListWidget> {
 
   // Track last warmed profile UIDs to avoid redundant warming calls
   Set<String> _lastWarmedProfileUids = {};
-  static const Map<CancelledGameHandling, String> _cancelledHandlingStorageMap =
-      {
-    CancelledGameHandling.removeNow: 'removeNow',
-    CancelledGameHandling.removeEndOfDay: 'removeEndOfDay',
-    CancelledGameHandling.removeAfter7Days: 'removeAfter7Days',
-    CancelledGameHandling.keepInList: 'keepInList',
-  };
   final scaffoldKey = GlobalKey<ScaffoldState>();
 
   @override
@@ -185,296 +175,38 @@ class _GamesListWidgetState extends State<GamesListWidget> {
     });
   }
 
-  CancelledGameHandling? _parseCancelledHandling(String? value) {
-    if (value == null) {
-      return null;
-    }
-    for (final entry in _cancelledHandlingStorageMap.entries) {
-      if (entry.value == value) {
-        return entry.key;
-      }
-    }
-    return null;
-  }
-
+  /// Wrapper that uses the widget's cache to get cancelled game handling.
   CancelledGameHandling? _getCancelledHandling(Game game) {
-    final cached = _cancelledGameHandlingByGame[game.reference];
-    if (cached != null) {
-      return cached;
-    }
-    final storedValue =
-        AppState().getCancelledGameHandling(game.reference.path);
-    final parsed = _parseCancelledHandling(storedValue);
-    if (parsed != null) {
-      _cancelledGameHandlingByGame[game.reference] = parsed;
-    }
-    return parsed;
+    return getCancelledHandling(game, _cancelledGameHandlingByGame);
   }
 
+  /// Wrapper that uses the widget's cache to check if cancelled game should hide.
   bool _shouldHideCancelledGame(Game game) {
-    // Use status field instead of isCancelled
-    if (game.status != 'cancelled') {
-      return false;
-    }
-
-    // Auto-hide cancelled games after they've expired
-    // This happens regardless of user preference
-    if (_isCancelledGameExpired(game)) {
-      return true;
-    }
-
-    // For same-day cancelled games, check if user selected "Remove now"
-    final handling = _getCancelledHandling(game);
-    if (handling == CancelledGameHandling.removeNow) {
-      return true;
-    }
-
-    // Legacy handling options (kept for backward compatibility)
-    if (handling == CancelledGameHandling.removeEndOfDay) {
-      final gameDate = game.date;
-      if (gameDate == null) {
-        return false;
-      }
-      final endOfDay = DateTime(
-        gameDate.year,
-        gameDate.month,
-        gameDate.day,
-        23,
-        59,
-        59,
-      );
-      return getCurrentTimestamp.isAfter(endOfDay);
-    }
-    if (handling == CancelledGameHandling.removeAfter7Days) {
-      final hideAt = AppState().getCancelledGameHideAt(game.reference.path);
-      if (hideAt == null) {
-        return false;
-      }
-      return getCurrentTimestamp.isAfter(hideAt);
-    }
-    return false;
-  }
-
-  /// Checks if a cancelled game should be auto-hidden based on expiration.
-  ///
-  /// - Scheduled games: hidden after the scheduled date passes
-  /// - Flexible games: hidden after the cancellation date passes
-  bool _isCancelledGameExpired(Game game) {
-    final now = getCurrentTimestamp;
-
-    // Scheduled games: hide after scheduled date passes
-    if (game.scheduleType == 'scheduled' && game.date != null) {
-      final endOfDay = DateTime(
-        game.date!.year,
-        game.date!.month,
-        game.date!.day,
-        23,
-        59,
-        59,
-      );
-      return now.isAfter(endOfDay);
-    }
-
-    // Flexible games: hide after cancellation date passes
-    if (game.scheduleType == 'flexible' && game.cancelledAt != null) {
-      final cancelDate = game.cancelledAt!;
-      final endOfCancelDay = DateTime(
-        cancelDate.year,
-        cancelDate.month,
-        cancelDate.day,
-        23,
-        59,
-        59,
-      );
-      return now.isAfter(endOfCancelDay);
-    }
-
-    return false;
-  }
-
-  String? _canonicalGameType(String rawValue) {
-    final value = rawValue.trim().toLowerCase();
-    if (value.isEmpty) {
-      return null;
-    }
-    switch (value) {
-      case 'stroke':
-      case 'stroke play':
-        return 'Stroke Play';
-      case 'match play':
-      case 'matchplay':
-        return 'Match Play';
-      case 'stableford':
-        return 'Stableford';
-      default:
-        return null;
-    }
-  }
-
-  String? _canonicalVibe(String rawValue) {
-    final value = rawValue.trim().toLowerCase();
-    if (value.isEmpty) {
-      return null;
-    }
-    switch (value) {
-      case 'competitive':
-        return 'Competitive';
-      case 'casual':
-        return 'Casual';
-      default:
-        return null;
-    }
-  }
-
-  String? _canonicalStakes(String rawValue) {
-    final value = rawValue.trim().toLowerCase();
-    if (value.isEmpty) {
-      return null;
-    }
-    switch (value) {
-      case 'no money':
-      case 'nomoney':
-        return 'No Money';
-      case 'low stakes':
-      case 'lowstakes':
-        return 'Low Stakes';
-      case 'high stakes':
-      case 'highstakes':
-        return 'High Stakes';
-      default:
-        return null;
-    }
-  }
-
-  String? _canonicalHandicap(String rawValue) {
-    final value = rawValue.trim().toLowerCase();
-    if (value.isEmpty) {
-      return null;
-    }
-    switch (value) {
-      case 'gross':
-        return 'Gross';
-      case 'net':
-        return 'Net';
-      case 'both':
-      case 'gross + net':
-      case 'gross+net':
-        return 'Both';
-      default:
-        return null;
-    }
-  }
-
-  String? _gameTypeForFilters(Game game) {
-    return _canonicalGameType(game.gameType);
-  }
-
-  String? _vibeForFilters(Game game) {
-    return _canonicalVibe(game.rulesSetting);
-  }
-
-  String? _stakesForFilters(Game game) {
-    return _canonicalStakes(game.styleGame);
-  }
-
-  String? _handicapForFilters(Game game) {
-    return _canonicalHandicap(game.scoring);
-  }
-
-  bool _isSameDay(DateTime a, DateTime b) {
-    return a.year == b.year && a.month == b.month && a.day == b.day;
-  }
-
-  bool _matchesDateRange(DateTime? gameDate, GameDateRange range) {
-    if (range == GameDateRange.any) {
-      return true;
-    }
-    if (gameDate == null) {
-      return false;
-    }
-    final now = DateTime.now();
-    final today = DateTime(now.year, now.month, now.day);
-    final gameDay = DateTime(gameDate.year, gameDate.month, gameDate.day);
-    switch (range) {
-      case GameDateRange.today:
-        return _isSameDay(gameDay, today);
-      case GameDateRange.tomorrow:
-        return _isSameDay(gameDay, today.add(Duration(days: 1)));
-      case GameDateRange.next7Days:
-        final end = today.add(Duration(days: 7));
-        return !gameDay.isBefore(today) && !gameDay.isAfter(end);
-      case GameDateRange.any:
-        return true;
-    }
-  }
-
-  bool _isPublicGame(Game game) {
-    final value = game.friendGame.trim().toLowerCase();
-    return value.isEmpty || value == 'public';
-  }
-
-  bool _isFriendsOnlyGame(Game game) {
-    return game.friendGame.trim().toLowerCase() == 'friends';
-  }
-
-  Set<String> _friendIdsFromRecord(UsersRecord? record) {
-    final friends = record?.friends ?? const <DocumentReference>[];
-    final ids = <String>{};
-    for (final entry in friends) {
-      ids.add(entry.id);
-    }
-    return ids;
-  }
-
-  bool _isUserGame(Game game, DocumentReference? currentUserReference) {
-    return currentUserReference != null &&
-        (game.userRef == currentUserReference ||
-            game.joinedPlayers.contains(currentUserReference));
-  }
-
-  bool _isJoinableGame(
-    Game game,
-    DocumentReference? currentUserReference,
-    Set<String> friendIds,
-  ) {
-    if (_isUserGame(game, currentUserReference)) {
-      return true;
-    }
-    if (_isPublicGame(game)) {
-      return true;
-    }
-    if (_isFriendsOnlyGame(game)) {
-      final ownerRef = game.userRef;
-      if (ownerRef == null) {
-        return false;
-      }
-      return friendIds.contains(ownerRef.id) || friendIds.contains(game.uid);
-    }
-    return true;
+    return shouldHideCancelledGame(game, _cancelledGameHandlingByGame);
   }
 
   List<Game> _applyFilters(List<Game> gamesList, GameListFilters filters) {
     return gamesList.where((game) {
       if (filters.selectedGameTypes.isNotEmpty) {
-        final gameType = _gameTypeForFilters(game);
+        final gameType = gameTypeForFilters(game);
         if (gameType == null || !filters.selectedGameTypes.contains(gameType)) {
           return false;
         }
       }
       if (filters.selectedVibes.isNotEmpty) {
-        final vibe = _vibeForFilters(game);
+        final vibe = vibeForFilters(game);
         if (vibe == null || !filters.selectedVibes.contains(vibe)) {
           return false;
         }
       }
       if (filters.selectedStakes.isNotEmpty) {
-        final stakes = _stakesForFilters(game);
+        final stakes = stakesForFilters(game);
         if (stakes == null || !filters.selectedStakes.contains(stakes)) {
           return false;
         }
       }
       if (filters.selectedHandicaps.isNotEmpty) {
-        final handicap = _handicapForFilters(game);
+        final handicap = handicapForFilters(game);
         if (handicap == null || !filters.selectedHandicaps.contains(handicap)) {
           return false;
         }
@@ -491,7 +223,7 @@ class _GamesListWidgetState extends State<GamesListWidget> {
           return false;
         }
       }
-      if (!_matchesDateRange(game.date, filters.selectedDateRange)) {
+      if (!matchesDateRange(game.date, filters.selectedDateRange)) {
         return false;
       }
       return true;
@@ -597,7 +329,7 @@ class _GamesListWidgetState extends State<GamesListWidget> {
     });
     AppState().setCancelledGameHandling(
       game.reference.path,
-      _cancelledHandlingStorageMap[selection]!,
+      cancelledHandlingStorageMap[selection]!,
     );
     if (selection == CancelledGameHandling.removeAfter7Days) {
       AppState().setCancelledGameHideAt(
@@ -807,10 +539,10 @@ class _GamesListWidgetState extends State<GamesListWidget> {
                   // Compute filter metadata once from the active games snapshot
                   final filterMeta = GameFilterMeta.fromGames(
                     activeGames,
-                    _gameTypeForFilters,
-                    _vibeForFilters,
-                    _stakesForFilters,
-                    _handicapForFilters,
+                    gameTypeForFilters,
+                    vibeForFilters,
+                    stakesForFilters,
+                    handicapForFilters,
                   );
 
                   // Cache for use by filter button (no setState - just update the field)
@@ -830,7 +562,7 @@ class _GamesListWidgetState extends State<GamesListWidget> {
                         ? null
                         : UsersRecord.getDocument(currentUserReference),
                     builder: (context, userSnapshot) {
-                      final friendIds = _friendIdsFromRecord(userSnapshot.data);
+                      final friendIds = friendIdsFromRecord(userSnapshot.data);
 
                       // Filter out gender-restricted games the user isn't eligible for
                       // (unless they're the owner)
@@ -852,10 +584,10 @@ class _GamesListWidgetState extends State<GamesListWidget> {
                       final joinableGames = <Game>[];
                       final lockedGames = <Game>[];
                       for (final game in eligibleGames) {
-                        if (_isJoinableGame(
+                        if (isJoinableGame(
                             game, currentUserReference, friendIds)) {
                           joinableGames.add(game);
-                        } else if (_isFriendsOnlyGame(game)) {
+                        } else if (isFriendsOnlyGame(game)) {
                           lockedGames.add(game);
                         } else {
                           joinableGames.add(game);
@@ -961,274 +693,43 @@ class _GamesListWidgetState extends State<GamesListWidget> {
                                 scheduledGames.isEmpty &&
                                 lockedGames.isEmpty)
                               SliverToBoxAdapter(
-                                child: Padding(
-                                  padding: EdgeInsets.only(
-                                    top: AppSpacing.xl,
-                                    bottom:
-                                        MediaQuery.of(context).padding.bottom +
-                                            128.0,
-                                  ),
-                                  child: Column(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    children: [
-                                      AppEmptyStatePremium(
-                                        icon: AppPhosphorIcons.games,
-                                        title: 'No Games Yet',
-                                        message:
-                                            'Join or create a game to get started.',
-                                      ),
-                                      SizedBox(height: AppSpacing.lg),
-                                      SizedBox(
-                                        width: 220,
-                                        child: AppButtonEnhanced(
-                                          text: 'Create a game',
-                                          variant: AppButtonVariant.primary,
-                                          size: AppButtonSize.medium,
-                                          onPressed: () {
-                                            context.pushCreateGame(
-                                              transition: TransitionStandards
-                                                  .detailTransition,
-                                            );
-                                          },
-                                        ),
-                                      ),
-                                    ],
+                                child: GamesListEmptyState(
+                                  onCreateGame: () => context.pushCreateGame(
+                                    transition:
+                                        TransitionStandards.detailTransition,
                                   ),
                                 ),
                               ),
                             // ════════════════════════════════════════════════════
-                            // Fixed Games Section Header
+                            // Fixed Games Section (header + list)
                             // ════════════════════════════════════════════════════
-                            if (scheduledGames.isNotEmpty)
-                              SliverToBoxAdapter(
-                                child: Padding(
-                                  padding: EdgeInsets.only(
-                                    left: AppSpacing.md,
-                                    right: AppSpacing.md,
-                                    top: flexibleGames.isEmpty
-                                        ? AppSpacing.md
-                                        : 0,
-                                    bottom: AppSpacing.sm,
-                                  ),
-                                  child: Row(
-                                    children: [
-                                      Container(
-                                        width: 8,
-                                        height: 8,
-                                        decoration: BoxDecoration(
-                                          color: AppColors.green,
-                                          shape: BoxShape.circle,
-                                        ),
-                                      ),
-                                      SizedBox(width: AppSpacing.xs),
-                                      Text(
-                                        'Fixed Games',
-                                        style:
-                                            AppTypography.titleSmall.copyWith(
-                                          color: AppColors.textPrimary,
-                                          fontWeight: FontWeight.w600,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ),
+                            ...FixedGamesSectionBuilder(
+                              scheduledGames: scheduledGames,
+                              hasFlexibleGames: flexibleGames.isNotEmpty,
+                              hasLockedGames: lockedGames.isNotEmpty,
+                              currentUserReference: currentUserReference,
+                              getCancelledHandling: _getCancelledHandling,
+                              onCancelledGameTap: _showCancelledGameOptions,
+                              onFriendsOnlyTap: _showFriendsOnlyDialog,
+                            ).build(context),
                             // ════════════════════════════════════════════════════
-                            // Scheduled Games List
+                            // Friends-Only Games Section (header + list)
                             // ════════════════════════════════════════════════════
-                            if (scheduledGames.isNotEmpty)
-                              SliverPadding(
-                                padding: EdgeInsets.only(
-                                  top: 0,
-                                  // Only add large bottom padding if no locked games section follows
-                                  bottom: lockedGames.isEmpty
-                                      ? MediaQuery.of(context).padding.bottom +
-                                          128.0
-                                      : AppSpacing.md,
-                                ),
-                                sliver: SliverList(
-                                  delegate: SliverChildBuilderDelegate(
-                                    (context, index) {
-                                      final containerVarItem =
-                                          scheduledGames[index];
-                                      final isLast =
-                                          index == scheduledGames.length - 1;
-                                      return Padding(
-                                        padding: EdgeInsets.only(
-                                          bottom: isLast ? 0.0 : AppSpacing.sm,
-                                        ),
-                                        child: PremiumGameCard(
-                                          game: containerVarItem,
-                                          currentUserReference:
-                                              currentUserReference,
-                                          getCancelledHandling:
-                                              _getCancelledHandling,
-                                          onCancelledGameTap:
-                                              _showCancelledGameOptions,
-                                          onFriendsOnlyTap:
-                                              _showFriendsOnlyDialog,
-                                          animationIndex: index,
-                                          staggerDelay: Duration(
-                                              milliseconds: 24 * index),
-                                        ),
-                                      );
-                                    },
-                                    childCount: scheduledGames.length,
-                                  ),
-                                ),
-                              ),
-                            // ════════════════════════════════════════════════════
-                            // Friends-Only Games Section Header
-                            // ════════════════════════════════════════════════════
-                            if (lockedGames.isNotEmpty)
-                              SliverToBoxAdapter(
-                                child: Padding(
-                                  padding: EdgeInsets.only(
-                                    left: AppSpacing.md,
-                                    right: AppSpacing.md,
-                                    top: AppSpacing.md,
-                                    bottom: AppSpacing.sm,
-                                  ),
-                                  child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Row(
-                                        children: [
-                                          // Green dot prefix
-                                          Container(
-                                            width: 8,
-                                            height: 8,
-                                            decoration: BoxDecoration(
-                                              color: AppColors.green,
-                                              shape: BoxShape.circle,
-                                            ),
-                                          ),
-                                          SizedBox(width: AppSpacing.xs),
-                                          // Title
-                                          Text(
-                                            'Friends-Only Games',
-                                            style: AppTypography.titleSmall
-                                                .copyWith(
-                                              color: AppColors.textPrimary,
-                                              fontWeight: FontWeight.w600,
-                                            ),
-                                          ),
-                                          SizedBox(width: AppSpacing.xxs),
-                                          // Small lock icon after title
-                                          AppIcon(
-                                            icon: AppPhosphorIcons.lock,
-                                            size: AppIconSize.xs,
-                                            color: AppColors.textMuted,
-                                          ),
-                                          const Spacer(),
-                                          // Hide/Show toggle
-                                          GestureDetector(
-                                            onTap: () {
-                                              AppState().hideFriendsOnlyGames =
-                                                  !AppState()
-                                                      .hideFriendsOnlyGames;
-                                              if (mounted) {
-                                                updateState(this, () {});
-                                              }
-                                            },
-                                            behavior: HitTestBehavior.opaque,
-                                            child: Padding(
-                                              padding: EdgeInsets.symmetric(
-                                                vertical: AppSpacing.xxs,
-                                                horizontal: AppSpacing.xs,
-                                              ),
-                                              child: Text(
-                                                AppState().hideFriendsOnlyGames
-                                                    ? 'Show'
-                                                    : 'Hide',
-                                                style: AppTypography.labelSmall
-                                                    .copyWith(
-                                                  color:
-                                                      AppColors.textSecondary,
-                                                  fontWeight: FontWeight.w500,
-                                                ),
-                                              ),
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                      SizedBox(height: AppSpacing.xxs),
-                                      // Subtitle (muted caption)
-                                      Text(
-                                        'Become friends with the host to join.',
-                                        style:
-                                            AppTypography.labelSmall.copyWith(
-                                          color: AppColors.textMuted,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ),
-                            // ════════════════════════════════════════════════════
-                            // Friends-Only Games List
-                            // ════════════════════════════════════════════════════
-                            if (!AppState().hideFriendsOnlyGames &&
-                                lockedGames.isNotEmpty)
-                              Consumer<UserProvider>(
-                                builder: (context, userProvider, _) {
-                                  return SliverPadding(
-                                    padding: EdgeInsets.only(
-                                      top: AppSpacing.sm,
-                                      // Account for bottom nav bar (56) + FAB (56) + spacing (16) + safe area
-                                      bottom: MediaQuery.of(context)
-                                              .padding
-                                              .bottom +
-                                          128.0,
-                                    ),
-                                    sliver: SliverList(
-                                      delegate: SliverChildBuilderDelegate(
-                                        (context, index) {
-                                          final lockedGame = lockedGames[index];
-                                          final isLast =
-                                              index == lockedGames.length - 1;
-                                          final hostRef = lockedGame.userRef;
-                                          final hasPendingRequest = hostRef !=
-                                                  null
-                                              ? userProvider
-                                                  .hasPendingOutgoingRequest(
-                                                      hostRef.id)
-                                              : false;
-                                          return Padding(
-                                            padding: EdgeInsets.only(
-                                              bottom:
-                                                  isLast ? 0.0 : AppSpacing.sm,
-                                            ),
-                                            child: PremiumGameCard(
-                                              game: lockedGame,
-                                              currentUserReference:
-                                                  currentUserReference,
-                                              isLocked: true,
-                                              hasPendingFriendRequest:
-                                                  hasPendingRequest,
-                                              onAddFriend: hostRef != null
-                                                  ? () => _sendFriendRequest(
-                                                      context, hostRef)
-                                                  : null,
-                                              getCancelledHandling:
-                                                  _getCancelledHandling,
-                                              onCancelledGameTap:
-                                                  _showCancelledGameOptions,
-                                              onFriendsOnlyTap:
-                                                  _showFriendsOnlyDialog,
-                                              animationIndex: index,
-                                              staggerDelay: Duration(
-                                                  milliseconds: 24 * index),
-                                            ),
-                                          );
-                                        },
-                                        childCount: lockedGames.length,
-                                      ),
-                                    ),
-                                  );
-                                },
-                              ),
+                            ...FriendsOnlyGamesSectionBuilder(
+                              lockedGames: lockedGames,
+                              currentUserReference: currentUserReference,
+                              getCancelledHandling: _getCancelledHandling,
+                              onCancelledGameTap: _showCancelledGameOptions,
+                              onFriendsOnlyTap: _showFriendsOnlyDialog,
+                              onSendFriendRequest: _sendFriendRequest,
+                              onToggleVisibility: () {
+                                AppState().hideFriendsOnlyGames =
+                                    !AppState().hideFriendsOnlyGames;
+                                if (mounted) {
+                                  updateState(this, () {});
+                                }
+                              },
+                            ).build(context),
                           ],
                         ),
                       );
