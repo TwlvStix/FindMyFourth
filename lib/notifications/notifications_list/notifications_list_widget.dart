@@ -285,6 +285,7 @@ class _NotificationsListWidgetState extends State<NotificationsListWidget> {
           await _showFriendsOnlyDialog();
           return;
         }
+        if (!mounted) return;
         context.pushJoinGameDetailed(
           gameRef: gameRef,
         );
@@ -312,6 +313,7 @@ class _NotificationsListWidgetState extends State<NotificationsListWidget> {
           await _showFriendsOnlyDialog();
           return;
         }
+        if (!mounted) return;
         context.pushJoinGameDetailed(
           gameRef: gameRef,
         );
@@ -600,9 +602,10 @@ class _NotificationsListWidgetState extends State<NotificationsListWidget> {
                                               ),
                                             ),
                                           );
+                                          if (!context.mounted) return;
                                           if (result == 'unread') {
                                             await _markAsUnread(doc.reference);
-                                            if (mounted) {
+                                            if (context.mounted) {
                                               ScaffoldMessenger.of(context)
                                                   .showSnackBar(
                                                 SnackBar(

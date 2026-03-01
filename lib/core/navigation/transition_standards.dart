@@ -206,7 +206,7 @@ extension TransitionNavigation on BuildContext {
   }) {
     final extraWithTransition =
         _mergeExtra(extra, TransitionStandards.modalTransition);
-    pushNamed(
+    GoRouter.of(this).pushNamed(
       name,
       pathParameters: pathParameters,
       queryParameters: queryParameters,
@@ -225,7 +225,7 @@ extension TransitionNavigation on BuildContext {
   }) {
     final extraWithTransition =
         _mergeExtra(extra, TransitionStandards.detailTransition);
-    pushNamed(
+    GoRouter.of(this).pushNamed(
       name,
       pathParameters: pathParameters,
       queryParameters: queryParameters,
@@ -244,7 +244,7 @@ extension TransitionNavigation on BuildContext {
     required TransitionInfo transition,
   }) {
     final extraWithTransition = _mergeExtra(extra, transition);
-    pushNamed(
+    GoRouter.of(this).pushNamed(
       name,
       pathParameters: pathParameters,
       queryParameters: queryParameters,
@@ -263,7 +263,7 @@ extension TransitionNavigation on BuildContext {
     required TransitionInfo transition,
   }) {
     final extraWithTransition = _mergeExtra(extra, transition);
-    goNamed(
+    GoRouter.of(this).goNamed(
       name,
       pathParameters: pathParameters,
       queryParameters: queryParameters,

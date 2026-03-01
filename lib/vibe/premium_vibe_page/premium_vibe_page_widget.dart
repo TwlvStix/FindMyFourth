@@ -184,13 +184,13 @@ class _PremiumVibePageWidgetState extends State<PremiumVibePageWidget> {
             otherUid: userRef.id,
           );
 
-      if (!mounted) return;
+      if (!context.mounted) return;
 
       context.pushChatDetails(
         chatId: chatRef.id,
       );
     } catch (error, stackTrace) {
-      if (!mounted) return;
+      if (!context.mounted) return;
 
       context
           .read<ChatProvider>()

@@ -115,6 +115,7 @@ class GameActionButtons extends StatelessWidget {
         false;
 
     if (!confirmDialogResponse) return;
+    if (!context.mounted) return;
 
     final shouldRemove = await showPremiumDialog(
       context: context,

@@ -121,7 +121,8 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget>
           'This game is visible to friends only. Add the host as a friend to view details.',
       actionLabel: 'Got It',
     );
-    if (mounted) context.pop();
+    if (!context.mounted) return;
+    context.pop();
   }
 
   Future<void> _handleJoinPressed({

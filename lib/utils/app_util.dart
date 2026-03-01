@@ -292,6 +292,7 @@ void showSnackbar(
   bool loading = false,
   int duration = 4,
 }) {
+  if (!context.mounted) return;
   final messenger = scaffoldMessengerKey.currentState;
   if (messenger == null) {
     return;

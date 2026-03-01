@@ -323,7 +323,7 @@ extension AppNavigationExtensions on BuildContext {
     required String userId,
     required Object data,
   }) {
-    pushNamed(
+    GoRouter.of(this).pushNamed(
       AppRouteNames.premiumVibePage,
       pathParameters: <String, String>{'userId': userId},
       extra: data,

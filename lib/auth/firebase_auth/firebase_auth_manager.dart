@@ -280,6 +280,7 @@ class FirebaseAuthManager extends AuthManager
           phoneAuthManager.triggerOnCodeSent = false;
           phoneAuthManager.phoneAuthError = null;
         });
+        if (!context.mounted) return;
         await handlePostAuthNavigation(
           context,
           fallbackRouteName: 'GamesList',
@@ -358,6 +359,7 @@ class FirebaseAuthManager extends AuthManager
       final authProviderInfo =
           'authProvider=$authProvider, code=${e.code}, message=${e.message}';
       AppLog.d('🔐 AUTH ERROR: $authProviderInfo, userDocPath=$userDocPath');
+      if (!context.mounted) return null;
       final errorMsg = _firebaseAuthErrorMessage(e);
       _showAuthError(context, errorMsg);
       return null;
@@ -365,12 +367,14 @@ class FirebaseAuthManager extends AuthManager
       final authProviderInfo =
           'authProvider=$authProvider, code=${e.code}, description=${e.description}';
       AppLog.d('🔐 AUTH ERROR: $authProviderInfo');
+      if (!context.mounted) return null;
       _showAuthError(context, _googleSignInErrorMessage(e));
       return null;
     } catch (e, stackTrace) {
       AppLog.d('❌ AUTH: Unexpected error during sign in/create account');
       AppLog.d('❌ AUTH: Error: $e');
       AppLog.d('❌ AUTH: Stack trace: $stackTrace');
+      if (!context.mounted) return null;
       _showAuthError(context, 'Error: An unexpected error occurred');
       return null;
     }
@@ -456,6 +460,7 @@ class FirebaseAuthManager extends AuthManager
           : FindMyFourthFirebaseUser.fromUserCredential(userCredential);
     } on FirebaseAuthException catch (e) {
       AppLog.d('❌ AUTH: create email failed.');
+      if (!context.mounted) return null;
       final errorMsg = e.code == 'email-already-in-use'
           ? 'An account already exists for that email. Please sign in instead.'
           : _firebaseAuthErrorMessage(e);
@@ -465,12 +470,14 @@ class FirebaseAuthManager extends AuthManager
       AppLog.d('❌ AUTH: Unexpected error during account creation');
       AppLog.d('❌ AUTH: Error: $e');
       AppLog.d('❌ AUTH: Stack trace: $stackTrace');
+      if (!context.mounted) return null;
       _showAuthError(context, 'Error: An unexpected error occurred');
       return null;
     }
   }
 
   void _showAuthError(BuildContext context, String message) {
+    if (!context.mounted) return;
     AppLog.d('❌ AUTH: Showing error to user: $message');
     ScaffoldMessenger.of(context).hideCurrentSnackBar();
     ScaffoldMessenger.of(context).showSnackBar(

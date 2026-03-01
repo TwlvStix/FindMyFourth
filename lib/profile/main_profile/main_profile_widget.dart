@@ -944,16 +944,17 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                       actionLabel: 'Log Out',
                     );
 
-                    if (shouldLogout == true) {
-                      GoRouter.of(context).prepareAuthEvent();
-                      await authManager.signOut();
-                      GoRouter.of(context).clearRedirectLocation();
+                    if (shouldLogout != true) return;
+                    if (!context.mounted) return;
+                    GoRouter.of(context).prepareAuthEvent();
+                    await authManager.signOut();
+                    if (!context.mounted) return;
+                    GoRouter.of(context).clearRedirectLocation();
 
-                      if (!context.mounted) return;
-                      final router = GoRouter.of(context);
-                      if (router.shouldRedirect(false)) return;
-                      context.goSignIn();
-                    }
+                    if (!context.mounted) return;
+                    final router = GoRouter.of(context);
+                    if (router.shouldRedirect(false)) return;
+                    context.goSignIn();
                   },
                 ),
               ],

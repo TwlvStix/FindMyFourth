@@ -169,11 +169,13 @@ class _TabFriendsWidgetState extends State<TabFriendsWidget> {
             currentUid: currentUserId,
             otherUid: otherUserId,
           );
+      if (!mounted) return;
       context.pushChatDetails(
         chatId: chatRef.id,
         transition: TransitionStandards.noTransition,
       );
     } catch (error, stackTrace) {
+      if (!mounted) return;
       context
           .read<ChatProvider>()
           .logError('createOrGetDirectChat failed', error, stackTrace);

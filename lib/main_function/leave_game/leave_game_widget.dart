@@ -151,6 +151,7 @@ class _LeaveGameWidgetState extends State<LeaveGameWidget> {
                                 game: widget.gameRef,
                               );
                               if (confirmed != true) return;
+                              if (!context.mounted) return;
 
                               final currentUserId = currentUserUid;
                               if (currentUserId.isEmpty) {
@@ -167,9 +168,7 @@ class _LeaveGameWidgetState extends State<LeaveGameWidget> {
                                   chatId: widget.gameRef.chatRef?.id,
                                 );
                               } on FirebaseException catch (error) {
-                                if (!mounted) {
-                                  return;
-                                }
+                                if (!context.mounted) return;
                                 final message = error.code ==
                                         'permission-denied'
                                     ? 'You do not have permission to leave this game.'
@@ -177,9 +176,7 @@ class _LeaveGameWidgetState extends State<LeaveGameWidget> {
                                 showSnackbar(context, message);
                                 return;
                               } catch (_) {
-                                if (!mounted) {
-                                  return;
-                                }
+                                if (!context.mounted) return;
                                 showSnackbar(
                                   context,
                                   'Unable to leave the game right now. Please try again.',
@@ -187,6 +184,7 @@ class _LeaveGameWidgetState extends State<LeaveGameWidget> {
                                 return;
                               }
 
+                              if (!context.mounted) return;
                               context.pushSuccessPage(
                                 transition: TransitionStandards.modalTransition,
                               );

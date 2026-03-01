@@ -174,9 +174,11 @@ class _EditProfileWidgetState extends State<EditProfileWidget>
       );
       currentUserDocument =
           await UsersRecord.getDocumentOnce(currentUserReference!);
+      if (!mounted) return;
       _showSuccessAndNavigate();
     } catch (e) {
       AppLog.d('EditProfile: profile save failed: $e');
+      if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
@@ -938,23 +940,24 @@ class _EditProfileWidgetState extends State<EditProfileWidget>
               false;
 
           if (!confirm) return;
+          if (!context.mounted) return;
 
           try {
             final deleted = await deleteAccount();
             if (!deleted) {
-              if (!mounted) return;
+              if (!context.mounted) return;
               showSnackbar(
                   context, 'Unable to delete account. Please try again.');
               return;
             }
             await authManager.signOut();
-            if (!mounted) return;
+            if (!context.mounted) return;
             context.goSignIn(
               transition: TransitionStandards.modalTransition,
             );
           } catch (e) {
             AppLog.d('Delete account failed: $e');
-            if (!mounted) return;
+            if (!context.mounted) return;
             showSnackbar(
                 context, 'Unable to delete account. Please try again.');
           }

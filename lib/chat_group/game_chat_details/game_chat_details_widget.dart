@@ -581,6 +581,8 @@ class _GameChatDetailsWidgetState extends State<GameChatDetailsWidget>
           .read<ChatProvider>()
           .markChatRead(chatId: widget.chatId, uid: currentUserId);
 
+      if (!mounted) return;
+
       // Mark all unread messages as read in a single batched operation.
       // Pass visibleAfter so we only mark messages the user can actually see.
       final stats = await context.read<ChatProvider>().markMessagesAsReadBatch(
@@ -590,6 +592,8 @@ class _GameChatDetailsWidgetState extends State<GameChatDetailsWidget>
             visibleAfter: _visibleAfter,
           );
 
+      if (!mounted) return;
+
       // Also mark related chat_message notifications as read (non-blocking).
       // This syncs notification read status when user reads the chat directly.
       context
@@ -597,6 +601,7 @@ class _GameChatDetailsWidgetState extends State<GameChatDetailsWidget>
           .markChatNotificationsAsRead(
               chatId: widget.chatId, uid: currentUserId)
           .catchError((Object error, StackTrace stackTrace) {
+        if (!mounted) return;
         context
             .read<ChatProvider>()
             .logError('markChatNotificationsAsRead failed', error, stackTrace);
@@ -608,6 +613,7 @@ class _GameChatDetailsWidgetState extends State<GameChatDetailsWidget>
             '${stats['updatedCount']} updated in ${stats['batchCount']} batch(es)');
       }
     } catch (error, stackTrace) {
+      if (!mounted) return;
       context
           .read<ChatProvider>()
           .logError('markChatRead failed', error, stackTrace);
@@ -900,6 +906,7 @@ class _GameChatDetailsWidgetState extends State<GameChatDetailsWidget>
       // TODO: In a full implementation, we would store the replyTo message ID
       // in the message document and display it in the message bubble
     } catch (error, stackTrace) {
+      if (!mounted) return;
       context
           .read<ChatProvider>()
           .logError('sendMessage failed', error, stackTrace);
@@ -950,6 +957,7 @@ class _GameChatDetailsWidgetState extends State<GameChatDetailsWidget>
         }
       }
     } catch (error, stackTrace) {
+      if (!mounted) return;
       context
           .read<ChatProvider>()
           .logError('loadOlderMessages failed', error, stackTrace);

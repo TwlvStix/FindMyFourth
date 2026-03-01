@@ -236,6 +236,7 @@ class _ProgressiveOnboardingWidgetState
             phoneNumber: _phoneController.text,
           );
         } on StateError catch (_) {
+          if (!mounted) return;
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text('Username already taken'),
@@ -267,6 +268,7 @@ class _ProgressiveOnboardingWidgetState
 
       if (mounted) {
         final recordReady = await _ensureUserRecord();
+        if (!mounted) return;
         if (!recordReady) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(

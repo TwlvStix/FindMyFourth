@@ -157,9 +157,7 @@ class _JoinGameWidgetState extends State<JoinGameWidget> {
                                       context.userProvider.currentUser?.gender,
                                 );
                               } on FirebaseException catch (error) {
-                                if (!mounted) {
-                                  return;
-                                }
+                                if (!context.mounted) return;
                                 final message = error.code ==
                                         'permission-denied'
                                     ? (isFriendsOnly
@@ -169,9 +167,7 @@ class _JoinGameWidgetState extends State<JoinGameWidget> {
                                 showSnackbar(context, message);
                                 return;
                               } catch (_) {
-                                if (!mounted) {
-                                  return;
-                                }
+                                if (!context.mounted) return;
                                 showSnackbar(
                                   context,
                                   'Unable to join the game right now. Please try again.',
@@ -179,9 +175,7 @@ class _JoinGameWidgetState extends State<JoinGameWidget> {
                                 return;
                               }
 
-                              if (!mounted) {
-                                return;
-                              }
+                              if (!context.mounted) return;
                               Navigator.of(context).pop();
                               context.goGameJoinedDetailed(
                                 gameRef: widget.gameRef.reference,

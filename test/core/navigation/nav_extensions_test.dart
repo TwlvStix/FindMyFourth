@@ -106,4 +106,46 @@ void main() {
 
     expect(find.text('games-list'), findsOneWidget);
   });
+
+  testWidgets('pushPremiumVibePage passes userId and raw extra data',
+      (tester) async {
+    Object? capturedExtra;
+    String? capturedUserId;
+    final payload = Object();
+
+    final router = GoRouter(
+      initialLocation: '/',
+      routes: [
+        GoRoute(
+          path: '/',
+          builder: (context, state) => Scaffold(
+            body: TextButton(
+              onPressed: () => context.pushPremiumVibePage(
+                userId: 'user_123',
+                data: payload,
+              ),
+              child: const Text('premium'),
+            ),
+          ),
+        ),
+        GoRoute(
+          name: AppRouteNames.premiumVibePage,
+          path: '/premium/:userId',
+          builder: (context, state) {
+            capturedExtra = state.extra;
+            capturedUserId = state.pathParameters['userId'];
+            return const Scaffold(body: Text('premium-screen'));
+          },
+        ),
+      ],
+    );
+
+    await tester.pumpWidget(MaterialApp.router(routerConfig: router));
+    await tester.tap(find.text('premium'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('premium-screen'), findsOneWidget);
+    expect(capturedUserId, 'user_123');
+    expect(identical(capturedExtra, payload), isTrue);
+  });
 }

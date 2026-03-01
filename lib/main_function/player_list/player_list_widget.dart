@@ -1447,12 +1447,13 @@ class _PlayerListWidgetState extends State<PlayerListWidget> {
                                                       AppLog.d(
                                                           '🚀 PLAYER LIST: Navigating to Game List');
 
-                                                      if (!mounted) return;
+                                                      if (!context.mounted) return;
 
                                                       context.goGamesList();
                                                     } catch (e) {
                                                       AppLog.d(
                                                           '❌ PLAYER LIST: Error adding players: $e');
+                                                      if (!context.mounted) return;
                                                       ScaffoldMessenger.of(
                                                               context)
                                                           .showSnackBar(

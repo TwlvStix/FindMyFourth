@@ -75,12 +75,10 @@ class _ProfileUserFirebaseWidgetState extends State<ProfileUserFirebaseWidget>
           );
       _openChat(chatRef.id);
     } catch (error, stackTrace) {
+      if (!mounted) return;
       context
           .read<ChatProvider>()
           .logError('createOrGetDirectChat failed', error, stackTrace);
-      if (!mounted) {
-        return;
-      }
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Unable to start chat. Please try again.'),
@@ -441,7 +439,7 @@ class _ProfileUserFirebaseWidgetState extends State<ProfileUserFirebaseWidget>
               await context
                   .read<UserProvider>()
                   .sendFriendRequest(widget.userRef);
-              if (!mounted) return;
+              if (!context.mounted) return;
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
                   content: Text(
@@ -455,7 +453,7 @@ class _ProfileUserFirebaseWidgetState extends State<ProfileUserFirebaseWidget>
                 ),
               );
             } catch (error) {
-              if (!mounted) return;
+              if (!context.mounted) return;
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
                   content: Text(

@@ -249,6 +249,7 @@ class _ChangePhotoWidgetState extends State<ChangePhotoWidget> {
                                     photoUrl:
                                         uploadedFileUrlUploadDataJ3j,
                                   ));
+                                  if (!context.mounted) return;
                                   Navigator.pop(context);
                                 },
                                 text: 'Save Changes',

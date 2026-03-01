@@ -222,6 +222,7 @@ class _CreateProfileWidgetState extends State<CreateProfileWidget>
     final desiredUsername =
         functions.usernameCreator(usernameTextController!.text);
     final firebaseUser = await _profileSetupService.currentUserOrWait();
+    if (!mounted) return;
     if (firebaseUser == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -238,6 +239,7 @@ class _CreateProfileWidgetState extends State<CreateProfileWidget>
       return;
     }
     await firebaseUser.getIdToken(true);
+    if (!mounted) return;
     final userRef = UsersRecord.collection.doc(firebaseUser.uid);
     if (desiredUsername.isEmpty) {
       return;
@@ -318,6 +320,7 @@ class _CreateProfileWidgetState extends State<CreateProfileWidget>
           {'userDocPath': userRef.path},
         );
       } catch (_) {
+        if (!mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
@@ -333,6 +336,7 @@ class _CreateProfileWidgetState extends State<CreateProfileWidget>
         return;
       }
     } on StateError catch (_) {
+      if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
@@ -349,6 +353,7 @@ class _CreateProfileWidgetState extends State<CreateProfileWidget>
     } on FirebaseException catch (e, stackTrace) {
       AppLog.d('CreateProfile save failed: $e');
       AppLog.d('CreateProfile save stackTrace: $stackTrace');
+      if (!mounted) return;
       final message = e.code == 'permission-denied'
           ? 'Unable to save profile due to permissions. Please try again.'
           : 'Unable to save profile. Please try again.';
@@ -368,6 +373,7 @@ class _CreateProfileWidgetState extends State<CreateProfileWidget>
     } catch (e, stackTrace) {
       AppLog.d('CreateProfile save failed: $e');
       AppLog.d('CreateProfile save stackTrace: $stackTrace');
+      if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
@@ -384,6 +390,7 @@ class _CreateProfileWidgetState extends State<CreateProfileWidget>
     }
 
     // Show success message
+    if (!mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(
