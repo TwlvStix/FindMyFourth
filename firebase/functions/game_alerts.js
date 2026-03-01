@@ -19,12 +19,94 @@
 
 const functions = require("firebase-functions");
 const admin = require("firebase-admin");
+const { scheduleJob } = require("./notifications/trust/scheduler");
 
 const kAlertSubsCollection = "alertSubs";
 const kUserNotificationsCollection = "notifications";
 const kUserDevicesCollection = "devices";
 const kGameAlertCooldownMinutes = 60;
+const kQuietHoursTimezone = "America/Vancouver";
 const firestore = admin.firestore();
+const vanWeekdayFormatter = new Intl.DateTimeFormat("en-US", {
+  timeZone: kQuietHoursTimezone,
+  weekday: "short",
+});
+const vanDatePartsFormatter = new Intl.DateTimeFormat("en-CA", {
+  timeZone: kQuietHoursTimezone,
+  year: "numeric",
+  month: "2-digit",
+  day: "2-digit",
+  hour: "2-digit",
+  minute: "2-digit",
+  hourCycle: "h23",
+});
+const vanTzOffsetFormatter = new Intl.DateTimeFormat("en-US", {
+  timeZone: kQuietHoursTimezone,
+  timeZoneName: "shortOffset",
+  hour: "2-digit",
+  minute: "2-digit",
+  hourCycle: "h23",
+});
+
+function getVancouverDateParts(now = new Date()) {
+  const out = {};
+  const parts = vanDatePartsFormatter.formatToParts(now);
+  for (const part of parts) {
+    if (
+      part.type === "year" ||
+      part.type === "month" ||
+      part.type === "day" ||
+      part.type === "hour" ||
+      part.type === "minute"
+    ) {
+      out[part.type] = Number(part.value);
+    }
+  }
+  return out;
+}
+
+function getVancouverOffsetMinutes(atUtcDate) {
+  const parts = vanTzOffsetFormatter.formatToParts(atUtcDate);
+  const tzPart = parts.find((part) => part.type === "timeZoneName");
+  if (!tzPart || typeof tzPart.value !== "string") {
+    return 0;
+  }
+  const match = tzPart.value.match(/^GMT([+-])(\d{1,2})(?::?(\d{2}))?$/);
+  if (!match) {
+    return 0;
+  }
+  const sign = match[1] === "-" ? -1 : 1;
+  const hours = Number(match[2]);
+  const minutes = match[3] ? Number(match[3]) : 0;
+  return sign * (hours * 60 + minutes);
+}
+
+function localVancouverToUtcDate(year, month, day, hour, minute) {
+  const baseUtcMs = Date.UTC(year, month - 1, day, hour, minute, 0, 0);
+  let utcMs = baseUtcMs;
+  for (let i = 0; i < 3; i++) {
+    const offsetMinutes = getVancouverOffsetMinutes(new Date(utcMs));
+    const nextUtcMs = baseUtcMs - offsetMinutes * 60 * 1000;
+    if (nextUtcMs === utcMs) break;
+    utcMs = nextUtcMs;
+  }
+  return new Date(utcMs);
+}
+
+function addUtcDays(year, month, day, delta) {
+  const d = new Date(Date.UTC(year, month - 1, day, 0, 0, 0, 0));
+  d.setUTCDate(d.getUTCDate() + delta);
+  return {
+    year: d.getUTCFullYear(),
+    month: d.getUTCMonth() + 1,
+    day: d.getUTCDate(),
+  };
+}
+
+function getNowHHMMInVancouver(now = new Date()) {
+  const vanDate = getVancouverDateParts(now);
+  return `${String(vanDate.hour).padStart(2, "0")}:${String(vanDate.minute).padStart(2, "0")}`;
+}
 
 /**
  * Check if an alert subscription matches a game
@@ -195,15 +277,49 @@ function getUserNotificationPrefs(userData) {
     quietHoursStart:
       typeof quietHours.start === "string" ? quietHours.start : "22:00",
     quietHoursEnd: typeof quietHours.end === "string" ? quietHours.end : "07:00",
+    quietHoursActiveDays: Array.isArray(quietHours.active_days)
+      ? quietHours.active_days
+      : [],
     digestMode:
       typeof prefs.digest_mode === "string" ? prefs.digest_mode : "instant",
   };
 }
 
 /**
+ * Check if quiet hours should apply on the current Vancouver day.
+ * @param {number[]} activeDays - ISO days (1=Mon ... 7=Sun)
+ * @returns {boolean}
+ */
+function isActiveDay(activeDays) {
+  if (!Array.isArray(activeDays) || activeDays.length === 0) return true;
+  const dayStr = vanWeekdayFormatter.format(new Date());
+  const dayMap = { Mon: 1, Tue: 2, Wed: 3, Thu: 4, Fri: 5, Sat: 6, Sun: 7 };
+  const isoDay = dayMap[dayStr];
+  if (!isoDay) return true;
+  return activeDays.some((day) => Number(day) === isoDay);
+}
+
+/**
+ * Compute the next quiet-hours release instant in UTC from a Vancouver-local HH:MM.
+ * @param {string} endHHMM
+ * @returns {Date}
+ */
+function computeReleaseAt(endHHMM) {
+  const now = new Date();
+  const nowParts = getVancouverDateParts(now);
+  const [h, m] = endHHMM.split(":").map(Number);
+  let releaseAt = localVancouverToUtcDate(nowParts.year, nowParts.month, nowParts.day, h, m);
+  if (releaseAt <= now) {
+    const nextDay = addUtcDays(nowParts.year, nowParts.month, nowParts.day, 1);
+    releaseAt = localVancouverToUtcDate(nextDay.year, nextDay.month, nextDay.day, h, m);
+  }
+  return releaseAt;
+}
+
+/**
  * Check if current time is within quiet hours
  */
-function isWithinQuietHours(start, end, now) {
+function isWithinQuietHours(start, end, nowValue) {
   if (typeof start !== "string" || typeof end !== "string") {
     return false;
   }
@@ -214,7 +330,21 @@ function isWithinQuietHours(start, end, now) {
   }
   const startMinutes = parseInt(startParts[0], 10) * 60 + parseInt(startParts[1], 10);
   const endMinutes = parseInt(endParts[0], 10) * 60 + parseInt(endParts[1], 10);
-  const nowMinutes = now.getHours() * 60 + now.getMinutes();
+  let nowMinutes;
+  if (typeof nowValue === "string") {
+    const nowParts = nowValue.split(":");
+    if (nowParts.length !== 2) {
+      return false;
+    }
+    nowMinutes = parseInt(nowParts[0], 10) * 60 + parseInt(nowParts[1], 10);
+  } else if (nowValue instanceof Date) {
+    nowMinutes = nowValue.getHours() * 60 + nowValue.getMinutes();
+  } else {
+    return false;
+  }
+  if (isNaN(nowMinutes)) {
+    return false;
+  }
   if (startMinutes === endMinutes) {
     return false;
   }
@@ -392,12 +522,40 @@ exports.sendGameCreatedNotifications = functions
         );
 
         // Check if we should send push notification now
+        const nowHHMM = getNowHHMMInVancouver(now);
         const inQuietHours =
           prefs.quietHoursEnabled &&
-          isWithinQuietHours(prefs.quietHoursStart, prefs.quietHoursEnd, now);
+          isActiveDay(prefs.quietHoursActiveDays) &&
+          isWithinQuietHours(prefs.quietHoursStart, prefs.quietHoursEnd, nowHHMM);
 
-        if (prefs.digestMode !== "instant" || inQuietHours) {
-          console.log(`[GameAlerts] User ${userId} in quiet hours or digest mode, notification saved but not sent`);
+        if (inQuietHours) {
+          const releaseAt = computeReleaseAt(prefs.quietHoursEnd);
+          const deferredEvent = {
+            eventId: `game_alert_${gameId}_${Date.now()}`,
+            eventType: "game_alert_deferred",
+            recipientUserId: userId,
+            sourceId: gameId,
+            data: {
+              title: content.title,
+              body: content.body,
+              gameId,
+              initialPageName: "JoinGameDetailed",
+            },
+            scheduleTime: releaseAt,
+            quietHoursBypass: true,
+            conditionCheck: "always",
+          };
+          try {
+            const jobId = await scheduleJob(deferredEvent, admin.firestore());
+            console.log(`[GameAlerts] User ${userId} in quiet hours — scheduled for ${releaseAt.toISOString()}, jobId: ${jobId}`);
+          } catch (e) {
+            console.error(`[GameAlerts] Failed to schedule deferred notification for ${userId}:`, e.message);
+          }
+          continue;
+        }
+
+        if (prefs.digestMode !== "instant") {
+          console.log(`[GameAlerts] User ${userId} digest mode, notification saved but not sent`);
           continue;
         }
 
@@ -502,4 +660,7 @@ module.exports = {
   // Test helpers
   isUserEligibleByGender,
   doesAlertSubMatchGame,
+  isWithinQuietHours,
+  isActiveDay,
+  computeReleaseAt,
 };

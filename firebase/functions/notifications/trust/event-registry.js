@@ -28,6 +28,7 @@ const TrustEventType = Object.freeze({
   BADGE_PROGRESS:         'badge_progress',
   GAME_SPOT_OPENED:       'game_spot_opened',
   GAME_CANCELLED:         'game_cancelled',
+  GAME_ALERT_DEFERRED:    'game_alert_deferred',
   FRIEND_REQUEST_RECEIVED:'friend_request_received',
   FRIEND_REQUEST_ACCEPTED:'friend_request_accepted',
 });
@@ -339,6 +340,21 @@ const EVENT_REGISTRY = Object.freeze({
     deepLink:         'findmyfourth://game/{game_id}',
     threadId:         'game_{game_id}',
     androidChannelId: 'important',
+    icon:             'sports_golf',
+  },
+
+  [TrustEventType.GAME_ALERT_DEFERRED]: {
+    priority:        NotificationPriority.DEFAULT,
+    category:        TrustCategory.GAMES,
+    maxDeliveries:   1,
+    timing:          'scheduled',
+    template: {
+      title: '{title}',
+      body:  '{body}',
+    },
+    deepLink:         'findmyfourth://game/{gameId}',
+    threadId:         'game_alerts',
+    androidChannelId: 'default',
     icon:             'sports_golf',
   },
 

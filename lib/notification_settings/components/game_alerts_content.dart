@@ -8,17 +8,17 @@ import '/core/design_tokens/icon_size.dart';
 import '/core/design_tokens/app_phosphor_icons.dart';
 import '/core/widgets/app_icon.dart';
 import '/models/alert_subscription.dart';
-import '/providers/provider_extensions.dart';
 import '/services/alert_subscription_service.dart';
-import '/notification_settings/components/expand_section_label.dart';
-import '/notification_settings/components/delivery_frequency_selector.dart';
 
 /// Expanded content for the Game Alerts notification category card.
 ///
 /// Shows:
 /// - Filter summary displaying current filter state (loaded from Firestore)
 /// - Configure filters link to navigate to game alerts page
-/// - Delivery frequency selector
+///
+/// Delivery frequency selector hidden until backend digest logic is complete.
+/// To re-enable: add ExpandSectionLabel + DeliveryFrequencySelector with
+/// prefs.gameAlerts.deliveryFrequency
 class GameAlertsContent extends StatefulWidget {
   const GameAlertsContent({super.key});
 
@@ -57,9 +57,6 @@ class _GameAlertsContentState extends State<GameAlertsContent> {
 
   @override
   Widget build(BuildContext context) {
-    final provider = context.watchNotificationProvider;
-    final prefs = provider.preferences;
-
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       mainAxisSize: MainAxisSize.min,
@@ -72,14 +69,8 @@ class _GameAlertsContentState extends State<GameAlertsContent> {
         // Configure filters link
         _buildConfigureFiltersLink(context),
 
-        // Delivery section
-        const ExpandSectionLabel(text: 'DELIVERY', showDivider: true),
-        DeliveryFrequencySelector(
-          selected: prefs.gameAlerts.deliveryFrequency,
-          onChanged: (freq) {
-            context.notificationProvider.updateGameAlerts(delivery: freq);
-          },
-        ),
+        // Delivery frequency selector hidden until backend digest logic is complete.
+        // To re-enable: add ExpandSectionLabel + DeliveryFrequencySelector here.
       ],
     );
   }

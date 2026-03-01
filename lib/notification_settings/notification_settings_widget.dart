@@ -146,9 +146,8 @@ class _NotificationSettingsWidgetState
             // Category Cards
             ..._buildCategoryCards(prefs),
 
-            // Muted Threads Link
-            SizedBox(height: AppSpacing.lg),
-            _buildMutedThreadsCard(prefs),
+            // Muted threads card hidden until feature is complete.
+            // To re-enable: uncomment and add _buildMutedThreadsCard(prefs) here.
           ],
         ),
       ),

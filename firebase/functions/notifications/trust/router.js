@@ -15,8 +15,6 @@
  *   7. Payload   — render push payload via template engine
  *   8. Fan-out   — send to each device
  *   9. Post-send — log result, delete invalid tokens
- *
- * NOTE: Quiet hours currently assume UTC. Timezone support is planned for a future session.
  */
 
 const admin = require('firebase-admin');
@@ -25,6 +23,12 @@ const { getUserPreferences } = require('./preferences-service');
 const { send } = require('./fcm-sender');
 const { buildPushPayload, buildInAppNotification } = require('./template-engine');
 const logger = require('./logger');
+// Late require to avoid circular dependency (scheduler.js imports router.js)
+let _scheduleJob;
+function getScheduleJob() {
+  if (!_scheduleJob) _scheduleJob = require('./scheduler').scheduleJob;
+  return _scheduleJob;
+}
 
 // ── Constants ────────────────────────────────────────────────────────────────
 
@@ -48,6 +52,7 @@ const CRITICAL_BYPASS_TYPES = new Set([
 const GAME_ALERT_TYPES = new Set([
   TrustEventType.GAME_SPOT_OPENED,
   TrustEventType.GAME_CANCELLED,
+  TrustEventType.GAME_ALERT_DEFERRED,
 ]);
 
 /**
@@ -61,6 +66,77 @@ const SOCIAL_ALERT_TYPES = new Set([
 
 const MS_IN_24H = 24 * 60 * 60 * 1000;
 const MS_IN_4H  =  4 * 60 * 60 * 1000;
+const QUIET_HOURS_TIMEZONE = 'America/Vancouver';
+const VAN_WEEKDAY_FORMATTER = new Intl.DateTimeFormat('en-US', {
+  timeZone: QUIET_HOURS_TIMEZONE,
+  weekday: 'short',
+});
+const VAN_DATE_PARTS_FORMATTER = new Intl.DateTimeFormat('en-CA', {
+  timeZone: QUIET_HOURS_TIMEZONE,
+  year: 'numeric',
+  month: '2-digit',
+  day: '2-digit',
+  hour: '2-digit',
+  minute: '2-digit',
+  hourCycle: 'h23',
+});
+const VAN_TZ_OFFSET_FORMATTER = new Intl.DateTimeFormat('en-US', {
+  timeZone: QUIET_HOURS_TIMEZONE,
+  timeZoneName: 'shortOffset',
+  hour: '2-digit',
+  minute: '2-digit',
+  hourCycle: 'h23',
+});
+
+function getVanDateParts(now = new Date()) {
+  const out = {};
+  const parts = VAN_DATE_PARTS_FORMATTER.formatToParts(now);
+  for (const part of parts) {
+    if (part.type === 'year' || part.type === 'month' || part.type === 'day' ||
+        part.type === 'hour' || part.type === 'minute') {
+      out[part.type] = Number(part.value);
+    }
+  }
+  return out;
+}
+
+function getVanOffsetMinutes(atUtcDate) {
+  const parts = VAN_TZ_OFFSET_FORMATTER.formatToParts(atUtcDate);
+  const tzPart = parts.find((part) => part.type === 'timeZoneName');
+  if (!tzPart || typeof tzPart.value !== 'string') {
+    return 0;
+  }
+  const match = tzPart.value.match(/^GMT([+-])(\d{1,2})(?::?(\d{2}))?$/);
+  if (!match) {
+    return 0;
+  }
+  const sign = match[1] === '-' ? -1 : 1;
+  const hours = Number(match[2]);
+  const minutes = match[3] ? Number(match[3]) : 0;
+  return sign * (hours * 60 + minutes);
+}
+
+function localVanToUtcDate(year, month, day, hour, minute) {
+  const baseUtcMs = Date.UTC(year, month - 1, day, hour, minute, 0, 0);
+  let utcMs = baseUtcMs;
+  for (let i = 0; i < 3; i++) {
+    const offsetMinutes = getVanOffsetMinutes(new Date(utcMs));
+    const nextUtcMs = baseUtcMs - offsetMinutes * 60 * 1000;
+    if (nextUtcMs === utcMs) break;
+    utcMs = nextUtcMs;
+  }
+  return new Date(utcMs);
+}
+
+function addUtcDays(year, month, day, delta) {
+  const d = new Date(Date.UTC(year, month - 1, day, 0, 0, 0, 0));
+  d.setUTCDate(d.getUTCDate() + delta);
+  return {
+    year: d.getUTCFullYear(),
+    month: d.getUTCMonth() + 1,
+    day: d.getUTCDate(),
+  };
+}
 
 // ── Pure helpers ─────────────────────────────────────────────────────────────
 
@@ -70,7 +146,7 @@ const MS_IN_4H  =  4 * 60 * 60 * 1000;
  *
  * @param {string} start - 'HH:MM' start of quiet window (inclusive)
  * @param {string} end   - 'HH:MM' end of quiet window (exclusive)
- * @param {string} nowHHMM - current UTC time as 'HH:MM'
+ * @param {string} nowHHMM - current Vancouver time as 'HH:MM'
  * @returns {boolean}
  */
 function isInQuietWindow(start, end, nowHHMM) {
@@ -84,36 +160,50 @@ function isInQuietWindow(start, end, nowHHMM) {
 }
 
 /**
- * Returns a Date representing the next UTC occurrence of endHHMM.
- * If endHHMM has already passed for the current UTC day, rolls to the next day.
+ * Returns a Date representing the next UTC occurrence of endHHMM in Vancouver local time.
+ * If endHHMM has already passed for the current Vancouver day, rolls to next day.
  *
- * @param {string} endHHMM - 'HH:MM' quiet window end time (UTC)
+ * @param {string} endHHMM - 'HH:MM' quiet window end time (Vancouver local)
  * @returns {Date}
  */
 function computeReleaseAt(endHHMM) {
   const now = new Date();
+  const nowParts = getVanDateParts(now);
   const [h, m] = endHHMM.split(':').map(Number);
-  const release = new Date(Date.UTC(
-    now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate(),
-    h, m, 0, 0,
-  ));
+  let release = localVanToUtcDate(nowParts.year, nowParts.month, nowParts.day, h, m);
   if (release <= now) {
-    release.setUTCDate(release.getUTCDate() + 1);
+    const nextDay = addUtcDays(nowParts.year, nowParts.month, nowParts.day, 1);
+    release = localVanToUtcDate(nextDay.year, nextDay.month, nextDay.day, h, m);
   }
   return release;
 }
 
 /**
- * Returns current UTC time as a zero-padded 'HH:MM' string.
+ * Returns current Vancouver time as a zero-padded 'HH:MM' string.
  * Extracted as a named function so tests can freeze time via jest.useFakeTimers().
  *
  * @returns {string}
  */
 function getNowHHMM() {
-  const now = new Date();
-  const h = String(now.getUTCHours()).padStart(2, '0');
-  const m = String(now.getUTCMinutes()).padStart(2, '0');
+  const now = getVanDateParts();
+  const h = String(now.hour).padStart(2, '0');
+  const m = String(now.minute).padStart(2, '0');
   return `${h}:${m}`;
+}
+
+/**
+ * Returns true if quiet hours are active on the current Vancouver day.
+ *
+ * @param {number[]} activeDays - ISO days (1=Mon ... 7=Sun)
+ * @returns {boolean}
+ */
+function isActiveDay(activeDays) {
+  if (!Array.isArray(activeDays) || activeDays.length === 0) return true;
+  const dayStr = VAN_WEEKDAY_FORMATTER.format(new Date());
+  const dayMap = { Mon: 1, Tue: 2, Wed: 3, Thu: 4, Fri: 5, Sat: 6, Sun: 7 };
+  const isoDay = dayMap[dayStr];
+  if (!isoDay) return true;
+  return activeDays.some((d) => Number(d) === isoDay);
 }
 
 /**
@@ -275,24 +365,44 @@ async function routeNotification(event, db) {
   // ── Step 4: Quiet hours ────────────────────────────────────────────────────
   const { quietHours } = prefs;
   if (quietHours.enabled && !event.quietHoursBypass) {
-    const nowHHMM   = getNowHHMM();
-    if (isInQuietWindow(quietHours.start, quietHours.end, nowHHMM)) {
-      const releaseAt = computeReleaseAt(quietHours.end);
+    let activeDays = [];
+    try {
+      const userDoc = await db.collection('users').doc(event.recipientUserId).get();
+      const rawPrefs = (userDoc.exists && userDoc.data().notification_prefs) || {};
+      const rawQuietHours = (rawPrefs.quiet_hours && typeof rawPrefs.quiet_hours === 'object')
+        ? rawPrefs.quiet_hours
+        : {};
+      activeDays = Array.isArray(rawQuietHours.active_days) ? rawQuietHours.active_days : [];
+    } catch (_) {
+      activeDays = [];
+    }
 
-      // Exception 1: CRITICAL priority always delivers through quiet hours.
-      // Note: cooldown_started is HIGH priority, so it is held even though it is
-      // in CRITICAL_BYPASS_TYPES (which bypasses preferences, not quiet hours).
-      const isCriticalPriority = eventConfig.priority === NotificationPriority.CRITICAL;
+    if (isActiveDay(activeDays)) {
+      const nowHHMM = getNowHHMM();
+      if (isInQuietWindow(quietHours.start, quietHours.end, nowHHMM)) {
+        const releaseAt = computeReleaseAt(quietHours.end);
 
-      // Exception 2: game_cancelled where game starts within 4h of quiet window end.
-      const isImminent = event.eventType === TrustEventType.GAME_CANCELLED
-        && isImminentGameCancellation(event, releaseAt);
+        // Exception 1: CRITICAL priority always delivers through quiet hours.
+        // Note: cooldown_started is HIGH priority, so it is held even though it is
+        // in CRITICAL_BYPASS_TYPES (which bypasses preferences, not quiet hours).
+        const isCriticalPriority = eventConfig.priority === NotificationPriority.CRITICAL;
 
-      if (!isCriticalPriority && !isImminent) {
-        await logCol.add(buildLogDoc(event, 'quiet_held', { releaseAt, event }));
-        // TODO: schedule Cloud Tasks release task when Cloud Tasks integration is implemented.
-        logger.logNotificationEvent(event, 'quiet_held', { dropReason: 'quiet hours' });
-        return { result: 'quiet_held', releaseAt };
+        // Exception 2: game_cancelled where game starts within 4h of quiet window end.
+        const isImminent = event.eventType === TrustEventType.GAME_CANCELLED
+          && isImminentGameCancellation(event, releaseAt);
+
+        if (!isCriticalPriority && !isImminent) {
+          const deferredEvent = {
+            ...event,
+            scheduleTime: releaseAt,
+            quietHoursBypass: true,
+            conditionCheck: 'always',
+          };
+          const jobId = await getScheduleJob()(deferredEvent, db);
+          await logCol.add(buildLogDoc(event, 'quiet_held', { releaseAt, event, jobId }));
+          logger.logNotificationEvent(event, 'quiet_held', { releaseAt: releaseAt.toISOString(), jobId });
+          return { result: 'quiet_held', releaseAt, jobId };
+        }
       }
     }
   }
@@ -382,6 +492,7 @@ module.exports = {
   routeNotification,
   // Pure helpers exported for direct unit testing
   isInQuietWindow,
+  isActiveDay,
   computeReleaseAt,
   isImminentGameCancellation,
 };

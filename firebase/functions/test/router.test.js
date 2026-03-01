@@ -46,11 +46,15 @@ jest.mock('../notifications/trust/template-engine', () => ({
   buildPushPayload:      jest.fn(),
   buildInAppNotification: jest.fn(),
 }));
+jest.mock('../notifications/trust/scheduler', () => ({
+  scheduleJob: jest.fn(),
+}));
 
 // ── Module under test ─────────────────────────────────────────────────────────
 const {
   routeNotification,
   isInQuietWindow,
+  isActiveDay,
   computeReleaseAt,
   isImminentGameCancellation,
 } = require('../notifications/trust/router');
@@ -58,6 +62,7 @@ const {
 const { getUserPreferences }                    = require('../notifications/trust/preferences-service');
 const { send }                                  = require('../notifications/trust/fcm-sender');
 const { buildPushPayload, buildInAppNotification } = require('../notifications/trust/template-engine');
+const { scheduleJob }                           = require('../notifications/trust/scheduler');
 
 // ── Test fixtures ─────────────────────────────────────────────────────────────
 
@@ -204,6 +209,7 @@ beforeEach(() => {
   buildPushPayload.mockReturnValue(MOCK_PAYLOAD);
   buildInAppNotification.mockReturnValue(MOCK_IN_APP_DOC);
   send.mockResolvedValue(SEND_SUCCESS('dev_1'));
+  scheduleJob.mockResolvedValue('mock_job_id');
 
   mockDb = makeMockDb({ logDocs: [], deviceDocs: [DEVICE_1] });
 });
@@ -589,9 +595,9 @@ describe('routeNotification — Step 4: Quiet hours', () => {
     );
   }
 
-  test('in quiet window (23:00 UTC, 22:00–07:00): quiet_held, no in-app, log has releaseAt', async () => {
+  test('in quiet window (23:00 Vancouver, 22:00–07:00): quiet_held, schedules Cloud Task, no in-app, log has releaseAt and jobId', async () => {
     jest.useFakeTimers();
-    jest.setSystemTime(new Date('2026-02-18T23:00:00Z'));
+    jest.setSystemTime(new Date('2026-02-19T07:00:00Z'));
     enableQuietHours('22:00', '07:00');
     mockDb = makeMockDb({ logDocs: [], deviceDocs: [DEVICE_1] });
 
@@ -599,16 +605,28 @@ describe('routeNotification — Step 4: Quiet hours', () => {
 
     expect(result.result).toBe('quiet_held');
     expect(result.releaseAt).toBeInstanceOf(Date);
-    expect(result.releaseAt.toISOString()).toBe('2026-02-19T07:00:00.000Z');
+    expect(result.releaseAt.toISOString()).toBe('2026-02-19T15:00:00.000Z');
+    expect(result.jobId).toBe('mock_job_id');
+    expect(scheduleJob).toHaveBeenCalledTimes(1);
+    expect(scheduleJob).toHaveBeenCalledWith(
+      expect.objectContaining({
+        eventType: 'badge_earned',
+        scheduleTime: expect.any(Date),
+        quietHoursBypass: true,
+        conditionCheck: 'always',
+      }),
+      mockDb,
+    );
     expect(logAddSpy.mock.calls[0][0].status).toBe('quiet_held');
     expect(logAddSpy.mock.calls[0][0].releaseAt).toBeInstanceOf(Date);
+    expect(logAddSpy.mock.calls[0][0].jobId).toBe('mock_job_id');
     expect(buildInAppNotification).not.toHaveBeenCalled();
     expect(send).not.toHaveBeenCalled();
   });
 
   test('in quiet window, CRITICAL priority (strike_issued): bypasses quiet hours, proceeds', async () => {
     jest.useFakeTimers();
-    jest.setSystemTime(new Date('2026-02-18T23:00:00Z'));
+    jest.setSystemTime(new Date('2026-02-19T07:00:00Z'));
     enableQuietHours();
     mockDb = makeMockDb({ logDocs: [], deviceDocs: [DEVICE_1] });
 
@@ -624,7 +642,7 @@ describe('routeNotification — Step 4: Quiet hours', () => {
 
   test('in quiet window, cooldown_started (HIGH priority, in CRITICAL_BYPASS but not CRITICAL priority): held', async () => {
     jest.useFakeTimers();
-    jest.setSystemTime(new Date('2026-02-18T23:00:00Z'));
+    jest.setSystemTime(new Date('2026-02-19T07:00:00Z'));
     enableQuietHours();
     mockDb = makeMockDb({ logDocs: [], deviceDocs: [DEVICE_1] });
 
@@ -635,14 +653,16 @@ describe('routeNotification — Step 4: Quiet hours', () => {
 
     // cooldown_started bypasses preferences, but it is HIGH priority → does NOT bypass quiet hours
     expect(result.result).toBe('quiet_held');
+    expect(result.jobId).toBe('mock_job_id');
+    expect(scheduleJob).toHaveBeenCalledTimes(1);
     expect(buildInAppNotification).not.toHaveBeenCalled();
   });
 
   test('in quiet window, game_cancelled with imminent game_start_iso (within 4h): proceeds', async () => {
     jest.useFakeTimers();
-    // Quiet window 22:00–07:00, current time 23:00. releaseAt = 2026-02-19T07:00Z
-    // Game starts at 09:00 same day = 2h after releaseAt → within 4h
-    jest.setSystemTime(new Date('2026-02-18T23:00:00Z'));
+    // Quiet window 22:00–07:00, current time 23:00 Vancouver. releaseAt = 2026-02-19T15:00Z
+    // Game starts at 17:00 UTC same day = 2h after releaseAt → within 4h
+    jest.setSystemTime(new Date('2026-02-19T07:00:00Z'));
     enableQuietHours();
     mockDb = makeMockDb({
       userDocData: { notification_prefs: { game_alerts: { enabled: true } } },
@@ -652,7 +672,7 @@ describe('routeNotification — Step 4: Quiet hours', () => {
     const result = await routeNotification(
       makeEvent({
         eventType: 'game_cancelled',
-        data: { game_date: 'Wed', course_name: 'X', game_id: 'g1', game_start_iso: '2026-02-19T09:00:00Z' },
+        data: { game_date: 'Wed', course_name: 'X', game_id: 'g1', game_start_iso: '2026-02-19T17:00:00Z' },
       }),
       mockDb,
     );
@@ -663,28 +683,30 @@ describe('routeNotification — Step 4: Quiet hours', () => {
 
   test('in quiet window, game_cancelled with game_start_iso > 4h after releaseAt: held', async () => {
     jest.useFakeTimers();
-    jest.setSystemTime(new Date('2026-02-18T23:00:00Z'));
+    jest.setSystemTime(new Date('2026-02-19T07:00:00Z'));
     enableQuietHours();
     mockDb = makeMockDb({
       userDocData: { notification_prefs: { game_alerts: { enabled: true } } },
       deviceDocs: [DEVICE_1],
     });
 
-    // Game starts 20:00 UTC = 13h after releaseAt (07:00) → outside 4h window
+    // Game starts 23:00 UTC = 8h after releaseAt (15:00) → outside 4h window
     const result = await routeNotification(
       makeEvent({
         eventType: 'game_cancelled',
-        data: { game_date: 'Wed', course_name: 'X', game_id: 'g1', game_start_iso: '2026-02-19T20:00:00Z' },
+        data: { game_date: 'Wed', course_name: 'X', game_id: 'g1', game_start_iso: '2026-02-19T23:00:00Z' },
       }),
       mockDb,
     );
 
     expect(result.result).toBe('quiet_held');
+    expect(result.jobId).toBe('mock_job_id');
+    expect(scheduleJob).toHaveBeenCalledTimes(1);
   });
 
   test('in quiet window, game_cancelled with no game_start_iso: held (safe default)', async () => {
     jest.useFakeTimers();
-    jest.setSystemTime(new Date('2026-02-18T23:00:00Z'));
+    jest.setSystemTime(new Date('2026-02-19T07:00:00Z'));
     enableQuietHours();
     mockDb = makeMockDb({
       userDocData: { notification_prefs: { game_alerts: { enabled: true } } },
@@ -697,11 +719,13 @@ describe('routeNotification — Step 4: Quiet hours', () => {
     );
 
     expect(result.result).toBe('quiet_held');
+    expect(result.jobId).toBe('mock_job_id');
+    expect(scheduleJob).toHaveBeenCalledTimes(1);
   });
 
   test('in quiet window, game_cancelled with unparseable game_start_iso: held', async () => {
     jest.useFakeTimers();
-    jest.setSystemTime(new Date('2026-02-18T23:00:00Z'));
+    jest.setSystemTime(new Date('2026-02-19T07:00:00Z'));
     enableQuietHours();
     mockDb = makeMockDb({
       userDocData: { notification_prefs: { game_alerts: { enabled: true } } },
@@ -714,11 +738,13 @@ describe('routeNotification — Step 4: Quiet hours', () => {
     );
 
     expect(result.result).toBe('quiet_held');
+    expect(result.jobId).toBe('mock_job_id');
+    expect(scheduleJob).toHaveBeenCalledTimes(1);
   });
 
   test('quietHoursBypass=true: skips quiet hours entirely', async () => {
     jest.useFakeTimers();
-    jest.setSystemTime(new Date('2026-02-18T23:00:00Z'));
+    jest.setSystemTime(new Date('2026-02-19T07:00:00Z'));
     enableQuietHours();
 
     const result = await routeNotification(
@@ -732,7 +758,7 @@ describe('routeNotification — Step 4: Quiet hours', () => {
 
   test('quietHours.enabled=false: not held even during window time', async () => {
     jest.useFakeTimers();
-    jest.setSystemTime(new Date('2026-02-18T23:00:00Z'));
+    jest.setSystemTime(new Date('2026-02-19T07:00:00Z'));
     getUserPreferences.mockResolvedValue(
       makePrefs({ quietHours: { enabled: false, start: '22:00', end: '07:00' } }),
     );
@@ -744,18 +770,39 @@ describe('routeNotification — Step 4: Quiet hours', () => {
 
   test('overnight window (22:00–07:00), time=01:00: held', async () => {
     jest.useFakeTimers();
-    jest.setSystemTime(new Date('2026-02-19T01:00:00Z'));
+    jest.setSystemTime(new Date('2026-02-19T09:00:00Z'));
     enableQuietHours('22:00', '07:00');
 
     const result = await routeNotification(makeEvent(), mockDb);
 
     expect(result.result).toBe('quiet_held');
+    expect(result.jobId).toBe('mock_job_id');
+    expect(scheduleJob).toHaveBeenCalledTimes(1);
   });
 
   test('overnight window (22:00–07:00), time=12:00: NOT held', async () => {
     jest.useFakeTimers();
-    jest.setSystemTime(new Date('2026-02-18T12:00:00Z'));
+    jest.setSystemTime(new Date('2026-02-18T20:00:00Z'));
     enableQuietHours('22:00', '07:00');
+
+    const result = await routeNotification(makeEvent(), mockDb);
+
+    expect(result.result).not.toBe('quiet_held');
+  });
+
+  test('quiet hours active_days excludes today: quiet hours are skipped', async () => {
+    jest.useFakeTimers();
+    // 2026-02-19T07:00Z = Wednesday 23:00 Vancouver, but active_days=[4] means Thursday only.
+    jest.setSystemTime(new Date('2026-02-19T07:00:00Z'));
+    enableQuietHours('22:00', '07:00');
+    mockDb = makeMockDb({
+      userDocData: {
+        notification_prefs: {
+          quiet_hours: { active_days: [4] },
+        },
+      },
+      deviceDocs: [DEVICE_1],
+    });
 
     const result = await routeNotification(makeEvent(), mockDb);
 
@@ -809,7 +856,7 @@ describe('routeNotification — Step 5: In-app notification', () => {
 
   test('quiet_held: in-app NOT written', async () => {
     jest.useFakeTimers();
-    jest.setSystemTime(new Date('2026-02-18T23:00:00Z'));
+    jest.setSystemTime(new Date('2026-02-19T07:00:00Z'));
     getUserPreferences.mockResolvedValue(
       makePrefs({ quietHours: { enabled: true, start: '22:00', end: '07:00' } }),
     );
@@ -1039,36 +1086,75 @@ describe('isInQuietWindow', () => {
 });
 
 // ════════════════════════════════════════════════════════════════════════════
+// Pure helper: isActiveDay
+// ════════════════════════════════════════════════════════════════════════════
+
+describe('isActiveDay', () => {
+  test('empty or missing activeDays defaults to true', () => {
+    expect(isActiveDay()).toBe(true);
+    expect(isActiveDay([])).toBe(true);
+    expect(isActiveDay(null)).toBe(true);
+  });
+
+  test('maps Vancouver weekday to ISO day correctly', () => {
+    jest.useFakeTimers();
+    // Monday in Vancouver
+    jest.setSystemTime(new Date('2026-02-16T20:00:00Z'));
+
+    expect(isActiveDay([1])).toBe(true);
+    expect(isActiveDay([7])).toBe(false);
+  });
+});
+
+// ════════════════════════════════════════════════════════════════════════════
 // Pure helper: computeReleaseAt
 // ════════════════════════════════════════════════════════════════════════════
 
 describe('computeReleaseAt', () => {
 
-  test('end time not yet passed today: returns today UTC at end time', () => {
+  test('end time not yet passed today in Vancouver: returns same-day Vancouver 07:00 converted to UTC', () => {
     jest.useFakeTimers();
-    jest.setSystemTime(new Date('2026-02-18T03:00:00Z'));
+    jest.setSystemTime(new Date('2026-02-18T10:00:00Z')); // 02:00 Vancouver
 
     const release = computeReleaseAt('07:00');
 
-    expect(release.toISOString()).toBe('2026-02-18T07:00:00.000Z');
+    expect(release.toISOString()).toBe('2026-02-18T15:00:00.000Z');
   });
 
-  test('end time already passed today: returns next day UTC at end time', () => {
+  test('end time already passed today in Vancouver: returns next-day Vancouver 07:00 converted to UTC', () => {
     jest.useFakeTimers();
-    jest.setSystemTime(new Date('2026-02-18T23:00:00Z'));
+    jest.setSystemTime(new Date('2026-02-18T23:00:00Z')); // 15:00 Vancouver
 
     const release = computeReleaseAt('07:00');
 
-    expect(release.toISOString()).toBe('2026-02-19T07:00:00.000Z');
+    expect(release.toISOString()).toBe('2026-02-19T15:00:00.000Z');
   });
 
-  test('current time exactly equals end time: rolls to next day', () => {
+  test('current time exactly equals Vancouver end time: rolls to next day', () => {
     jest.useFakeTimers();
-    jest.setSystemTime(new Date('2026-02-18T07:00:00.000Z'));
+    jest.setSystemTime(new Date('2026-02-18T15:00:00.000Z')); // 07:00 Vancouver
 
     const release = computeReleaseAt('07:00');
 
-    expect(release.toISOString()).toBe('2026-02-19T07:00:00.000Z');
+    expect(release.toISOString()).toBe('2026-02-19T15:00:00.000Z');
+  });
+
+  test('DST spring-forward: 07:00 Vancouver resolves with PDT offset', () => {
+    jest.useFakeTimers();
+    jest.setSystemTime(new Date('2026-03-08T12:00:00Z')); // 04:00 Vancouver on DST transition day
+
+    const release = computeReleaseAt('07:00');
+
+    expect(release.toISOString()).toBe('2026-03-08T14:00:00.000Z');
+  });
+
+  test('DST fall-back: 07:00 Vancouver resolves with PST offset', () => {
+    jest.useFakeTimers();
+    jest.setSystemTime(new Date('2026-11-01T11:00:00Z')); // 03:00 Vancouver after fallback
+
+    const release = computeReleaseAt('07:00');
+
+    expect(release.toISOString()).toBe('2026-11-01T15:00:00.000Z');
   });
 
 });

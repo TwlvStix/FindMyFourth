@@ -28,9 +28,9 @@ const {
 // ── Enum value correctness ────────────────────────────────────────────────────
 
 describe('TrustEventType enum', () => {
-  test('all 17 values use snake_case', () => {
+  test('all 18 values use snake_case', () => {
     const values = Object.values(TrustEventType);
-    expect(values).toHaveLength(17);
+    expect(values).toHaveLength(18);
     for (const v of values) {
       // snake_case: lowercase letters, digits, and underscores only
       expect(v).toMatch(/^[a-z][a-z0-9_]*$/);

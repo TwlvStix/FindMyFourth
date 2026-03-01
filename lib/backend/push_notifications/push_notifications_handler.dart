@@ -189,6 +189,19 @@ _PushRoute? _resolveRouteFromType(Map<String, dynamic> data) {
       parameterData: {},
     );
   }
+  // Friend request notifications
+  if (type == 'friend_request_received') {
+    return const _PushRoute(
+      pageName: 'Tab_Friends',
+      parameterData: {'initialSegment': 'requests'},
+    );
+  }
+  if (type == 'friend_request_accepted') {
+    return const _PushRoute(
+      pageName: 'Tab_Friends',
+      parameterData: {'initialSegment': 'friends'},
+    );
+  }
   return null;
 }
 
@@ -423,7 +436,11 @@ final parametersBuilderMap =
         },
       ),
   'NotificationsList': ParameterData.none(),
-  'Tab_Friends': ParameterData.none(),
+  'Tab_Friends': (data) async => ParameterData(
+        allParams: {
+          'initialSegment': getParameter<String>(data, 'initialSegment'),
+        },
+      ),
   'GameJoinedDetailed': (data) async => ParameterData(
         allParams: {
           'gameRef': getParameter<DocumentReference>(data, 'gameRef'),

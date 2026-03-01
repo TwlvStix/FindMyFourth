@@ -34,7 +34,17 @@ jest.mock('firebase-functions', () => ({
 
 // ── Import module under test ──────────────────────────────────────────────────
 
-const { isUserEligibleByGender, doesAlertSubMatchGame } = require('../game_alerts');
+const {
+  isUserEligibleByGender,
+  doesAlertSubMatchGame,
+  isWithinQuietHours,
+  isActiveDay,
+  computeReleaseAt,
+} = require('../game_alerts');
+
+afterEach(() => {
+  jest.useRealTimers();
+});
 
 // ── Tests: isUserEligibleByGender ─────────────────────────────────────────────
 
@@ -256,5 +266,62 @@ describe('doesAlertSubMatchGame', () => {
 
     const missingOne = { ...fullMatchGame, is_2v2: false };
     expect(doesAlertSubMatchGame(sub, missingOne)).toBe(false);
+  });
+});
+
+describe('isActiveDay', () => {
+  it('defaults to true when activeDays is missing or empty', () => {
+    expect(isActiveDay()).toBe(true);
+    expect(isActiveDay([])).toBe(true);
+    expect(isActiveDay(null)).toBe(true);
+  });
+
+  it('maps Vancouver weekday to ISO day', () => {
+    jest.useFakeTimers();
+    // Monday in Vancouver
+    jest.setSystemTime(new Date('2026-02-16T20:00:00Z'));
+
+    expect(isActiveDay([1])).toBe(true);
+    expect(isActiveDay([7])).toBe(false);
+  });
+});
+
+describe('isWithinQuietHours', () => {
+  it('22:00-07:00 at Vancouver 23:30 is in quiet hours', () => {
+    expect(isWithinQuietHours('22:00', '07:00', '23:30')).toBe(true);
+  });
+
+  it('22:00-07:00 at Vancouver 08:00 is outside quiet hours', () => {
+    expect(isWithinQuietHours('22:00', '07:00', '08:00')).toBe(false);
+  });
+});
+
+describe('computeReleaseAt', () => {
+  it('schedules next-day release for 07:00 Vancouver when current Vancouver time is 23:00', () => {
+    jest.useFakeTimers();
+    // 23:00 Vancouver on Feb 18, 2026
+    jest.setSystemTime(new Date('2026-02-19T07:00:00Z'));
+
+    const release = computeReleaseAt('07:00');
+
+    expect(release.toISOString()).toBe('2026-02-19T15:00:00.000Z');
+  });
+
+  it('handles spring-forward DST day using PDT offset', () => {
+    jest.useFakeTimers();
+    jest.setSystemTime(new Date('2026-03-08T12:00:00Z')); // 04:00 Vancouver
+
+    const release = computeReleaseAt('07:00');
+
+    expect(release.toISOString()).toBe('2026-03-08T14:00:00.000Z');
+  });
+
+  it('handles fall-back DST day using PST offset', () => {
+    jest.useFakeTimers();
+    jest.setSystemTime(new Date('2026-11-01T11:00:00Z')); // 03:00 Vancouver
+
+    const release = computeReleaseAt('07:00');
+
+    expect(release.toISOString()).toBe('2026-11-01T15:00:00.000Z');
   });
 });

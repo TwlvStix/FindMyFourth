@@ -609,9 +609,9 @@ describe('Scenario 7 — Quiet hours: notification held then released by trustQu
     });
     await makeDevice(mockSharedDb, USER_ID, 'dev_sc7', 'tok_sc7', 'ios');
 
-    // 23:30 UTC — inside 22:00–07:00 quiet window
+    // 23:30 Vancouver = 07:30 UTC (UTC-8 winter time) — inside 22:00–07:00 quiet window
     jest.useFakeTimers();
-    jest.setSystemTime(new Date('2026-02-18T23:30:00Z'));
+    jest.setSystemTime(new Date('2026-02-19T07:30:00Z'));
 
     const event = {
       eventId:         'evt_sc7_001',
@@ -625,9 +625,10 @@ describe('Scenario 7 — Quiet hours: notification held then released by trustQu
     const result = await routeNotification(event, mockSharedDb);
 
     expect(result.result).toBe('quiet_held');
-    // releaseAt should be 07:00 on the next day (2026-02-19)
+    // releaseAt should be 07:00 Vancouver = 15:00 UTC (same day Feb 19)
     expect(result.releaseAt).toBeInstanceOf(Date);
-    expect(result.releaseAt.toISOString()).toBe('2026-02-19T07:00:00.000Z');
+    expect(result.releaseAt.toISOString()).toBe('2026-02-19T15:00:00.000Z');
+    expect(result.jobId).toBeDefined();
 
     expect(mockFcmSend).not.toHaveBeenCalled();
 
@@ -637,7 +638,7 @@ describe('Scenario 7 — Quiet hours: notification held then released by trustQu
       .collection('notifications').get();
     expect(notifSnapBefore.docs).toHaveLength(0);
 
-    // notificationLog has the quiet_held entry with releaseAt and event
+    // notificationLog has the quiet_held entry with releaseAt, event, and jobId
     const heldSnap = await mockSharedDb.collection('notificationLog')
       .where('status', '==', 'quiet_held').get();
     expect(heldSnap.docs).toHaveLength(1);
@@ -645,9 +646,11 @@ describe('Scenario 7 — Quiet hours: notification held then released by trustQu
     expect(heldData.releaseAt).toBeInstanceOf(Date);
     expect(heldData.event).toBeDefined();
     expect(heldData.event.eventType).toBe('badge_earned');
+    expect(heldData.jobId).toBeDefined();
 
-    // Advance time past releaseAt + 5min threshold (cleanup stale threshold = 5 min)
-    jest.setSystemTime(new Date('2026-02-19T07:06:00Z'));
+    // Advance time past releaseAt (15:00 UTC) + 5min threshold (cleanup stale threshold = 5 min)
+    // 15:06 UTC = 07:06 Vancouver, just past the quiet hours end
+    jest.setSystemTime(new Date('2026-02-19T15:06:00Z'));
 
     const cleanupResult = await trustQuietHoursCleanupHandler(mockSharedDb);
 

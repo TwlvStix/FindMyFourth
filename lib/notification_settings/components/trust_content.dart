@@ -3,8 +3,6 @@ import '/core/design_tokens/colors.dart';
 import '/core/design_tokens/typography.dart';
 import '/core/design_tokens/spacing.dart';
 import '/providers/provider_extensions.dart';
-import '/notification_settings/components/expand_section_label.dart';
-import '/notification_settings/components/delivery_frequency_selector.dart';
 import '/notification_settings/components/notification_toggle.dart';
 
 /// Expanded content for the Trust and Reliability notification category card.
@@ -14,7 +12,10 @@ import '/notification_settings/components/notification_toggle.dart';
 ///   - Post-round check-ins
 ///   - Account standing
 ///   - Badge progress
-/// - Delivery frequency selector
+///
+/// Delivery frequency selector hidden until backend digest logic is complete.
+/// To re-enable: add ExpandSectionLabel + DeliveryFrequencySelector with
+/// trust.deliveryFrequency
 class TrustContent extends StatelessWidget {
   const TrustContent({super.key});
 
@@ -64,14 +65,8 @@ class TrustContent extends StatelessWidget {
           },
         ),
 
-        // Delivery section
-        const ExpandSectionLabel(text: 'DELIVERY', showDivider: true),
-        DeliveryFrequencySelector(
-          selected: trust.deliveryFrequency,
-          onChanged: (freq) {
-            context.notificationProvider.updateTrustCategories(delivery: freq);
-          },
-        ),
+        // Delivery frequency selector hidden until backend digest logic is complete.
+        // To re-enable: add ExpandSectionLabel + DeliveryFrequencySelector here.
       ],
     );
   }
