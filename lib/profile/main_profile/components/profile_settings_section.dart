@@ -1,0 +1,162 @@
+import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:phosphor_flutter/phosphor_flutter.dart';
+
+import '/core/design_tokens/border_radius.dart';
+import '/core/design_tokens/colors.dart';
+import '/core/design_tokens/icon_size.dart';
+import '/core/design_tokens/spacing.dart';
+import '/core/design_tokens/typography.dart';
+import '/core/design_tokens/app_phosphor_icons.dart';
+import '/core/widgets/app_icon.dart';
+
+/// Settings section of the main profile page.
+///
+/// Contains Notifications, Your Standing, Debug (if enabled), and Log Out rows.
+class ProfileSettingsSection extends StatelessWidget {
+  const ProfileSettingsSection({
+    super.key,
+    required this.onNotifications,
+    required this.onYourStanding,
+    required this.onLogout,
+    this.showDebugOptions = false,
+    this.onDebugNotificationRouting,
+  });
+
+  /// Called when the user taps "Notifications".
+  final VoidCallback onNotifications;
+
+  /// Called when the user taps "Your Standing".
+  final VoidCallback onYourStanding;
+
+  /// Called when the user taps "Log Out".
+  /// This should handle the confirmation dialog and logout flow.
+  final Future<void> Function() onLogout;
+
+  /// Whether to show debug options (only in debug mode).
+  final bool showDebugOptions;
+
+  /// Called when the user taps "Test Notification Routing" (debug only).
+  final VoidCallback? onDebugNotificationRouting;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding:
+          EdgeInsets.fromLTRB(AppSpacing.lg, AppSpacing.xl, AppSpacing.lg, 0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Settings',
+            style: AppTypography.titleMedium.copyWith(
+              color: AppColors.textPrimary,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+          SizedBox(height: AppSpacing.md),
+          Container(
+            decoration: BoxDecoration(
+              color: AppColors.navy,
+              borderRadius: BorderRadius.circular(AppBorderRadius.lg),
+              border: Border.all(color: AppColors.navyLight),
+            ),
+            child: Column(
+              children: [
+                _buildSettingsRow(
+                  phosphorIcon: AppPhosphorIcons.notifications,
+                  label: 'Notifications',
+                  onTap: () {
+                    HapticFeedback.lightImpact();
+                    onNotifications();
+                  },
+                ),
+                Divider(height: 1, color: AppColors.navyLight, indent: 56),
+                _buildSettingsRow(
+                  phosphorIcon: AppPhosphorIcons.standing,
+                  label: 'Your Standing',
+                  onTap: () {
+                    HapticFeedback.lightImpact();
+                    onYourStanding();
+                  },
+                ),
+                // Debug: Notification routing test (only in debug mode)
+                if (showDebugOptions && kDebugMode) ...[
+                  Divider(height: 1, color: AppColors.navyLight, indent: 56),
+                  _buildSettingsRow(
+                    phosphorIcon: AppPhosphorIcons.bug,
+                    label: 'Test Notification Routing',
+                    onTap: () {
+                      HapticFeedback.lightImpact();
+                      onDebugNotificationRouting?.call();
+                    },
+                  ),
+                ],
+                Divider(height: 1, color: AppColors.navyLight, indent: 56),
+                _buildSettingsRow(
+                  phosphorIcon: AppPhosphorIcons.logOut,
+                  label: 'Log Out',
+                  isDestructive: true,
+                  onTap: () async {
+                    HapticFeedback.mediumImpact();
+                    await onLogout();
+                  },
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSettingsRow({
+    required PhosphorIconData phosphorIcon,
+    required String label,
+    required VoidCallback onTap,
+    bool isDestructive = false,
+    Widget? trailing,
+  }) {
+    // Muted red for less alarm on destructive actions
+    final color = isDestructive
+        ? AppColors.error.withValues(alpha: 0.85)
+        : AppColors.textSecondary;
+
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(AppBorderRadius.lg),
+      child: Padding(
+        padding: EdgeInsets.all(AppSpacing.md),
+        child: Row(
+          children: [
+            AppIcon(
+              icon: phosphorIcon,
+              color: color,
+              size: AppIconSize.md,
+            ),
+            SizedBox(width: AppSpacing.md),
+            Expanded(
+              child: Text(
+                label,
+                style: AppTypography.bodyMedium.copyWith(
+                  color: color,
+                  fontWeight: isDestructive ? AppTypography.medium : null,
+                ),
+              ),
+            ),
+            if (trailing != null) ...[
+              trailing,
+              SizedBox(width: AppSpacing.xs),
+            ],
+            AppIcon(
+              icon: AppPhosphorIcons.chevronRight,
+              color: AppColors.textMuted,
+              size: AppIconSize.md,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}

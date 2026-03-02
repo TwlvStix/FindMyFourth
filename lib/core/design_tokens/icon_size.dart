@@ -90,4 +90,17 @@ class AppIconSize {
 
   /// Hero icon size - empty states, success confirmations, feedback screens
   static const double hero = xxxl;
+
+  // ============================================================================
+  // ICON BOX SIZES (CONTAINERS HOLDING ICONS)
+  // ============================================================================
+
+  /// 40px - Large icon box (quick action cards, icon containers)
+  /// Usage: Action card icon containers, feature buttons
+  static const double iconBoxLg = xl;
+
+  /// 44px - Extra large icon box (banners, notification buttons)
+  /// Usage: Vibe completion banner icon, notification button container
+  /// Note: Also serves as minimum touch target for accessibility
+  static const double iconBoxXl = 44.0;
 }

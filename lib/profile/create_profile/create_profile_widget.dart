@@ -1,29 +1,24 @@
 import '/auth/firebase_auth/auth_util.dart';
 import '/backend/backend.dart';
-import '/backend/cloud_functions/cloud_functions.dart';
-import '/core/utils/app_log.dart';
-import '/core/widgets/app_count_controller.dart';
-import '/core/widgets/app_drop_down.dart';
 import '/core/motion/motion_helpers.dart';
 import '/core/motion/motion_tokens.dart';
 import '/core/motion/reduced_motion.dart';
+import '/core/utils/app_snackbar.dart';
 import '/utils/app_util.dart';
 import '/core/widgets/app_button_enhanced.dart';
-import '/core/widgets/app_text_field.dart';
 import '/core/widgets/fairway_background.dart';
 import '/core/widgets/profile_hero_section.dart';
 import '/core/design_tokens/app_phosphor_icons.dart';
 import '/core/design_tokens/spacing.dart';
 import '/core/design_tokens/colors.dart';
 import '/core/design_tokens/typography.dart';
-import '/core/design_tokens/icon_size.dart';
 import '/core/design_tokens/border_radius.dart';
 import '/core/form_field_controller.dart';
-import '/services/profile_setup_service.dart';
 import '/profile/change_photo/change_photo_widget.dart';
-import '/core/custom_functions.dart' as functions;
+import '/profile/create_profile/components/personal_info_section.dart';
+import '/profile/create_profile/components/golf_profile_section.dart';
+import '/profile/create_profile/controllers/create_profile_controller.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 
 class CreateProfileWidget extends StatefulWidget {
@@ -38,91 +33,76 @@ class CreateProfileWidget extends StatefulWidget {
 
 class _CreateProfileWidgetState extends State<CreateProfileWidget>
     with TickerProviderStateMixin {
-  final formKey = GlobalKey<FormState>();
+  final _formKey = GlobalKey<FormState>();
+  final _scaffoldKey = GlobalKey<ScaffoldState>();
+  final _controller = CreateProfileController();
 
   // Text Controllers
-  FocusNode? firstNameFocusNode;
-  TextEditingController? firstNameTextController;
-  FocusNode? lastNameFocusNode;
-  TextEditingController? lastNameTextController;
-  FocusNode? usernameFocusNode;
-  TextEditingController? usernameTextController;
-  FocusNode? phoneNumFocusNode;
-  TextEditingController? phoneNumTextController;
-  FocusNode? emailFocusNode;
-  TextEditingController? emailTextController;
-  FocusNode? golfCanadaFocusNode;
-  TextEditingController? golfCanadaTextController;
+  late TextEditingController _firstNameController;
+  late TextEditingController _lastNameController;
+  late FocusNode _usernameFocusNode;
+  late TextEditingController _usernameController;
+  late TextEditingController _phoneController;
+  late TextEditingController _emailController;
+  late TextEditingController _golfCanadaController;
 
   // Form Values
-  String? coursesValue;
-  FormFieldController<String>? coursesValueController;
-  int? handicapValue;
-  UsersRecord? usernamesQuery;
-  String? genderValue;
-  FormFieldController<String>? genderValueController;
-  DateTime? dateOfBirth;
+  String? _coursesValue;
+  FormFieldController<String>? _coursesValueController;
+  int? _handicapValue;
+  String? _genderValue;
+  FormFieldController<String>? _genderValueController;
+  DateTime? _dateOfBirth;
 
   // Animation
   late AnimationController _fadeController;
   late List<Animation<double>> _fadeAnimations;
 
-  final scaffoldKey = GlobalKey<ScaffoldState>();
-  final _profileSetupService = ProfileSetupService();
-
   @override
   void initState() {
     super.initState();
+    _initControllers();
+    _initAnimations();
+  }
 
-    // Initialize controllers
-    firstNameTextController = TextEditingController();
-    firstNameFocusNode = FocusNode();
-    lastNameTextController = TextEditingController();
-    lastNameFocusNode = FocusNode();
-    usernameTextController = TextEditingController();
-    usernameFocusNode = FocusNode();
-    usernameFocusNode!.addListener(_onUsernameBlur);
-    phoneNumTextController = TextEditingController();
-    phoneNumFocusNode = FocusNode();
-    emailTextController = TextEditingController(text: currentUserEmail);
-    emailFocusNode = FocusNode();
-    golfCanadaTextController = TextEditingController();
-    golfCanadaFocusNode = FocusNode();
+  void _initControllers() {
+    _firstNameController = TextEditingController();
+    _lastNameController = TextEditingController();
+    _usernameController = TextEditingController();
+    _usernameFocusNode = FocusNode();
+    _usernameFocusNode.addListener(_onUsernameBlur);
+    _phoneController = TextEditingController();
+    _emailController = TextEditingController(text: currentUserEmail);
+    _golfCanadaController = TextEditingController();
+  }
 
-    // Setup staggered fade-in animations (UPDATED: 800ms → 232ms per premium motion system)
+  void _initAnimations() {
     _fadeController = AnimationController(
       duration: ReducedMotionService.adjust(
         MotionTokens.contentReveal + (MotionTokens.staggerDelay * 3),
-      ), // 160ms + 72ms = 232ms total
+      ),
       vsync: this,
     );
 
     _fadeAnimations = ReducedMotionService.shouldStagger
-        ? List.generate(
-            3,
-            (index) {
-              final totalMs =
-                  _fadeController.duration!.inMilliseconds.toDouble();
-              final staggerMs =
-                  MotionTokens.staggerDelay.inMilliseconds.toDouble();
-              final revealMs =
-                  MotionTokens.contentReveal.inMilliseconds.toDouble();
+        ? List.generate(3, (index) {
+            final totalMs = _fadeController.duration!.inMilliseconds.toDouble();
+            final staggerMs = MotionTokens.staggerDelay.inMilliseconds.toDouble();
+            final revealMs = MotionTokens.contentReveal.inMilliseconds.toDouble();
 
-              return Tween<double>(begin: 0.0, end: 1.0).animate(
-                CurvedAnimation(
-                  parent: _fadeController,
-                  curve: Interval(
-                    (index * staggerMs) / totalMs,
-                    (revealMs + (index * staggerMs)) / totalMs,
-                    curve: MotionTokens.curveEnter,
-                  ),
+            return Tween<double>(begin: 0.0, end: 1.0).animate(
+              CurvedAnimation(
+                parent: _fadeController,
+                curve: Interval(
+                  (index * staggerMs) / totalMs,
+                  (revealMs + (index * staggerMs)) / totalMs,
+                  curve: MotionTokens.curveEnter,
                 ),
-              );
-            },
-          )
+              ),
+            );
+          })
         : List.generate(
             3,
-            // No stagger in reduced motion - all fade in together
             (index) => Tween<double>(begin: 0.0, end: 1.0).animate(
               CurvedAnimation(
                 parent: _fadeController,
@@ -139,304 +119,79 @@ class _CreateProfileWidgetState extends State<CreateProfileWidget>
   @override
   void dispose() {
     _fadeController.dispose();
-    firstNameFocusNode?.dispose();
-    firstNameTextController?.dispose();
-    lastNameFocusNode?.dispose();
-    lastNameTextController?.dispose();
-    usernameFocusNode?.removeListener(_onUsernameBlur);
-    usernameFocusNode?.dispose();
-    usernameTextController?.dispose();
-    phoneNumFocusNode?.dispose();
-    phoneNumTextController?.dispose();
-    emailFocusNode?.dispose();
-    emailTextController?.dispose();
-    golfCanadaFocusNode?.dispose();
-    golfCanadaTextController?.dispose();
+    _firstNameController.dispose();
+    _lastNameController.dispose();
+    _usernameFocusNode.removeListener(_onUsernameBlur);
+    _usernameFocusNode.dispose();
+    _usernameController.dispose();
+    _phoneController.dispose();
+    _emailController.dispose();
+    _golfCanadaController.dispose();
     super.dispose();
   }
 
   void _onUsernameBlur() {
-    if (!usernameFocusNode!.hasFocus && usernameTextController != null) {
-      final trimmed = usernameTextController!.text.trim();
-      if (trimmed != usernameTextController!.text) {
-        usernameTextController!.text = trimmed;
+    if (!_usernameFocusNode.hasFocus) {
+      final trimmed = _usernameController.text.trim();
+      if (trimmed != _usernameController.text) {
+        _usernameController.text = trimmed;
       }
     }
-  }
-
-  String? _validateUsername(BuildContext context, String? val) {
-    if (val == null || val.isEmpty) {
-      return 'Username is required';
-    }
-    if (!RegExp(kTextValidatorUsernameRegex).hasMatch(val)) {
-      return 'Must start with a letter and contain only letters, digits, -, or _';
-    }
-    return null;
-  }
-
-  String? _validateEmail(BuildContext context, String? val) {
-    if (val == null || val.isEmpty) {
-      return 'Email is required';
-    }
-    if (!RegExp(kTextValidatorEmailRegex).hasMatch(val)) {
-      return 'Must be a valid email address';
-    }
-    return null;
   }
 
   Future<void> _handleSaveProfile() async {
-    if (!formKey.currentState!.validate()) {
-      return;
-    }
-
-    // Validate required behavioural dataset fields
-    if (genderValue == null || genderValue!.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            'Gender is required.',
-            style: AppTypography.bodySmall.copyWith(color: Colors.white),
-          ),
-          duration: Duration(milliseconds: 2000),
-          backgroundColor: AppColors.error,
-        ),
-      );
-      return;
-    }
-
-    if (dateOfBirth == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            'Date of birth is required.',
-            style: AppTypography.bodySmall.copyWith(color: Colors.white),
-          ),
-          duration: Duration(milliseconds: 2000),
-          backgroundColor: AppColors.error,
-        ),
-      );
-      return;
-    }
-
-    // Create username
-    final desiredUsername =
-        functions.usernameCreator(usernameTextController!.text);
-    final firebaseUser = await _profileSetupService.currentUserOrWait();
-    if (!mounted) return;
-    if (firebaseUser == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            'Sign-in not ready. Please try again.',
-            style: AppTypography.bodySmall.copyWith(
-              color: Colors.white,
-            ),
-          ),
-          duration: Duration(milliseconds: 2000),
-          backgroundColor: AppColors.error,
-        ),
-      );
-      return;
-    }
-    await firebaseUser.getIdToken(true);
-    if (!mounted) return;
-    final userRef = UsersRecord.collection.doc(firebaseUser.uid);
-    if (desiredUsername.isEmpty) {
-      return;
-    }
-    if (desiredUsername.isNotEmpty &&
-        !RegExp(kTextValidatorUsernameRegex).hasMatch(desiredUsername)) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            'Must start with a letter and contain only letters, digits, -, or _',
-            style: AppTypography.bodySmall.copyWith(
-              color: Colors.white,
-            ),
-          ),
-          duration: Duration(milliseconds: 2000),
-          backgroundColor: AppColors.error,
-        ),
-      );
-      return;
-    }
-
-    final desiredEmail = emailTextController?.text.trim() ?? '';
-    if (desiredEmail.isNotEmpty && desiredEmail != currentUserEmail) {
-      ScaffoldMessenger.of(context).hideCurrentSnackBar();
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            'Please update your Firebase Auth email ($currentUserEmail) before saving your profile.',
-            style: AppTypography.bodySmall.copyWith(
-              color: AppColors.navy,
-            ),
-          ),
-          duration: Duration(milliseconds: 2000),
-          backgroundColor: AppColors.navyDark,
-        ),
-      );
-      return;
-    }
-
-    try {
-      await _profileSetupService.reserveUsername(
-        username: desiredUsername,
-        userRef: userRef,
-      );
-      try {
-        final golfCanadaRaw = golfCanadaTextController?.text.trim() ?? '';
-        AppLog.d('Creating user document with friend fields initialized...');
-        final phoneText = phoneNumTextController!.text;
-        await _profileSetupService.saveCreateProfileData(
-          userRef: userRef,
-          userData: createUsersRecordData(
-            photoUrl: currentUserPhoto,
-            handicap: handicapValue,
-            golfCanadaNumber: golfCanadaRaw.isEmpty ? null : golfCanadaRaw,
-            homeCourse: coursesValue,
-            firstName: firstNameTextController!.text,
-            lastName: lastNameTextController!.text,
-            displayName: desiredUsername,
-            gender: genderValue,
-            dateOfBirth: dateOfBirth,
-            friends: [],
-            friendRequests: [],
-          ),
-          phoneNumber: phoneText,
-        );
-        AppLog.d('User document created with friend fields initialized');
-      } catch (e) {
-        await _profileSetupService.releaseUsernameIfOwned(
-          username: desiredUsername,
-          userRef: userRef,
-        );
-        rethrow;
-      }
-      currentUserDocument = await UsersRecord.getDocumentOnce(userRef);
-      try {
-        await makeCloudCall(
-          'completeOnboarding',
-          {'userDocPath': userRef.path},
-        );
-      } catch (_) {
-        if (!mounted) return;
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              'Unable to finish onboarding. Please try again.',
-              style: AppTypography.bodySmall.copyWith(
-                color: Colors.white,
-              ),
-            ),
-            duration: Duration(milliseconds: 2000),
-            backgroundColor: AppColors.error,
-          ),
-        );
-        return;
-      }
-    } on StateError catch (_) {
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            'This username is taken. Please choose another.',
-            style: AppTypography.bodySmall.copyWith(
-              color: Colors.white,
-            ),
-          ),
-          duration: Duration(milliseconds: 2000),
-          backgroundColor: AppColors.error,
-        ),
-      );
-      return;
-    } on FirebaseException catch (e, stackTrace) {
-      AppLog.d('CreateProfile save failed: $e');
-      AppLog.d('CreateProfile save stackTrace: $stackTrace');
-      if (!mounted) return;
-      final message = e.code == 'permission-denied'
-          ? 'Unable to save profile due to permissions. Please try again.'
-          : 'Unable to save profile. Please try again.';
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            message,
-            style: AppTypography.bodySmall.copyWith(
-              color: Colors.white,
-            ),
-          ),
-          duration: Duration(milliseconds: 2000),
-          backgroundColor: AppColors.error,
-        ),
-      );
-      return;
-    } catch (e, stackTrace) {
-      AppLog.d('CreateProfile save failed: $e');
-      AppLog.d('CreateProfile save stackTrace: $stackTrace');
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            'Unable to save profile. Please try again.',
-            style: AppTypography.bodySmall.copyWith(
-              color: Colors.white,
-            ),
-          ),
-          duration: Duration(milliseconds: 2000),
-          backgroundColor: AppColors.error,
-        ),
-      );
-      return;
-    }
-
-    // Show success message
-    if (!mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(
-          'Profile created successfully!',
-          style: AppTypography.bodyMedium.copyWith(
-            color: Colors.white,
-            fontWeight: FontWeight.w500,
-          ),
-        ),
-        duration: Duration(milliseconds: 3000),
-        backgroundColor: AppColors.success,
-      ),
+    final formData = CreateProfileFormData(
+      firstName: _firstNameController.text,
+      lastName: _lastNameController.text,
+      username: _usernameController.text,
+      phone: _phoneController.text,
+      email: _emailController.text.trim(),
+      photoUrl: currentUserPhoto,
+      gender: _genderValue,
+      dateOfBirth: _dateOfBirth,
+      handicap: _handicapValue,
+      homeCourse: _coursesValue,
+      golfCanadaNumber: _golfCanadaController.text,
     );
 
-    final nextRoute = GoRouterState.of(context).uri.queryParameters['next'];
-    final nextAfterVibes = nextRoute != null && nextRoute.isNotEmpty
-        ? nextRoute
-        : AppRouteNames.gamesList;
-
-    context.goVibeOnboarding(
-      next: nextAfterVibes,
-      transition: TransitionStandards.modalTransition,
+    final result = await _controller.submitProfile(
+      formData: formData,
+      isFormValid: _formKey.currentState?.validate() ?? false,
+      currentUserEmail: currentUserEmail,
     );
+
+    if (!mounted) return;
+
+    if (result.success) {
+      // Update global user document
+      currentUserDocument = result.userRecord;
+
+      AppSnackbar.showSuccess(context, 'Profile created successfully!');
+
+      final nextRoute = GoRouterState.of(context).uri.queryParameters['next'];
+      final nextAfterVibes = nextRoute != null && nextRoute.isNotEmpty
+          ? nextRoute
+          : AppRouteNames.gamesList;
+
+      context.goVibeOnboarding(
+        next: nextAfterVibes,
+        transition: TransitionStandards.modalTransition,
+      );
+    } else {
+      AppSnackbar.showError(context, result.message ?? 'An error occurred.');
+    }
   }
 
-  Widget _buildTextField({
-    required TextEditingController controller,
-    required String label,
-    required IconData icon,
-    String? Function(BuildContext, String?)? validator,
-    bool readOnly = false,
-    TextInputType? keyboardType,
-    List<TextInputFormatter>? inputFormatters,
-    FocusNode? focusNode,
-  }) {
-    return AppTextField(
-      label: label,
-      controller: controller,
-      variant: AppTextFieldVariant.filledDark,
-      prefixIcon: icon,
-      readOnly: readOnly,
-      enabled: !readOnly,
-      keyboardType: keyboardType,
-      inputFormatters: inputFormatters,
-      validator: validator != null ? (val) => validator(context, val) : null,
-      focusNode: focusNode,
+  Future<void> _showChangePhotoSheet() async {
+    await showAppBottomSheet(
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      enableDrag: false,
+      context: context,
+      builder: (context) => Padding(
+        padding: MediaQuery.viewInsetsOf(context),
+        child: ChangePhotoWidget(),
+      ),
     );
   }
 
@@ -450,12 +205,12 @@ class _CreateProfileWidgetState extends State<CreateProfileWidget>
         FocusManager.instance.primaryFocus?.unfocus();
       },
       child: Scaffold(
-        key: scaffoldKey,
+        key: _scaffoldKey,
         backgroundColor: AppColors.navy,
         body: FairwayBackgroundDark(
           showOrganic: true,
           child: Form(
-            key: formKey,
+            key: _formKey,
             autovalidateMode: AutovalidateMode.disabled,
             child: SingleChildScrollView(
               physics: BouncingScrollPhysics(),
@@ -465,44 +220,14 @@ class _CreateProfileWidgetState extends State<CreateProfileWidget>
                   AuthUserStreamWidget(
                     builder: (context) => ProfileHeroSection(
                       photoUrl: currentUserPhoto,
-                      displayName: usernameTextController?.text ?? '',
-                      onEditPhoto: () async {
-                        await showAppBottomSheet(
-                          isScrollControlled: true,
-                          backgroundColor: Colors.transparent,
-                          enableDrag: false,
-                          context: context,
-                          builder: (context) {
-                            return GestureDetector(
-                              onTap: () {
-                                FocusScope.of(context).unfocus();
-                                FocusManager.instance.primaryFocus?.unfocus();
-                              },
-                              child: Padding(
-                                padding: MediaQuery.viewInsetsOf(context),
-                                child: ChangePhotoWidget(),
-                              ),
-                            );
-                          },
-                        );
-                      },
+                      displayName: _usernameController.text,
+                      onEditPhoto: _showChangePhotoSheet,
                     ),
                   ),
 
                   // Change Photo text link
                   GestureDetector(
-                    onTap: () async {
-                      await showAppBottomSheet(
-                        isScrollControlled: true,
-                        backgroundColor: Colors.transparent,
-                        enableDrag: false,
-                        context: context,
-                        builder: (context) => Padding(
-                          padding: MediaQuery.viewInsetsOf(context),
-                          child: ChangePhotoWidget(),
-                        ),
-                      );
-                    },
+                    onTap: _showChangePhotoSheet,
                     child: Text(
                       'Change Photo',
                       style: AppTypography.labelMedium.copyWith(
@@ -539,8 +264,7 @@ class _CreateProfileWidgetState extends State<CreateProfileWidget>
                           height: 4,
                           decoration: BoxDecoration(
                             color: AppColors.navyLight,
-                            borderRadius:
-                                BorderRadius.circular(AppBorderRadius.xxs),
+                            borderRadius: BorderRadius.circular(AppBorderRadius.xxs),
                           ),
                         ),
 
@@ -549,530 +273,48 @@ class _CreateProfileWidgetState extends State<CreateProfileWidget>
                         // Personal Information Section
                         FadeTransition(
                           opacity: _fadeAnimations[0],
-                          child: Padding(
-                            padding: EdgeInsets.fromLTRB(
-                                AppSpacing.lg, 0, AppSpacing.lg, AppSpacing.lg),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  'Personal Information',
-                                  style: AppTypography.titleMedium.copyWith(
-                                    color: AppColors.textPrimary,
-                                    fontWeight: FontWeight.w600,
-                                  ),
-                                ),
-                                SizedBox(height: AppSpacing.md),
-
-                                // First & Last Name Row
-                                Row(
-                                  children: [
-                                    Expanded(
-                                      child: _buildTextField(
-                                        controller: firstNameTextController!,
-                                        label: 'First Name *',
-                                        icon: AppPhosphorIcons.profile,
-                                        validator: (context, val) {
-                                          if (val == null ||
-                                              val.trim().isEmpty) {
-                                            return 'First name is required';
-                                          }
-                                          return null;
-                                        },
-                                      ),
-                                    ),
-                                    SizedBox(width: AppSpacing.sm),
-                                    Expanded(
-                                      child: _buildTextField(
-                                        controller: lastNameTextController!,
-                                        label: 'Last Name',
-                                        icon: AppPhosphorIcons.profile,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                                SizedBox(height: AppSpacing.md),
-
-                                // Display Name
-                                _buildTextField(
-                                  controller: usernameTextController!,
-                                  label: 'Display Name',
-                                  icon: AppPhosphorIcons.atSign,
-                                  validator: _validateUsername,
-                                  focusNode: usernameFocusNode,
-                                ),
-                                SizedBox(height: AppSpacing.md),
-
-                                // Phone
-                                _buildTextField(
-                                  controller: phoneNumTextController!,
-                                  label: 'Phone',
-                                  icon: AppPhosphorIcons.phone,
-                                  keyboardType: TextInputType.phone,
-                                  inputFormatters: [
-                                    FilteringTextInputFormatter.digitsOnly
-                                  ],
-                                ),
-                                SizedBox(height: AppSpacing.md),
-
-                                // Email
-                                _buildTextField(
-                                  controller: emailTextController!,
-                                  label: 'Email',
-                                  icon: AppPhosphorIcons.email,
-                                  validator: _validateEmail,
-                                  readOnly: true,
-                                ),
-                                SizedBox(height: AppSpacing.md),
-
-                                // Gender & Date of Birth Row
-                                Row(
-                                  children: [
-                                    // Gender Dropdown
-                                    Expanded(
-                                      child: Container(
-                                        decoration: BoxDecoration(
-                                          color: AppColors.inputBackground,
-                                          borderRadius: BorderRadius.circular(
-                                              AppBorderRadius.md),
-                                          border: Border.all(
-                                            color: AppColors.inputBorderIdle,
-                                          ),
-                                        ),
-                                        child: AppDropDown<String>(
-                                          controller: genderValueController ??=
-                                              FormFieldController<String>(null),
-                                          options: const ['Male', 'Female'],
-                                          onChanged: (val) =>
-                                              setState(() => genderValue = val),
-                                          width: double.infinity,
-                                          height: 56,
-                                          textStyle:
-                                              AppTypography.bodyMedium.copyWith(
-                                            color: AppColors.textPrimary,
-                                          ),
-                                          hintText: 'Gender *',
-                                          icon: Icon(
-                                            AppPhosphorIcons.profile,
-                                            color: AppColors.textMuted,
-                                            size: AppIconSize.md,
-                                          ),
-                                          fillColor: AppColors.inputBackground,
-                                          elevation: 0,
-                                          borderColor: Colors.transparent,
-                                          borderWidth: 0,
-                                          borderRadius: 12,
-                                          margin: EdgeInsetsDirectional.only(
-                                              start: AppSpacing.md),
-                                        ),
-                                      ),
-                                    ),
-                                    SizedBox(width: AppSpacing.sm),
-                                    // Date of Birth Picker
-                                    Expanded(
-                                      child: GestureDetector(
-                                        onTap: () async {
-                                          final now = DateTime.now();
-                                          final picked = await showDatePicker(
-                                            context: context,
-                                            initialDate: dateOfBirth ??
-                                                DateTime(now.year - 25,
-                                                    now.month, now.day),
-                                            firstDate: DateTime(1920),
-                                            lastDate: DateTime(now.year - 13,
-                                                now.month, now.day),
-                                            helpText: 'SELECT DATE OF BIRTH',
-                                            builder: (context, child) {
-                                              return Theme(
-                                                data:
-                                                    Theme.of(context).copyWith(
-                                                  colorScheme: ColorScheme.dark(
-                                                    primary: AppColors.green,
-                                                    onPrimary:
-                                                        AppColors.textPrimary,
-                                                    surface: AppColors.navy,
-                                                    onSurface:
-                                                        AppColors.textPrimary,
-                                                    onSurfaceVariant:
-                                                        AppColors.textPrimary,
-                                                    secondary: AppColors.green,
-                                                    onSecondary:
-                                                        AppColors.textPrimary,
-                                                  ),
-                                                  dialogTheme: DialogThemeData(
-                                                    backgroundColor:
-                                                        AppColors.navy,
-                                                  ),
-                                                  // Text theme for year picker text elements
-                                                  textTheme: Theme.of(context)
-                                                      .textTheme
-                                                      .apply(
-                                                        bodyColor: AppColors
-                                                            .textPrimary,
-                                                        displayColor: AppColors
-                                                            .textPrimary,
-                                                      ),
-                                                  // Input decoration for manual date entry mode
-                                                  inputDecorationTheme:
-                                                      InputDecorationTheme(
-                                                    labelStyle: TextStyle(
-                                                        color: AppColors
-                                                            .textPrimary),
-                                                    hintStyle: TextStyle(
-                                                        color: AppColors
-                                                            .textMuted),
-                                                    floatingLabelStyle:
-                                                        TextStyle(
-                                                            color: AppColors
-                                                                .green),
-                                                    enabledBorder:
-                                                        UnderlineInputBorder(
-                                                      borderSide: BorderSide(
-                                                          color: AppColors
-                                                              .textMuted),
-                                                    ),
-                                                    focusedBorder:
-                                                        UnderlineInputBorder(
-                                                      borderSide: BorderSide(
-                                                          color:
-                                                              AppColors.green),
-                                                    ),
-                                                  ),
-                                                  // DatePicker-specific theme for year picker
-                                                  datePickerTheme:
-                                                      DatePickerThemeData(
-                                                    backgroundColor:
-                                                        AppColors.navy,
-                                                    headerBackgroundColor:
-                                                        AppColors.navy,
-                                                    headerForegroundColor:
-                                                        AppColors.textPrimary,
-                                                    yearStyle: TextStyle(
-                                                        color: AppColors
-                                                            .textPrimary),
-                                                    yearForegroundColor:
-                                                        WidgetStateProperty.all(
-                                                            AppColors
-                                                                .textPrimary),
-                                                    yearBackgroundColor:
-                                                        WidgetStateProperty
-                                                            .resolveWith(
-                                                                (states) {
-                                                      if (states.contains(
-                                                          WidgetState
-                                                              .selected)) {
-                                                        return AppColors.green;
-                                                      }
-                                                      return Colors.transparent;
-                                                    }),
-                                                    dayForegroundColor:
-                                                        WidgetStateProperty.all(
-                                                            AppColors
-                                                                .textPrimary),
-                                                    dayBackgroundColor:
-                                                        WidgetStateProperty
-                                                            .resolveWith(
-                                                                (states) {
-                                                      if (states.contains(
-                                                          WidgetState
-                                                              .selected)) {
-                                                        return AppColors.green;
-                                                      }
-                                                      return Colors.transparent;
-                                                    }),
-                                                  ),
-                                                ),
-                                                child: child!,
-                                              );
-                                            },
-                                          );
-                                          if (picked != null) {
-                                            setState(
-                                                () => dateOfBirth = picked);
-                                          }
-                                        },
-                                        child: Container(
-                                          height: 56,
-                                          padding: EdgeInsets.symmetric(
-                                              horizontal: AppSpacing.md),
-                                          decoration: BoxDecoration(
-                                            color: AppColors.inputBackground,
-                                            borderRadius: BorderRadius.circular(
-                                                AppBorderRadius.md),
-                                            border: Border.all(
-                                                color:
-                                                    AppColors.inputBorderIdle),
-                                          ),
-                                          child: Row(
-                                            children: [
-                                              Icon(
-                                                AppPhosphorIcons.calendar,
-                                                color: AppColors.textMuted,
-                                                size: AppIconSize.md,
-                                              ),
-                                              SizedBox(width: AppSpacing.sm),
-                                              Expanded(
-                                                child: Text(
-                                                  dateOfBirth != null
-                                                      ? '${dateOfBirth!.month.toString().padLeft(2, '0')}/${dateOfBirth!.day.toString().padLeft(2, '0')}/${dateOfBirth!.year}'
-                                                      : 'Birthday *',
-                                                  style: AppTypography
-                                                      .bodyMedium
-                                                      .copyWith(
-                                                    color: dateOfBirth != null
-                                                        ? AppColors.textPrimary
-                                                        : AppColors.textMuted,
-                                                  ),
-                                                  overflow:
-                                                      TextOverflow.ellipsis,
-                                                ),
-                                              ),
-                                            ],
-                                          ),
-                                        ),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ],
-                            ),
+                          child: PersonalInfoSection(
+                            firstNameController: _firstNameController,
+                            lastNameController: _lastNameController,
+                            usernameController: _usernameController,
+                            phoneController: _phoneController,
+                            emailController: _emailController,
+                            usernameFocusNode: _usernameFocusNode,
+                            genderValue: _genderValue,
+                            genderValueController: _genderValueController ??=
+                                FormFieldController<String>(null),
+                            dateOfBirth: _dateOfBirth,
+                            onGenderChanged: (val) => setState(() => _genderValue = val),
+                            onDateOfBirthChanged: (val) => setState(() => _dateOfBirth = val),
+                            validateUsername: (context, val) =>
+                                _controller.validateUsername(val),
+                            validateEmail: (context, val) =>
+                                _controller.validateEmail(val),
                           ),
                         ),
 
                         // Golf Profile Section
                         FadeTransition(
                           opacity: _fadeAnimations[1],
-                          child: Padding(
-                            padding: EdgeInsets.fromLTRB(
-                                AppSpacing.lg, 0, AppSpacing.lg, AppSpacing.lg),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  'Golf Profile',
-                                  style: AppTypography.titleMedium.copyWith(
-                                    color: AppColors.textPrimary,
-                                    fontWeight: FontWeight.w600,
-                                  ),
-                                ),
-                                SizedBox(height: AppSpacing.md),
+                          child: StreamBuilder<List<CourseRecord>>(
+                            stream: queryCourseRecord(),
+                            builder: (context, snapshot) {
+                              final courses = snapshot.data ?? [];
+                              final sortedCourses = List<CourseRecord>.from(courses)
+                                ..sort((a, b) => a.name.compareTo(b.name));
 
-                                // Home Course Dropdown
-                                StreamBuilder<List<CourseRecord>>(
-                                  stream: queryCourseRecord(),
-                                  builder: (context, snapshot) {
-                                    if (!snapshot.hasData) {
-                                      return Container(
-                                        height: 56,
-                                        decoration: BoxDecoration(
-                                          color: AppColors.inputBackground,
-                                          borderRadius: BorderRadius.circular(
-                                              AppBorderRadius.md),
-                                          border: Border.all(
-                                              color: AppColors.inputBorderIdle),
-                                        ),
-                                        alignment: Alignment.center,
-                                        child: CircularProgressIndicator(
-                                          color: AppColors.textPrimary,
-                                          strokeWidth: 2,
-                                        ),
-                                      );
-                                    }
-
-                                    List<CourseRecord> courses = snapshot.data!
-                                      ..sort(
-                                          (a, b) => a.name.compareTo(b.name));
-                                    return Container(
-                                      decoration: BoxDecoration(
-                                        color: AppColors.inputBackground,
-                                        borderRadius: BorderRadius.circular(
-                                            AppBorderRadius.md),
-                                        border: Border.all(
-                                            color: AppColors.inputBorderIdle),
-                                      ),
-                                      child: AppDropDown<String>(
-                                        controller: coursesValueController ??=
-                                            FormFieldController<String>(null),
-                                        options:
-                                            courses.map((c) => c.name).toList(),
-                                        onChanged: (val) =>
-                                            setState(() => coursesValue = val),
-                                        width: double.infinity,
-                                        height: 56,
-                                        textStyle:
-                                            AppTypography.bodyMedium.copyWith(
-                                          color: AppColors.textPrimary,
-                                        ),
-                                        hintText: 'Select Home Course',
-                                        icon: Icon(
-                                          AppPhosphorIcons.golfCourse,
-                                          color: AppColors.textMuted,
-                                          size: AppIconSize.md,
-                                        ),
-                                        fillColor: AppColors.inputBackground,
-                                        elevation: 0,
-                                        borderColor: Colors.transparent,
-                                        borderWidth: 0,
-                                        borderRadius: 12,
-                                        margin: EdgeInsetsDirectional.only(
-                                            start: AppSpacing.md),
-                                      ),
-                                    );
-                                  },
-                                ),
-                                SizedBox(height: AppSpacing.md),
-
-                                // Handicap
-                                Container(
-                                  padding: EdgeInsets.all(AppSpacing.md),
-                                  decoration: BoxDecoration(
-                                    color: AppColors.inputBackground,
-                                    borderRadius: BorderRadius.circular(
-                                        AppBorderRadius.md),
-                                    border: Border.all(
-                                        color: AppColors.inputBorderIdle),
-                                  ),
-                                  child: Row(
-                                    children: [
-                                      Container(
-                                        width: 40,
-                                        height: 40,
-                                        decoration: BoxDecoration(
-                                          gradient: LinearGradient(
-                                            colors: [
-                                              AppColors.gold,
-                                              AppColors.goldLight
-                                            ],
-                                            begin: Alignment.topLeft,
-                                            end: Alignment.bottomRight,
-                                          ),
-                                          borderRadius: BorderRadius.circular(
-                                              AppBorderRadius.sm),
-                                        ),
-                                        child: Icon(
-                                          AppPhosphorIcons.flagCheckered,
-                                          color: AppColors.pure,
-                                          size: AppIconSize.button,
-                                        ),
-                                      ),
-                                      SizedBox(width: AppSpacing.md),
-                                      Expanded(
-                                        child: Column(
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.start,
-                                          children: [
-                                            Text(
-                                              'Handicap',
-                                              style: AppTypography.labelSmall
-                                                  .copyWith(
-                                                color: AppColors.textMuted,
-                                              ),
-                                            ),
-                                            SizedBox(height: AppSpacing.xxs),
-                                            Text(
-                                              'Your official handicap index',
-                                              style: AppTypography.bodySmall
-                                                  .copyWith(
-                                                color: AppColors.textSecondary,
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                      AppCountController(
-                                        decrementIconBuilder: (enabled) =>
-                                            Container(
-                                          width: 32,
-                                          height: 32,
-                                          decoration: BoxDecoration(
-                                            color: enabled
-                                                ? AppColors.navyLight
-                                                : AppColors.navyLight
-                                                    .withValues(alpha: 0.5),
-                                            borderRadius: BorderRadius.circular(
-                                                AppBorderRadius.sm),
-                                          ),
-                                          child: Icon(
-                                            AppPhosphorIcons.minus,
-                                            color: enabled
-                                                ? AppColors.textPrimary
-                                                : AppColors.textMuted,
-                                            size: AppIconSize.button,
-                                          ),
-                                        ),
-                                        incrementIconBuilder: (enabled) =>
-                                            Container(
-                                          width: 32,
-                                          height: 32,
-                                          decoration: BoxDecoration(
-                                            color: enabled
-                                                ? AppColors.navyLight
-                                                : AppColors.navyLight
-                                                    .withValues(alpha: 0.5),
-                                            borderRadius: BorderRadius.circular(
-                                                AppBorderRadius.sm),
-                                          ),
-                                          child: Icon(
-                                            AppPhosphorIcons.plus,
-                                            color: enabled
-                                                ? AppColors.textPrimary
-                                                : AppColors.textMuted,
-                                            size: AppIconSize.button,
-                                          ),
-                                        ),
-                                        countBuilder: (value) => Container(
-                                          constraints:
-                                              BoxConstraints(minWidth: 56),
-                                          alignment: Alignment.center,
-                                          child: Text(
-                                            formatHandicap(value),
-                                            maxLines: 1,
-                                            softWrap: false,
-                                            overflow: TextOverflow.clip,
-                                            textAlign: TextAlign.center,
-                                            style: AppTypography.monoLarge
-                                                .copyWith(
-                                              color: AppColors.textPrimary
-                                                  .withValues(alpha: 0.85),
-                                              fontWeight: FontWeight.w400,
-                                            ),
-                                          ),
-                                        ),
-                                        count: handicapValue ?? 0,
-                                        updateCount: (value) => setState(
-                                            () => handicapValue = value),
-                                        stepSize: 1,
-                                        minimum: -5,
-                                        maximum: 54,
-                                        editable: true,
-                                        formatValue: formatHandicap,
-                                        parseValue: (text) {
-                                          final trimmed = text.trim();
-                                          if (trimmed.startsWith('+')) {
-                                            final num = int.tryParse(
-                                                trimmed.substring(1));
-                                            return num != null ? -num : null;
-                                          }
-                                          return int.tryParse(trimmed);
-                                        },
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                                SizedBox(height: AppSpacing.md),
-
-                                // Golf Canada #
-                                _buildTextField(
-                                  controller: golfCanadaTextController!,
-                                  label: 'Golf Canada #',
-                                  icon: AppPhosphorIcons.verified,
-                                  keyboardType: TextInputType.number,
-                                  inputFormatters: [
-                                    FilteringTextInputFormatter.digitsOnly
-                                  ],
-                                ),
-                              ],
-                            ),
+                              return GolfProfileSection(
+                                courses: sortedCourses,
+                                isLoadingCourses: !snapshot.hasData,
+                                coursesValue: _coursesValue,
+                                coursesValueController: _coursesValueController ??=
+                                    FormFieldController<String>(null),
+                                handicapValue: _handicapValue,
+                                golfCanadaController: _golfCanadaController,
+                                onCourseChanged: (val) => setState(() => _coursesValue = val),
+                                onHandicapChanged: (val) => setState(() => _handicapValue = val),
+                              );
+                            },
                           ),
                         ),
 
@@ -1082,8 +324,7 @@ class _CreateProfileWidgetState extends State<CreateProfileWidget>
                         FadeTransition(
                           opacity: _fadeAnimations[2],
                           child: Padding(
-                            padding:
-                                EdgeInsets.symmetric(horizontal: AppSpacing.lg),
+                            padding: EdgeInsets.symmetric(horizontal: AppSpacing.lg),
                             child: AppButtonEnhanced(
                               text: 'Create Profile',
                               leadingIcon: AppPhosphorIcons.successFill,

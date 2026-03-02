@@ -580,4 +580,11 @@ class AppPhosphorIcons {
 
   /// Men only — gender male
   static const menOnly = PhosphorIconsRegular.genderMale;
+
+  // ══════════════════════════════════════════════════════════════════════════
+  // DEBUG
+  // ══════════════════════════════════════════════════════════════════════════
+
+  /// Bug icon — debug mode only
+  static const bug = PhosphorIconsRegular.bug;
 }
