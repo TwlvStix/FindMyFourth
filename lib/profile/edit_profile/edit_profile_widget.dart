@@ -1,30 +1,27 @@
-import '/auth/firebase_auth/auth_util.dart';
-import '/core/utils/state_update.dart';
-import '/backend/backend.dart';
-import '/backend/cloud_functions/cloud_functions.dart';
-import '/core/widgets/app_count_controller.dart';
-import '/core/utils/app_log.dart';
-import '/core/widgets/premium_back_button.dart';
-import '/core/widgets/app_drop_down.dart';
-import '/core/widgets/app_text_field.dart';
-import '/core/widgets/app_premium_dialog.dart';
-import '/core/motion/motion_helpers.dart';
-import '/utils/app_util.dart';
-import '/core/widgets/fairway_background.dart';
-import '/core/design_tokens/spacing.dart';
-import '/core/design_tokens/colors.dart';
-import '/core/design_tokens/elevation.dart';
-import '/core/design_tokens/typography.dart';
-import '/core/design_tokens/icon_size.dart';
-import '/core/design_tokens/border_radius.dart';
-import '/core/form_field_controller.dart';
-import '/profile/change_photo/change_photo_widget.dart';
-import '/services/profile_setup_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import '/core/design_tokens/app_phosphor_icons.dart';
-import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:provider/provider.dart';
+
+import '/auth/firebase_auth/auth_util.dart';
+import '/backend/backend.dart';
+import '/core/design_tokens/border_radius.dart';
+import '/core/design_tokens/colors.dart';
+import '/core/design_tokens/spacing.dart';
+import '/core/design_tokens/typography.dart';
+import '/core/form_field_controller.dart';
+import '/core/motion/motion_helpers.dart';
+import '/core/widgets/app_premium_dialog.dart';
+import '/core/widgets/fairway_background.dart';
+import '/core/widgets/premium_back_button.dart';
+import '/profile/change_photo/change_photo_widget.dart';
+import '/utils/app_util.dart';
+
+import 'components/edit_profile_actions.dart';
+import 'components/edit_profile_golf_section.dart';
+import 'components/edit_profile_hero_section.dart';
+import 'components/edit_profile_personal_info_section.dart';
+import 'controllers/edit_profile_controller.dart';
+import 'controllers/edit_profile_result.dart';
 
 class EditProfileWidget extends StatefulWidget {
   const EditProfileWidget({super.key});
@@ -38,177 +35,184 @@ class EditProfileWidget extends StatefulWidget {
 
 class _EditProfileWidgetState extends State<EditProfileWidget>
     with TickerProviderStateMixin {
-  final formKey = GlobalKey<FormState>();
-  final _profileSetupService = ProfileSetupService();
+  final _formKey = GlobalKey<FormState>();
+  final _controller = EditProfileController();
+  final _scaffoldKey = GlobalKey<ScaffoldState>();
 
   // Text Controllers
-  FocusNode? firstNameFocusNode;
-  TextEditingController? firstNameTextController;
-  FocusNode? lastNameFocusNode;
-  TextEditingController? lastNameTextController;
-  FocusNode? usernameFocusNode;
-  TextEditingController? usernameTextController;
-  FocusNode? phoneNumFocusNode;
-  TextEditingController? phoneNumTextController;
-  FocusNode? emailFocusNode;
-  TextEditingController? emailTextController;
-  FocusNode? golfCanadaFocusNode;
-  TextEditingController? golfCanadaTextController;
+  late final TextEditingController _firstNameController;
+  late final TextEditingController _lastNameController;
+  late final TextEditingController _usernameController;
+  late final TextEditingController _phoneController;
+  late final TextEditingController _emailController;
+  late final TextEditingController _golfCanadaController;
 
   // Form Values
-  String? coursesValue;
-  FormFieldController<String>? coursesValueController;
-  int? handicapValue;
+  String? _coursesValue;
+  FormFieldController<String>? _coursesValueController;
+  int? _handicapValue;
 
-  // Animation Controllers
+  // Animation
   late AnimationController _ringController;
 
-  final scaffoldKey = GlobalKey<ScaffoldState>();
+  // Loading States
+  bool _isSaving = false;
+  bool _isDeleting = false;
 
   @override
   void initState() {
     super.initState();
 
-    // Initialize ring animation
     _ringController = AnimationController(
       vsync: this,
       duration: const Duration(seconds: 8),
     )..repeat();
 
-    // Initialize controllers with current user data
-    firstNameTextController = TextEditingController(
+    _firstNameController = TextEditingController(
       text: valueOrDefault(currentUserDocument?.firstName, ''),
     );
-    firstNameFocusNode = FocusNode();
-
-    lastNameTextController = TextEditingController(
+    _lastNameController = TextEditingController(
       text: valueOrDefault(currentUserDocument?.lastName, ''),
     );
-    lastNameFocusNode = FocusNode();
-
-    usernameTextController = TextEditingController(
-      text: currentUserDisplayName,
-    );
-    usernameFocusNode = FocusNode();
-
-    phoneNumTextController = TextEditingController(
-      text: currentPhoneNumber,
-    );
-    phoneNumFocusNode = FocusNode();
-
-    emailTextController = TextEditingController(
-      text: currentUserEmail,
-    );
-    emailFocusNode = FocusNode();
-
-    golfCanadaTextController = TextEditingController(
+    _usernameController = TextEditingController(text: currentUserDisplayName);
+    _phoneController = TextEditingController(text: currentPhoneNumber);
+    _emailController = TextEditingController(text: currentUserEmail);
+    _golfCanadaController = TextEditingController(
       text: valueOrDefault(currentUserDocument?.golfCanadaNumber, ''),
     );
-    golfCanadaFocusNode = FocusNode();
 
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      // ✅ PERFORMANCE: Removed empty updateState(this, no-op rebuild)
-    });
+    _handicapValue = currentUserDocument?.handicap;
+    _coursesValue = currentUserDocument?.homeCourse;
   }
 
   @override
   void dispose() {
     _ringController.dispose();
-    firstNameFocusNode?.dispose();
-    firstNameTextController?.dispose();
-    lastNameFocusNode?.dispose();
-    lastNameTextController?.dispose();
-    usernameFocusNode?.dispose();
-    usernameTextController?.dispose();
-    phoneNumFocusNode?.dispose();
-    phoneNumTextController?.dispose();
-    emailFocusNode?.dispose();
-    emailTextController?.dispose();
-    golfCanadaFocusNode?.dispose();
-    golfCanadaTextController?.dispose();
+    _firstNameController.dispose();
+    _lastNameController.dispose();
+    _usernameController.dispose();
+    _phoneController.dispose();
+    _emailController.dispose();
+    _golfCanadaController.dispose();
     super.dispose();
   }
 
-  Future<void> _handleSaveProfile() async {
+  Future<void> _handleSave() async {
+    if (_isSaving || _isDeleting) return;
+
     HapticFeedback.mediumImpact();
 
-    if (!formKey.currentState!.validate()) {
-      return;
-    }
+    if (!_formKey.currentState!.validate()) return;
 
-    final desiredEmail = emailTextController?.text.trim() ?? '';
+    final desiredEmail = _emailController.text.trim();
     if (desiredEmail.isNotEmpty && desiredEmail != currentUserEmail) {
-      ScaffoldMessenger.of(context).hideCurrentSnackBar();
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            'Please update your email in account settings first.',
-            style: AppTypography.bodySmall.copyWith(color: Colors.white),
-          ),
-          duration: Duration(milliseconds: 2000),
-          backgroundColor: AppColors.warning,
-        ),
-      );
+      _showSnackbar('Please update your email in account settings first.',
+          isError: true);
       return;
     }
 
-    if (currentUserReference == null) {
-      return;
-    }
+    if (currentUserReference == null) return;
+
+    setState(() => _isSaving = true);
 
     try {
-      await _profileSetupService.saveEditProfile(
+      final result = await _controller.saveProfile(
         userRef: currentUserReference!,
         userData: createUsersRecordData(
           photoUrl: currentUserPhoto,
-          handicap: handicapValue,
+          handicap: _handicapValue,
           golfCanadaNumber: () {
-            final golfCanadaRaw = golfCanadaTextController?.text.trim() ?? '';
-            return golfCanadaRaw.isEmpty ? null : golfCanadaRaw;
+            final raw = _golfCanadaController.text.trim();
+            return raw.isEmpty ? null : raw;
           }(),
-          firstName: firstNameTextController!.text,
-          lastName: lastNameTextController!.text,
-          homeCourse: coursesValue,
+          firstName: _firstNameController.text.trim(),
+          lastName: _lastNameController.text.trim(),
+          homeCourse: _coursesValue,
         ),
-        phoneNumber: phoneNumTextController?.text,
+        phoneNumber: _phoneController.text.trim(),
       );
-      currentUserDocument =
-          await UsersRecord.getDocumentOnce(currentUserReference!);
+
       if (!mounted) return;
-      _showSuccessAndNavigate();
-    } catch (e) {
-      AppLog.d('EditProfile: profile save failed: $e');
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            'Unable to save profile. Please try again.',
-            style: AppTypography.bodySmall.copyWith(color: Colors.white),
-          ),
-          duration: Duration(milliseconds: 2000),
-          backgroundColor: AppColors.error,
-        ),
-      );
+
+      switch (result) {
+        case EditProfileSaveSuccess():
+          currentUserDocument =
+              await UsersRecord.getDocumentOnce(currentUserReference!);
+          if (!mounted) return;
+          _showSnackbar('Profile updated successfully.');
+          context.goMainProfile(transition: TransitionStandards.modalTransition);
+        case EditProfileSaveValidationError(:final message):
+          _showSnackbar(message, isError: true);
+        case EditProfileSaveFailure(:final message):
+          _showSnackbar(message, isError: true);
+      }
+    } finally {
+      if (mounted) setState(() => _isSaving = false);
     }
   }
 
-  void _showSuccessAndNavigate() {
+  Future<void> _handleDelete() async {
+    if (_isSaving || _isDeleting) return;
+
+    HapticFeedback.mediumImpact();
+
+    final confirm = await showPremiumDialog(
+          context: context,
+          variant: PremiumDialogVariant.destructive,
+          icon: Icons.delete_outline,
+          title: 'Delete Account',
+          body:
+              'This permanently deletes your account and all associated data. This action cannot be undone.',
+          actionLabel: 'Delete',
+        ) ??
+        false;
+
+    if (!confirm || !mounted) return;
+
+    setState(() => _isDeleting = true);
+
+    try {
+      final result = await _controller.deleteUserAccount();
+
+      if (!mounted) return;
+
+      switch (result) {
+        case EditProfileDeleteSuccess():
+          context.goSignIn(transition: TransitionStandards.modalTransition);
+        case EditProfileDeleteCancelled():
+          break;
+        case EditProfileDeleteFailure(:final message):
+          _showSnackbar(message, isError: true);
+      }
+    } finally {
+      if (mounted) setState(() => _isDeleting = false);
+    }
+  }
+
+  void _showSnackbar(String message, {bool isError = false}) {
+    ScaffoldMessenger.of(context).hideCurrentSnackBar();
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(
-          'Profile updated successfully!',
-          style: AppTypography.bodyMedium.copyWith(
-            color: Colors.white,
-            fontWeight: AppTypography.medium,
-          ),
+          message,
+          style: AppTypography.bodySmall.copyWith(color: Colors.white),
         ),
-        duration: Duration(milliseconds: 2500),
-        backgroundColor: AppColors.success,
+        duration: const Duration(milliseconds: 2500),
+        backgroundColor: isError ? AppColors.error : AppColors.success,
       ),
     );
+  }
 
-    context.goMainProfile(
-      transition: TransitionStandards.modalTransition,
+  Future<void> _handleChangePhoto() async {
+    await showAppBottomSheet(
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      enableDrag: false,
+      context: context,
+      builder: (context) => Padding(
+        padding: MediaQuery.viewInsetsOf(context),
+        child: const ChangePhotoWidget(),
+      ),
     );
   }
 
@@ -217,12 +221,9 @@ class _EditProfileWidgetState extends State<EditProfileWidget>
     context.watch<AppState>();
 
     return GestureDetector(
-      onTap: () {
-        FocusScope.of(context).unfocus();
-        FocusManager.instance.primaryFocus?.unfocus();
-      },
+      onTap: () => FocusScope.of(context).unfocus(),
       child: Scaffold(
-        key: scaffoldKey,
+        key: _scaffoldKey,
         extendBodyBehindAppBar: true,
         appBar: AppBar(
           backgroundColor: Colors.transparent,
@@ -231,33 +232,34 @@ class _EditProfileWidgetState extends State<EditProfileWidget>
           leading: const PremiumBackButton(),
           title: Text(
             'Edit Profile',
-            style: AppTypography.titleLarge.copyWith(
-              color: Colors.white,
-            ),
+            style: AppTypography.titleLarge.copyWith(color: Colors.white),
           ),
         ),
         body: FairwayBackgroundDark(
           showOrganic: true,
           showTexture: true,
           child: Form(
-            key: formKey,
+            key: _formKey,
             autovalidateMode: AutovalidateMode.disabled,
             child: SingleChildScrollView(
-              physics: BouncingScrollPhysics(),
+              physics: const BouncingScrollPhysics(),
               child: Column(
                 children: [
-                  SizedBox(height: MediaQuery.of(context).padding.top + 60),
+                  SizedBox(
+                      height: MediaQuery.of(context).padding.top + kToolbarHeight),
 
-                  // ═══════════════════════════════════════════════════════════
-                  // HERO SECTION - Animated Avatar
-                  // ═══════════════════════════════════════════════════════════
-                  _buildHeroSection(context),
+                  // Hero Section
+                  AuthUserStreamWidget(
+                    builder: (context) => EditProfileHeroSection(
+                      photoUrl: currentUserPhoto,
+                      ringController: _ringController,
+                      onChangePhoto: _handleChangePhoto,
+                    ),
+                  ),
 
                   SizedBox(height: AppSpacing.xl),
 
-                  // ═══════════════════════════════════════════════════════════
-                  // MAIN CONTENT CARD
-                  // ═══════════════════════════════════════════════════════════
+                  // Main Content Card
                   Container(
                     width: double.infinity,
                     decoration: BoxDecoration(
@@ -270,7 +272,7 @@ class _EditProfileWidgetState extends State<EditProfileWidget>
                         BoxShadow(
                           color: AppColors.overlayDark,
                           blurRadius: 30,
-                          offset: Offset(0, -10),
+                          offset: const Offset(0, -10),
                         ),
                       ],
                     ),
@@ -290,17 +292,64 @@ class _EditProfileWidgetState extends State<EditProfileWidget>
 
                         SizedBox(height: AppSpacing.lg),
 
-                        // Personal Information Section
-                        _buildPersonalInfoSection(context),
+                        // Personal Info
+                        AuthUserStreamWidget(
+                          builder: (context) => EditProfilePersonalInfoSection(
+                            firstNameController: _firstNameController,
+                            lastNameController: _lastNameController,
+                            usernameController: _usernameController,
+                            phoneController: _phoneController,
+                            emailController: _emailController,
+                            gender: currentUserDocument?.gender,
+                            dateOfBirth: currentUserDocument?.dateOfBirth,
+                            firstNameValidator: _controller.validateFirstName,
+                            lastNameValidator: _controller.validateLastName,
+                            phoneValidator: _controller.validatePhone,
+                          ),
+                        ),
 
-                        // Golf Profile Section
-                        _buildGolfProfileSection(context),
+                        // Golf Profile
+                        AuthUserStreamWidget(
+                          builder: (context) => StreamBuilder<List<CourseRecord>>(
+                            stream: queryCourseRecord(),
+                            builder: (context, snapshot) {
+                              final courses = (snapshot.data ?? [])
+                                ..sort((a, b) => a.name.compareTo(b.name));
+                              final isLoading = !snapshot.hasData;
 
-                        // Save Button
-                        _buildSaveButton(context),
+                              // Initialize course value from user doc if not set
+                              if (_coursesValue == null && mounted) {
+                                _coursesValue = currentUserDocument?.homeCourse;
+                              }
 
-                        // Delete Account
-                        _buildDeleteAccountButton(context),
+                              return EditProfileGolfSection(
+                                courses: courses,
+                                isLoadingCourses: isLoading,
+                                selectedCourse: _coursesValue,
+                                onCourseChanged: (val) =>
+                                    setState(() => _coursesValue = val),
+                                handicapValue: _handicapValue ??
+                                    valueOrDefault(
+                                        currentUserDocument?.handicap, 0),
+                                onHandicapChanged: (val) =>
+                                    setState(() => _handicapValue = val),
+                                golfCanadaController: _golfCanadaController,
+                                coursesValueController: _coursesValueController ??=
+                                    FormFieldController<String>(_coursesValue),
+                                golfCanadaValidator:
+                                    _controller.validateGolfCanadaNumber,
+                              );
+                            },
+                          ),
+                        ),
+
+                        // Actions
+                        EditProfileActions(
+                          onSave: _handleSave,
+                          onDelete: _handleDelete,
+                          isSaving: _isSaving,
+                          isDeleting: _isDeleting,
+                        ),
 
                         SizedBox(height: AppSpacing.xxxl),
                       ],
@@ -312,705 +361,6 @@ class _EditProfileWidgetState extends State<EditProfileWidget>
           ),
         ),
       ),
-    );
-  }
-
-  // ═══════════════════════════════════════════════════════════════════════════
-  // HERO SECTION
-  // ═══════════════════════════════════════════════════════════════════════════
-  Widget _buildHeroSection(BuildContext context) {
-    return Column(
-      children: [
-        // Animated Avatar with Rotating Gradient Ring
-        Stack(
-          alignment: Alignment.center,
-          children: [
-            // Outer glow
-            Container(
-              width: 160,
-              height: 160,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                boxShadow: [
-                  BoxShadow(
-                    color: AppColors.gold.withValues(alpha: 0.3),
-                    blurRadius: 40,
-                    spreadRadius: 5,
-                  ),
-                ],
-              ),
-            ),
-
-            // Rotating gradient ring - member badge aesthetic
-            AnimatedBuilder(
-              animation: _ringController,
-              builder: (context, child) {
-                return Transform.rotate(
-                  angle: _ringController.value * 2 * 3.14159,
-                  child: Container(
-                    width: 148,
-                    height: 148,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      gradient: SweepGradient(
-                        colors: [
-                          AppColors.navy,
-                          AppColors.gold.withValues(alpha: 0.9),
-                          AppColors.gold,
-                          AppColors.goldLight,
-                          AppColors.gold.withValues(alpha: 0.9),
-                          AppColors.navy,
-                        ],
-                        stops: [0.0, 0.15, 0.35, 0.65, 0.85, 1.0],
-                      ),
-                    ),
-                  ),
-                );
-              },
-            ),
-
-            // White border
-            Container(
-              width: 140,
-              height: 140,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: AppColors.pure,
-              ),
-            ),
-
-            // Profile photo
-            AuthUserStreamWidget(
-              builder: (context) => Container(
-                width: 132,
-                height: 132,
-                clipBehavior: Clip.antiAlias,
-                decoration: BoxDecoration(shape: BoxShape.circle),
-                child: Image.network(
-                  valueOrDefault<String>(
-                    currentUserPhoto,
-                    'https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png',
-                  ),
-                  fit: BoxFit.cover,
-                  errorBuilder: (context, error, stackTrace) => Container(
-                    color: AppColors.sand,
-                    child: Icon(AppPhosphorIcons.profile,
-                        size: AppIconSize.hero, color: AppColors.stone),
-                  ),
-                ),
-              ),
-            ),
-
-            // Edit photo button
-            Positioned(
-              bottom: 4,
-              right: 4,
-              child: Material(
-                color: Colors.transparent,
-                child: InkResponse(
-                  radius: 30,
-                  onTap: () async {
-                    HapticFeedback.lightImpact();
-                    await showAppBottomSheet(
-                      isScrollControlled: true,
-                      backgroundColor: Colors.transparent,
-                      enableDrag: false,
-                      context: context,
-                      builder: (context) {
-                        return GestureDetector(
-                          onTap: () {
-                            FocusScope.of(context).unfocus();
-                            FocusManager.instance.primaryFocus?.unfocus();
-                          },
-                          child: Padding(
-                            padding: MediaQuery.viewInsetsOf(context),
-                            child: ChangePhotoWidget(),
-                          ),
-                        );
-                      },
-                    ).then((value) {
-                      // ✅ PERFORMANCE: Removed empty updateState(this, no-op rebuild)
-                    });
-                  },
-                  child: Container(
-                    width: 48,
-                    height: 48,
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        colors: [AppColors.green, AppColors.greenLight],
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                      ),
-                      shape: BoxShape.circle,
-                      boxShadow: [AppElevation.glowGreen],
-                    ),
-                    child: Icon(AppPhosphorIcons.camera,
-                        color: AppColors.pure, size: AppIconSize.md),
-                  ),
-                ),
-              ),
-            ),
-          ],
-        ),
-
-        SizedBox(height: AppSpacing.md),
-
-        // Change Photo text
-        GestureDetector(
-          onTap: () async {
-            HapticFeedback.lightImpact();
-            await showAppBottomSheet(
-              isScrollControlled: true,
-              backgroundColor: Colors.transparent,
-              enableDrag: false,
-              context: context,
-              builder: (context) => Padding(
-                padding: MediaQuery.viewInsetsOf(context),
-                child: ChangePhotoWidget(),
-              ),
-            ).then((value) {
-              // ✅ PERFORMANCE: Removed empty updateState(this, no-op rebuild)
-            });
-          },
-          child: Text(
-            'Change Photo',
-            style: AppTypography.labelMedium.copyWith(
-              color: AppColors.gold,
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-
-  // ═══════════════════════════════════════════════════════════════════════════
-  // PERSONAL INFO SECTION
-  // ═══════════════════════════════════════════════════════════════════════════
-  Widget _buildPersonalInfoSection(BuildContext context) {
-    return Padding(
-      padding:
-          EdgeInsets.fromLTRB(AppSpacing.lg, 0, AppSpacing.lg, AppSpacing.lg),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            'Personal Information',
-            style: AppTypography.titleMedium.copyWith(
-              color: AppColors.textPrimary,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-          SizedBox(height: AppSpacing.md),
-          AuthUserStreamWidget(
-            builder: (context) => Column(
-              children: [
-                // First & Last Name Row
-                Row(
-                  children: [
-                    Expanded(
-                      child: _buildTextField(
-                        controller: firstNameTextController!,
-                        focusNode: firstNameFocusNode!,
-                        label: 'First Name',
-                        icon: AppPhosphorIcons.profile,
-                      ),
-                    ),
-                    SizedBox(width: AppSpacing.sm),
-                    Expanded(
-                      child: _buildTextField(
-                        controller: lastNameTextController!,
-                        focusNode: lastNameFocusNode!,
-                        label: 'Last Name',
-                        icon: AppPhosphorIcons.profile,
-                      ),
-                    ),
-                  ],
-                ),
-                SizedBox(height: AppSpacing.md),
-
-                // Display Name
-                _buildTextField(
-                  controller: usernameTextController!,
-                  focusNode: usernameFocusNode!,
-                  label: 'Display Name',
-                  icon: AppPhosphorIcons.atSign,
-                  readOnly: true,
-                ),
-                SizedBox(height: AppSpacing.md),
-
-                // Phone
-                _buildTextField(
-                  controller: phoneNumTextController!,
-                  focusNode: phoneNumFocusNode!,
-                  label: 'Phone',
-                  icon: AppPhosphorIcons.phone,
-                  keyboardType: TextInputType.phone,
-                  inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                ),
-                SizedBox(height: AppSpacing.md),
-
-                // Email
-                _buildTextField(
-                  controller: emailTextController!,
-                  focusNode: emailFocusNode!,
-                  label: 'Email',
-                  icon: AppPhosphorIcons.email,
-                  readOnly: true,
-                ),
-                SizedBox(height: AppSpacing.md),
-
-                // Gender & Date of Birth Row (Read-only)
-                Row(
-                  children: [
-                    // Gender (Read-only)
-                    Expanded(
-                      child: Container(
-                        height: 56,
-                        padding:
-                            EdgeInsets.symmetric(horizontal: AppSpacing.md),
-                        decoration: BoxDecoration(
-                          color: AppColors.inputBackground,
-                          borderRadius:
-                              BorderRadius.circular(AppBorderRadius.md),
-                          border: Border.all(color: AppColors.inputBorderIdle),
-                        ),
-                        child: Row(
-                          children: [
-                            Icon(
-                              AppPhosphorIcons.profile,
-                              color: AppColors.textMuted,
-                              size: AppIconSize.md,
-                            ),
-                            SizedBox(width: AppSpacing.sm),
-                            Expanded(
-                              child: Text(
-                                valueOrDefault(currentUserDocument?.gender, '')
-                                        .isNotEmpty
-                                    ? currentUserDocument!.gender
-                                    : 'Gender',
-                                style: AppTypography.bodyMedium.copyWith(
-                                  color: valueOrDefault(
-                                              currentUserDocument?.gender, '')
-                                          .isNotEmpty
-                                      ? AppColors.textSecondary
-                                      : AppColors.textMuted,
-                                ),
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                    SizedBox(width: AppSpacing.sm),
-                    // Date of Birth (Read-only)
-                    Expanded(
-                      child: Container(
-                        height: 56,
-                        padding:
-                            EdgeInsets.symmetric(horizontal: AppSpacing.md),
-                        decoration: BoxDecoration(
-                          color: AppColors.inputBackground,
-                          borderRadius:
-                              BorderRadius.circular(AppBorderRadius.md),
-                          border: Border.all(color: AppColors.inputBorderIdle),
-                        ),
-                        child: Row(
-                          children: [
-                            Icon(
-                              AppPhosphorIcons.calendar,
-                              color: AppColors.textMuted,
-                              size: AppIconSize.md,
-                            ),
-                            SizedBox(width: AppSpacing.sm),
-                            Expanded(
-                              child: Text(
-                                currentUserDocument?.dateOfBirth != null
-                                    ? '${currentUserDocument!.dateOfBirth!.month.toString().padLeft(2, '0')}/${currentUserDocument!.dateOfBirth!.day.toString().padLeft(2, '0')}/${currentUserDocument!.dateOfBirth!.year}'
-                                    : 'Birthday',
-                                style: AppTypography.bodyMedium.copyWith(
-                                  color:
-                                      currentUserDocument?.dateOfBirth != null
-                                          ? AppColors.textSecondary
-                                          : AppColors.textMuted,
-                                ),
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  // ═══════════════════════════════════════════════════════════════════════════
-  // GOLF PROFILE SECTION
-  // ═══════════════════════════════════════════════════════════════════════════
-  Widget _buildGolfProfileSection(BuildContext context) {
-    return Padding(
-      padding:
-          EdgeInsets.fromLTRB(AppSpacing.lg, 0, AppSpacing.lg, AppSpacing.lg),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            'Golf Profile',
-            style: AppTypography.titleMedium.copyWith(
-              color: AppColors.textPrimary,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-          SizedBox(height: AppSpacing.md),
-          AuthUserStreamWidget(
-            builder: (context) => Column(
-              children: [
-                // Home Course Dropdown
-                StreamBuilder<List<CourseRecord>>(
-                  stream: queryCourseRecord(),
-                  builder: (context, snapshot) {
-                    if (!snapshot.hasData) {
-                      return Container(
-                        height: 56,
-                        decoration: BoxDecoration(
-                          color: AppColors.inputBackground,
-                          borderRadius:
-                              BorderRadius.circular(AppBorderRadius.md),
-                          border: Border.all(color: AppColors.inputBorderIdle),
-                        ),
-                        alignment: Alignment.center,
-                        child: CircularProgressIndicator(
-                          color: AppColors.textPrimary,
-                          strokeWidth: 2,
-                        ),
-                      );
-                    }
-
-                    List<CourseRecord> courses = snapshot.data!
-                      ..sort((a, b) => a.name.compareTo(b.name));
-
-                    if (coursesValue == null && mounted) {
-                      coursesValue = valueOrDefault(
-                        currentUserDocument?.homeCourse,
-                        '',
-                      );
-                    }
-
-                    return Container(
-                      decoration: BoxDecoration(
-                        color: AppColors.inputBackground,
-                        borderRadius: BorderRadius.circular(AppBorderRadius.md),
-                        border: Border.all(color: AppColors.inputBorderIdle),
-                      ),
-                      child: AppDropDown<String>(
-                        controller: coursesValueController ??=
-                            FormFieldController<String>(coursesValue),
-                        options: courses.map((c) => c.name).toList(),
-                        onChanged: (val) =>
-                            updateState(this, () => coursesValue = val),
-                        width: double.infinity,
-                        height: 56,
-                        textStyle: AppTypography.bodyMedium.copyWith(
-                          color: AppColors.textPrimary,
-                        ),
-                        hintText: 'Select Home Course',
-                        icon: Icon(
-                          AppPhosphorIcons.golfCourse,
-                          color: AppColors.textMuted,
-                          size: AppIconSize.md,
-                        ),
-                        fillColor: AppColors.inputBackground,
-                        elevation: 0,
-                        borderColor: Colors.transparent,
-                        borderWidth: 0,
-                        borderRadius: 12,
-                        margin:
-                            EdgeInsetsDirectional.only(start: AppSpacing.md),
-                      ),
-                    );
-                  },
-                ),
-                SizedBox(height: AppSpacing.md),
-
-                // Handicap
-                Container(
-                  padding: EdgeInsets.all(AppSpacing.md),
-                  decoration: BoxDecoration(
-                    color: AppColors.inputBackground,
-                    borderRadius: BorderRadius.circular(AppBorderRadius.md),
-                    border: Border.all(color: AppColors.inputBorderIdle),
-                  ),
-                  child: Row(
-                    children: [
-                      Container(
-                        width: 40,
-                        height: 40,
-                        decoration: BoxDecoration(
-                          gradient: LinearGradient(
-                            colors: [AppColors.gold, AppColors.goldLight],
-                            begin: Alignment.topLeft,
-                            end: Alignment.bottomRight,
-                          ),
-                          borderRadius:
-                              BorderRadius.circular(AppBorderRadius.sm),
-                        ),
-                        child: Icon(
-                          AppPhosphorIcons.flagCheckered,
-                          color: AppColors.pure,
-                          size: AppIconSize.button,
-                        ),
-                      ),
-                      SizedBox(width: AppSpacing.md),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              'Handicap',
-                              style: AppTypography.labelSmall.copyWith(
-                                color: AppColors.textMuted,
-                              ),
-                            ),
-                            SizedBox(height: AppSpacing.xxs),
-                            Text(
-                              'Your official handicap index',
-                              style: AppTypography.bodySmall.copyWith(
-                                color: AppColors.textSecondary,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      AppCountController(
-                        decrementIconBuilder: (enabled) => Container(
-                          width: 32,
-                          height: 32,
-                          decoration: BoxDecoration(
-                            color: enabled
-                                ? AppColors.navyLight
-                                : AppColors.navyLight.withValues(alpha: 0.5),
-                            borderRadius:
-                                BorderRadius.circular(AppBorderRadius.sm),
-                          ),
-                          child: Icon(
-                            AppPhosphorIcons.minus,
-                            color: enabled
-                                ? AppColors.textPrimary
-                                : AppColors.textMuted,
-                            size: AppIconSize.button,
-                          ),
-                        ),
-                        incrementIconBuilder: (enabled) => Container(
-                          width: 32,
-                          height: 32,
-                          decoration: BoxDecoration(
-                            color: enabled
-                                ? AppColors.navyLight
-                                : AppColors.navyLight.withValues(alpha: 0.5),
-                            borderRadius:
-                                BorderRadius.circular(AppBorderRadius.sm),
-                          ),
-                          child: Icon(
-                            AppPhosphorIcons.plus,
-                            color: enabled
-                                ? AppColors.textPrimary
-                                : AppColors.textMuted,
-                            size: AppIconSize.button,
-                          ),
-                        ),
-                        countBuilder: (value) => Container(
-                          constraints: BoxConstraints(minWidth: 56),
-                          alignment: Alignment.center,
-                          child: Text(
-                            formatHandicap(value),
-                            maxLines: 1,
-                            softWrap: false,
-                            overflow: TextOverflow.clip,
-                            textAlign: TextAlign.center,
-                            style: AppTypography.monoLarge.copyWith(
-                              color:
-                                  AppColors.textPrimary.withValues(alpha: 0.85),
-                              fontWeight: FontWeight.w400,
-                            ),
-                          ),
-                        ),
-                        count: handicapValue ??
-                            valueOrDefault(currentUserDocument?.handicap, 0),
-                        updateCount: (value) =>
-                            updateState(this, () => handicapValue = value),
-                        stepSize: 1,
-                        minimum: -5,
-                        maximum: 54,
-                        editable: true,
-                        formatValue: formatHandicap,
-                        parseValue: (text) {
-                          final trimmed = text.trim();
-                          if (trimmed.startsWith('+')) {
-                            final num = int.tryParse(trimmed.substring(1));
-                            return num != null ? -num : null;
-                          }
-                          return int.tryParse(trimmed);
-                        },
-                      ),
-                    ],
-                  ),
-                ),
-                SizedBox(height: AppSpacing.md),
-
-                // Golf Canada #
-                _buildTextField(
-                  controller: golfCanadaTextController!,
-                  focusNode: golfCanadaFocusNode!,
-                  label: 'Golf Canada #',
-                  icon: AppPhosphorIcons.verified,
-                  keyboardType: TextInputType.number,
-                  inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  // ═══════════════════════════════════════════════════════════════════════════
-  // SAVE BUTTON
-  // ═══════════════════════════════════════════════════════════════════════════
-  Widget _buildSaveButton(BuildContext context) {
-    return Padding(
-      padding: EdgeInsets.symmetric(horizontal: AppSpacing.lg),
-      child: GestureDetector(
-        onTap: _handleSaveProfile,
-        child: Container(
-          width: double.infinity,
-          padding: EdgeInsets.symmetric(vertical: AppSpacing.md),
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              colors: [AppColors.navyLight, AppColors.navy],
-            ),
-            borderRadius: BorderRadius.circular(AppBorderRadius.lg),
-            boxShadow: [AppElevation.lg],
-          ),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(AppPhosphorIcons.success,
-                  color: AppColors.pure, size: AppIconSize.md),
-              SizedBox(width: AppSpacing.xs),
-              Text(
-                'Save Changes',
-                style: AppTypography.titleSmall.copyWith(
-                  color: Colors.white,
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  // ═══════════════════════════════════════════════════════════════════════════
-  // DELETE ACCOUNT BUTTON
-  // ═══════════════════════════════════════════════════════════════════════════
-  Widget _buildDeleteAccountButton(BuildContext context) {
-    return Padding(
-      padding:
-          EdgeInsets.fromLTRB(AppSpacing.lg, AppSpacing.lg, AppSpacing.lg, 0),
-      child: GestureDetector(
-        onTap: () async {
-          HapticFeedback.mediumImpact();
-          final confirm = await showPremiumDialog(
-                context: context,
-                variant: PremiumDialogVariant.destructive,
-                icon: PhosphorIconsRegular.trash,
-                title: 'Delete Account',
-                body:
-                    'This permanently deletes your account and all associated data. This action cannot be undone.',
-                actionLabel: 'Delete',
-              ) ??
-              false;
-
-          if (!confirm) return;
-          if (!context.mounted) return;
-
-          try {
-            final deleted = await deleteAccount();
-            if (!deleted) {
-              if (!context.mounted) return;
-              showSnackbar(
-                  context, 'Unable to delete account. Please try again.');
-              return;
-            }
-            await authManager.signOut();
-            if (!context.mounted) return;
-            context.goSignIn(
-              transition: TransitionStandards.modalTransition,
-            );
-          } catch (e) {
-            AppLog.d('Delete account failed: $e');
-            if (!context.mounted) return;
-            showSnackbar(
-                context, 'Unable to delete account. Please try again.');
-          }
-        },
-        child: Container(
-          width: double.infinity,
-          padding: EdgeInsets.symmetric(vertical: AppSpacing.md),
-          decoration: BoxDecoration(
-            color: AppColors.navy,
-            borderRadius: BorderRadius.circular(AppBorderRadius.lg),
-            border: Border.all(color: AppColors.error.withValues(alpha: 0.5)),
-          ),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(AppPhosphorIcons.trash,
-                  color: AppColors.error, size: AppIconSize.md),
-              SizedBox(width: AppSpacing.xs),
-              Text(
-                'Delete Account',
-                style: AppTypography.titleSmall.copyWith(
-                  color: AppColors.error,
-                  fontWeight: AppTypography.medium,
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  // ═══════════════════════════════════════════════════════════════════════════
-  // TEXT FIELD BUILDER
-  // ═══════════════════════════════════════════════════════════════════════════
-  Widget _buildTextField({
-    required TextEditingController controller,
-    required FocusNode focusNode,
-    required String label,
-    required IconData icon,
-    bool readOnly = false,
-    TextInputType? keyboardType,
-    List<TextInputFormatter>? inputFormatters,
-  }) {
-    return AppTextField(
-      label: label,
-      controller: controller,
-      variant: AppTextFieldVariant.filledDark,
-      prefixIcon: icon,
-      readOnly: readOnly,
-      enabled: !readOnly,
-      keyboardType: keyboardType,
-      inputFormatters: inputFormatters,
     );
   }
 }
