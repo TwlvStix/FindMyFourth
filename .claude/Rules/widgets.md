@@ -9,7 +9,20 @@ Widget files MUST stay under 300 lines. If a widget is approaching this limit, d
 - Extract form state and async logic into a ViewModel/Controller class
 - The screen-level widget should compose smaller widgets, not contain all logic
 
-**Legacy exception**: Some existing widgets (onboarding, profile) exceed 300 lines. These are tracked as tech debt. Do NOT increase their size further — only refactor to reduce.
+**Legacy exceptions** (tech debt — do NOT increase, only refactor):
+- `cinematic_onboarding_widget.dart` (990 lines)
+- `games_list_widget.dart` (731 lines)
+- `join_game_detailed_widget.dart` (678 lines)
+- `game_joined_detailed_widget.dart` (654 lines)
+- `game_joined_dashboard_content.dart` (647 lines)
+- `player_list_section.dart` (470 lines)
+- `profile_user_firebase_widget.dart` (387 lines)
+- `edit_profile_widget.dart` (366 lines)
+- `create_game_widget.dart` (361 lines)
+- `create_profile_widget.dart` (351 lines)
+- `progressive_onboarding_widget.dart` (324 lines)
+
+When modifying these files, either keep line count the same or lower, or extract components to reduce size.
 
 ## Separation of Concerns
 - NEVER call Firestore, Firebase Auth, or any backend service directly from a widget
@@ -21,6 +34,36 @@ Widget files MUST stay under 300 lines. If a widget is approaching this limit, d
 - ALWAYS add `if (!mounted) return;` before any `setState` that follows an `await`
 - Prefer Provider/ChangeNotifier for state over local setState when state is shared
 - Use `context.select<T, R>()` or `Selector` to minimize rebuild scope
+
+**Multi-await pattern:** When a method has multiple `await` calls, you need a `mounted` check after EACH one that precedes a `setState`:
+
+```dart
+// ❌ Wrong — only checks after first await
+Future<void> _handleAction() async {
+  final result = await _controller.doSomething();
+  if (!mounted) return;
+
+  final confirmed = await showAppBottomSheet(...);  // User can dismiss OR widget disposed
+  setState(() => _data = confirmed);  // BUG: no mounted check
+}
+
+// ✅ Correct — checks after each await
+Future<void> _handleAction() async {
+  final result = await _controller.doSomething();
+  if (!mounted) return;
+
+  final confirmed = await showAppBottomSheet(...);
+  if (!mounted) return;  // Check again after second await
+
+  setState(() => _data = confirmed);
+}
+```
+
+**High-risk awaits** (user can dismiss/navigate during these):
+- `showModalBottomSheet` / `showAppBottomSheet`
+- `showDialog` / `showPremiumDialog`
+- `showDatePicker` / `showTimePicker`
+- Any navigation-related future
 
 ## AppState Access
 

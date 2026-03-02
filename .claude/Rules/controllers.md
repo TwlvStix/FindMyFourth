@@ -42,3 +42,14 @@ class MyController {
 ## Size Limit
 - Controllers should stay under 300 lines, same as widgets
 - If a controller grows too large, split by responsibility (e.g., validation logic vs flow coordination)
+
+## Mounted Checks in Widget Callbacks
+
+Controllers don't have `mounted`, but when a controller method returns a Future that the widget awaits, the widget must still check `mounted` before using the result:
+
+```dart
+// In widget — controller doesn't know about widget lifecycle
+final result = await _controller.processData();
+if (!mounted) return;
+setState(() => _data = result);
+```

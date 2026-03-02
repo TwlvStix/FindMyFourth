@@ -4,6 +4,7 @@ import 'group_vibe_provider.dart';
 import 'game_provider.dart';
 import 'join_request_provider.dart';
 import 'notification_provider.dart';
+import 'notification_list_provider.dart';
 import 'user_provider.dart';
 
 /// Convenient extensions for accessing providers throughout the app
@@ -41,6 +42,14 @@ extension ProviderExtensions on BuildContext {
 
   /// Access GroupVibeProvider and listen for changes
   GroupVibeProvider get watchGroupVibeProvider => watch<GroupVibeProvider>();
+
+  /// Access NotificationListProvider without listening for changes
+  NotificationListProvider get notificationListProvider =>
+      read<NotificationListProvider>();
+
+  /// Access NotificationListProvider and listen for changes
+  NotificationListProvider get watchNotificationListProvider =>
+      watch<NotificationListProvider>();
 
   /// Select specific data from UserProvider
   /// Only rebuilds when the selected data changes

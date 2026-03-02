@@ -37,6 +37,35 @@ class NotificationCrudService {
         .snapshots();
   }
 
+  /// Fetches a page of notifications with cursor-based pagination.
+  ///
+  /// Returns documents for the page. Use last document as cursor for next page.
+  Future<List<QueryDocumentSnapshot>> fetchNotificationsPage({
+    required DocumentReference userRef,
+    required int pageSize,
+    DocumentSnapshot? startAfterDocument,
+  }) async {
+    try {
+      Query query = userRef
+          .collection('notifications')
+          .orderBy('createdAt', descending: true)
+          .limit(pageSize);
+
+      if (startAfterDocument != null) {
+        query = query.startAfterDocument(startAfterDocument);
+      }
+
+      final snapshot = await query.get();
+      AppLog.d(
+          '📖 NotificationCrudService: Fetched ${snapshot.docs.length} notifications');
+      return snapshot.docs;
+    } on FirebaseException catch (e) {
+      AppLog.d(
+          '❌ NotificationCrudService.fetchNotificationsPage: ${e.code} - ${e.message}');
+      rethrow;
+    }
+  }
+
   /// Marks all unread notifications as read for a user.
   ///
   /// Uses batch operations with 400-op limit to stay safely under

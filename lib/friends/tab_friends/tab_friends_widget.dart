@@ -463,13 +463,18 @@ class _TabFriendsWidgetState extends State<TabFriendsWidget> {
             itemBuilder: (context, listViewUsersRecord) {
               return AuthUserStreamWidget(
                 builder: (context) {
-                  final userProvider = context.watch<UserProvider>();
+                  // Use context.select to minimize rebuilds - only rebuilds when
+                  // this specific user's pending status changes
+                  final hasPendingOutgoingFromProvider =
+                      context.select<UserProvider, bool>(
+                    (p) => p.hasPendingOutgoingRequest(listViewUsersRecord.uid),
+                  );
+
                   final isFriend = (currentUserDocument?.friends.toList() ?? [])
                       .contains(listViewUsersRecord.reference);
                   final isOutgoingPending = listViewUsersRecord.friendRequests
                           .contains(currentUserReference) ||
-                      userProvider
-                          .hasPendingOutgoingRequest(listViewUsersRecord.uid);
+                      hasPendingOutgoingFromProvider;
                   final isIncomingPending =
                       (currentUserDocument?.friendRequests.toList() ?? [])
                           .contains(listViewUsersRecord.reference);

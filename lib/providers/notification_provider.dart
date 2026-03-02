@@ -2,8 +2,8 @@ import 'dart:async';
 import 'dart:collection';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
-import '/auth/firebase_auth/auth_util.dart';
 import '/core/utils/app_log.dart';
 import '/models/notification_preferences.dart';
 
@@ -65,6 +65,10 @@ class NotificationProvider extends ChangeNotifier {
   // Connectivity subscription
   StreamSubscription<List<ConnectivityResult>>? _connectivitySub;
 
+  // Auth state tracking
+  StreamSubscription<User?>? _authSubscription;
+  String? _activeUid;
+
   // Getters
   NotificationPreferences get preferences => _prefs;
   SyncStatus get syncStatus => _syncStatus;
@@ -74,8 +78,47 @@ class NotificationProvider extends ChangeNotifier {
 
   void _init() {
     _listenToConnectivity();
-    _loadPreferences();
-    checkBackendErrors();
+    _listenToAuthState();
+  }
+
+  /// Listen to auth state changes and manage UID transitions
+  void _listenToAuthState() {
+    _authSubscription = FirebaseAuth.instance.authStateChanges().listen(
+      (user) {
+        final newUid = user?.uid;
+        final oldUid = _activeUid;
+
+        // No change in UID - nothing to do
+        if (newUid == oldUid) return;
+
+        // Update active UID
+        _activeUid = newUid;
+
+        if (newUid != null) {
+          // User logged in or switched - load their preferences
+          _loadPreferences(newUid);
+          _checkBackendErrors(newUid);
+        } else {
+          // User logged out - reset to defaults
+          _clearState();
+        }
+      },
+      onError: (error) {
+        if (kDebugMode) {
+          AppLog.d('❌ NotificationProvider._listenToAuthState error: $error');
+        }
+      },
+    );
+  }
+
+  /// Clear all state on logout
+  void _clearState() {
+    _prefs = NotificationPreferences.defaults();
+    _syncStatus = SyncStatus.idle;
+    _errorMessage = null;
+    _lastBackendError = null;
+    _pendingUpdates.clear();
+    notifyListeners();
   }
 
   /// Listen for connectivity changes and process queue when online
@@ -90,12 +133,15 @@ class NotificationProvider extends ChangeNotifier {
   }
 
   /// Load current preferences from Firestore
-  Future<void> _loadPreferences() async {
+  Future<void> _loadPreferences(String uid) async {
     try {
       final userDoc = await FirebaseFirestore.instance
           .collection('users')
-          .doc(currentUserUid)
+          .doc(uid)
           .get();
+
+      // Stale result guard - UID changed during await
+      if (_activeUid != uid) return;
 
       final prefsMap = userDoc.data()?['notification_prefs'];
       if (prefsMap != null && prefsMap is Map) {
@@ -113,12 +159,18 @@ class NotificationProvider extends ChangeNotifier {
 
   /// Update preferences - queues if offline, saves immediately if online
   Future<void> updatePreferences(NotificationPreferences prefs) async {
+    final uid = _activeUid;
+    if (uid == null) return; // Not logged in
+
     _prefs = prefs;
     notifyListeners();
 
     // Check if online
     final connectivityResults = await Connectivity().checkConnectivity();
     final isOffline = connectivityResults.every((result) => result == ConnectivityResult.none);
+
+    // UID changed during await
+    if (_activeUid != uid) return;
 
     if (isOffline) {
       // Queue for later
@@ -129,35 +181,42 @@ class NotificationProvider extends ChangeNotifier {
     }
 
     // Save immediately
-    await _saveToFirestore(prefs);
+    await _saveToFirestore(prefs, uid);
   }
 
   /// Save preferences to Firestore
-  Future<void> _saveToFirestore(NotificationPreferences prefs) async {
+  Future<void> _saveToFirestore(NotificationPreferences prefs, String uid) async {
     _syncStatus = SyncStatus.saving;
     notifyListeners();
 
     try {
       final userRef = FirebaseFirestore.instance
           .collection('users')
-          .doc(currentUserUid);
+          .doc(uid);
 
       await userRef.set({
         'notification_prefs': prefs.toFirestore(),
       }, SetOptions(merge: true));
+
+      // Stale result guard - UID changed during await
+      if (_activeUid != uid) return;
 
       _syncStatus = SyncStatus.synced;
       _errorMessage = null;
 
       // Auto-hide synced status after 3 seconds
       Future.delayed(const Duration(seconds: 3), () {
-        if (_disposed) return; // Guard against calling notifyListeners() after disposal
+        if (_disposed) return;
+        if (_activeUid != uid) return; // Also guard the delayed callback
         if (_syncStatus == SyncStatus.synced) {
           _syncStatus = SyncStatus.idle;
           notifyListeners();
         }
       });
     } catch (e) {
+      // Stale result guard
+      if (_activeUid != uid) return;
+
       _syncStatus = SyncStatus.error;
       _errorMessage = e.toString();
       if (kDebugMode) {
@@ -170,9 +229,22 @@ class NotificationProvider extends ChangeNotifier {
 
   /// Process all pending updates in the queue
   Future<void> processOfflineQueue() async {
+    final uid = _activeUid;
+    if (uid == null) {
+      _pendingUpdates.clear(); // Clear queue if logged out
+      return;
+    }
+
     while (_pendingUpdates.isNotEmpty) {
       final update = _pendingUpdates.removeFirst();
-      await _saveToFirestore(update.prefs);
+
+      // Check UID still valid before each save
+      if (_activeUid != uid) {
+        _pendingUpdates.clear();
+        return;
+      }
+
+      await _saveToFirestore(update.prefs, uid);
 
       // If save failed, add back to queue and stop processing
       if (_syncStatus == SyncStatus.error) {
@@ -183,12 +255,15 @@ class NotificationProvider extends ChangeNotifier {
   }
 
   /// Check for backend errors (e.g., notification send failures)
-  Future<void> checkBackendErrors() async {
+  Future<void> _checkBackendErrors(String uid) async {
     try {
       final userDoc = await FirebaseFirestore.instance
           .collection('users')
-          .doc(currentUserUid)
+          .doc(uid)
           .get();
+
+      // Stale result guard - UID changed during await
+      if (_activeUid != uid) return;
 
       final errorData = userDoc.data()?['notification_state']?['last_error'];
       if (errorData != null && errorData is Map) {
@@ -205,7 +280,7 @@ class NotificationProvider extends ChangeNotifier {
       }
     } catch (e) {
       if (kDebugMode) {
-        AppLog.d('❌ NotificationProvider.checkBackendErrors error: $e');
+        AppLog.d('❌ NotificationProvider._checkBackendErrors error: $e');
       }
     }
   }
@@ -222,8 +297,11 @@ class NotificationProvider extends ChangeNotifier {
 
   /// Reload preferences from Firestore
   Future<void> reload() async {
-    await _loadPreferences();
-    await checkBackendErrors();
+    final uid = _activeUid;
+    if (uid == null) return;
+
+    await _loadPreferences(uid);
+    await _checkBackendErrors(uid);
   }
 
   // ========================================
@@ -362,6 +440,7 @@ class NotificationProvider extends ChangeNotifier {
   void dispose() {
     _disposed = true;
     _connectivitySub?.cancel();
+    _authSubscription?.cancel();
     super.dispose();
   }
 }
