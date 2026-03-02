@@ -37,7 +37,7 @@ class GroupVibeSummary extends StatelessWidget {
           ],
         ),
         borderRadius: BorderRadius.circular(AppBorderRadius.xl),
-        border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
+        border: Border.all(color: AppColors.glassBorder),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -57,14 +57,14 @@ class GroupVibeSummary extends StatelessWidget {
                     Text(
                       'Group Vibe Match',
                       style: AppTypography.titleSmall.copyWith(
-                        color: Colors.white,
+                        color: AppColors.textPrimary,
                         fontWeight: FontWeight.w600,
                       ),
                     ),
                     Text(
                       hasResult ? 'Your fit with this group' : 'Calculating...',
                       style: AppTypography.labelSmall.copyWith(
-                        color: Colors.white.withValues(alpha: 0.6),
+                        color: AppColors.textSecondary,
                       ),
                     ),
                   ],
@@ -81,7 +81,7 @@ class GroupVibeSummary extends StatelessWidget {
                       ? (groupScore >= 80
                           ? AppColors.green.withValues(alpha: 0.15)
                           : AppColors.navyLight.withValues(alpha: 0.3))
-                      : Colors.white.withValues(alpha: 0.1),
+                      : AppColors.glassSurface,
                   borderRadius: BorderRadius.circular(AppBorderRadius.xl),
                 ),
                 child: hasResult
@@ -132,7 +132,7 @@ class GroupVibeSummary extends StatelessWidget {
                       child: Text(
                         result.cohesionWarning!,
                         style: AppTypography.bodySmall.copyWith(
-                          color: Colors.white.withValues(alpha: 0.9),
+                          color: AppColors.textPrimary,
                         ),
                       ),
                     ),
@@ -149,7 +149,7 @@ class GroupVibeSummary extends StatelessWidget {
                   vertical: AppSpacing.sm,
                 ),
                 decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.1),
+                  color: AppColors.glassSurface,
                   borderRadius: BorderRadius.circular(AppBorderRadius.md),
                 ),
                 child: Row(
@@ -164,14 +164,14 @@ class GroupVibeSummary extends StatelessWidget {
                     Text(
                       'View Detailed Breakdown',
                       style: AppTypography.labelMedium.copyWith(
-                        color: Colors.white,
+                        color: AppColors.textPrimary,
                         fontWeight: FontWeight.w500,
                       ),
                     ),
                     SizedBox(width: AppSpacing.xs),
                     AppIcon(
                       icon: AppPhosphorIcons.chevronRight,
-                      color: Colors.white.withValues(alpha: 0.6),
+                      color: AppColors.textSecondary,
                       size: AppIconSize.button,
                     ),
                   ],

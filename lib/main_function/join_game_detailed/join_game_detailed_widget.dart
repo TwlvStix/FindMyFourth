@@ -6,11 +6,12 @@ import '/core/motion/motion_helpers.dart';
 import '/core/motion/motion_tokens.dart';
 import '/core/motion/reduced_motion.dart';
 import '/core/utils/app_log.dart';
+import '/core/utils/state_update.dart';
 import '/core/widgets/app_premium_dialog.dart';
 import '/core/widgets/fairway_background.dart';
 import '/core/widgets/vibe_floor_bottom_sheet.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
-import '/main_function/game_joined_detailed/components/group_vibe_summary.dart';
+import '/main_function/game_joined_detailed/components/group_vibe_summary_selector.dart';
 import '/main_function/game_joined_detailed/components/premium_app_bar.dart';
 import '/core/widgets/trust/restriction_banner.dart';
 import '/core/widgets/cancelled_game_banner.dart';
@@ -28,8 +29,8 @@ import '/models/game.dart';
 import '/models/join_request.dart';
 import '/models/player_eligibility.dart';
 import '/models/vibe_profile.dart';
-import '/providers/provider_extensions.dart';
 import '/providers/game_provider.dart';
+import '/providers/group_vibe_provider.dart';
 import '/providers/profile_provider.dart';
 import '/providers/join_request_provider.dart';
 import '/services/vibe_group_matcher.dart';
@@ -40,7 +41,7 @@ import 'package:provider/provider.dart';
 
 import '/providers/chat_provider.dart';
 import '/core/widgets/vibe/group_vibe_breakdown_sheet.dart';
-import '/main_function/game_joined_detailed/components/player_list_section.dart';
+import '/main_function/game_joined_detailed/components/player_list_section_selector.dart';
 import 'controllers/join_game_detailed_controller.dart';
 import 'components/join_game_state_handler.dart';
 import 'components/host_hero_card.dart';
@@ -71,34 +72,196 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget>
   bool _hasAnimated = false;
   JoinRequest? _existingRequest;
   bool _isCheckingRequest = true;
-  String? _lastCheckedGameId;
 
-  void _ensureExistingRequestChecked(String gameId, String userId) {
-    if (_lastCheckedGameId == gameId) return;
-    _lastCheckedGameId = gameId;
+  // Stream subscription for game data (side effects handled via subscription)
+  StreamSubscription<GamesRecord?>? _gameSubscription;
 
-    WidgetsBinding.instance.addPostFrameCallback((_) async {
-      if (!mounted) return;
+  // Local state for game data (replaces StreamBuilder to avoid duplicate listeners)
+  GamesRecord? _gamesRecord;
+  bool _hasStreamError = false;
+  Object? _streamError;
 
-      try {
-        final request = await _controller.loadExistingRequest(
-          joinRequestProvider: context.read<JoinRequestProvider>(),
-          gameId: gameId,
-          userId: userId,
-        );
+  // Tracking by cache key (not gameId) since roster changes affect key
+  String? _loadedGroupVibeCacheKey;
+  String? _loadedRequestGameId;
+  bool _hasTriggeredAnimation = false;
 
-        if (mounted) {
-          setState(() {
-            _existingRequest = request;
-            _isCheckingRequest = false;
-          });
+  @override
+  void initState() {
+    super.initState();
+    _initGameSubscription();
+  }
+
+  @override
+  void didUpdateWidget(JoinGameDetailedWidget oldWidget) {
+    super.didUpdateWidget(oldWidget);
+
+    // If gameRef changed, cancel old subscription and reinitialize
+    if (widget.gameRef?.id != oldWidget.gameRef?.id) {
+      _gameSubscription?.cancel();
+
+      // Reset all tracking state
+      _loadedGroupVibeCacheKey = null;
+      _loadedRequestGameId = null;
+      _hasTriggeredAnimation = false;
+
+      // Reset UI state for new game
+      _existingRequest = null;
+      _isCheckingRequest = true;
+      _hasShownAccessDeniedDialog = false;
+
+      // Reset stream state
+      _gamesRecord = null;
+      _hasStreamError = false;
+      _streamError = null;
+
+      _initGameSubscription();
+    }
+  }
+
+  @override
+  void dispose() {
+    _gameSubscription?.cancel();
+    super.dispose();
+  }
+
+  void _initGameSubscription() {
+    final gameRef = widget.gameRef;
+    if (gameRef == null) return;
+
+    final gameStream = context.read<GameProvider>().watchGame(gameRef.id);
+    _gameSubscription = gameStream.listen(
+      _onGameDataReceived,
+      onError: (Object error) {
+        AppLog.d('❌ JoinGameDetailed stream error: $error');
+        if (!mounted) return;
+
+        updateState(this, () {
+          _hasStreamError = true;
+          _streamError = error;
+        });
+
+        // Handle permission-denied (friends-only game) with one-shot dialog
+        if (FirebaseErrorUtils.isPermissionDenied(error) &&
+            !_hasShownAccessDeniedDialog) {
+          _hasShownAccessDeniedDialog = true;
+          _logAccessDeniedOnce(widget.gameRef?.id ?? 'unknown', error);
+          _showFriendsOnlyDialogAndPop(context);
         }
-      } catch (e) {
-        if (mounted) {
-          setState(() => _isCheckingRequest = false);
-        }
-      }
+      },
+    );
+  }
+
+  void _onGameDataReceived(GamesRecord? gamesRecord) {
+    if (!mounted) return;
+
+    // Store the record and clear error state, trigger rebuild
+    updateState(this, () {
+      _gamesRecord = gamesRecord;
+      _hasStreamError = false;
+      _streamError = null;
     });
+
+    if (gamesRecord == null) return;
+
+    final currentUserRef = currentUserReference;
+    final currentUserId = currentUserRef?.id;
+    final game = Game.fromRecord(gamesRecord);
+
+    // 1. Trigger entrance animation (once per widget lifetime)
+    if (!_hasTriggeredAnimation) {
+      _hasTriggeredAnimation = true;
+      updateState(this, () => _hasAnimated = true);
+    }
+
+    // 2. Check for existing join request (once per gameId)
+    if (currentUserId != null && _loadedRequestGameId != game.reference.id) {
+      _loadedRequestGameId = game.reference.id;
+      _loadExistingRequest(game.reference.id, currentUserId);
+    }
+
+    // 3. Load group vibe data (once per cache key — includes roster)
+    if (currentUserId != null) {
+      _loadGroupVibeIfNeeded(game, currentUserId);
+    }
+  }
+
+  void _loadGroupVibeIfNeeded(Game game, String currentUserId) {
+    final groupVibeProvider = context.read<GroupVibeProvider>();
+
+    final cacheKey = groupVibeProvider.buildGameCacheKey(
+      gameRecord: game,
+      currentUserId: currentUserId,
+    );
+
+    // Skip if already loaded this cache key or provider says no load needed
+    if (_loadedGroupVibeCacheKey == cacheKey) return;
+    if (!groupVibeProvider.shouldLoad(cacheKey)) return;
+
+    _loadedGroupVibeCacheKey = cacheKey;
+    _loadGroupVibeData(game, currentUserId, cacheKey);
+  }
+
+  Future<void> _loadGroupVibeData(
+    Game game,
+    String currentUserId,
+    String cacheKey,
+  ) async {
+    if (!mounted) return;
+
+    final groupVibeProvider = context.read<GroupVibeProvider>();
+    final memberIds = groupVibeProvider.otherMemberIdsForGame(
+      gameRecord: game,
+      currentUserId: currentUserId,
+    );
+
+    await groupVibeProvider.ensureGroupVibeMatch(
+      cacheKey: cacheKey,
+      memberUserIds: memberIds,
+      memberLoader: (userIds) async {
+        final profileMap =
+            await context.read<ProfileProvider>().batchGetProfiles(userIds);
+        final members = <GroupVibeMember>[];
+        for (final entry in profileMap.entries) {
+          final userRecord = entry.value;
+          final displayName = userRecord.displayName.isNotEmpty
+              ? userRecord.displayName
+              : 'Player';
+          members.add(
+            GroupVibeMember(
+              id: entry.key,
+              name: displayName,
+              profile: VibeProfile.fromFirestore(userRecord.vibeProfile),
+            ),
+          );
+        }
+        return members;
+      },
+    );
+  }
+
+  Future<void> _loadExistingRequest(String gameId, String userId) async {
+    if (!mounted) return;
+
+    try {
+      final request = await _controller.loadExistingRequest(
+        joinRequestProvider: context.read<JoinRequestProvider>(),
+        gameId: gameId,
+        userId: userId,
+      );
+
+      if (mounted) {
+        updateState(this, () {
+          _existingRequest = request;
+          _isCheckingRequest = false;
+        });
+      }
+    } catch (e) {
+      AppLog.d('❌ JoinGameDetailed._loadExistingRequest error: $e');
+      if (mounted) {
+        updateState(this, () => _isCheckingRequest = false);
+      }
+    }
   }
 
   void _logAccessDeniedOnce(String gameId, Object error) {
@@ -139,6 +302,7 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget>
       gameProvider: context.read<GameProvider>(),
       chatProvider: context.read<ChatProvider>(),
       userProvider: context.read<UserProvider>(),
+      profileProvider: context.read<ProfileProvider>(),
     );
 
     if (!mounted) return;
@@ -171,6 +335,8 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget>
           vibeFloor: eligibility.vibeFloor!,
         ),
       );
+
+      if (!mounted) return;
 
       if (submittedRequest != null) {
         setState(() {
@@ -227,48 +393,41 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget>
       );
     }
 
-    return StreamBuilder<GamesRecord?>(
-      stream: context.read<GameProvider>().watchGame(gameRef.id),
-      builder: (context, snapshot) {
-        // Handle permission denied (friends-only)
-        if (snapshot.hasError) {
-          final error = snapshot.error!;
-          if (FirebaseErrorUtils.isPermissionDenied(error)) {
-            _logAccessDeniedOnce(gameRef.id, error);
-            WidgetsBinding.instance.addPostFrameCallback((_) {
-              if (mounted) _showFriendsOnlyDialogAndPop(context);
-            });
-            return const SizedBox.shrink();
-          }
-          return JoinGameStateHandler(
-            props: JoinGameStateProps(
-              gameRef: gameRef,
-              hasError: true,
-              hasData: false,
-              child: const SizedBox.shrink(),
-            ),
-          );
-        }
+    // Handle stream error state (permission denied for friends-only, etc.)
+    // Note: Permission-denied dialog is triggered from onError handler, not here
+    if (_hasStreamError) {
+      final error = _streamError;
+      // For permission-denied, return empty while dialog pops the screen
+      if (error != null && FirebaseErrorUtils.isPermissionDenied(error)) {
+        return const SizedBox.shrink();
+      }
+      return JoinGameStateHandler(
+        props: JoinGameStateProps(
+          gameRef: gameRef,
+          hasError: true,
+          hasData: false,
+          child: const SizedBox.shrink(),
+        ),
+      );
+    }
 
-        // Loading or null data state
-        final gamesRecord = snapshot.data;
-        if (!snapshot.hasData || gamesRecord == null) {
-          return JoinGameStateHandler(
-            props: JoinGameStateProps(
-              gameRef: gameRef,
-              hasError: false,
-              hasData: false,
-              child: const SizedBox.shrink(),
-            ),
-          );
-        }
+    // Loading or null data state
+    final gamesRecord = _gamesRecord;
+    if (gamesRecord == null) {
+      return JoinGameStateHandler(
+        props: JoinGameStateProps(
+          gameRef: gameRef,
+          hasError: false,
+          hasData: false,
+          child: const SizedBox.shrink(),
+        ),
+      );
+    }
 
-        return _buildGameContent(
-          context: context,
-          gamesRecord: gamesRecord,
-          currentUserRef: currentUserRef,
-        );
-      },
+    return _buildGameContent(
+      context: context,
+      gamesRecord: gamesRecord,
+      currentUserRef: currentUserRef,
     );
   }
 
@@ -278,46 +437,20 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget>
     required DocumentReference? currentUserRef,
   }) {
     final game = Game.fromRecord(gamesRecord);
-    final groupVibeProvider = context.watchGroupVibeProvider;
     final currentUserId = currentUserRef?.id;
 
+    // Build cache key for GroupVibe selectors (pure function, no reactivity)
     final groupVibeCacheKey = currentUserId == null
         ? null
-        : groupVibeProvider.buildGameCacheKey(
+        : context.read<GroupVibeProvider>().buildGameCacheKey(
             gameRecord: game,
             currentUserId: currentUserId,
           );
-    final groupVibeMatch = groupVibeCacheKey == null
-        ? null
-        : groupVibeProvider.getMatch(groupVibeCacheKey);
-    final memberMatchesById = groupVibeCacheKey == null
-        ? const <String, GroupVibeMemberResult>{}
-        : groupVibeProvider.getMemberMatchesById(groupVibeCacheKey);
 
-    if (groupVibeCacheKey != null &&
-        currentUserId != null &&
-        groupVibeProvider.shouldLoad(groupVibeCacheKey)) {
-      _loadGroupVibe(
-        context: context,
-        groupVibeProvider: groupVibeProvider,
-        groupVibeCacheKey: groupVibeCacheKey,
-        game: game,
-        currentUserId: currentUserId,
-      );
-    }
+    // PURE BUILD: Side effects handled via stream subscription in _onGameDataReceived()
+    // GroupVibe selects moved into GroupVibeSummarySelector and PlayerListSectionSelector
 
     final isCancelled = game.isCancelledStatus;
-
-    if (currentUserRef != null) {
-      _ensureExistingRequestChecked(game.reference.id, currentUserRef.id);
-    }
-
-    // Trigger entrance animation once
-    if (!_hasAnimated) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (mounted && !_hasAnimated) setState(() => _hasAnimated = true);
-      });
-    }
 
     return Scaffold(
       key: scaffoldKey,
@@ -401,15 +534,13 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget>
                       child: Padding(
                         padding:
                             EdgeInsets.symmetric(horizontal: AppSpacing.md),
-                        child: GroupVibeSummary(
-                          groupVibeMatch: groupVibeMatch,
-                          onViewBreakdown: () {
-                            if (groupVibeMatch == null) return;
-                            GroupVibeBreakdownSheet.show(
-                              context: context,
-                              result: groupVibeMatch,
-                            );
-                          },
+                        child: GroupVibeSummarySelector(
+                          groupVibeCacheKey: groupVibeCacheKey,
+                          onViewBreakdown: (result) =>
+                              GroupVibeBreakdownSheet.show(
+                            context: context,
+                            result: result,
+                          ),
                         ),
                       ),
                     ),
@@ -460,9 +591,8 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget>
                     ),
 
                     // Players list
-                    PlayerListSection(
+                    PlayerListSectionSelector(
                       game: game,
-                      memberMatchesById: memberMatchesById,
                       groupVibeCacheKey: groupVibeCacheKey,
                       hasAnimated: _hasAnimated,
                       isOwner: false,
@@ -544,46 +674,5 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget>
         ),
       ),
     );
-  }
-
-  void _loadGroupVibe({
-    required BuildContext context,
-    required dynamic groupVibeProvider,
-    required String groupVibeCacheKey,
-    required Game game,
-    required String currentUserId,
-  }) {
-    final memberIds = groupVibeProvider.otherMemberIdsForGame(
-      gameRecord: game,
-      currentUserId: currentUserId,
-    ) as List<String>;
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (!mounted) return;
-      unawaited(
-        context.groupVibeProvider.ensureGroupVibeMatch(
-          cacheKey: groupVibeCacheKey,
-          memberUserIds: memberIds,
-          memberLoader: (userIds) async {
-            final profileMap =
-                await context.read<ProfileProvider>().batchGetProfiles(userIds);
-            final members = <GroupVibeMember>[];
-            for (final entry in profileMap.entries) {
-              final userRecord = entry.value;
-              final displayName = userRecord.displayName.isNotEmpty
-                  ? userRecord.displayName
-                  : 'Player';
-              members.add(
-                GroupVibeMember(
-                  id: entry.key,
-                  name: displayName,
-                  profile: VibeProfile.fromFirestore(userRecord.vibeProfile),
-                ),
-              );
-            }
-            return members;
-          },
-        ),
-      );
-    });
   }
 }

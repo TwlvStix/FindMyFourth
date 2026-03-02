@@ -33,9 +33,9 @@ import 'package:provider/provider.dart';
 
 import 'firm_it_up_banner.dart';
 import 'firm_it_up_bottom_sheet.dart';
-import 'group_vibe_summary.dart';
+import 'group_vibe_summary_selector.dart';
 import 'pending_requests_section.dart';
-import 'player_list_section.dart';
+import 'player_list_section_selector.dart';
 import 'premium_hero_section.dart';
 import 'quick_stats_row.dart';
 
@@ -78,8 +78,6 @@ class GameJoinedDashboardContent extends StatelessWidget {
     required this.screenGameRef,
     required this.currentUserRef,
     required this.hasAnimated,
-    required this.groupVibeMatch,
-    required this.memberMatchesById,
     required this.groupVibeCacheKey,
     required this.pendingRequests,
     required this.ownerVibeProfile,
@@ -97,8 +95,6 @@ class GameJoinedDashboardContent extends StatelessWidget {
   final DocumentReference? screenGameRef;
   final DocumentReference? currentUserRef;
   final bool hasAnimated;
-  final GroupVibeMatchResult? groupVibeMatch;
-  final Map<String, GroupVibeMemberResult> memberMatchesById;
   final String? groupVibeCacheKey;
   final List<JoinRequest> pendingRequests;
   final VibeProfile? ownerVibeProfile;
@@ -309,7 +305,7 @@ class GameJoinedDashboardContent extends StatelessWidget {
                           Text(
                             'Message Group',
                             style: AppTypography.titleSmall.copyWith(
-                              color: Colors.white,
+                              color: AppColors.textPrimary,
                               fontWeight: FontWeight.w600,
                             ),
                           ),
@@ -325,17 +321,12 @@ class GameJoinedDashboardContent extends StatelessWidget {
               hasAnimated: hasAnimated,
               child: Padding(
                 padding: EdgeInsets.symmetric(horizontal: AppSpacing.md),
-                child: GroupVibeSummary(
-                  groupVibeMatch: groupVibeMatch,
-                  onViewBreakdown: () {
-                    if (groupVibeMatch == null) {
-                      return;
-                    }
-                    GroupVibeBreakdownSheet.show(
-                      context: context,
-                      result: groupVibeMatch!,
-                    );
-                  },
+                child: GroupVibeSummarySelector(
+                  groupVibeCacheKey: groupVibeCacheKey,
+                  onViewBreakdown: (result) => GroupVibeBreakdownSheet.show(
+                    context: context,
+                    result: result,
+                  ),
                 ),
               ),
             ),
@@ -392,9 +383,8 @@ class GameJoinedDashboardContent extends StatelessWidget {
                 ),
               ),
             ),
-            PlayerListSection(
+            PlayerListSectionSelector(
               game: game,
-              memberMatchesById: memberMatchesById,
               groupVibeCacheKey: groupVibeCacheKey,
               hasAnimated: hasAnimated,
               isOwner: isOwner,
@@ -575,7 +565,7 @@ class GameJoinedDashboardContent extends StatelessWidget {
                     if (!context.mounted) {
                       return;
                     }
-                    AppState().setCancelledGameHandling(
+                    context.read<AppState>().setCancelledGameHandling(
                       screenGameRef!.path,
                       'removeNow',
                     );

@@ -11,6 +11,25 @@ paths: lib/providers/**/*.dart
 
 **Known debt**: `UserProvider` is missing the `_disposed` flag — fix when next modified.
 
+## Setter Guards
+When a setter calls `notifyListeners()` (or `_scheduleNotify()`), always guard against no-op updates:
+
+```dart
+set myValue(bool value) {
+  if (_myValue == value) return;  // no-op guard
+  _myValue = value;
+  _scheduleNotify();
+}
+
+void setMapValue(String key, String value) {
+  if (_map[key] == value) return;  // no-op guard
+  _map[key] = value;
+  _scheduleNotify();
+}
+```
+
+This prevents unnecessary rebuilds when the same value is set twice.
+
 ## Size Limit
 Provider files should stay under 500 lines. If approaching this limit, split by sub-domain (e.g., separate read-heavy stream logic from mutation methods). ChatProvider (732 lines) is tracked as tech debt.
 

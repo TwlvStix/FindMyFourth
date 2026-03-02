@@ -2,7 +2,6 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-import '/app_state.dart';
 import '/core/design_tokens/app_phosphor_icons.dart';
 import '/core/design_tokens/colors.dart';
 import '/core/design_tokens/icon_size.dart';
@@ -26,6 +25,7 @@ class FriendsOnlyGamesSectionBuilder {
     required this.onFriendsOnlyTap,
     required this.onSendFriendRequest,
     required this.onToggleVisibility,
+    required this.hideFriendsOnlyGames,
   });
 
   final List<Game> lockedGames;
@@ -36,6 +36,7 @@ class FriendsOnlyGamesSectionBuilder {
   final Future<void> Function(BuildContext context, DocumentReference hostRef)
       onSendFriendRequest;
   final VoidCallback onToggleVisibility;
+  final bool hideFriendsOnlyGames;
 
   /// Builds and returns the slivers for the Friends-Only Games section.
   List<Widget> build(BuildContext context) {
@@ -88,7 +89,7 @@ class FriendsOnlyGamesSectionBuilder {
                         horizontal: AppSpacing.xs,
                       ),
                       child: Text(
-                        AppState().hideFriendsOnlyGames ? 'Show' : 'Hide',
+                        hideFriendsOnlyGames ? 'Show' : 'Hide',
                         style: AppTypography.labelSmall.copyWith(
                           color: AppColors.textSecondary,
                           fontWeight: FontWeight.w500,
@@ -110,7 +111,7 @@ class FriendsOnlyGamesSectionBuilder {
         ),
       ),
       // Game list (only if not hidden)
-      if (!AppState().hideFriendsOnlyGames)
+      if (!hideFriendsOnlyGames)
         Consumer<UserProvider>(
           builder: (context, userProvider, _) {
             return SliverPadding(

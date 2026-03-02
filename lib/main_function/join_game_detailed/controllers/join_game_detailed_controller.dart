@@ -8,6 +8,7 @@ import '/models/join_request.dart';
 import '/providers/chat_provider.dart';
 import '/providers/game_provider.dart';
 import '/providers/join_request_provider.dart';
+import '/providers/profile_provider.dart';
 import '/providers/user_provider.dart';
 
 enum JoinGameAttemptStatus {
@@ -49,11 +50,7 @@ class JoinGameAttemptResult {
 }
 
 class JoinGameDetailedController {
-  JoinGameDetailedController({
-    FirebaseFirestore? firestore,
-  }) : _firestore = firestore ?? FirebaseFirestore.instance;
-
-  final FirebaseFirestore _firestore;
+  JoinGameDetailedController();
 
   Future<JoinRequest?> loadExistingRequest({
     required JoinRequestProvider joinRequestProvider,
@@ -71,6 +68,7 @@ class JoinGameDetailedController {
     required GameProvider gameProvider,
     required ChatProvider chatProvider,
     required UserProvider userProvider,
+    required ProfileProvider profileProvider,
   }) async {
     if (currentUserRef == null) {
       return const JoinGameAttemptResult(
@@ -83,6 +81,7 @@ class JoinGameDetailedController {
       game: game,
       currentUserRef: currentUserRef,
       isCreatorFriend: isCreatorFriend,
+      profileProvider: profileProvider,
     );
     if (!accessResult.allowed) {
       return JoinGameAttemptResult(
@@ -107,7 +106,7 @@ class JoinGameDetailedController {
       }
 
       if (result.result == JoinGameResult.requiresApproval) {
-        final ownerFirstName = await _loadOwnerFirstName(game.userRef);
+        final ownerFirstName = await _loadOwnerFirstName(game.userRef, profileProvider);
         final playerName = userProvider.currentUser?.displayName ?? 'A player';
         final ownerId = game.userRef?.id;
         if (ownerId == null) {
@@ -199,6 +198,7 @@ class JoinGameDetailedController {
     required Game game,
     required DocumentReference currentUserRef,
     required bool isCreatorFriend,
+    required ProfileProvider profileProvider,
   }) async {
     final friendGameLower = game.friendGame.trim().toLowerCase();
     final isFriendsOnly = friendGameLower == 'friends';
@@ -212,12 +212,11 @@ class JoinGameDetailedController {
     try {
       final ownerRef = game.userRef;
       if (ownerRef != null) {
-        final ownerSnap = await ownerRef.get();
-        final ownerData = ownerSnap.data() as Map<String, dynamic>? ?? {};
-        final ownerFriends = ownerData['friends'];
-        if (ownerFriends is List) {
+        final ownerProfile = await profileProvider.getProfile(ownerRef.id);
+        if (ownerProfile != null) {
+          final ownerFriends = ownerProfile.friends;
           isOwnerFriendsWithUser = ownerFriends.any(
-            (entry) => _normalizeFriendEntry(entry) == currentUserRef.id,
+            (ref) => ref.id == currentUserRef.id,
           );
         } else {
           isOwnerFriendsWithUser = false;
@@ -237,21 +236,24 @@ class JoinGameDetailedController {
     );
   }
 
-  Future<String> _loadOwnerFirstName(DocumentReference? ownerRef) async {
+  Future<String> _loadOwnerFirstName(
+    DocumentReference? ownerRef,
+    ProfileProvider profileProvider,
+  ) async {
     if (ownerRef == null) {
       return 'This player';
     }
     try {
-      final ownerSnap =
-          await _firestore.collection('users').doc(ownerRef.id).get();
-      final ownerData = ownerSnap.data() ?? <String, dynamic>{};
-      final firstName = ownerData['first_name'] as String?;
-      final displayName = ownerData['display_name'] as String?;
-      if (firstName != null && firstName.trim().isNotEmpty) {
-        return firstName;
-      }
-      if (displayName != null && displayName.trim().isNotEmpty) {
-        return displayName.split(' ').first;
+      final ownerProfile = await profileProvider.getProfile(ownerRef.id);
+      if (ownerProfile != null) {
+        final firstName = ownerProfile.firstName;
+        final displayName = ownerProfile.displayName;
+        if (firstName.trim().isNotEmpty) {
+          return firstName;
+        }
+        if (displayName.trim().isNotEmpty) {
+          return displayName.split(' ').first;
+        }
       }
     } catch (error) {
       AppLog.d('JoinGameDetailedController owner name lookup failed: $error');
@@ -259,19 +261,6 @@ class JoinGameDetailedController {
     return 'This player';
   }
 
-  String? _normalizeFriendEntry(Object? entry) {
-    if (entry is DocumentReference) {
-      return entry.id;
-    }
-    if (entry is String) {
-      if (!entry.contains('/')) {
-        return entry;
-      }
-      final parts = entry.split('/');
-      return parts.isEmpty ? entry : parts.last;
-    }
-    return null;
-  }
 }
 
 class _JoinAccessResult {

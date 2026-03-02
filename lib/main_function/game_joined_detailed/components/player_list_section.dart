@@ -17,9 +17,9 @@ import '/core/widgets/app_icon_button.dart';
 import '/core/widgets/trust/luxury_player_card.dart';
 import '/models/game.dart';
 import '/providers/profile_provider.dart';
-import '/providers/provider_extensions.dart';
 import '/providers/trust_provider.dart';
 import '/services/vibe_group_matcher.dart';
+import '/vibe/vibe_recommendation_rank.dart';
 import 'player_match_chip.dart';
 
 /// Displays the players list for a game.
@@ -33,7 +33,6 @@ class PlayerListSection extends StatefulWidget {
     super.key,
     required this.game,
     required this.memberMatchesById,
-    required this.groupVibeCacheKey,
     required this.hasAnimated,
     required this.isOwner,
     this.onRemovePlayer,
@@ -43,7 +42,6 @@ class PlayerListSection extends StatefulWidget {
 
   final Game game;
   final Map<String, GroupVibeMemberResult> memberMatchesById;
-  final String? groupVibeCacheKey;
   final bool hasAnimated;
   final bool isOwner;
 
@@ -128,20 +126,32 @@ class _PlayerListSectionState extends State<PlayerListSection> {
     return trustProvider.batchGetTrustProfiles(userIds);
   }
 
+  /// Sorts members by vibe match score (higher scores first).
+  /// Uses memberMatchesById prop - no provider dependency.
+  int _compareMembersByVibe(String aId, String bId) {
+    final aMatch = widget.memberMatchesById[aId];
+    final bMatch = widget.memberMatchesById[bId];
+
+    if (aMatch == null && bMatch == null) return 0;
+    if (aMatch == null) return 1;
+    if (bMatch == null) return -1;
+
+    // Better recommendations first (recommended=0 < caution=1 < notRecommended=2)
+    final rankA = recommendationRank(aMatch.matchResult.recommendation);
+    final rankB = recommendationRank(bMatch.matchResult.recommendation);
+    if (rankA != rankB) return rankA.compareTo(rankB);
+
+    // Then by display score (descending)
+    return bMatch.displayScore.compareTo(aMatch.displayScore);
+  }
+
   @override
   Widget build(BuildContext context) {
-    final groupVibeProvider = context.watchGroupVibeProvider;
     final groupPlayers = widget.game.joinedPlayers.toList();
 
     // Sort players by vibe match if available
-    if (widget.memberMatchesById.isNotEmpty && widget.groupVibeCacheKey != null) {
-      groupPlayers.sort(
-        (a, b) => groupVibeProvider.compareMemberIds(
-          cacheKey: widget.groupVibeCacheKey!,
-          aId: a.id,
-          bId: b.id,
-        ),
-      );
+    if (widget.memberMatchesById.isNotEmpty) {
+      groupPlayers.sort((a, b) => _compareMembersByVibe(a.id, b.id));
     }
 
     final guestPlayers = widget.game.guestPlayers
@@ -371,7 +381,7 @@ class _GuestPlayerCard extends StatelessWidget {
                 color: AppColors.navyLight.withValues(alpha: 0.5),
                 shape: BoxShape.circle,
                 border: Border.all(
-                  color: Colors.white.withValues(alpha: 0.3),
+                  color: AppColors.glassBorder,
                   width: 2.0,
                 ),
               ),
@@ -379,7 +389,7 @@ class _GuestPlayerCard extends StatelessWidget {
                 child: Text(
                   'G',
                   style: AppTypography.titleMedium.copyWith(
-                    color: Colors.white,
+                    color: AppColors.textPrimary,
                     fontWeight: FontWeight.w600,
                   ),
                 ),
@@ -395,7 +405,7 @@ class _GuestPlayerCard extends StatelessWidget {
                   Text(
                     guestName,
                     style: AppTypography.bodyLarge.copyWith(
-                      color: Colors.white,
+                      color: AppColors.textPrimary,
                       fontWeight: FontWeight.w500,
                     ),
                     maxLines: 1,
@@ -405,7 +415,7 @@ class _GuestPlayerCard extends StatelessWidget {
                   Text(
                     'Guest',
                     style: AppTypography.bodySmall.copyWith(
-                      color: Colors.white.withValues(alpha: 0.7),
+                      color: AppColors.textSecondary,
                     ),
                   ),
                 ],

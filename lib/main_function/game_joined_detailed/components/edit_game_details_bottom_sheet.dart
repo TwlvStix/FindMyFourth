@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import '/core/utils/app_log.dart';
+import '/services/course_service.dart';
 import '/core/design_tokens/spacing.dart';
 import '/core/design_tokens/colors.dart';
 import '/core/design_tokens/typography.dart';
@@ -23,14 +23,16 @@ class EditGameDetailsBottomSheet extends StatefulWidget {
   final DateTime initialDate;
   final String initialCourse;
   final DocumentReference? initialCourseRef;
+  final CourseService _courseService;
 
-  const EditGameDetailsBottomSheet({
+  EditGameDetailsBottomSheet({
     super.key,
     required this.gameRef,
     required this.initialDate,
     required this.initialCourse,
     this.initialCourseRef,
-  });
+    CourseService? courseService,
+  }) : _courseService = courseService ?? CourseService();
 
   @override
   State<EditGameDetailsBottomSheet> createState() =>
@@ -184,11 +186,8 @@ class _EditGameDetailsBottomSheetState
               // Course selector
               Text('Course', style: _labelStyle(context)),
               SizedBox(height: AppSpacing.xs),
-              StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
-                stream: FirebaseFirestore.instance
-                    .collection('course')
-                    .orderBy('name')
-                    .snapshots(),
+              StreamBuilder<List<Course>>(
+                stream: widget._courseService.streamAllCourses(),
                 builder: (context, snapshot) {
                   AppLog.d(
                       '🎯 Course StreamBuilder: hasData=${snapshot.hasData}, hasError=${snapshot.hasError}');
@@ -212,10 +211,8 @@ class _EditGameDetailsBottomSheetState
                     );
                   }
 
-                  AppLog.d(
-                      '🎯 Courses loaded: ${snapshot.data!.docs.length} courses');
-                  final courses =
-                      snapshot.data!.docs.map((doc) => Course.fromDoc(doc)).toList();
+                  final courses = snapshot.data!;
+                  AppLog.d('🎯 Courses loaded: ${courses.length} courses');
 
                   return AppDropDown<String>(
                     controller: _courseController ??=

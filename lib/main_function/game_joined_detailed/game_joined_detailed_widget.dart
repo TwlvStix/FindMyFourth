@@ -16,6 +16,7 @@ import '/models/game.dart';
 import '/models/join_request.dart';
 import '/models/vibe_profile.dart';
 import '/providers/game_provider.dart';
+import '/providers/group_vibe_provider.dart';
 import '/providers/join_request_provider.dart';
 import '/providers/profile_provider.dart';
 import '/providers/provider_extensions.dart';
@@ -57,59 +58,205 @@ class _GameJoinedDetailedWidgetState extends State<GameJoinedDetailedWidget>
 
   List<JoinRequest> _pendingRequests = [];
   bool _isLoadingPendingRequests = false;
-  String? _lastLoadedPendingGameId;
+  String? _loadedPendingRequestsGameId;
   VibeProfile? _ownerVibeProfile;
   String? _expandedRequestId;
+
+  // Stream subscription for game data (side effects handled via subscription)
+  StreamSubscription<GamesRecord?>? _gameSubscription;
+
+  // Local state for game data (replaces StreamBuilder to avoid duplicate listeners)
+  GamesRecord? _gamesRecord;
+  bool _hasStreamError = false;
+
+  // Tracking by cache key (not gameId) since roster changes affect key
+  String? _loadedGroupVibeCacheKey;
+  bool _hasTriggeredAnimation = false;
 
   @override
   void initState() {
     super.initState();
+    _initGameSubscription();
   }
 
-  void _ensurePendingRequestsLoaded(String gameId, String ownerId) {
-    if (_lastLoadedPendingGameId == gameId || _isLoadingPendingRequests) {
-      return;
+  @override
+  void didUpdateWidget(GameJoinedDetailedWidget oldWidget) {
+    super.didUpdateWidget(oldWidget);
+
+    // If gameRef changed, cancel old subscription and reinitialize
+    if (widget.gameRef?.id != oldWidget.gameRef?.id) {
+      _gameSubscription?.cancel();
+
+      // Reset all tracking state
+      _loadedGroupVibeCacheKey = null;
+      _loadedPendingRequestsGameId = null;
+      _hasTriggeredAnimation = false;
+
+      // Reset UI state for new game
+      _pendingRequests = [];
+      _isLoadingPendingRequests = false;
+      _ownerVibeProfile = null;
+      _expandedRequestId = null;
+
+      // Reset stream state
+      _gamesRecord = null;
+      _hasStreamError = false;
+
+      _initGameSubscription();
     }
-    _lastLoadedPendingGameId = gameId;
-    _isLoadingPendingRequests = true;
+  }
 
-    WidgetsBinding.instance.addPostFrameCallback((_) async {
-      if (!mounted) {
-        return;
-      }
+  @override
+  void dispose() {
+    _gameSubscription?.cancel();
+    super.dispose();
+  }
 
-      try {
-        final results = await Future.wait([
-          context
-              .read<JoinRequestProvider>()
-              .getPendingRequestsForGame(gameId, ownerId),
-          _vibeRepository.getVibeProfileForUser(ownerId),
-        ]);
+  void _initGameSubscription() {
+    final gameRef = widget.gameRef;
+    if (gameRef == null) return;
 
-        if (!mounted) {
-          return;
-        }
-
-        final requests = results[0] as List<JoinRequest>;
-        requests.sort((a, b) => a.createdAt.compareTo(b.createdAt));
-
-        updateState(this, () {
-          _pendingRequests = requests;
-          _ownerVibeProfile = results[1] as VibeProfile;
-          _isLoadingPendingRequests = false;
-          if (_pendingRequests.isNotEmpty) {
-            _expandedRequestId = _pendingRequests.first.id;
-          }
-        });
-      } catch (error) {
-        AppLog.d('Error loading pending join requests: $error');
+    final gameStream = context.read<GameProvider>().watchGame(gameRef.id);
+    _gameSubscription = gameStream.listen(
+      _onGameDataReceived,
+      onError: (Object error) {
+        AppLog.d('❌ GameJoinedDetailed stream error: $error');
         if (mounted) {
           updateState(this, () {
-            _isLoadingPendingRequests = false;
+            _hasStreamError = true;
           });
         }
-      }
+      },
+    );
+  }
+
+  void _onGameDataReceived(GamesRecord? gamesRecord) {
+    if (!mounted) return;
+
+    // Store the record and clear error state, trigger rebuild
+    updateState(this, () {
+      _gamesRecord = gamesRecord;
+      _hasStreamError = false;
     });
+
+    if (gamesRecord == null) return;
+
+    final currentUserRef = currentUserReference;
+    final currentUserId = currentUserRef?.id;
+    final game = Game.fromRecord(gamesRecord);
+
+    // 1. Trigger entrance animation (once per widget lifetime)
+    if (!_hasTriggeredAnimation) {
+      _hasTriggeredAnimation = true;
+      updateState(this, () => _hasAnimated = true);
+    }
+
+    // 2. Load pending requests for owner (once per gameId)
+    if (game.userRef == currentUserRef && currentUserRef != null) {
+      _loadPendingRequestsIfNeeded(game.reference.id, currentUserRef.id);
+    }
+
+    // 3. Load group vibe data (once per cache key — includes roster)
+    if (currentUserId != null) {
+      _loadGroupVibeIfNeeded(game, currentUserId);
+    }
+  }
+
+  void _loadPendingRequestsIfNeeded(String gameId, String ownerId) {
+    if (_loadedPendingRequestsGameId == gameId || _isLoadingPendingRequests) {
+      return;
+    }
+    _loadedPendingRequestsGameId = gameId;
+    _isLoadingPendingRequests = true;
+    _loadPendingRequests(gameId, ownerId);
+  }
+
+  Future<void> _loadPendingRequests(String gameId, String ownerId) async {
+    if (!mounted) return;
+
+    try {
+      final results = await Future.wait([
+        context
+            .read<JoinRequestProvider>()
+            .getPendingRequestsForGame(gameId, ownerId),
+        _vibeRepository.getVibeProfileForUser(ownerId),
+      ]);
+
+      if (!mounted) return;
+
+      final requests = results[0] as List<JoinRequest>;
+      requests.sort((a, b) => a.createdAt.compareTo(b.createdAt));
+
+      updateState(this, () {
+        _pendingRequests = requests;
+        _ownerVibeProfile = results[1] as VibeProfile;
+        _isLoadingPendingRequests = false;
+        if (_pendingRequests.isNotEmpty) {
+          _expandedRequestId = _pendingRequests.first.id;
+        }
+      });
+    } catch (error) {
+      AppLog.d('❌ GameJoinedDetailed._loadPendingRequests error: $error');
+      if (mounted) {
+        updateState(this, () {
+          _isLoadingPendingRequests = false;
+        });
+      }
+    }
+  }
+
+  void _loadGroupVibeIfNeeded(Game game, String currentUserId) {
+    final groupVibeProvider = context.read<GroupVibeProvider>();
+
+    final cacheKey = groupVibeProvider.buildGameCacheKey(
+      gameRecord: game,
+      currentUserId: currentUserId,
+    );
+
+    // Skip if already loaded this cache key or provider says no load needed
+    if (_loadedGroupVibeCacheKey == cacheKey) return;
+    if (!groupVibeProvider.shouldLoad(cacheKey)) return;
+
+    _loadedGroupVibeCacheKey = cacheKey;
+    _loadGroupVibeData(game, currentUserId, cacheKey);
+  }
+
+  Future<void> _loadGroupVibeData(
+    Game game,
+    String currentUserId,
+    String cacheKey,
+  ) async {
+    if (!mounted) return;
+
+    final groupVibeProvider = context.read<GroupVibeProvider>();
+    final memberIds = groupVibeProvider.otherMemberIdsForGame(
+      gameRecord: game,
+      currentUserId: currentUserId,
+    );
+
+    await groupVibeProvider.ensureGroupVibeMatch(
+      cacheKey: cacheKey,
+      memberUserIds: memberIds,
+      memberLoader: (userIds) async {
+        final profileMap =
+            await context.read<ProfileProvider>().batchGetProfiles(userIds);
+        final members = <GroupVibeMember>[];
+        for (final entry in profileMap.entries) {
+          final userRecord = entry.value;
+          final displayName = userRecord.displayName.isNotEmpty
+              ? userRecord.displayName
+              : 'Player';
+          members.add(
+            GroupVibeMember(
+              id: entry.key,
+              name: displayName,
+              profile: VibeProfile.fromFirestore(userRecord.vibeProfile),
+            ),
+          );
+        }
+        return members;
+      },
+    );
   }
 
   Future<void> _handleApproveRequest(
@@ -193,129 +340,73 @@ class _GameJoinedDetailedWidgetState extends State<GameJoinedDetailedWidget>
 
     final currentUserRef = currentUserReference;
 
-    return StreamBuilder<GamesRecord?>(
-      stream: context.read<GameProvider>().watchGame(gameRef.id),
-      builder: (context, snapshot) {
-        final gamesRecord = snapshot.data;
+    // Handle stream error state
+    if (_hasStreamError) {
+      return GameJoinedStateHandler(
+        props: GameJoinedStateProps(
+          gameRef: gameRef,
+          hasError: true,
+          hasData: false,
+          isDataNull: false,
+          errorMessage: 'Please try again later.',
+          child: const SizedBox.shrink(),
+        ),
+      );
+    }
 
-        if (snapshot.hasError || !snapshot.hasData || gamesRecord == null) {
-          return GameJoinedStateHandler(
-            props: GameJoinedStateProps(
-              gameRef: gameRef,
-              hasError: snapshot.hasError,
-              hasData: snapshot.hasData,
-              isDataNull: snapshot.hasData && gamesRecord == null,
-              errorMessage: 'Please try again later.',
-              child: const SizedBox.shrink(),
-            ),
-          );
-        }
+    // Handle loading or null data state
+    final gamesRecord = _gamesRecord;
+    if (gamesRecord == null) {
+      return GameJoinedStateHandler(
+        props: GameJoinedStateProps(
+          gameRef: gameRef,
+          hasError: false,
+          hasData: false,
+          isDataNull: false,
+          child: const SizedBox.shrink(),
+        ),
+      );
+    }
 
-        final gameRecord = Game.fromRecord(gamesRecord);
+    final gameRecord = Game.fromRecord(gamesRecord);
+    final currentUserId = currentUserRef?.id;
 
-        final groupVibeProvider = context.watchGroupVibeProvider;
-        final currentUserId = currentUserRef?.id;
-        final groupVibeCacheKey = currentUserId == null
-            ? null
-            : groupVibeProvider.buildGameCacheKey(
-                gameRecord: gameRecord,
-                currentUserId: currentUserId,
-              );
-        final groupVibeMatch = groupVibeCacheKey == null
-            ? null
-            : groupVibeProvider.getMatch(groupVibeCacheKey);
-        final memberMatchesById = groupVibeCacheKey == null
-            ? const <String, GroupVibeMemberResult>{}
-            : groupVibeProvider.getMemberMatchesById(groupVibeCacheKey);
-
-        if (groupVibeCacheKey != null &&
-            currentUserId != null &&
-            groupVibeProvider.shouldLoad(groupVibeCacheKey)) {
-          final memberIds = groupVibeProvider.otherMemberIdsForGame(
+    // Build cache key for GroupVibe selectors (pure function, no reactivity)
+    final groupVibeCacheKey = currentUserId == null
+        ? null
+        : context.read<GroupVibeProvider>().buildGameCacheKey(
             gameRecord: gameRecord,
             currentUserId: currentUserId,
           );
-          WidgetsBinding.instance.addPostFrameCallback((_) {
-            if (!mounted) {
-              return;
-            }
-            unawaited(
-              context.groupVibeProvider.ensureGroupVibeMatch(
-                cacheKey: groupVibeCacheKey,
-                memberUserIds: memberIds,
-                memberLoader: (userIds) async {
-                  final profileMap =
-                      await context.read<ProfileProvider>().batchGetProfiles(
-                            userIds,
-                          );
-                  final members = <GroupVibeMember>[];
-                  for (final entry in profileMap.entries) {
-                    final userRecord = entry.value;
-                    final displayName = userRecord.displayName.isNotEmpty
-                        ? userRecord.displayName
-                        : 'Player';
-                    members.add(
-                      GroupVibeMember(
-                        id: entry.key,
-                        name: displayName,
-                        profile:
-                            VibeProfile.fromFirestore(userRecord.vibeProfile),
-                      ),
-                    );
-                  }
-                  return members;
-                },
-              ),
-            );
-          });
-        }
 
-        if (gameRecord.userRef == currentUserRef && currentUserRef != null) {
-          _ensurePendingRequestsLoaded(
-            gameRecord.reference.id,
-            currentUserRef.id,
-          );
-        }
+    // PURE BUILD: Side effects handled via stream subscription in _onGameDataReceived()
+    // GroupVibe selects moved into GroupVibeSummarySelector and PlayerListSectionSelector
 
-        if (!_hasAnimated) {
-          WidgetsBinding.instance.addPostFrameCallback((_) {
-            if (mounted && !_hasAnimated) {
-              updateState(this, () {
-                _hasAnimated = true;
-              });
-            }
-          });
-        }
-
-        return Scaffold(
-          key: scaffoldKey,
-          extendBodyBehindAppBar: true,
-          appBar: const PremiumAppBar(title: 'Game Dashboard'),
-          body: FairwayBackgroundDark(
-            showOrganic: true,
-            showTexture: true,
-            child: GameJoinedDashboardContent(
-              game: gameRecord,
-              screenGameRef: gameRef,
-              currentUserRef: currentUserRef,
-              hasAnimated: _hasAnimated,
-              groupVibeMatch: groupVibeMatch,
-              memberMatchesById: memberMatchesById,
-              groupVibeCacheKey: groupVibeCacheKey,
-              pendingRequests: _pendingRequests,
-              ownerVibeProfile: _ownerVibeProfile,
-              expandedRequestId: _expandedRequestId,
-              onApproveRequest: _handleApproveRequest,
-              onDeclineRequest: _handleDeclineRequest,
-              onRemoveRequest: _removeRequestFromList,
-              onExpandRequest: _expandRequest,
-              onShowRemovePlayerDialog: _showRemovePlayerDialog,
-              onOpenPremiumVibePage: _openPremiumVibePage,
-              onEditGameDetails: _handleEditGameDetails,
-            ),
-          ),
-        );
-      },
+    return Scaffold(
+      key: scaffoldKey,
+      extendBodyBehindAppBar: true,
+      appBar: const PremiumAppBar(title: 'Game Dashboard'),
+      body: FairwayBackgroundDark(
+        showOrganic: true,
+        showTexture: true,
+        child: GameJoinedDashboardContent(
+          game: gameRecord,
+          screenGameRef: gameRef,
+          currentUserRef: currentUserRef,
+          hasAnimated: _hasAnimated,
+          groupVibeCacheKey: groupVibeCacheKey,
+          pendingRequests: _pendingRequests,
+          ownerVibeProfile: _ownerVibeProfile,
+          expandedRequestId: _expandedRequestId,
+          onApproveRequest: _handleApproveRequest,
+          onDeclineRequest: _handleDeclineRequest,
+          onRemoveRequest: _removeRequestFromList,
+          onExpandRequest: _expandRequest,
+          onShowRemovePlayerDialog: _showRemovePlayerDialog,
+          onOpenPremiumVibePage: _openPremiumVibePage,
+          onEditGameDetails: _handleEditGameDetails,
+        ),
+      ),
     );
   }
 

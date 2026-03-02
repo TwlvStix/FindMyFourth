@@ -10,12 +10,27 @@ Controllers extract complex logic from widgets (form handling, multi-step flows,
 - Data flow is: Controller → Provider → Service → Firestore
 - Controllers coordinate UI logic (validation, step management, form state) — not data operations
 
-**Known debt**: `create_game_controller.dart` and `join_game_detailed_controller.dart` have direct Firebase calls. Fix when next modified.
+**Known debt**: `create_game_controller.dart` has direct Firebase calls. Fix when next modified.
 
 ## Structure
 - Controllers are plain Dart classes (not ChangeNotifiers — use providers for reactive state)
 - Accept providers or services via constructor for testability
+- **Include AppState** if the controller needs to mutate persisted preferences (pass via `context.read<AppState>()` at instantiation)
 - Keep controllers focused — one controller per screen or flow, not shared across features
+
+```dart
+// Example: Controller that needs AppState
+class MyController {
+  MyController({
+    required GameProvider gameProvider,
+    required AppState appState,  // Pass from widget via context.read<AppState>()
+  }) : _gameProvider = gameProvider,
+       _appState = appState;
+
+  final GameProvider _gameProvider;
+  final AppState _appState;
+}
+```
 
 ## Logging
 - Use `AppLog.d()` with emoji prefixes, never `print()` or `debugPrint()`

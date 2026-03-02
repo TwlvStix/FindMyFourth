@@ -51,7 +51,7 @@ class QuickStatsRow extends StatelessWidget {
             decoration: BoxDecoration(
               color: AppColors.navy.withValues(alpha: 0.3),
               borderRadius: BorderRadius.circular(AppBorderRadius.lg),
-              border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
+              border: Border.all(color: AppColors.glassBorder),
             ),
             child: Row(
               children: [
@@ -76,14 +76,14 @@ class QuickStatsRow extends StatelessWidget {
                       Text(
                         dateTimeFormat("MMM d", game.date),
                         style: AppTypography.titleSmall.copyWith(
-                          color: Colors.white,
+                          color: AppColors.textPrimary,
                           fontWeight: FontWeight.w600,
                         ),
                       ),
                       Text(
                         dateTimeFormat("jm", game.date),
                         style: AppTypography.labelSmall.copyWith(
-                          color: Colors.white.withValues(alpha: 0.6),
+                          color: AppColors.textSecondary,
                         ),
                       ),
                     ],
@@ -151,7 +151,7 @@ class QuickStatsRow extends StatelessWidget {
                   Text(
                     '${game.joinedPlayers.length + game.guestPlayers.length}/${game.maxPlayers}',
                     style: AppTypography.labelSmall.copyWith(
-                      color: Colors.white.withValues(alpha: 0.6),
+                      color: AppColors.textSecondary,
                     ),
                   ),
                 ],

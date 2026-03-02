@@ -47,13 +47,16 @@ class GameJoinedDetailedController {
   GameJoinedDetailedController({
     required JoinRequestProvider joinRequestProvider,
     required GameProvider gameProvider,
+    required AppState appState,
     VibeRepository? vibeRepository,
   })  : _joinRequestProvider = joinRequestProvider,
         _gameProvider = gameProvider,
+        _appState = appState,
         _vibeRepository = vibeRepository ?? VibeRepository();
 
   final JoinRequestProvider _joinRequestProvider;
   final GameProvider _gameProvider;
+  final AppState _appState;
   final VibeRepository _vibeRepository;
 
   Future<PendingRequestsLoadResult> loadPendingRequests({
@@ -178,7 +181,7 @@ class GameJoinedDetailedController {
     required String userIdForCache,
   }) async {
     if (removeNow) {
-      AppState().setCancelledGameHandling(
+      _appState.setCancelledGameHandling(
         gameRecord.reference.path,
         'removeNow',
       );

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import '/core/utils/app_log.dart';
+import '/services/course_service.dart';
 import '/core/design_tokens/spacing.dart';
 import '/core/design_tokens/colors.dart';
 import '/core/design_tokens/typography.dart';
@@ -20,8 +20,13 @@ import 'package:collection/collection.dart';
 
 class FirmItUpBottomSheet extends StatefulWidget {
   final DocumentReference gameRef;
+  final CourseService _courseService;
 
-  const FirmItUpBottomSheet({super.key, required this.gameRef});
+  FirmItUpBottomSheet({
+    super.key,
+    required this.gameRef,
+    CourseService? courseService,
+  }) : _courseService = courseService ?? CourseService();
 
   @override
   State<FirmItUpBottomSheet> createState() => _FirmItUpBottomSheetState();
@@ -160,11 +165,8 @@ class _FirmItUpBottomSheetState extends State<FirmItUpBottomSheet> {
               // Course selector
               Text('Course', style: _labelStyle(context)),
               SizedBox(height: AppSpacing.xs),
-              StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
-                stream: FirebaseFirestore.instance
-                    .collection('course')
-                    .orderBy('name')
-                    .snapshots(),
+              StreamBuilder<List<Course>>(
+                stream: widget._courseService.streamAllCourses(),
                 builder: (context, snapshot) {
                   AppLog.d('🎯 Course StreamBuilder: hasData=${snapshot.hasData}, hasError=${snapshot.hasError}');
 
@@ -187,10 +189,8 @@ class _FirmItUpBottomSheetState extends State<FirmItUpBottomSheet> {
                     );
                   }
 
-                  AppLog.d('🎯 Courses loaded: ${snapshot.data!.docs.length} courses');
-                  final courses = snapshot.data!.docs
-                      .map((doc) => Course.fromDoc(doc))
-                      .toList();
+                  final courses = snapshot.data!;
+                  AppLog.d('🎯 Courses loaded: ${courses.length} courses');
 
                   return AppDropDown<String>(
                     controller: _courseController ??=

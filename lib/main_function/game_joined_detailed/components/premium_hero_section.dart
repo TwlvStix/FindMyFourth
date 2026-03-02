@@ -70,7 +70,7 @@ class PremiumHeroSection extends StatelessWidget {
                 Text(
                   isCancelled ? 'Cancelled' : 'Joined',
                   style: AppTypography.labelSmall.copyWith(
-                    color: Colors.white,
+                    color: AppColors.textPrimary,
                     fontWeight: FontWeight.w600,
                   ),
                 ),
@@ -107,7 +107,7 @@ class PremiumHeroSection extends StatelessWidget {
                     AppExpandableText(
                       text: game.coursePlay,
                       style: AppTypography.titleLarge.copyWith(
-                        color: Colors.white,
+                        color: AppColors.textPrimary,
                         fontWeight: FontWeight.w700,
                       ),
                       maxLines: 1,
@@ -115,7 +115,7 @@ class PremiumHeroSection extends StatelessWidget {
                     Text(
                       game.nameGame,
                       style: AppTypography.labelMedium.copyWith(
-                        color: Colors.white.withValues(alpha: 0.7),
+                        color: AppColors.textSecondary,
                       ),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,

@@ -14,7 +14,6 @@ import '/core/widgets/app_stream_builder.dart';
 import '/core/widgets/app_button_enhanced.dart';
 import '/core/widgets/fairway_background.dart';
 import '/utils/app_util.dart';
-import '/auth/firebase_auth/auth_util.dart';
 import '/main_function/games_list/components/game_list_filter_bottom_sheet.dart';
 import '/main_function/games_list/components/flexible_games_shelf.dart';
 import '/main_function/games_list/components/flexible_games_bottom_sheet.dart';
@@ -131,12 +130,50 @@ class _GamesListWidgetState extends State<GamesListWidget> {
 
   // Track last warmed profile UIDs to avoid redundant warming calls
   Set<String> _lastWarmedProfileUids = {};
+
+  // Pending warm UIDs for deferred processing (avoids side effects during build)
+  Set<String>? _pendingWarmUids;
+
+  // Gate to prevent scheduling multiple callbacks before prior one runs
+  bool _warmScheduled = false;
+
   final scaffoldKey = GlobalKey<ScaffoldState>();
 
   @override
   void initState() {
     super.initState();
     // ✅ PERFORMANCE: Removed empty post-frame updateState(this, no-op rebuild)
+  }
+
+  /// Schedules profile warming to run after the current build completes.
+  /// This avoids mutating state or triggering side effects during build().
+  void _scheduleProfileWarm(Set<String> ownerUids) {
+    if (ownerUids.isEmpty) return;
+    if (setEquals(ownerUids, _lastWarmedProfileUids)) return;
+
+    // Prevent scheduling if already scheduled for same UIDs
+    if (_warmScheduled && setEquals(ownerUids, _pendingWarmUids)) return;
+
+    _pendingWarmUids = ownerUids;
+
+    if (!_warmScheduled) {
+      _warmScheduled = true;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _processPendingProfileWarm();
+      });
+    }
+  }
+
+  void _processPendingProfileWarm() {
+    _warmScheduled = false; // Reset flag
+    if (!mounted) return;
+
+    final uids = _pendingWarmUids;
+    if (uids == null || uids.isEmpty) return;
+
+    _pendingWarmUids = null;
+    _lastWarmedProfileUids = uids;
+    context.read<ProfileProvider>().warmProfiles(uids);
   }
 
   @override
@@ -327,12 +364,12 @@ class _GamesListWidgetState extends State<GamesListWidget> {
     updateState(this, () {
       _cancelledGameHandlingByGame[game.reference] = selection;
     });
-    AppState().setCancelledGameHandling(
+    context.read<AppState>().setCancelledGameHandling(
       game.reference.path,
       cancelledHandlingStorageMap[selection]!,
     );
     if (selection == CancelledGameHandling.removeAfter7Days) {
-      AppState().setCancelledGameHideAt(
+      context.read<AppState>().setCancelledGameHideAt(
         game.reference.path,
         getCurrentTimestamp.add(Duration(days: 7)),
       );
@@ -381,9 +418,9 @@ class _GamesListWidgetState extends State<GamesListWidget> {
 
   @override
   Widget build(BuildContext context) {
-    final currentUserReference = currentUserUid.isEmpty
-        ? null
-        : UsersRecord.collection.doc(currentUserUid);
+    final currentUserReference = context.select<UserProvider, DocumentReference?>(
+      (p) => p.currentUser?.reference,
+    );
     return GestureDetector(
       onTap: () {
         FocusScope.of(context).unfocus();
@@ -571,18 +608,18 @@ class _GamesListWidgetState extends State<GamesListWidget> {
                       // Extract all unique owner UIDs from locked games and pre-fetch
                       // them in batches (chunks of 10) to avoid N+1 listener pattern.
                       // This replaces per-row StreamBuilder with cached reads.
+                      // Uses deferred callback to avoid side effects during build.
                       final ownerUids = lockedGames
                           .map((game) => game.userRef?.id)
                           .whereType<String>()
                           .toSet();
 
-                      // Only warm if the UID set has changed (avoid redundant calls)
-                      if (ownerUids.isNotEmpty &&
-                          !setEquals(ownerUids, _lastWarmedProfileUids)) {
-                        _lastWarmedProfileUids = ownerUids;
-                        // Fire-and-forget batch prefetch (non-blocking)
-                        context.read<ProfileProvider>().warmProfiles(ownerUids);
-                      }
+                      _scheduleProfileWarm(ownerUids);
+
+                      // Watch AppState for friends-only visibility toggle
+                      final hideFriendsOnly = context.select<AppState, bool>(
+                        (s) => s.hideFriendsOnlyGames,
+                      );
 
                       return RefreshIndicator(
                         onRefresh: () async {
@@ -671,12 +708,11 @@ class _GamesListWidgetState extends State<GamesListWidget> {
                               onCancelledGameTap: _showCancelledGameOptions,
                               onFriendsOnlyTap: _showFriendsOnlyDialog,
                               onSendFriendRequest: _sendFriendRequest,
+                              hideFriendsOnlyGames: hideFriendsOnly,
                               onToggleVisibility: () {
-                                AppState().hideFriendsOnlyGames =
-                                    !AppState().hideFriendsOnlyGames;
-                                if (mounted) {
-                                  updateState(this, () {});
-                                }
+                                final appState = context.read<AppState>();
+                                appState.hideFriendsOnlyGames =
+                                    !appState.hideFriendsOnlyGames;
                               },
                             ).build(context),
                           ],
