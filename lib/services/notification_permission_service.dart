@@ -158,9 +158,9 @@ class NotificationPermissionService {
       _cachedStatus = status;
       AppLog.d('[NotificationService] Permission status refreshed: $status');
       return status;
-    } catch (e) {
+    } on FirebaseException catch (e) {
       AppLog.d(
-          '[NotificationService] Error getting notification permission status: $e');
+          '❌ [NotificationService] Error getting notification permission status: ${e.code} - ${e.message}');
       _cachedStatus = NotificationPermissionStatus.error;
       return _cachedStatus!;
     }
@@ -238,17 +238,17 @@ class NotificationPermissionService {
           await _upsertDeviceToken(user.uid, token);
           AppLog.d('[NotificationService] Initial FCM token saved');
         }
-      } catch (e) {
+      } on FirebaseException catch (e) {
         // Token fetch can fail transiently; permissions are still granted.
-        AppLog.d('[NotificationService] Failed to get initial token: $e');
+        AppLog.d('❌ [NotificationService] Failed to get initial token: ${e.code} - ${e.message}');
       }
 
       // Ensure push_enabled is true and alertSub exists so backend can notify this user
       await _markPermissionGranted(user.uid);
 
       return NotificationPermissionStatus.granted;
-    } catch (e) {
-      AppLog.d('[NotificationService] Error requesting permission: $e');
+    } on FirebaseException catch (e) {
+      AppLog.d('❌ [NotificationService] Error requesting permission: ${e.code} - ${e.message}');
       _cachedStatus = NotificationPermissionStatus.error;
       return NotificationPermissionStatus.error;
     }

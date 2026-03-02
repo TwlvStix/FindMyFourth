@@ -9,7 +9,6 @@ import '/core/utils/app_log.dart';
 import '/models/game.dart';
 import '/models/join_request.dart';
 import '/models/vibe_profile.dart';
-import '/providers/chat_provider.dart';
 import '/providers/game_provider.dart';
 import '/providers/join_request_provider.dart';
 import '/services/vibe_repository.dart';
@@ -48,16 +47,13 @@ class GameJoinedDetailedController {
   GameJoinedDetailedController({
     required JoinRequestProvider joinRequestProvider,
     required GameProvider gameProvider,
-    required ChatProvider chatProvider,
     VibeRepository? vibeRepository,
   })  : _joinRequestProvider = joinRequestProvider,
         _gameProvider = gameProvider,
-        _chatProvider = chatProvider,
         _vibeRepository = vibeRepository ?? VibeRepository();
 
   final JoinRequestProvider _joinRequestProvider;
   final GameProvider _gameProvider;
-  final ChatProvider _chatProvider;
   final VibeRepository _vibeRepository;
 
   Future<PendingRequestsLoadResult> loadPendingRequests({

@@ -117,8 +117,8 @@ class FriendService {
       await currentUserRef.update({
         'friend_requests': FieldValue.arrayRemove([requesterRef, requesterRef.id]),
       });
-    } catch (e) {
-      AppLog.d('FriendService: Failed to remove from friend_requests: $e');
+    } on FirebaseException catch (e) {
+      AppLog.d('❌ FriendService: Failed to remove from friend_requests: ${e.code} - ${e.message}');
     }
 
     // Add to friends lists (both directions)

@@ -36,8 +36,8 @@ class TrustRepository {
       if (!doc.exists) return null;
       final data = mapFromFirestore(doc.data() ?? const <String, dynamic>{});
       return TrustProfile.fromMap(data);
-    } catch (e) {
-      AppLog.d('TrustRepository.getTrustProfile error for $userId: $e');
+    } on FirebaseException catch (e) {
+      AppLog.d('❌ TrustRepository.getTrustProfile error for $userId: ${e.code} - ${e.message}');
       return null;
     }
   }
@@ -75,9 +75,9 @@ class TrustRepository {
             result[userId] = null;
           }
         }
-      } catch (e) {
+      } on FirebaseException catch (e) {
         AppLog.d(
-            'TrustRepository.batchGetTrustProfiles error for chunk ${i ~/ 10 + 1}: $e');
+            '❌ TrustRepository.batchGetTrustProfiles error for chunk ${i ~/ 10 + 1}: ${e.code} - ${e.message}');
         // Add null entries for failed batch
         for (final userId in batch) {
           result[userId] = null;
@@ -99,6 +99,8 @@ class TrustRepository {
       final result = await makeCloudCall('getMyStanding', {'userId': uid});
       if (result.isEmpty) return null;
       return PlayerStanding.fromMap(result);
+      // Non-critical: makeCloudCall handles Firebase errors internally; this catches
+      // response parsing failures. Fire-and-forget with safe fallback per services.md:28.
     } catch (e) {
       AppLog.d('TrustRepository.getPlayerStanding error: $e');
       return null;
@@ -116,6 +118,8 @@ class TrustRepository {
         'attendance': attendance,
       });
       return result['ok'] == true || result.isNotEmpty;
+      // Non-critical: makeCloudCall handles Firebase errors internally; this catches
+      // response parsing failures. Fire-and-forget with safe fallback per services.md:28.
     } catch (e) {
       AppLog.d('TrustRepository.submitHostCheckIn error: $e');
       return false;
@@ -134,6 +138,8 @@ class TrustRepository {
         'ratings': ratings,
       });
       return result['ok'] == true || result.isNotEmpty;
+      // Non-critical: makeCloudCall handles Firebase errors internally; this catches
+      // response parsing failures. Fire-and-forget with safe fallback per services.md:28.
     } catch (e) {
       AppLog.d('TrustRepository.submitPeerRatings error: $e');
       return false;
@@ -147,6 +153,8 @@ class TrustRepository {
         'gameId': gameId,
       });
       return result;
+      // Non-critical: makeCloudCall handles Firebase errors internally; this catches
+      // response parsing failures. Fire-and-forget with safe fallback per services.md:28.
     } catch (e) {
       AppLog.d('TrustRepository.getHostCheckInData error: $e');
       return {};
@@ -160,6 +168,8 @@ class TrustRepository {
         'gameId': gameId,
       });
       return result;
+      // Non-critical: makeCloudCall handles Firebase errors internally; this catches
+      // response parsing failures. Fire-and-forget with safe fallback per services.md:28.
     } catch (e) {
       AppLog.d('TrustRepository.getPeerRatingData error: $e');
       return {};

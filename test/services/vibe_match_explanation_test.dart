@@ -214,7 +214,8 @@ void main() {
       },
     );
 
-    final match = VibeMatcher.score(mine, theirs);
+    // Enable interaction layer to get activity-based reasons
+    final match = VibeMatcher.score(mine, theirs, enableInteractionLayer: true);
     final explanation = buildMatchExplanation(
       matchResult: match,
       a: mine,

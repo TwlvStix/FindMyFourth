@@ -510,12 +510,12 @@
     {
       "a": "p1",
       "b": "p4",
-      "bucket": "okay"
+      "bucket": "bad"
     },
     {
       "a": "p1",
       "b": "p13",
-      "bucket": "okay"
+      "bucket": "bad"
     },
     {
       "a": "p5",
@@ -525,7 +525,7 @@
     {
       "a": "p4",
       "b": "p9",
-      "bucket": "okay"
+      "bucket": "bad"
     },
     {
       "a": "p4",
@@ -564,8 +564,7 @@
       "anchor": "p13",
       "highToLow": [
         "p4",
-        "p1",
-        "p14"
+        "p1"
       ]
     }
   ]

@@ -259,9 +259,9 @@ class VibeRepository {
             result[userId] = VibeProfile.defaults();
           }
         }
-      } catch (e) {
+      } on FirebaseException catch (e) {
         AppLog.d(
-            'VibeRepository.batchGetVibeProfiles error for chunk ${i ~/ 10 + 1}: $e');
+            '❌ VibeRepository.batchGetVibeProfiles error for chunk ${i ~/ 10 + 1}: ${e.code} - ${e.message}');
         // Return defaults for failed batch
         for (final userId in batch) {
           result[userId] = VibeProfile.defaults();

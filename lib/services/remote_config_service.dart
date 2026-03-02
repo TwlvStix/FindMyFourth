@@ -1,3 +1,4 @@
+import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_remote_config/firebase_remote_config.dart';
 import 'package:flutter/foundation.dart';
 
@@ -60,9 +61,9 @@ class RemoteConfigService {
         '📖 RemoteConfigService: Initialized (activated: $activated, '
         'vibe_floor=${_remoteConfig.getInt('vibe_floor_default')})',
       );
-    } catch (e) {
+    } on FirebaseException catch (e) {
       AppLog.d('❌ RemoteConfigService: Initialization failed, using defaults. '
-          'Error: $e');
+          '${e.code} - ${e.message}');
     }
 
     _initialized = true;

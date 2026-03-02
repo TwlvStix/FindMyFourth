@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:provider/provider.dart';
 
 import '/chat_group/chat/chat_widget.dart';
+import '/providers/vibe_provider.dart';
 import '/chat_group/game_chat_details/game_chat_details_widget.dart';
 import '/friends/tab_friends/tab_friends_widget.dart';
 import '/main_function/community/community_widget.dart';
@@ -206,7 +208,11 @@ List<GoRoute> buildRoutes(AppStateNotifier appStateNotifier) => [
           context,
           state,
           appStateNotifier,
-          VibeOnboardingWidget(),
+          // Route-scoped provider for vibe onboarding state
+          ChangeNotifierProvider(
+            create: (_) => VibeProvider(),
+            child: const VibeOnboardingWidget(),
+          ),
         ),
       ),
       GoRoute(

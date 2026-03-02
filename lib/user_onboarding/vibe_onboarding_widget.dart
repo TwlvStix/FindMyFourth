@@ -1,21 +1,22 @@
-import '/core/design_tokens/border_radius.dart';
-import '/core/utils/state_update.dart';
+import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+
 import '/core/design_tokens/colors.dart';
 import '/core/design_tokens/spacing.dart';
-import '/core/design_tokens/typography.dart';
-import '/core/design_tokens/icon_size.dart';
 import '/core/design_tokens/app_phosphor_icons.dart';
-import '/core/design_patterns/premium_ui_patterns.dart';
 import '/core/widgets/app_button_enhanced.dart';
-import '/core/widgets/app_icon.dart';
 import '/core/widgets/fairway_background.dart';
 import '/models/vibe_profile.dart';
-import '/profile/edit_vibes/vibe_category_slider.dart';
-import '/services/vibe_repository.dart';
+import '/providers/vibe_provider.dart';
+import '/user_onboarding/components/vibe_onboarding_header.dart';
+import '/user_onboarding/components/vibe_onboarding_step.dart';
 import '/utils/app_util.dart';
 import '/utils/vibe_archetypes.dart';
-import 'package:flutter/material.dart';
 
+/// Vibe onboarding flow for new users to set their play style preferences.
+///
+/// Uses [VibeProvider] for state management (route-scoped, provided by router).
+/// Delegates all business logic to the provider, keeping this widget thin.
 class VibeOnboardingWidget extends StatefulWidget {
   const VibeOnboardingWidget({super.key});
 
@@ -28,10 +29,9 @@ class VibeOnboardingWidget extends StatefulWidget {
 
 class _VibeOnboardingWidgetState extends State<VibeOnboardingWidget> {
   final PageController _pageController = PageController();
-  final VibeRepository _repository = VibeRepository();
-  final scaffoldKey = GlobalKey<ScaffoldState>();
+  final _scaffoldKey = GlobalKey<ScaffoldState>();
 
-  final List<VibeCategory> _categories = const [
+  static const List<VibeCategory> _categories = [
     VibeCategory.chat,
     VibeCategory.music,
     VibeCategory.drinking,
@@ -40,32 +40,15 @@ class _VibeOnboardingWidgetState extends State<VibeOnboardingWidget> {
     VibeCategory.competitive,
   ];
 
-  /// Order for the priority selection grid — heaviest weights first
-  /// so users see the most impactful categories at the top.
-  final List<VibeCategory> _priorityGridOrder = const [
-    VibeCategory.pace,
-    VibeCategory.competitive,
-    VibeCategory.drinking,
-    VibeCategory.chat,
-    VibeCategory.money,
-    VibeCategory.music,
-  ];
-
-  VibeProfile _profile = VibeProfile.defaults();
-  Map<VibeCategory, VibeImportance> _importance = {
-    for (final category in VibeCategory.values) category: VibeImportance.normal,
-  };
   int _currentIndex = 0;
-  bool _isLoading = true;
-  bool _isCompleting = false;
-
-  int get _topCount =>
-      _importance.values.where((value) => value == VibeImportance.top).length;
 
   @override
   void initState() {
     super.initState();
-    _loadProfile();
+    // Load profile after first frame to ensure provider is available
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      context.read<VibeProvider>().loadProfile();
+    });
   }
 
   @override
@@ -74,134 +57,7 @@ class _VibeOnboardingWidgetState extends State<VibeOnboardingWidget> {
     super.dispose();
   }
 
-  Future<void> _loadProfile() async {
-    updateState(this, () {
-      _isLoading = true;
-    });
-    try {
-      final profile = await _repository.getMyVibesCached(forceRefresh: true);
-      if (!mounted) {
-        return;
-      }
-      updateState(this, () {
-        _profile = profile;
-        _importance =
-            Map<VibeCategory, VibeImportance>.from(profile.importance);
-      });
-    } catch (_) {
-      if (!mounted) {
-        return;
-      }
-    } finally {
-      if (mounted) {
-        updateState(this, () {
-          _isLoading = false;
-        });
-      }
-    }
-  }
-
-  void _updateLocalPreference(
-    VibeCategory category,
-    VibePreference preference,
-  ) {
-    final updatedPrefs = Map<VibeCategory, VibePreference>.from(_profile.prefs);
-    updatedPrefs[category] = preference;
-    updateState(this, () {
-      _profile = _profile.copyWith(prefs: updatedPrefs);
-    });
-  }
-
-  void _handleValueChanged(
-    VibeCategory category,
-    int value,
-  ) {
-    final current = _profile.preferenceFor(category);
-    _updateLocalPreference(
-      category,
-      current.copyWith(value: value, isDefault: false),
-    );
-  }
-
-  Future<void> _commitValueChanged(
-    VibeCategory category,
-    int value,
-  ) async {
-    try {
-      await _repository.updateCategory(category, value);
-    } catch (_) {
-      if (!mounted) {
-        return;
-      }
-      showSnackbar(context, 'Unable to update vibe. Please try again.');
-    }
-  }
-
-  Future<void> _handleDealbreakerChanged(
-    VibeCategory category,
-    bool value,
-  ) async {
-    final current = _profile.preferenceFor(category);
-    _updateLocalPreference(
-      category,
-      current.copyWith(dealbreaker: value, isDefault: false),
-    );
-    try {
-      await _repository.toggleDealbreaker(category, value);
-    } catch (_) {
-      if (!mounted) {
-        return;
-      }
-      showSnackbar(context, 'Unable to update dealbreaker. Please try again.');
-    }
-  }
-
-  /// Auto-infer top 2 priorities from dealbreakers first, then slider positions.
-  /// Dealbreaker categories always take priority over distance-from-center.
-  void _autoInferImportance() {
-    final center = (VibePreference.minValue + VibePreference.maxValue) / 2;
-    final distances = <VibeCategory, double>{};
-    final dealbreakers = <VibeCategory>[];
-
-    for (final category in _categories) {
-      final pref = _profile.preferenceFor(category);
-      distances[category] = (pref.value - center).abs();
-      if (pref.dealbreaker) {
-        dealbreakers.add(category);
-      }
-    }
-
-    // Sort dealbreakers by their position in the grid order
-    dealbreakers.sort((a, b) =>
-        _priorityGridOrder.indexOf(a).compareTo(_priorityGridOrder.indexOf(b)));
-
-    // Sort non-dealbreaker categories by distance descending
-    final nonDealbreakers = _categories
-        .where((c) => !dealbreakers.contains(c))
-        .toList()
-      ..sort((a, b) => (distances[b] ?? 0).compareTo(distances[a] ?? 0));
-
-    // Build priority list: dealbreakers first (by grid order), then by distance
-    final priorityOrder = [...dealbreakers, ...nonDealbreakers];
-
-    final inferred = Map<VibeCategory, VibeImportance>.from(_importance);
-    for (final category in _categories) {
-      inferred[category] = VibeImportance.normal;
-    }
-
-    // Assign top 2
-    for (var i = 0; i < 2 && i < priorityOrder.length; i++) {
-      inferred[priorityOrder[i]] = VibeImportance.top;
-    }
-
-    updateState(this, () {
-      _importance = inferred;
-    });
-  }
-
-
   void _nextStep() {
-    // Last category is at index _categories.length - 1
     if (_currentIndex < _categories.length - 1) {
       _pageController.nextPage(
         duration: const Duration(milliseconds: 300),
@@ -222,40 +78,23 @@ class _VibeOnboardingWidgetState extends State<VibeOnboardingWidget> {
   }
 
   Future<void> _completeOnboarding() async {
-    if (_isCompleting) {
+    final provider = context.read<VibeProvider>();
+    final error = await provider.completeOnboarding();
+
+    if (!mounted) return;
+
+    if (error != null) {
+      showSnackbar(context, error);
       return;
     }
 
-    // If user hasn't picked 2 top priorities, auto-infer
-    if (_topCount < 2) {
-      _autoInferImportance();
-    }
-
-    updateState(this, () {
-      _isCompleting = true;
-    });
-    try {
-      await _repository.updateImportance(_importance);
-      await _repository.confirmVibes(profile: _profile);
-      _goToNext();
-    } catch (_) {
-      if (!mounted) {
-        return;
-      }
-      showSnackbar(context, 'Unable to finish setup. Please try again.');
-    } finally {
-      if (mounted) {
-        updateState(this, () {
-          _isCompleting = false;
-        });
-      }
-    }
+    _navigateToArchetypeReveal();
   }
 
-  void _goToNext() {
-    // Navigate to the archetype reveal page
+  void _navigateToArchetypeReveal() {
+    final provider = context.read<VibeProvider>();
     final nextRoute = GoRouterState.of(context).uri.queryParameters['next'];
-    final archetypeMatch = VibeArchetypes.classifyProfile(_profile);
+    final archetypeMatch = VibeArchetypes.classifyProfile(provider.profile);
 
     context.pushVibeArchetypeReveal(
       match: archetypeMatch,
@@ -263,11 +102,39 @@ class _VibeOnboardingWidgetState extends State<VibeOnboardingWidget> {
     );
   }
 
+  void _handleValueChanged(VibeCategory category, int value) {
+    context.read<VibeProvider>().updateLocalPreference(category, value);
+  }
+
+  Future<void> _handleValueCommitted(VibeCategory category, int value) async {
+    final provider = context.read<VibeProvider>();
+    final error = await provider.commitValueChanged(category, value);
+
+    if (!mounted) return;
+    if (error != null) {
+      showSnackbar(context, error);
+    }
+  }
+
+  Future<void> _handleDealbreakerChanged(
+    VibeCategory category,
+    bool value,
+  ) async {
+    final provider = context.read<VibeProvider>();
+    final error = await provider.toggleDealbreaker(category, value);
+
+    if (!mounted) return;
+    if (error != null) {
+      showSnackbar(context, error);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
+    final provider = context.watch<VibeProvider>();
+
     return Scaffold(
-      key: scaffoldKey,
+      key: _scaffoldKey,
       backgroundColor: AppColors.navyDark,
       body: FairwayBackgroundDark(
         showOrganic: true,
@@ -276,58 +143,15 @@ class _VibeOnboardingWidgetState extends State<VibeOnboardingWidget> {
           top: true,
           child: Column(
             children: [
-              // Header with progress and skip
-              Padding(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: AppSpacing.lg,
-                  vertical: AppSpacing.md,
-                ),
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'Tell us how you like to play.',
-                            style: AppTypography.headlineSmall.copyWith(
-                              color: AppColorsDark.textPrimary,
-                            ),
-                          ),
-                          const SizedBox(height: AppSpacing.xxs),
-                          Text(
-                            'Step ${_currentIndex + 1} of ${_categories.length}',
-                            style: AppTypography.bodySmall.copyWith(
-                              color: AppColorsDark.textMuted,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
+              // Header
+              VibeOnboardingHeader(
+                currentIndex: _currentIndex,
+                totalSteps: _categories.length,
               ),
-
-              // Progress bar
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(AppBorderRadius.sm),
-                  child: LinearProgressIndicator(
-                    value: (_currentIndex + 1) / _categories.length,
-                    backgroundColor: AppColorsDark.navyLight,
-                    valueColor:
-                        AlwaysStoppedAnimation<Color>(AppColorsDark.green),
-                    minHeight: 6,
-                  ),
-                ),
-              ),
-
-              const SizedBox(height: AppSpacing.lg),
 
               // Page content
               Expanded(
-                child: _isLoading
+                child: provider.isLoading
                     ? Center(
                         child: CircularProgressIndicator(
                           color: AppColorsDark.green,
@@ -337,113 +161,93 @@ class _VibeOnboardingWidgetState extends State<VibeOnboardingWidget> {
                         controller: _pageController,
                         itemCount: _categories.length,
                         onPageChanged: (index) {
-                          updateState(this, () {
+                          setState(() {
                             _currentIndex = index;
                           });
                         },
                         itemBuilder: (context, index) {
                           final category = _categories[index];
-                          return SingleChildScrollView(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: AppSpacing.lg,
-                            ),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                // Info card
-                                GlassCard(
-                                  padding: const EdgeInsets.all(AppSpacing.sm),
-                                  opacity: 0.2,
-                                  child: Row(
-                                    children: [
-                                      AppIcon(
-                                        icon: AppPhosphorIcons.lightbulb,
-                                        size: AppIconSize.md,
-                                        color: AppColorsDark.green,
-                                      ),
-                                      const SizedBox(width: AppSpacing.sm),
-                                      Expanded(
-                                        child: Text(
-                                          'We\'ll match you with golfers on the same wavelength.',
-                                          style:
-                                              AppTypography.bodySmall.copyWith(
-                                            color: AppColorsDark.textSecondary,
-                                          ),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                                const SizedBox(height: AppSpacing.lg),
-
-                                // Category slider
-                                VibeCategorySlider(
-                                  category: category,
-                                  pref: _profile.preferenceFor(category),
-                                  onValueChanged: (value) =>
-                                      _handleValueChanged(category, value),
-                                  onValueCommitted: (value) =>
-                                      _commitValueChanged(category, value),
-                                  onDealbreakerChanged: (value) =>
-                                      _handleDealbreakerChanged(
-                                          category, value),
-                                ),
-                                const SizedBox(height: AppSpacing.lg),
-
-                                // Help text
-                                Text(
-                                  'You can adjust this anytime in your profile settings.',
-                                  style: AppTypography.bodySmall.copyWith(
-                                    color: AppColorsDark.textMuted,
-                                  ),
-                                ),
-                                const SizedBox(height: AppSpacing.xxl),
-                              ],
-                            ),
+                          return VibeOnboardingStep(
+                            category: category,
+                            pref: provider.profile.preferenceFor(category),
+                            onValueChanged: (value) =>
+                                _handleValueChanged(category, value),
+                            onValueCommitted: (value) =>
+                                _handleValueCommitted(category, value),
+                            onDealbreakerChanged: (value) =>
+                                _handleDealbreakerChanged(category, value),
                           );
                         },
                       ),
               ),
 
               // Navigation buttons
-              Padding(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: AppSpacing.lg,
-                  vertical: AppSpacing.lg,
-                ),
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: AppButtonEnhanced(
-                        text: 'Back',
-                        variant: AppButtonVariant.secondary,
-                        size: AppButtonSize.large,
-                        enabled: _currentIndex > 0 && !_isCompleting,
-                        onPressed: _previousStep,
-                      ),
-                    ),
-                    const SizedBox(width: AppSpacing.md),
-                    Expanded(
-                      child: AppButtonEnhanced(
-                        text: _currentIndex == _categories.length - 1
-                            ? 'Finish'
-                            : 'Next',
-                        leadingIcon: _currentIndex == _categories.length - 1
-                            ? AppPhosphorIcons.success
-                            : AppPhosphorIcons.arrowRight,
-                        variant: AppButtonVariant.primary,
-                        size: AppButtonSize.large,
-                        isLoading: _isCompleting,
-                        enabled: !_isCompleting,
-                        onPressed: _nextStep,
-                      ),
-                    ),
-                  ],
-                ),
+              _NavigationButtons(
+                currentIndex: _currentIndex,
+                totalSteps: _categories.length,
+                isCompleting: provider.isCompleting,
+                onPrevious: _previousStep,
+                onNext: _nextStep,
               ),
             ],
           ),
         ),
+      ),
+    );
+  }
+}
+
+/// Navigation buttons for the vibe onboarding flow.
+class _NavigationButtons extends StatelessWidget {
+  const _NavigationButtons({
+    required this.currentIndex,
+    required this.totalSteps,
+    required this.isCompleting,
+    required this.onPrevious,
+    required this.onNext,
+  });
+
+  final int currentIndex;
+  final int totalSteps;
+  final bool isCompleting;
+  final VoidCallback onPrevious;
+  final VoidCallback onNext;
+
+  bool get _isLastStep => currentIndex == totalSteps - 1;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppSpacing.lg,
+        vertical: AppSpacing.lg,
+      ),
+      child: Row(
+        children: [
+          Expanded(
+            child: AppButtonEnhanced(
+              text: 'Back',
+              variant: AppButtonVariant.secondary,
+              size: AppButtonSize.large,
+              enabled: currentIndex > 0 && !isCompleting,
+              onPressed: onPrevious,
+            ),
+          ),
+          const SizedBox(width: AppSpacing.md),
+          Expanded(
+            child: AppButtonEnhanced(
+              text: _isLastStep ? 'Finish' : 'Next',
+              leadingIcon: _isLastStep
+                  ? AppPhosphorIcons.success
+                  : AppPhosphorIcons.arrowRight,
+              variant: AppButtonVariant.primary,
+              size: AppButtonSize.large,
+              isLoading: isCompleting,
+              enabled: !isCompleting,
+              onPressed: onNext,
+            ),
+          ),
+        ],
       ),
     );
   }

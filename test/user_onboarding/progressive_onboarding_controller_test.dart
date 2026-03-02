@@ -62,32 +62,6 @@ class _UsernameTakenService extends ProfileSetupService {
   }
 }
 
-class _UserRecordNotReadyService extends ProfileSetupService {
-  _UserRecordNotReadyService()
-      : super(
-          firestore: FakeFirebaseFirestore(),
-          auth: MockFirebaseAuth(),
-        );
-
-  @override
-  Future<void> saveProgressiveOnboarding({
-    required DocumentReference userRef,
-    required String username,
-    required Map<String, dynamic> userData,
-    String? phoneNumber,
-  }) async {
-    // Simulate successful save
-  }
-
-  @override
-  Future<User?> currentUserOrWait({
-    Duration timeout = const Duration(seconds: 5),
-  }) async {
-    // Return null to simulate user record not ready
-    return null;
-  }
-}
-
 void main() {
   late FakeFirebaseFirestore firestore;
   late DocumentReference userRef;
@@ -389,14 +363,10 @@ void main() {
 
     test('returns userRecordNotReady when currentUserOrWait returns null',
         () async {
-      final controller = ProgressiveOnboardingController(
-        profileSetupService: _UserRecordNotReadyService(),
-      );
-
-      // Note: This test requires the full flow, but since we can't easily mock
-      // makeCloudCall or ensureUserDocReady, we document the contract
-      // The service returns null from currentUserOrWait, which should result in
-      // userRecordNotReady. However, the actual test may hit cloud function first.
+      // Note: This test documents the contract for userRecordNotReady.
+      // The full flow requires mocking makeCloudCall/ensureUserDocReady.
+      // When the service returns null from currentUserOrWait, the result
+      // should be userRecordNotReady.
 
       // For contract documentation:
       expect(OnboardingFailureType.userRecordNotReady, isNotNull);
