@@ -58,14 +58,18 @@ class ChatInfoBanner extends StatelessWidget {
               children: [
                 Text(
                   displayText,
-                  style: AppTypography.bodyMedium,
+                  style: AppTypography.bodyMedium.copyWith(
+                    color: AppColors.textPrimary,
+                  ),
                 ),
                 if (isArchived)
                   Padding(
                     padding: EdgeInsets.only(top: AppSpacing.xs),
                     child: Text(
                       'Messages are disabled.',
-                      style: AppTypography.labelMedium,
+                      style: AppTypography.labelMedium.copyWith(
+                        color: AppColors.textMuted,
+                      ),
                     ),
                   ),
               ],

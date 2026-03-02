@@ -84,6 +84,115 @@ class ChatDetailsSideEffects {
     }
   }
 
+  /// Show confirmation dialog for leaving a chat.
+  ///
+  /// Checks if the user is the last member and shows appropriate warning.
+  /// If confirmed, leaves the chat (or deletes it if last member).
+  static Future<void> showLeaveConfirmation({
+    required BuildContext context,
+    required String chatId,
+    required String uid,
+    required ChatProvider chatProvider,
+  }) async {
+    // Check if user is the last member
+    final isLast = await chatProvider.isLastMember(chatId: chatId, uid: uid);
+
+    if (!context.mounted) return;
+
+    final bool confirmed;
+    if (isLast) {
+      // Show special warning for last member
+      confirmed = await showPremiumDialog(
+        context: context,
+        variant: PremiumDialogVariant.destructive,
+        icon: PhosphorIconsRegular.signOut,
+        title: "You're the last person in this chat",
+        body:
+            'Leaving will permanently delete the chat and all messages. This cannot be undone.',
+        actionLabel: 'Leave & Delete',
+      ) ?? false;
+    } else {
+      // Standard leave confirmation
+      confirmed = await showPremiumDialog(
+        context: context,
+        variant: PremiumDialogVariant.destructive,
+        icon: PhosphorIconsRegular.signOut,
+        title: 'Leave Chat',
+        body:
+            'You will no longer receive messages from this chat. You can rejoin later if invited.',
+        actionLabel: 'Leave',
+      ) ?? false;
+    }
+
+    if (confirmed) {
+      if (!context.mounted) return;
+      await _leaveChat(
+        context: context,
+        chatId: chatId,
+        uid: uid,
+        chatProvider: chatProvider,
+        wasLastMember: isLast,
+      );
+    }
+  }
+
+  static Future<void> _leaveChat({
+    required BuildContext context,
+    required String chatId,
+    required String uid,
+    required ChatProvider chatProvider,
+    required bool wasLastMember,
+  }) async {
+    AppLog.d('🔵 UI: Leave chat button pressed');
+    AppLog.d('🔵 UI: chatId=$chatId, userId=$uid, wasLastMember=$wasLastMember');
+
+    if (!context.mounted) return;
+    showAppDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) {
+        return Center(
+          child: CircularProgressIndicator(
+            color: AppColors.navyDark,
+          ),
+        );
+      },
+    );
+
+    try {
+      await chatProvider.leaveChat(chatId: chatId, uid: uid);
+      AppLog.d('✅ UI: Left chat successfully');
+
+      if (!context.mounted) return;
+      Navigator.of(context).pop(); // Dismiss loading
+      if (!context.mounted) return;
+      Navigator.of(context).pop(); // Go back from chat
+
+      if (!context.mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(wasLastMember ? 'Chat deleted' : 'Left chat'),
+          backgroundColor: AppColors.navyDark,
+        ),
+      );
+    } catch (error, stackTrace) {
+      AppLog.d('❌ UI: Failed to leave chat: $error');
+      chatProvider.logError('leaveChat failed', error, stackTrace);
+
+      if (!context.mounted) return;
+      Navigator.of(context).pop(); // Dismiss loading
+      if (!context.mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            'Failed to leave chat: ${error.toString().length > 50 ? error.toString().substring(0, 50) : error.toString()}',
+          ),
+          backgroundColor: AppColors.error,
+        ),
+      );
+    }
+  }
+
   static Future<void> _deleteChat({
     required BuildContext context,
     required String chatId,

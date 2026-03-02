@@ -1,66 +1,36 @@
 import 'package:flutter/material.dart';
 
-import '/backend/backend.dart';
 import '/core/design_tokens/app_phosphor_icons.dart';
 import '/core/widgets/app_popup_menu.dart';
-import '/models/chat.dart';
 
+/// Actions menu for chat details screen.
+///
+/// Always shows "Leave Chat" for all members. When the last member leaves,
+/// the chat is automatically deleted by the leave logic.
 class ChatDetailsActions extends StatelessWidget {
   const ChatDetailsActions({
     super.key,
-    required this.chat,
-    required this.currentUserId,
-    required this.gameOwnerFuture,
-    required this.onDeleteSelected,
+    required this.onLeaveSelected,
   });
 
-  final Chat chat;
-  final String? currentUserId;
-  final Future<GamesRecord?>? gameOwnerFuture;
-  final VoidCallback onDeleteSelected;
+  final VoidCallback onLeaveSelected;
 
   @override
   Widget build(BuildContext context) {
-    if (chat.type != 'game') {
-      return _deleteMenu();
-    }
-
-    if (currentUserId == null || gameOwnerFuture == null) {
-      return const SizedBox.shrink();
-    }
-
-    return FutureBuilder<GamesRecord?>(
-      future: gameOwnerFuture,
-      builder: (context, snapshot) {
-        final game = snapshot.data;
-        final ownerUid = game?.uid;
-        final ownerRefId = game?.userRef?.id;
-        final isOwner =
-            ownerUid == currentUserId || ownerRefId == currentUserId;
-
-        if (!isOwner) {
-          return const SizedBox.shrink();
-        }
-        return _deleteMenu();
-      },
-    );
-  }
-
-  Widget _deleteMenu() {
     return AppPopupMenu(
       icon: AppPhosphorIcons.more,
       tooltip: 'More options',
-      items: const [
+      items: [
         AppPopupMenuItem(
-          label: 'Delete Chat',
-          value: 'delete',
-          icon: AppPhosphorIcons.trash,
+          label: 'Leave Chat',
+          value: 'leave',
+          icon: AppPhosphorIcons.logOut,
           isDestructive: true,
         ),
       ],
       onSelected: (value) {
-        if (value == 'delete') {
-          onDeleteSelected();
+        if (value == 'leave') {
+          onLeaveSelected();
         }
       },
     );

@@ -15,7 +15,7 @@ import '/providers/join_request_provider.dart';
 import '/services/vibe_repository.dart';
 import '/utils/app_util.dart';
 
-const int cancelledChatArchiveDays = 3;
+const int cancelledChatDeleteDays = 3;
 
 class PendingRequestsLoadResult {
   const PendingRequestsLoadResult({
@@ -193,24 +193,21 @@ class GameJoinedDetailedController {
       _gameProvider.invalidateUserGamesCache(userIdForCache);
 
       final chatRef = gameRecord.chatRef;
-      if (chatRef != null && currentUserId != null) {
+      if (chatRef != null) {
         final gameName = gameRecord.nameGame;
         final cancelMessage = gameName.trim().isNotEmpty
             ? 'Game "$gameName" has been cancelled.'
             : 'This game has been cancelled.';
         try {
-          await _chatProvider.sendMessage(
-            chatId: chatRef.id,
-            senderId: currentUserId,
-            text: cancelMessage,
-          );
+          // Update chat metadata: lock immediately, schedule deletion
+          // Banner shows status; no system messages (cleaner UX)
           await chatRef.update({
             'isReadOnly': true,
             'pinnedMessage': cancelMessage,
             'pinnedAt': FieldValue.serverTimestamp(),
-            'archivedAt': Timestamp.fromDate(
+            'deletesAt': Timestamp.fromDate(
               getCurrentTimestamp.add(
-                Duration(days: cancelledChatArchiveDays),
+                Duration(days: cancelledChatDeleteDays),
               ),
             ),
           });

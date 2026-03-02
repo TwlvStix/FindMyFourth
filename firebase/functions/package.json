@@ -3,6 +3,7 @@
   "description": "Firebase Cloud Functions",
   "dependencies": {
     "@google-cloud/tasks": "^6.2.1",
+    "sharp": "^0.33.2",
     "@langchain/anthropic": "^0.1.1",
     "@langchain/core": "^0.3.19",
     "@langchain/google-genai": "^0.0.8",

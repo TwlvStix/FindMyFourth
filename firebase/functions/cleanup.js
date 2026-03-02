@@ -1,10 +1,9 @@
 /**
- * Cleanup module for expired cancelled games.
+ * Cleanup module for expired cancelled games and chats.
  *
- * Provides a nightly scheduled function that permanently deletes
- * cancelled games that have passed their expiration threshold:
- * - Scheduled games: deleted after the scheduled date passes
- * - Flexible games: deleted after the cancellation date passes
+ * Provides scheduled functions that permanently delete:
+ * - Cancelled games that have passed their expiration threshold
+ * - Chats scheduled for deletion (deletesAt <= now)
  */
 
 const admin = require("firebase-admin");
@@ -99,6 +98,96 @@ async function cleanupCancelledGamesHandler() {
   return summary;
 }
 
+/**
+ * Handler for cleaning up chats scheduled for deletion.
+ *
+ * Queries chats where deletesAt <= now and deletes them along with
+ * their messages subcollection.
+ *
+ * This is triggered when a game is cancelled - the chat is marked
+ * with deletesAt = cancellation_date + 3 days.
+ *
+ * @returns {Object} Summary of cleanup results
+ */
+async function cleanupScheduledChatsHandler() {
+  const db = admin.firestore();
+
+  const now = admin.firestore.Timestamp.now();
+
+  console.log(`[cleanupScheduledChats] Starting cleanup. Deleting chats with deletesAt <= ${now.toDate().toISOString()}`);
+
+  // Query chats scheduled for deletion
+  const chatsQuery = db.collection("chats")
+    .where("deletesAt", "<=", now);
+
+  const chatsSnapshot = await chatsQuery.get();
+
+  if (chatsSnapshot.empty) {
+    console.log("[cleanupScheduledChats] No chats to clean up");
+    return {
+      deleted: 0,
+      errors: 0,
+      messagesDeleted: 0,
+    };
+  }
+
+  console.log(`[cleanupScheduledChats] Found ${chatsSnapshot.size} chats to delete`);
+
+  let deleted = 0;
+  let errors = 0;
+  let messagesDeleted = 0;
+
+  for (const chatDoc of chatsSnapshot.docs) {
+    try {
+      // Delete messages subcollection first (in batches of 500)
+      const messagesRef = chatDoc.ref.collection("messages");
+      let messagesSnapshot = await messagesRef.limit(500).get();
+
+      while (!messagesSnapshot.empty) {
+        const batch = db.batch();
+        messagesSnapshot.docs.forEach((doc) => batch.delete(doc.ref));
+        await batch.commit();
+        messagesDeleted += messagesSnapshot.size;
+        messagesSnapshot = await messagesRef.limit(500).get();
+      }
+
+      // Delete chatRefs for all members
+      const chatData = chatDoc.data();
+      const memberIds = chatData.memberIds || [];
+
+      if (memberIds.length > 0) {
+        const batch = db.batch();
+        for (const memberId of memberIds) {
+          const chatRefDoc = db.collection("users").doc(memberId).collection("chatRefs").doc(chatDoc.id);
+          batch.delete(chatRefDoc);
+        }
+        await batch.commit();
+      }
+
+      // Delete the chat document itself
+      await chatDoc.ref.delete();
+      deleted++;
+
+      console.log(
+        `[cleanupScheduledChats] Deleted chat ${chatDoc.id} (${memberIds.length} members)`
+      );
+    } catch (error) {
+      errors++;
+      console.error(`[cleanupScheduledChats] Failed to delete chat ${chatDoc.id}:`, error);
+    }
+  }
+
+  const summary = {
+    deleted,
+    errors,
+    messagesDeleted,
+  };
+
+  console.log(`[cleanupScheduledChats] Cleanup complete:`, summary);
+  return summary;
+}
+
 module.exports = {
   cleanupCancelledGamesHandler,
+  cleanupScheduledChatsHandler,
 };

@@ -32,6 +32,7 @@ import '/user_auth/sign_up_account/sign_up_account_widget.dart';
 import '/user_onboarding/cinematic_onboarding_widget.dart';
 import '/user_onboarding/progressive_onboarding_widget.dart';
 import '/user_onboarding/vibe_onboarding_widget.dart';
+import '/user_onboarding/vibe_archetype_reveal_widget.dart';
 import '/vibe/premium_vibe_page/premium_vibe_page_data.dart';
 import '/vibe/premium_vibe_page/premium_vibe_page_widget.dart';
 import '/debug/notification_routing_test_screen.dart';
@@ -209,6 +210,17 @@ List<GoRoute> buildRoutes(AppStateNotifier appStateNotifier) => [
         ),
       ),
       GoRoute(
+        name: VibeArchetypeRevealWidget.routeName,
+        path: VibeArchetypeRevealWidget.routePath,
+        redirect: buildRedirect(appStateNotifier, requireAuth: true),
+        pageBuilder: (context, state) => buildPageWithTransition(
+          context,
+          state,
+          appStateNotifier,
+          VibeArchetypeRevealWidget(),
+        ),
+      ),
+      GoRoute(
         name: RecoverPasswordWidget.routeName,
         path: RecoverPasswordWidget.routePath,
         redirect: buildRedirect(appStateNotifier),
@@ -377,6 +389,7 @@ List<GoRoute> buildRoutes(AppStateNotifier appStateNotifier) => [
                 )
               : PlayerListWidget(
                   gameRef: gameRefFromState(state)!,
+                  isEditMode: isEditModeFromState(state),
                 ),
         ),
       ),

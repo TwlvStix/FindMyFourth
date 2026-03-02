@@ -21,6 +21,7 @@ import '/core/design_tokens/typography.dart';
 import '/core/design_tokens/spacing.dart';
 import '/core/design_tokens/border_radius.dart';
 import '/utils/app_util.dart';
+import '/core/utils/app_log.dart';
 import '/providers/user_provider.dart';
 import '/providers/chat_provider.dart';
 import '/providers/game_provider.dart';
@@ -80,7 +81,7 @@ Future<void> main() async {
       // 🚀 STARTUP TIMING: Log time to first frame (debug only)
       if (kDebugMode && startTime != null) {
         final timeToFirstFrame = DateTime.now().difference(startTime);
-        debugPrint(
+        AppLog.d(
           '⚡ STARTUP TIMING: Time to first frame: ${timeToFirstFrame.inMilliseconds}ms',
         );
       }
@@ -140,7 +141,7 @@ Future<void> _initializeNonCriticalServices(AppState appState) async {
     // Initialize Remote Config (non-blocking, uses defaults if fails)
     await RemoteConfigService.instance.initialize();
   } catch (error, stackTrace) {
-    debugPrint('⚠️  Non-critical initialization failed: $error');
+    AppLog.d('⚠️ Non-critical initialization failed: $error');
     if (!kIsWeb) {
       FirebaseCrashlytics.instance.recordError(
         error,
@@ -271,7 +272,7 @@ class MyAppState extends State<MyApp> {
   void initState() {
     super.initState();
 
-    debugPrint('🚀 APP: Initializing app state');
+    AppLog.d('🚀 APP: Initializing app state');
     _appStateNotifier = AppStateNotifier.instance;
     _router = createRouter(_appStateNotifier);
 

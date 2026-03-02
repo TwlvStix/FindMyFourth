@@ -68,6 +68,8 @@ function buildPushPayload(eventType, eventData, eventId, isReminder = false) {
     priority:         config.priority,
     threadId,
     androidChannelId: config.androidChannelId,
+    // Include actor avatar URL for rich notification images (pre-validated by caller)
+    ...(eventData.actor_avatar_url && { imageUrl: eventData.actor_avatar_url }),
   };
 }
 

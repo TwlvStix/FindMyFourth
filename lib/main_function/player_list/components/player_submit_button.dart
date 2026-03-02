@@ -22,7 +22,7 @@ class PlayerSubmitButton extends StatelessWidget {
             : () async {
                 await onPressed();
               },
-        text: isSubmitting ? 'Adding...' : 'Add to Group',
+        text: isSubmitting ? 'Saving...' : 'Continue',
         variant: AppButtonVariant.primary,
         size: AppButtonSize.medium,
       ),

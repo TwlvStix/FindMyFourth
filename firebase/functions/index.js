@@ -15,6 +15,8 @@ const trustSystem = require("./trust_system");
 const confirmationFlow = require("./confirmation_flow");
 const trustProfileModule = require("./trust_profile");
 const gameAlerts = require("./game_alerts");
+const { generateInitialsAvatar } = require("./avatar-generator");
+const { getAvatarUrl } = require("./utils/avatar-utils");
 const {
   scheduleFlexibleNudges,
   cancelFlexibleNudges,
@@ -1933,10 +1935,15 @@ exports.notifyFriendRequestSent = functions
     }
 
     try {
+      // Fetch sender's avatar URL (photo or initials fallback)
+      const senderDoc = await firestore.collection('users').doc(context.auth.uid).get();
+      const senderAvatarUrl = getAvatarUrl(senderDoc.data());
+
       const result = await onFriendRequestReceived(
         recipientUserId,
         context.auth.uid,
         senderName,
+        senderAvatarUrl,
       );
       return { success: true, result: result.result };
     } catch (error) {
@@ -1962,10 +1969,15 @@ exports.notifyFriendRequestAccepted = functions
     }
 
     try {
+      // Fetch acceptor's avatar URL (photo or initials fallback)
+      const acceptorDoc = await firestore.collection('users').doc(context.auth.uid).get();
+      const acceptorAvatarUrl = getAvatarUrl(acceptorDoc.data());
+
       const result = await onFriendRequestAccepted(
         requesterUserId,
         context.auth.uid,
         acceptorName,
+        acceptorAvatarUrl,
       );
       return { success: true, result: result.result };
     } catch (error) {
@@ -1993,11 +2005,16 @@ exports.notifyNewJoinRequest = functions
     }
 
     try {
+      // Fetch requester's avatar URL (photo or initials fallback)
+      const requesterDoc = await firestore.collection('users').doc(context.auth.uid).get();
+      const requesterAvatarUrl = getAvatarUrl(requesterDoc.data());
+
       const result = await onJoinRequestReceived(
         ownerId,
         context.auth.uid,
         requesterName,
         gameId,
+        requesterAvatarUrl,
       );
       return { success: true, result: result.result };
     } catch (error) {
@@ -2023,7 +2040,7 @@ exports.notifyJoinRequestApproved = functions
     }
 
     try {
-      // Fetch owner name and game name for the notification
+      // Fetch owner name, avatar, and game name for the notification
       const gameDoc = await firestore.collection('games').doc(gameId).get();
       if (!gameDoc.exists) {
         throw new Error('Game not found');
@@ -2033,11 +2050,13 @@ exports.notifyJoinRequestApproved = functions
 
       const ownerRef = gameData.userRef;
       let ownerName = 'The host';
+      let ownerAvatarUrl = null;
       if (ownerRef) {
         const ownerDoc = await firestore.collection('users').doc(ownerRef.id).get();
         if (ownerDoc.exists) {
           const ownerData = ownerDoc.data() || {};
           ownerName = ownerData.first_name || ownerData.display_name || 'The host';
+          ownerAvatarUrl = getAvatarUrl(ownerData);
         }
       }
 
@@ -2047,6 +2066,7 @@ exports.notifyJoinRequestApproved = functions
         ownerName,
         gameId,
         gameName,
+        ownerAvatarUrl,
       );
       return { success: true, result: result.result };
     } catch (error) {
@@ -2163,6 +2183,74 @@ exports.onUserCreated = functions
       console.log(`Welcome email sent to ${email}`);
     } catch (error) {
       console.error("Error sending welcome email:", error);
+    }
+  });
+
+// ═══════════════════════════════════════════════════════════════
+// AVATAR GENERATION TRIGGERS
+// ═══════════════════════════════════════════════════════════════
+
+/**
+ * Generates an initials avatar when a user profile is created.
+ * Only generates if the user doesn't have a photo_url and has a first_name.
+ */
+exports.onUserProfileCreated = functions
+  .region("us-west2")
+  .runWith({ memory: "512MB", timeoutSeconds: 60 })
+  .firestore.document("users/{userId}")
+  .onCreate(async (snap, context) => {
+    const { userId } = context.params;
+    const data = snap.data();
+
+    // Only generate if no photo_url and we have a name
+    if (!data.photo_url && data.first_name) {
+      try {
+        const avatarUrl = await generateInitialsAvatar(
+          userId,
+          data.first_name || "",
+          data.last_name || ""
+        );
+
+        // Save URL to user doc
+        await snap.ref.update({ avatar_initials_url: avatarUrl });
+        console.log(`Generated initials avatar for user ${userId}`);
+      } catch (error) {
+        console.error(`Error generating initials avatar for ${userId}:`, error);
+        // Don't throw - avatar generation is non-critical
+      }
+    }
+  });
+
+/**
+ * Regenerates initials avatar when a user's name changes.
+ */
+exports.onUserProfileUpdated = functions
+  .region("us-west2")
+  .runWith({ memory: "512MB", timeoutSeconds: 60 })
+  .firestore.document("users/{userId}")
+  .onUpdate(async (change, context) => {
+    const before = change.before.data();
+    const after = change.after.data();
+
+    // Check if name changed
+    const nameChanged =
+      before.first_name !== after.first_name ||
+      before.last_name !== after.last_name;
+
+    // Regenerate if name changed and we have a first name
+    if (nameChanged && after.first_name) {
+      try {
+        const avatarUrl = await generateInitialsAvatar(
+          context.params.userId,
+          after.first_name || "",
+          after.last_name || ""
+        );
+        await change.after.ref.update({ avatar_initials_url: avatarUrl });
+        console.log(`Regenerated initials avatar for user ${context.params.userId}`);
+      } catch (error) {
+        console.error(`Error regenerating initials avatar:`, error);
+        // Don't throw - avatar generation is non-critical
+      }
     }
   });
 
@@ -2492,7 +2580,7 @@ exports.scheduledBigQueryExport = functions
 // CLEANUP FUNCTIONS
 // ─────────────────────────────────────────────
 
-const { cleanupCancelledGamesHandler } = require("./cleanup");
+const { cleanupCancelledGamesHandler, cleanupScheduledChatsHandler } = require("./cleanup");
 
 /**
  * Nightly cleanup of cancelled games.
@@ -2513,5 +2601,28 @@ exports.cleanupCancelledGames = functions
       console.log("Cancelled games cleanup results:", results);
     } catch (error) {
       console.error("Cancelled games cleanup failed:", error);
+    }
+  });
+
+/**
+ * Cleanup of chats scheduled for deletion.
+ * Runs at 3:30 AM Pacific daily (offset from game cleanup).
+ *
+ * Deletes chats where deletesAt <= now, including:
+ * - All messages in the messages subcollection
+ * - chatRefs for all members
+ * - The chat document itself
+ */
+exports.cleanupScheduledChats = functions
+  .region("us-west2")
+  .runWith({ timeoutSeconds: 540, memory: "512MB" })
+  .pubsub.schedule("30 3 * * *") // 3:30 AM daily
+  .timeZone("America/Los_Angeles")
+  .onRun(async () => {
+    try {
+      const results = await cleanupScheduledChatsHandler();
+      console.log("Scheduled chats cleanup results:", results);
+    } catch (error) {
+      console.error("Scheduled chats cleanup failed:", error);
     }
   });

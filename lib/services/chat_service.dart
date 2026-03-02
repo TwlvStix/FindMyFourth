@@ -215,7 +215,7 @@ class ChatService {
             'isReadOnly': false,
             'pinnedMessage': '',
             'pinnedAt': null,
-            'archivedAt': null,
+            'deletesAt': null,
             'lastMessageAt': FieldValue.serverTimestamp(),
             'lastMessageSenderId': currentUid,
             'unreadCountByUser': {
@@ -265,7 +265,7 @@ class ChatService {
       'isReadOnly': false,
       'pinnedMessage': '',
       'pinnedAt': null,
-      'archivedAt': null,
+      'deletesAt': null,
       'lastMessageAt': FieldValue.serverTimestamp(),
       'lastMessageSenderId': createdByUid,
       'unreadCountByUser': {
@@ -310,6 +310,170 @@ class ChatService {
     await _userChatRef(uid, chatId).delete();
   }
 
+  /// Check if a user is the last member of a chat
+  ///
+  /// Returns true if the user is the only remaining member, meaning
+  /// leaving would delete the chat entirely.
+  Future<bool> isLastMember({
+    required String chatId,
+    required String uid,
+  }) async {
+    final chatRef = _firestore.collection('chats').doc(chatId);
+    final chatSnapshot = await chatRef.get();
+
+    if (!chatSnapshot.exists) {
+      return false;
+    }
+
+    final data = chatSnapshot.data() ?? <String, dynamic>{};
+    final memberIds =
+        (data['memberIds'] as List<dynamic>?)?.whereType<String>().toList() ??
+            <String>[];
+
+    return memberIds.length == 1 && memberIds.contains(uid);
+  }
+
+  /// Leave a chat
+  ///
+  /// If the user is the last member, this will delete the chat and all messages.
+  /// If other members remain, this will just remove the user from the chat.
+  ///
+  /// Call [isLastMember] first to check if a warning should be shown.
+  Future<void> leaveChat({
+    required String chatId,
+    required String uid,
+  }) async {
+    try {
+      final chatRef = _firestore.collection('chats').doc(chatId);
+      final chatSnapshot = await chatRef.get();
+
+      if (!chatSnapshot.exists) {
+        throw Exception('Chat not found');
+      }
+
+      final data = chatSnapshot.data() ?? <String, dynamic>{};
+      final memberIds =
+          (data['memberIds'] as List<dynamic>?)?.whereType<String>().toList() ??
+              <String>[];
+
+      if (!memberIds.contains(uid)) {
+        throw Exception('User is not a member of this chat');
+      }
+
+      if (memberIds.length == 1) {
+        // Last member - delete the entire chat
+        await _deleteChatAndMessages(chatId);
+        AppLog.d('✅ ChatService.leaveChat: deleted chat $chatId (last member)');
+      } else {
+        // Others remain - just remove this user
+        await removeMember(chatId: chatId, uid: uid);
+        AppLog.d('✅ ChatService.leaveChat: removed user $uid from chat $chatId');
+      }
+    } on FirebaseException catch (e, stackTrace) {
+      AppLog.d('❌ ChatService.leaveChat error: ${e.code} - ${e.message}');
+      AppLog.d('❌ ChatService.leaveChat stackTrace: $stackTrace');
+      rethrow;
+    }
+  }
+
+  /// Delete a chat and all its messages
+  ///
+  /// Internal helper used by [leaveChat] when the last member leaves.
+  Future<void> _deleteChatAndMessages(String chatId) async {
+    final chatRef = _firestore.collection('chats').doc(chatId);
+
+    // Get all members to clean up their chatRefs
+    final chatSnapshot = await chatRef.get();
+    final data = chatSnapshot.data() ?? <String, dynamic>{};
+    final memberIds =
+        (data['memberIds'] as List<dynamic>?)?.whereType<String>().toList() ??
+            <String>[];
+
+    // Delete all messages in batches
+    final messagesRef = chatRef.collection('messages');
+    final messagesSnapshot = await messagesRef.get();
+
+    const batchSize = 500;
+    final totalMessages = messagesSnapshot.docs.length;
+
+    for (var i = 0; i < totalMessages; i += batchSize) {
+      final batch = _firestore.batch();
+      final end =
+          (i + batchSize < totalMessages) ? i + batchSize : totalMessages;
+
+      for (var j = i; j < end; j++) {
+        batch.delete(messagesSnapshot.docs[j].reference);
+      }
+
+      await batch.commit();
+    }
+
+    // Delete chatRefs for all members
+    final batch = _firestore.batch();
+    for (final memberId in memberIds) {
+      batch.delete(_userChatRef(memberId, chatId));
+    }
+    await batch.commit();
+
+    // Delete the chat document
+    await chatRef.delete();
+  }
+
+  /// Send a system message to a chat
+  ///
+  /// System messages have no sender and are styled differently in the UI.
+  /// They bypass the read-only check since they're used for chat lifecycle
+  /// notifications (e.g., game cancellation).
+  Future<void> sendSystemMessage({
+    required String chatId,
+    required String text,
+  }) async {
+    final chatRef = _firestore.collection('chats').doc(chatId);
+    final messageRef = chatRef.collection('messages').doc();
+
+    await _firestore.runTransaction((transaction) async {
+      final chatSnapshot = await transaction.get(chatRef);
+      final data = chatSnapshot.data() ?? <String, dynamic>{};
+      final memberIds =
+          (data['memberIds'] as List<dynamic>?)?.whereType<String>().toList() ??
+              <String>[];
+
+      // Create the system message
+      transaction.set(messageRef, {
+        'senderId': '',
+        'text': text,
+        'imageUrl': '',
+        'videoUrl': '',
+        'type': 'system',
+        'createdAt': FieldValue.serverTimestamp(),
+        'reactions': <String, List<String>>{},
+        'readBy': <String>[],
+      });
+
+      // Update chat metadata (don't update lastMessage for system messages
+      // to keep user messages visible in chat list preview)
+      final updates = <String, dynamic>{
+        'updatedAt': FieldValue.serverTimestamp(),
+      };
+
+      // Update chatRefs for all members so they see the chat activity
+      for (final memberId in memberIds) {
+        transaction.set(
+          _userChatRef(memberId, chatId),
+          {
+            'chatId': chatId,
+            'lastMessageAt': FieldValue.serverTimestamp(),
+          },
+          SetOptions(merge: true),
+        );
+      }
+
+      transaction.update(chatRef, updates);
+    });
+
+    AppLog.d('✅ ChatService.sendSystemMessage: sent to chat $chatId');
+  }
+
   /// Send a message to a chat
   ///
   /// Uses Firestore transaction to atomically create message and update chat's
@@ -340,9 +504,7 @@ class ChatService {
       final data =
           chatSnapshot.data() ?? <String, dynamic>{};
       final isReadOnly = data['isReadOnly'] == true;
-      final archivedAt = (data['archivedAt'] as Timestamp?)?.toDate();
-      if (isReadOnly ||
-          (archivedAt != null && archivedAt.isBefore(DateTime.now()))) {
+      if (isReadOnly) {
         throw Exception('Chat is read-only');
       }
       final memberIds =

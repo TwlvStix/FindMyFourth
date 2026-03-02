@@ -308,7 +308,8 @@ class _AppButtonEnhancedState extends State<AppButtonEnhanced>
           widget.variant == AppButtonVariant.ghostDark) {
         return Colors.transparent;
       }
-      return AppColors.cloud;
+      // Dark theme: use navy surface instead of light cloud
+      return AppColors.navyLight;
     }
 
     switch (widget.variant) {
@@ -378,11 +379,8 @@ class _AppButtonEnhancedState extends State<AppButtonEnhanced>
 
   Color _getTextColor() {
     if (!_isEnabled) {
-      // Use muted text for disabled ghostDark on dark surfaces
-      if (widget.variant == AppButtonVariant.ghostDark) {
-        return AppColors.textMuted;
-      }
-      return AppColors.stone;
+      // Dark theme: use muted text for all disabled buttons
+      return AppColors.textMuted;
     }
 
     switch (widget.variant) {
@@ -429,7 +427,13 @@ class _AppButtonEnhancedState extends State<AppButtonEnhanced>
 
   Color _getBorderColor() {
     if (!_isEnabled) {
-      return AppColors.cloud;
+      // Dark theme: use subtle border for outlined variants, transparent for filled
+      if (widget.variant == AppButtonVariant.secondary ||
+          widget.variant == AppButtonVariant.destructiveOutlined ||
+          widget.variant == AppButtonVariant.google) {
+        return AppColors.inputBorderIdle;
+      }
+      return Colors.transparent;
     }
 
     switch (widget.variant) {

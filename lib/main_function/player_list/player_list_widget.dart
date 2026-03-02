@@ -1,4 +1,5 @@
 import '/auth/firebase_auth/auth_util.dart';
+import '/core/utils/state_update.dart';
 import '/core/design_tokens/border_radius.dart';
 import '/core/design_tokens/colors.dart';
 import '/core/design_tokens/elevation.dart';
@@ -25,9 +26,11 @@ class PlayerListWidget extends StatefulWidget {
   const PlayerListWidget({
     super.key,
     required this.gameRef,
+    this.isEditMode = false,
   });
 
   final DocumentReference gameRef;
+  final bool isEditMode;
 
   static String routeName = 'PlayerList';
   static String routePath = '/usersinCreateGame';
@@ -96,8 +99,8 @@ class _PlayerListWidgetState extends State<PlayerListWidget> {
                     eligibility: eligibility,
                   );
 
-            if (result.added && mounted) {
-              setState(() {});
+            if (result.added) {
+              updateState(this, () {});
             }
             return result;
           },
@@ -145,7 +148,7 @@ class _PlayerListWidgetState extends State<PlayerListWidget> {
   @override
   Widget build(BuildContext context) {
     return PopScope(
-      canPop: !_isSubmitting,
+      canPop: widget.isEditMode && !_isSubmitting,
       onPopInvokedWithResult: (didPop, result) {
         if (!_isSubmitting) {
           return;
@@ -208,7 +211,7 @@ class _PlayerListWidgetState extends State<PlayerListWidget> {
                 elevation: 0.0,
                 shadowColor: Colors.transparent,
                 automaticallyImplyLeading: false,
-                leading: const PremiumBackButton(),
+                leading: widget.isEditMode ? const PremiumBackButton() : null,
                 title: Text(
                   'Add Your Group',
                   style: AppTypography.sectionHeader.copyWith(

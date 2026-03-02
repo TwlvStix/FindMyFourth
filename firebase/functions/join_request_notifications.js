@@ -25,18 +25,20 @@ const { routeNotification } = require('./notifications/trust/router');
  * @param {string} requesterUserId - Player requesting to join
  * @param {string} requesterName - Display name of requester
  * @param {string} gameId - Game being requested
+ * @param {string|null} requesterAvatarUrl - Requester's avatar URL (photo or initials)
  * @param {FirebaseFirestore.Firestore} [db]
  */
-async function onJoinRequestReceived(ownerUserId, requesterUserId, requesterName, gameId, db) {
+async function onJoinRequestReceived(ownerUserId, requesterUserId, requesterName, gameId, requesterAvatarUrl, db) {
   return routeNotification({
     eventId:         randomUUID(),
     eventType:       'join_request_new',
     recipientUserId: ownerUserId,
     sourceId:        `join_request_${gameId}_${requesterUserId}`,
-    data:            {
-      requester_name: requesterName,
-      requester_id:   requesterUserId,
-      game_id:        gameId,
+    data: {
+      requester_name:   requesterName,
+      requester_id:     requesterUserId,
+      game_id:          gameId,
+      actor_avatar_url: requesterAvatarUrl || null,
     },
   }, db);
 }
@@ -50,19 +52,21 @@ async function onJoinRequestReceived(ownerUserId, requesterUserId, requesterName
  * @param {string} ownerName - Display name of owner
  * @param {string} gameId - Game that was joined
  * @param {string} gameName - Name of the game for display
+ * @param {string|null} ownerAvatarUrl - Owner's avatar URL (photo or initials)
  * @param {FirebaseFirestore.Firestore} [db]
  */
-async function onJoinRequestApproved(playerUserId, ownerUserId, ownerName, gameId, gameName, db) {
+async function onJoinRequestApproved(playerUserId, ownerUserId, ownerName, gameId, gameName, ownerAvatarUrl, db) {
   return routeNotification({
     eventId:         randomUUID(),
     eventType:       'join_request_approved',
     recipientUserId: playerUserId,
     sourceId:        `join_request_approved_${gameId}_${playerUserId}`,
-    data:            {
-      owner_name: ownerName,
-      owner_id:   ownerUserId,
-      game_id:    gameId,
-      game_name:  gameName,
+    data: {
+      owner_name:       ownerName,
+      owner_id:         ownerUserId,
+      game_id:          gameId,
+      game_name:        gameName,
+      actor_avatar_url: ownerAvatarUrl || null,
     },
   }, db);
 }

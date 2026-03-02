@@ -346,6 +346,66 @@ class ChatProvider extends ChangeNotifier {
     }
   }
 
+  /// Send a system message to a chat
+  ///
+  /// System messages have no sender and are used for lifecycle notifications
+  /// (e.g., game cancellation). They bypass the read-only check.
+  Future<void> sendSystemMessage({
+    required String chatId,
+    required String text,
+  }) async {
+    try {
+      await _service.sendSystemMessage(chatId: chatId, text: text);
+      // Invalidate messages cache after sending
+      _messagesCacheTimestamps.remove(chatId);
+      _scheduleNotify();
+    } catch (e) {
+      AppLog.d('❌ ChatProvider.sendSystemMessage error: $e');
+      rethrow;
+    }
+  }
+
+  /// Check if a user is the last member of a chat
+  ///
+  /// Use this before showing the leave chat confirmation dialog
+  /// to determine if the user needs a warning about deleting the chat.
+  Future<bool> isLastMember({
+    required String chatId,
+    required String uid,
+  }) {
+    return _service.isLastMember(chatId: chatId, uid: uid);
+  }
+
+  /// Leave a chat
+  ///
+  /// If the user is the last member, this will delete the chat and all messages.
+  /// If other members remain, this will just remove the user from the chat.
+  ///
+  /// Call [isLastMember] first to check if a warning should be shown.
+  Future<void> leaveChat({
+    required String chatId,
+    required String uid,
+  }) async {
+    AppLog.d('📱 ChatProvider: leaveChat called');
+    AppLog.d('📱 ChatProvider: chatId=$chatId, uid=$uid');
+
+    try {
+      await _service.leaveChat(chatId: chatId, uid: uid);
+      // Remove from caches
+      _chatCache.remove(chatId);
+      _chatCacheTimestamps.remove(chatId);
+      _messagesCache.remove(chatId);
+      _messagesCacheTimestamps.remove(chatId);
+      _messageStreamManagers[chatId]?.clear();
+      _messageStreamManagers.remove(chatId);
+      AppLog.d('✅ ChatProvider: leaveChat successful');
+      _scheduleNotify();
+    } catch (e) {
+      AppLog.d('❌ ChatProvider.leaveChat error: $e');
+      rethrow;
+    }
+  }
+
   Future<Map<String, dynamic>> getUserProfile(String uid) {
     return _service.getUserProfile(uid);
   }

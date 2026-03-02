@@ -10,13 +10,13 @@ import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 
 import '/core/utils/app_log.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+
 import '/auth/firebase_auth/auth_util.dart';
-import '/backend/backend.dart';
 import '/models/chat.dart';
 import '/models/chat_message.dart';
 import '/models/chat_message_view_model.dart';
 import '/providers/chat_provider.dart';
-import '/providers/game_provider.dart';
 import '/providers/profile_provider.dart';
 import '/core/motion/motion_helpers.dart';
 import '/core/design_tokens/colors.dart';
@@ -76,8 +76,6 @@ class _GameChatDetailsWidgetState extends State<GameChatDetailsWidget>
   bool _canSend = false;
   bool _isArchived = false;
   String _bannerText = '';
-  String? _gameIdForOwnerLookup;
-  Future<GamesRecord?>? _gameOwnerFuture;
   bool _didMarkSeen = false;
   final List<PendingUploadItem> _pendingUploads = [];
 
@@ -291,7 +289,7 @@ class _GameChatDetailsWidgetState extends State<GameChatDetailsWidget>
         listEquals(previous.memberIds, next.memberIds) &&
         previous.isReadOnly == next.isReadOnly &&
         previous.pinnedMessage == next.pinnedMessage &&
-        previous.archivedAt == next.archivedAt;
+        previous.deletesAt == next.deletesAt;
   }
 
   void _updateChatUiState(Chat? chat) {
@@ -308,8 +306,6 @@ class _GameChatDetailsWidgetState extends State<GameChatDetailsWidget>
         _canSend = false;
         _bannerText = '';
         _isArchived = false;
-        _gameIdForOwnerLookup = null;
-        _gameOwnerFuture = null;
       });
       return;
     }
@@ -347,25 +343,15 @@ class _GameChatDetailsWidgetState extends State<GameChatDetailsWidget>
       );
     }
 
-    final isArchived =
-        chat.archivedAt != null && chat.archivedAt!.isBefore(DateTime.now());
+    // isReadOnly is now the sole indicator of read-only state
+    // (deletesAt is only for scheduling deletion, not for send permissions)
+    final isArchived = chat.isReadOnly;
     final bannerText = chat.pinnedMessage.isNotEmpty
         ? chat.pinnedMessage
         : chat.isReadOnly
             ? 'This chat is read-only.'
             : '';
-    final canSend = !chat.isReadOnly && !isArchived;
-
-    final chatGameId = (chat.gameId ?? '').trim();
-    if (chat.type == 'game' && chatGameId.isNotEmpty) {
-      if (_gameIdForOwnerLookup != chatGameId) {
-        _gameIdForOwnerLookup = chatGameId;
-        _gameOwnerFuture = context.read<GameProvider>().getGame(chatGameId);
-      }
-    } else {
-      _gameIdForOwnerLookup = null;
-      _gameOwnerFuture = null;
-    }
+    final canSend = !chat.isReadOnly;
 
     updateState(this, () {
       _chatLoaded = true;
@@ -397,10 +383,10 @@ class _GameChatDetailsWidgetState extends State<GameChatDetailsWidget>
     );
   }
 
-  Future<void> _showDeleteConfirmation() async {
+  Future<void> _showLeaveConfirmation() async {
     final currentUserId = _currentUserId;
     if (currentUserId == null || !mounted) return;
-    await ChatDetailsSideEffects.showDeleteConfirmation(
+    await ChatDetailsSideEffects.showLeaveConfirmation(
       context: context,
       chatId: widget.chatId,
       uid: currentUserId,
@@ -671,10 +657,7 @@ class _GameChatDetailsWidgetState extends State<GameChatDetailsWidget>
                 ? const []
                 : [
                     ChatDetailsActions(
-                      chat: _chatUi!,
-                      currentUserId: _currentUserId,
-                      gameOwnerFuture: _gameOwnerFuture,
-                      onDeleteSelected: _showDeleteConfirmation,
+                      onLeaveSelected: _showLeaveConfirmation,
                     ),
                   ],
           ),

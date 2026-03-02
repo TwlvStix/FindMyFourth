@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '/core/utils/state_update.dart';
 import '/core/design_tokens/app_phosphor_icons.dart';
 import '/core/design_tokens/border_radius.dart';
 import '/core/design_tokens/colors.dart';
@@ -56,10 +57,7 @@ class _AddPlayerModalState extends State<AddPlayerModal> {
   }
 
   void _refreshState() {
-    if (!mounted) {
-      return;
-    }
-    setState(() {});
+    updateState(this, () {});
   }
 
   void _showError(String message) {

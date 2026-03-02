@@ -455,6 +455,7 @@ class GameJoinedDashboardContent extends StatelessWidget {
                     }
                     context.pushPlayerList(
                       gameRef: gameRef,
+                      isEditMode: true,
                       transition: TransitionStandards.detailTransition,
                     );
                   },

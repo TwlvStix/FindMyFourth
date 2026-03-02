@@ -101,6 +101,26 @@ class ChatsRecord extends FirestoreRecord {
   DateTime? get updatedAt => _updatedAt;
   bool hasUpdatedAt() => _updatedAt != null;
 
+  // "deletesAt" field.
+  DateTime? _deletesAt;
+  DateTime? get deletesAt => _deletesAt;
+  bool hasDeletesAt() => _deletesAt != null;
+
+  // "isReadOnly" field.
+  bool? _isReadOnly;
+  bool get isReadOnly => _isReadOnly ?? false;
+  bool hasIsReadOnly() => _isReadOnly != null;
+
+  // "pinnedMessage" field.
+  String? _pinnedMessage;
+  String get pinnedMessage => _pinnedMessage ?? '';
+  bool hasPinnedMessage() => _pinnedMessage != null;
+
+  // "pinnedAt" field.
+  DateTime? _pinnedAt;
+  DateTime? get pinnedAt => _pinnedAt;
+  bool hasPinnedAt() => _pinnedAt != null;
+
   void _initializeFields() {
     _users = getDataList(snapshotData['users']);
     _memberIds = (snapshotData['memberIds'] as List?)
@@ -129,6 +149,10 @@ class ChatsRecord extends FirestoreRecord {
             MapEntry(key, (value as num?)?.toInt() ?? 0));
     _createdAt = snapshotData['createdAt'] as DateTime?;
     _updatedAt = snapshotData['updatedAt'] as DateTime?;
+    _deletesAt = snapshotData['deletesAt'] as DateTime?;
+    _isReadOnly = snapshotData['isReadOnly'] as bool?;
+    _pinnedMessage = snapshotData['pinnedMessage'] as String?;
+    _pinnedAt = snapshotData['pinnedAt'] as DateTime?;
   }
 
   static CollectionReference get collection =>
@@ -178,6 +202,10 @@ Map<String, dynamic> createChatsRecordData({
   Map<String, int>? unreadCountByUser,
   DateTime? createdAt,
   DateTime? updatedAt,
+  DateTime? deletesAt,
+  bool? isReadOnly,
+  String? pinnedMessage,
+  DateTime? pinnedAt,
 }) {
   final firestoreData = mapToFirestore(
     <String, dynamic>{
@@ -194,6 +222,10 @@ Map<String, dynamic> createChatsRecordData({
       'unreadCountByUser': unreadCountByUser,
       'createdAt': createdAt,
       'updatedAt': updatedAt,
+      'deletesAt': deletesAt,
+      'isReadOnly': isReadOnly,
+      'pinnedMessage': pinnedMessage,
+      'pinnedAt': pinnedAt,
     }.withoutNulls,
   );
 
@@ -234,6 +266,10 @@ class ChatsRecordDocumentEquality implements Equality<ChatsRecord> {
         e?.unreadCountByUser,
         e?.createdAt,
         e?.updatedAt,
+        e?.deletesAt,
+        e?.isReadOnly,
+        e?.pinnedMessage,
+        e?.pinnedAt,
       ]);
 
   @override

@@ -116,3 +116,13 @@ DocumentReference? userRefFromState(GoRouterState state) {
   }
   return null;
 }
+
+/// Extracts isEditMode boolean from route state.
+/// Defaults to false if not present.
+bool isEditModeFromState(GoRouterState state) {
+  final extra = state.extra;
+  if (extra is Map && extra['isEditMode'] is bool) {
+    return extra['isEditMode'] as bool;
+  }
+  return false;
+}

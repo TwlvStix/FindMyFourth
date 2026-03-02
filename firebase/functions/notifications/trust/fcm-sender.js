@@ -136,6 +136,8 @@ async function send(fcmToken, deviceId, payload, baseDelayMs = 1000) {
     notification: {
       title: payload.title,
       body:  payload.body,
+      // Include image URL for rich notifications (works on both iOS and Android)
+      ...(payload.imageUrl && { imageUrl: payload.imageUrl }),
     },
     data: {
       deep_link:  payload.deepLink,

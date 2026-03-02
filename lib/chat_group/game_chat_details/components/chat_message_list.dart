@@ -6,6 +6,7 @@ import '/models/chat_message.dart';
 import '/models/chat_message_view_model.dart';
 import 'chat_date_divider.dart';
 import 'chat_message_bubble.dart';
+import 'chat_system_message_bubble.dart';
 
 class ChatMessageList extends StatelessWidget {
   const ChatMessageList({
@@ -86,12 +87,28 @@ class ChatMessageList extends StatelessWidget {
 
         final vm = messageVMs[index];
         final message = vm.message;
-        final isMe = message.senderId == currentUserId;
         final previous =
             index < messageVMs.length - 1 ? messageVMs[index + 1] : null;
-        final next = index > 0 ? messageVMs[index - 1] : null;
         final shouldShowDateDivider =
             showDateDivider(current: vm, previous: previous);
+
+        // System messages get special styling
+        if (message.isSystemMessage) {
+          return Column(
+            children: [
+              ChatSystemMessageBubble(
+                text: message.text,
+                timestamp: message.createdAt,
+              ),
+              if (shouldShowDateDivider && message.createdAt != null)
+                ChatDateDivider(date: message.createdAt!),
+            ],
+          );
+        }
+
+        // Regular user messages
+        final isMe = message.senderId == currentUserId;
+        final next = index > 0 ? messageVMs[index - 1] : null;
         final firstInGroup = isFirstInGroup(current: vm, previous: previous);
         final lastInGroup = isLastInGroup(current: vm, next: next);
         final senderName = isMe

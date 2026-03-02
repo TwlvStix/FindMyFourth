@@ -496,7 +496,7 @@ class _EditVibesWidgetState extends State<EditVibesWidget> {
                                         CrossAxisAlignment.start,
                                     children: [
                                       Text(
-                                        'Set your priorities',
+                                        'Improve your match accuracy',
                                         style:
                                             AppTypography.bodyMedium.copyWith(
                                           color: AppColorsDark.textPrimary,
@@ -505,7 +505,7 @@ class _EditVibesWidgetState extends State<EditVibesWidget> {
                                       ),
                                       const SizedBox(height: AppSpacing.xxs),
                                       Text(
-                                        'Pick the 2 things that matter most',
+                                        'Fine-tune your preferences for better pairings',
                                         style: AppTypography.bodySmall.copyWith(
                                           color: AppColorsDark.textSecondary,
                                         ),

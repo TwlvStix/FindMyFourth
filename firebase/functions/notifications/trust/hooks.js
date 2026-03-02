@@ -375,18 +375,23 @@ async function onSpotOpened(playerUserIds, gameId, courseName, gameDate, spotsRe
  * Called when a user receives a friend request.
  * Notifies the recipient immediately.
  *
- * @param {string} recipientUserId - User receiving the request
- * @param {string} senderUserId    - User sending the request
- * @param {string} senderName      - Display name of sender
+ * @param {string} recipientUserId  - User receiving the request
+ * @param {string} senderUserId     - User sending the request
+ * @param {string} senderName       - Display name of sender
+ * @param {string|null} senderAvatarUrl - Sender's avatar URL (photo or initials)
  * @param {FirebaseFirestore.Firestore} [db]
  */
-async function onFriendRequestReceived(recipientUserId, senderUserId, senderName, db) {
+async function onFriendRequestReceived(recipientUserId, senderUserId, senderName, senderAvatarUrl, db) {
   return routeNotification({
     eventId:         randomUUID(),
     eventType:       'friend_request_received',
     recipientUserId: recipientUserId,
     sourceId:        `friend_request_${senderUserId}_${recipientUserId}`,
-    data:            { sender_name: senderName, sender_id: senderUserId },
+    data: {
+      sender_name:      senderName,
+      sender_id:        senderUserId,
+      actor_avatar_url: senderAvatarUrl || null,
+    },
   }, db);
 }
 
@@ -394,18 +399,23 @@ async function onFriendRequestReceived(recipientUserId, senderUserId, senderName
  * Called when a friend request is accepted.
  * Notifies the original requester.
  *
- * @param {string} recipientUserId - Original requester receiving the notification
- * @param {string} acceptorUserId  - User who accepted the request
- * @param {string} acceptorName    - Display name of acceptor
+ * @param {string} recipientUserId    - Original requester receiving the notification
+ * @param {string} acceptorUserId     - User who accepted the request
+ * @param {string} acceptorName       - Display name of acceptor
+ * @param {string|null} acceptorAvatarUrl - Acceptor's avatar URL (photo or initials)
  * @param {FirebaseFirestore.Firestore} [db]
  */
-async function onFriendRequestAccepted(recipientUserId, acceptorUserId, acceptorName, db) {
+async function onFriendRequestAccepted(recipientUserId, acceptorUserId, acceptorName, acceptorAvatarUrl, db) {
   return routeNotification({
     eventId:         randomUUID(),
     eventType:       'friend_request_accepted',
     recipientUserId: recipientUserId,
     sourceId:        `friend_accept_${acceptorUserId}_${recipientUserId}`,
-    data:            { acceptor_name: acceptorName, acceptor_id: acceptorUserId },
+    data: {
+      acceptor_name:    acceptorName,
+      acceptor_id:      acceptorUserId,
+      actor_avatar_url: acceptorAvatarUrl || null,
+    },
   }, db);
 }
 

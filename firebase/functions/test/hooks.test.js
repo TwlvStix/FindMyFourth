@@ -608,10 +608,11 @@ describe('onFriendRequestReceived', () => {
   const RECIPIENT_ID = 'user_recipient_123';
   const SENDER_ID    = 'user_sender_456';
   const SENDER_NAME  = 'Alice';
+  const SENDER_AVATAR_URL = 'https://storage.example.com/avatar.png';
 
   test('calls routeNotification with friend_request_received eventType', async () => {
     const { routeNotification } = require('../notifications/trust/router');
-    await onFriendRequestReceived(RECIPIENT_ID, SENDER_ID, SENDER_NAME);
+    await onFriendRequestReceived(RECIPIENT_ID, SENDER_ID, SENDER_NAME, SENDER_AVATAR_URL);
 
     expect(routeNotification).toHaveBeenCalledTimes(1);
     const event = routeNotification.mock.calls[0][0];
@@ -620,24 +621,25 @@ describe('onFriendRequestReceived', () => {
 
   test('sends to the correct recipient', async () => {
     const { routeNotification } = require('../notifications/trust/router');
-    await onFriendRequestReceived(RECIPIENT_ID, SENDER_ID, SENDER_NAME);
+    await onFriendRequestReceived(RECIPIENT_ID, SENDER_ID, SENDER_NAME, SENDER_AVATAR_URL);
 
     const event = routeNotification.mock.calls[0][0];
     expect(event.recipientUserId).toBe(RECIPIENT_ID);
   });
 
-  test('includes sender_name and sender_id in data', async () => {
+  test('includes sender_name, sender_id, and actor_avatar_url in data', async () => {
     const { routeNotification } = require('../notifications/trust/router');
-    await onFriendRequestReceived(RECIPIENT_ID, SENDER_ID, SENDER_NAME);
+    await onFriendRequestReceived(RECIPIENT_ID, SENDER_ID, SENDER_NAME, SENDER_AVATAR_URL);
 
     const event = routeNotification.mock.calls[0][0];
     expect(event.data.sender_name).toBe(SENDER_NAME);
     expect(event.data.sender_id).toBe(SENDER_ID);
+    expect(event.data.actor_avatar_url).toBe(SENDER_AVATAR_URL);
   });
 
   test('generates unique sourceId for dedup: friend_request_{senderId}_{recipientId}', async () => {
     const { routeNotification } = require('../notifications/trust/router');
-    await onFriendRequestReceived(RECIPIENT_ID, SENDER_ID, SENDER_NAME);
+    await onFriendRequestReceived(RECIPIENT_ID, SENDER_ID, SENDER_NAME, SENDER_AVATAR_URL);
 
     const event = routeNotification.mock.calls[0][0];
     expect(event.sourceId).toBe(`friend_request_${SENDER_ID}_${RECIPIENT_ID}`);
@@ -647,7 +649,7 @@ describe('onFriendRequestReceived', () => {
     const { routeNotification } = require('../notifications/trust/router');
     routeNotification.mockResolvedValue({ result: 'sent', sentCount: 1 });
 
-    const result = await onFriendRequestReceived(RECIPIENT_ID, SENDER_ID, SENDER_NAME);
+    const result = await onFriendRequestReceived(RECIPIENT_ID, SENDER_ID, SENDER_NAME, SENDER_AVATAR_URL);
 
     expect(result.result).toBe('sent');
     expect(result.sentCount).toBe(1);
@@ -657,12 +659,20 @@ describe('onFriendRequestReceived', () => {
     const { routeNotification } = require('../notifications/trust/router');
     const mockDb = { collection: jest.fn() };
 
-    await onFriendRequestReceived(RECIPIENT_ID, SENDER_ID, SENDER_NAME, mockDb);
+    await onFriendRequestReceived(RECIPIENT_ID, SENDER_ID, SENDER_NAME, SENDER_AVATAR_URL, mockDb);
 
     expect(routeNotification).toHaveBeenCalledWith(
       expect.any(Object),
       mockDb,
     );
+  });
+
+  test('handles null avatar URL gracefully', async () => {
+    const { routeNotification } = require('../notifications/trust/router');
+    await onFriendRequestReceived(RECIPIENT_ID, SENDER_ID, SENDER_NAME, null);
+
+    const event = routeNotification.mock.calls[0][0];
+    expect(event.data.actor_avatar_url).toBeNull();
   });
 
 });
@@ -676,10 +686,11 @@ describe('onFriendRequestAccepted', () => {
   const REQUESTER_ID  = 'user_requester_123';
   const ACCEPTOR_ID   = 'user_acceptor_456';
   const ACCEPTOR_NAME = 'Bob';
+  const ACCEPTOR_AVATAR_URL = 'https://storage.example.com/avatar-bob.png';
 
   test('calls routeNotification with friend_request_accepted eventType', async () => {
     const { routeNotification } = require('../notifications/trust/router');
-    await onFriendRequestAccepted(REQUESTER_ID, ACCEPTOR_ID, ACCEPTOR_NAME);
+    await onFriendRequestAccepted(REQUESTER_ID, ACCEPTOR_ID, ACCEPTOR_NAME, ACCEPTOR_AVATAR_URL);
 
     expect(routeNotification).toHaveBeenCalledTimes(1);
     const event = routeNotification.mock.calls[0][0];
@@ -688,24 +699,25 @@ describe('onFriendRequestAccepted', () => {
 
   test('sends to the original requester (not the acceptor)', async () => {
     const { routeNotification } = require('../notifications/trust/router');
-    await onFriendRequestAccepted(REQUESTER_ID, ACCEPTOR_ID, ACCEPTOR_NAME);
+    await onFriendRequestAccepted(REQUESTER_ID, ACCEPTOR_ID, ACCEPTOR_NAME, ACCEPTOR_AVATAR_URL);
 
     const event = routeNotification.mock.calls[0][0];
     expect(event.recipientUserId).toBe(REQUESTER_ID);
   });
 
-  test('includes acceptor_name and acceptor_id in data', async () => {
+  test('includes acceptor_name, acceptor_id, and actor_avatar_url in data', async () => {
     const { routeNotification } = require('../notifications/trust/router');
-    await onFriendRequestAccepted(REQUESTER_ID, ACCEPTOR_ID, ACCEPTOR_NAME);
+    await onFriendRequestAccepted(REQUESTER_ID, ACCEPTOR_ID, ACCEPTOR_NAME, ACCEPTOR_AVATAR_URL);
 
     const event = routeNotification.mock.calls[0][0];
     expect(event.data.acceptor_name).toBe(ACCEPTOR_NAME);
     expect(event.data.acceptor_id).toBe(ACCEPTOR_ID);
+    expect(event.data.actor_avatar_url).toBe(ACCEPTOR_AVATAR_URL);
   });
 
   test('generates unique sourceId for dedup: friend_accept_{acceptorId}_{requesterId}', async () => {
     const { routeNotification } = require('../notifications/trust/router');
-    await onFriendRequestAccepted(REQUESTER_ID, ACCEPTOR_ID, ACCEPTOR_NAME);
+    await onFriendRequestAccepted(REQUESTER_ID, ACCEPTOR_ID, ACCEPTOR_NAME, ACCEPTOR_AVATAR_URL);
 
     const event = routeNotification.mock.calls[0][0];
     expect(event.sourceId).toBe(`friend_accept_${ACCEPTOR_ID}_${REQUESTER_ID}`);
@@ -715,7 +727,7 @@ describe('onFriendRequestAccepted', () => {
     const { routeNotification } = require('../notifications/trust/router');
     routeNotification.mockResolvedValue({ result: 'sent', sentCount: 1 });
 
-    const result = await onFriendRequestAccepted(REQUESTER_ID, ACCEPTOR_ID, ACCEPTOR_NAME);
+    const result = await onFriendRequestAccepted(REQUESTER_ID, ACCEPTOR_ID, ACCEPTOR_NAME, ACCEPTOR_AVATAR_URL);
 
     expect(result.result).toBe('sent');
     expect(result.sentCount).toBe(1);
@@ -725,12 +737,20 @@ describe('onFriendRequestAccepted', () => {
     const { routeNotification } = require('../notifications/trust/router');
     const mockDb = { collection: jest.fn() };
 
-    await onFriendRequestAccepted(REQUESTER_ID, ACCEPTOR_ID, ACCEPTOR_NAME, mockDb);
+    await onFriendRequestAccepted(REQUESTER_ID, ACCEPTOR_ID, ACCEPTOR_NAME, ACCEPTOR_AVATAR_URL, mockDb);
 
     expect(routeNotification).toHaveBeenCalledWith(
       expect.any(Object),
       mockDb,
     );
+  });
+
+  test('handles null avatar URL gracefully', async () => {
+    const { routeNotification } = require('../notifications/trust/router');
+    await onFriendRequestAccepted(REQUESTER_ID, ACCEPTOR_ID, ACCEPTOR_NAME, null);
+
+    const event = routeNotification.mock.calls[0][0];
+    expect(event.data.actor_avatar_url).toBeNull();
   });
 
 });

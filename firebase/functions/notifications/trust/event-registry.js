@@ -13,24 +13,30 @@
 // ── Enums ────────────────────────────────────────────────────────────────────
 
 const TrustEventType = Object.freeze({
-  HOST_CHECKIN_DUE:       'host_checkin_due',
-  PLAYER_RATE_DUE:        'player_rate_due',
-  HOST_CHECKIN_FALLBACK:  'host_checkin_fallback',
-  PLAYER_FALLBACK_CONFIRM:'player_fallback_confirm',
-  NO_SHOW_FLAGGED:        'no_show_flagged',
-  DISPUTE_RESOLVED:       'dispute_resolved',
-  STRIKE_ISSUED:          'strike_issued',
-  COOLDOWN_STARTED:       'cooldown_started',
-  RESTRICTION_STARTED:    'restriction_started',
-  SUSPENSION_STARTED:     'suspension_started',
-  RESTRICTION_ENDED:      'restriction_ended',
-  BADGE_EARNED:           'badge_earned',
-  BADGE_PROGRESS:         'badge_progress',
-  GAME_SPOT_OPENED:       'game_spot_opened',
-  GAME_CANCELLED:         'game_cancelled',
-  GAME_ALERT_DEFERRED:    'game_alert_deferred',
-  FRIEND_REQUEST_RECEIVED:'friend_request_received',
-  FRIEND_REQUEST_ACCEPTED:'friend_request_accepted',
+  HOST_CHECKIN_DUE:         'host_checkin_due',
+  PLAYER_RATE_DUE:          'player_rate_due',
+  HOST_CHECKIN_FALLBACK:    'host_checkin_fallback',
+  PLAYER_FALLBACK_CONFIRM:  'player_fallback_confirm',
+  NO_SHOW_FLAGGED:          'no_show_flagged',
+  DISPUTE_RESOLVED:         'dispute_resolved',
+  STRIKE_ISSUED:            'strike_issued',
+  COOLDOWN_STARTED:         'cooldown_started',
+  RESTRICTION_STARTED:      'restriction_started',
+  SUSPENSION_STARTED:       'suspension_started',
+  RESTRICTION_ENDED:        'restriction_ended',
+  BADGE_EARNED:             'badge_earned',
+  BADGE_PROGRESS:           'badge_progress',
+  GAME_SPOT_OPENED:         'game_spot_opened',
+  GAME_CANCELLED:           'game_cancelled',
+  GAME_ALERT_DEFERRED:      'game_alert_deferred',
+  FRIEND_REQUEST_RECEIVED:  'friend_request_received',
+  FRIEND_REQUEST_ACCEPTED:  'friend_request_accepted',
+  // Join request events (vibe floor)
+  JOIN_REQUEST_NEW:         'join_request_new',
+  JOIN_REQUEST_APPROVED:    'join_request_approved',
+  JOIN_REQUEST_DECLINED:    'join_request_declined',
+  JOIN_REQUEST_ROUND_FILLED:'join_request_round_filled',
+  JOIN_REQUEST_EXPIRED:     'join_request_expired',
 });
 
 const NotificationPriority = Object.freeze({
@@ -388,6 +394,83 @@ const EVENT_REGISTRY = Object.freeze({
     threadId:         'social',
     androidChannelId: 'default',
     icon:             'check_circle',
+  },
+
+  // ── Join Requests (Vibe Floor) ──────────────────────────────────────────────
+
+  [TrustEventType.JOIN_REQUEST_NEW]: {
+    priority:        NotificationPriority.DEFAULT,
+    category:        TrustCategory.SOCIAL,
+    maxDeliveries:   1,
+    timing:          'immediate',
+    template: {
+      title: 'New join request',
+      body:  '{requester_name} wants to join your round.',
+    },
+    deepLink:         'findmyfourth://game/{game_id}/requests',
+    threadId:         'social',
+    androidChannelId: 'default',
+    icon:             'person_add',
+  },
+
+  [TrustEventType.JOIN_REQUEST_APPROVED]: {
+    priority:        NotificationPriority.DEFAULT,
+    category:        TrustCategory.SOCIAL,
+    maxDeliveries:   1,
+    timing:          'immediate',
+    template: {
+      title: "You're in!",
+      body:  '{owner_name} approved your request to join {game_name}.',
+    },
+    deepLink:         'findmyfourth://game/{game_id}',
+    threadId:         'social',
+    androidChannelId: 'default',
+    icon:             'check_circle',
+  },
+
+  [TrustEventType.JOIN_REQUEST_DECLINED]: {
+    priority:        NotificationPriority.DEFAULT,
+    category:        TrustCategory.SOCIAL,
+    maxDeliveries:   1,
+    timing:          'immediate',
+    template: {
+      title: 'Request not approved',
+      body:  'Your request to join {game_name} was not approved this time.',
+    },
+    deepLink:         'findmyfourth://games',
+    threadId:         'social',
+    androidChannelId: 'default',
+    icon:             'info',
+  },
+
+  [TrustEventType.JOIN_REQUEST_ROUND_FILLED]: {
+    priority:        NotificationPriority.DEFAULT,
+    category:        TrustCategory.SOCIAL,
+    maxDeliveries:   1,
+    timing:          'immediate',
+    template: {
+      title: 'Round filled',
+      body:  '{game_name} filled up before your request could be reviewed.',
+    },
+    deepLink:         'findmyfourth://games',
+    threadId:         'social',
+    androidChannelId: 'default',
+    icon:             'info',
+  },
+
+  [TrustEventType.JOIN_REQUEST_EXPIRED]: {
+    priority:        NotificationPriority.DEFAULT,
+    category:        TrustCategory.SOCIAL,
+    maxDeliveries:   1,
+    timing:          'immediate',
+    template: {
+      title: 'Request expired',
+      body:  'Your request to join {game_name} expired as the round has started.',
+    },
+    deepLink:         'findmyfourth://games',
+    threadId:         'social',
+    androidChannelId: 'default',
+    icon:             'info',
   },
 });
 

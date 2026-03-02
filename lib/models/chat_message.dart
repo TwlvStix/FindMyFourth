@@ -22,8 +22,11 @@ class ChatMessage {
   final DateTime? createdAt;
   final Map<String, List<String>> reactions; // emoji -> [userIds]
   final List<String> readBy;
-  final String type; // 'text' or 'image'
+  final String type; // 'text', 'image', or 'system'
   final String thumbnailUrl; // optional; falls back to imageUrl
+
+  /// True if this is a system-generated message (no sender).
+  bool get isSystemMessage => type == 'system';
   final double? imageWidth; // stored pixel width for pre-sizing skeleton
   final double? imageHeight; // stored pixel height for pre-sizing skeleton
 

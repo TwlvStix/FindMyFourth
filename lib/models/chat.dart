@@ -17,7 +17,7 @@ class Chat {
     required this.isReadOnly,
     required this.pinnedMessage,
     required this.pinnedAt,
-    required this.archivedAt,
+    required this.deletesAt,
     required this.typingUsers,
     required this.memberJoinedAt,
   });
@@ -37,7 +37,7 @@ class Chat {
   final bool isReadOnly;
   final String pinnedMessage;
   final DateTime? pinnedAt;
-  final DateTime? archivedAt;
+  final DateTime? deletesAt;
   final Map<String, DateTime> typingUsers;
   /// Per-member join timestamps. Used to implement "fresh start on rejoin":
   /// a member only sees messages with createdAt >= memberJoinedAt[uid].
@@ -98,7 +98,7 @@ class Chat {
       isReadOnly: (data['isReadOnly'] as bool?) ?? false,
       pinnedMessage: (data['pinnedMessage'] as String?) ?? '',
       pinnedAt: (data['pinnedAt'] as Timestamp?)?.toDate(),
-      archivedAt: (data['archivedAt'] as Timestamp?)?.toDate(),
+      deletesAt: (data['deletesAt'] as Timestamp?)?.toDate(),
       typingUsers: typingUsers,
       memberJoinedAt: memberJoinedAt,
     );

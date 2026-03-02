@@ -60,6 +60,11 @@ const EVENT_DATA = {
   [TrustEventType.GAME_ALERT_DEFERRED]:    { title: 'New Game Nearby', body: 'A new game at Pebble Beach matches your alerts.', gameId: GAME_ID },
   [TrustEventType.FRIEND_REQUEST_RECEIVED]: { sender_name: 'Alice', sender_id: 'user_alice' },
   [TrustEventType.FRIEND_REQUEST_ACCEPTED]: { acceptor_name: 'Bob', acceptor_id: 'user_bob' },
+  [TrustEventType.JOIN_REQUEST_NEW]: { requester_name: 'Charlie', game_id: GAME_ID },
+  [TrustEventType.JOIN_REQUEST_APPROVED]: { owner_name: 'Dave', game_name: 'Saturday at Spyglass', game_id: GAME_ID },
+  [TrustEventType.JOIN_REQUEST_DECLINED]: { game_name: 'Sunday at Cypress Point' },
+  [TrustEventType.JOIN_REQUEST_ROUND_FILLED]: { game_name: 'Friday at Augusta National' },
+  [TrustEventType.JOIN_REQUEST_EXPIRED]: { game_name: 'Monday at Merion' },
 };
 
 /** Interpolates {game_id} in a string, mirroring the engine's logic. */

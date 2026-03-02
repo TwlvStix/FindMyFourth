@@ -32,6 +32,7 @@ class AppRouteNames {
   static const String successPage = 'success_page';
   static const String successLeave = 'success_leave';
   static const String signIn = 'SignIn';
+  static const String vibeArchetypeReveal = 'VibeArchetypeReveal';
 }
 
 /// Route-specific typed navigation helpers for widget call sites.
@@ -189,11 +190,15 @@ extension AppNavigationExtensions on BuildContext {
 
   void pushPlayerList({
     required DocumentReference gameRef,
+    bool isEditMode = false,
     TransitionInfo transition = TransitionStandards.flatFadeTransition,
   }) {
     pushWithTransition(
       AppRouteNames.playerList,
-      extra: <String, dynamic>{'gameRef': gameRef},
+      extra: <String, dynamic>{
+        'gameRef': gameRef,
+        'isEditMode': isEditMode,
+      },
       transition: transition,
     );
   }
@@ -326,6 +331,23 @@ extension AppNavigationExtensions on BuildContext {
       AppRouteNames.premiumVibePage,
       pathParameters: <String, String>{'userId': userId},
       extra: data,
+    );
+  }
+
+  void pushVibeArchetypeReveal({
+    required Object match,
+    String? next,
+    TransitionInfo transition = TransitionStandards.dismissalTransition,
+  }) {
+    final queryParameters = <String, dynamic>{};
+    if (next != null && next.isNotEmpty) {
+      queryParameters['next'] = next;
+    }
+    pushWithTransition(
+      AppRouteNames.vibeArchetypeReveal,
+      extra: <String, dynamic>{'match': match},
+      queryParameters: queryParameters,
+      transition: transition,
     );
   }
 }

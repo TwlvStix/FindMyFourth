@@ -40,12 +40,21 @@ class ChatMessagesRecord extends FirestoreRecord {
   DateTime? get createdAt => _createdAt;
   bool hasCreatedAt() => _createdAt != null;
 
+  // "type" field.
+  String? _type;
+  String get type => _type ?? 'text';
+  bool hasType() => _type != null;
+
+  /// True if this is a system-generated message (no sender).
+  bool get isSystemMessage => type == 'system';
+
   void _initializeFields() {
     _senderId = snapshotData['senderId'] as String?;
     _text = snapshotData['text'] as String?;
     _imageUrl = snapshotData['imageUrl'] as String?;
     _videoUrl = snapshotData['videoUrl'] as String?;
     _createdAt = snapshotData['createdAt'] as DateTime?;
+    _type = snapshotData['type'] as String?;
   }
 
   static Query get collection =>
@@ -88,6 +97,7 @@ Map<String, dynamic> createChatMessagesRecordData({
   String? imageUrl,
   String? videoUrl,
   DateTime? createdAt,
+  String? type,
 }) {
   final firestoreData = mapToFirestore(
     <String, dynamic>{
@@ -96,6 +106,7 @@ Map<String, dynamic> createChatMessagesRecordData({
       'imageUrl': imageUrl,
       'videoUrl': videoUrl,
       'createdAt': createdAt,
+      'type': type,
     }.withoutNulls,
   );
 
@@ -112,7 +123,8 @@ class ChatMessagesRecordDocumentEquality
         e1?.text == e2?.text &&
         e1?.imageUrl == e2?.imageUrl &&
         e1?.videoUrl == e2?.videoUrl &&
-        e1?.createdAt == e2?.createdAt;
+        e1?.createdAt == e2?.createdAt &&
+        e1?.type == e2?.type;
   }
 
   @override
@@ -122,6 +134,7 @@ class ChatMessagesRecordDocumentEquality
         e?.imageUrl,
         e?.videoUrl,
         e?.createdAt,
+        e?.type,
       ]);
 
   @override

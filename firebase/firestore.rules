@@ -212,6 +212,30 @@ service cloud.firestore {
         ]);
     }
 
+    function canSelfLeaveDirectChat(oldData, newData) {
+      let changedKeys = newData.diff(oldData).changedKeys();
+      return oldData.type == 'direct' &&
+        isSelfOnlyRemovedFromChat(oldData, newData) &&
+        changedKeys.hasOnly([
+          'memberIds',
+          'updatedAt'
+        ]);
+    }
+
+    // Simplified leave rule: any member can remove themselves from any chat
+    function canMemberLeaveChat(oldData, newData) {
+      let changedKeys = newData.diff(oldData).changedKeys();
+      let oldMembers = oldData.memberIds is list ? oldData.memberIds : [];
+      let newMembers = newData.memberIds is list ? newData.memberIds : [];
+      let selfInOld = request.auth.uid in oldMembers;
+      let selfInNew = request.auth.uid in newMembers;
+      return isSignedIn() &&
+        selfInOld &&
+        !selfInNew &&
+        newMembers.size() == oldMembers.size() - 1 &&
+        changedKeys.hasOnly(['memberIds', 'updatedAt']);
+    }
+
     function canGameOwnerRemoveMember(oldData, newData) {
       let changedKeys = newData.diff(oldData).changedKeys();
       let oldMembers = chatMemberIds(oldData);
@@ -254,7 +278,7 @@ service cloud.firestore {
           'isReadOnly',
           'pinnedMessage',
           'pinnedAt',
-          'archivedAt'
+          'deletesAt'
         ]);
     }
 
@@ -605,6 +629,8 @@ service cloud.firestore {
         canUpdateChatMetadata(resource.data, request.resource.data) ||
         canSelfJoinGameChat(resource.data, request.resource.data) ||
         canSelfLeaveGameChat(resource.data, request.resource.data) ||
+        canSelfLeaveDirectChat(resource.data, request.resource.data) ||
+        canMemberLeaveChat(resource.data, request.resource.data) ||
         canGameOwnerRemoveMember(resource.data, request.resource.data) ||
         canGameOwnerAddMember(resource.data, request.resource.data) ||
         canGameOwnerUpdateChatManagement(resource.data, request.resource.data)
@@ -618,13 +644,20 @@ service cloud.firestore {
 
       match /messages/{messageId} {
         allow read: if isSignedIn() && isChatMemberById(chatId);
-        allow create: if isSignedIn() &&
-          request.resource.data.senderId == request.auth.uid &&
-          isChatMemberById(chatId) &&
-          request.resource.data.type in ['text', 'image'] &&
-          (request.resource.data.type != 'image' ||
-            (request.resource.data.imageUrl is string &&
-             request.resource.data.imageUrl.matches('https://firebasestorage\\.googleapis\\.com.*')));
+        // Regular messages: senderId must match user, type must be text/image
+        // System messages: game owner only, empty senderId, type='system'
+        allow create: if isSignedIn() && isChatMemberById(chatId) && (
+          // Regular user messages
+          (request.resource.data.senderId == request.auth.uid &&
+            request.resource.data.type in ['text', 'image'] &&
+            (request.resource.data.type != 'image' ||
+              (request.resource.data.imageUrl is string &&
+               request.resource.data.imageUrl.matches('https://firebasestorage\\.googleapis\\.com.*')))) ||
+          // System messages (game owners only, for game chats)
+          (request.resource.data.type == 'system' &&
+            request.resource.data.senderId == '' &&
+            isGameChatOwnerById(chatId))
+        );
         // Sender-only updates; members may only add themselves to readBy.
         allow update: if isSignedIn() && isChatMemberById(chatId) && (
           (resource.data.senderId == request.auth.uid &&
