@@ -34,37 +34,39 @@ class NotificationsListWidget extends StatefulWidget {
 
 class _NotificationsListWidgetState extends State<NotificationsListWidget> {
   final scaffoldKey = GlobalKey<ScaffoldState>();
+  NotificationListProvider? _notificationListProvider;
 
   @override
-  void initState() {
-    super.initState();
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _notificationListProvider ??= context.read<NotificationListProvider>();
     final userRef = currentUserReference;
     if (userRef != null) {
-      context.read<NotificationListProvider>().startListening(userRef);
+      _notificationListProvider!.startListening(userRef);
     }
   }
 
   @override
   void dispose() {
-    context.read<NotificationListProvider>().stopListening();
+    _notificationListProvider?.stopListening();
     super.dispose();
   }
 
   Future<void> _markAllAsRead() async {
-    await context.read<NotificationListProvider>().markAllAsRead();
+    await _notificationListProvider!.markAllAsRead();
   }
 
   Future<void> _markReadIfNeeded(NotificationListItem item) async {
-    await context.read<NotificationListProvider>().markReadIfNeeded(item);
+    await _notificationListProvider!.markReadIfNeeded(item);
   }
 
   Future<void> _markAsUnread(NotificationListItem item) async {
-    await context.read<NotificationListProvider>().markAsUnread(item);
+    await _notificationListProvider!.markAsUnread(item);
   }
 
   Future<void> _deleteNotification(NotificationListItem item) async {
     try {
-      await context.read<NotificationListProvider>().deleteNotification(item);
+      await _notificationListProvider!.deleteNotification(item);
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -90,7 +92,7 @@ class _NotificationsListWidgetState extends State<NotificationsListWidget> {
   Future<void> _deleteAllNotifications() async {
     try {
       final deletedCount =
-          await context.read<NotificationListProvider>().deleteAllNotifications();
+          await _notificationListProvider!.deleteAllNotifications();
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -133,7 +135,7 @@ class _NotificationsListWidgetState extends State<NotificationsListWidget> {
     if (currentUserRef == null) {
       return false;
     }
-    return context.read<NotificationListProvider>().shouldBlockFriendsOnlyGame(
+    return _notificationListProvider!.shouldBlockFriendsOnlyGame(
       gameRef,
       currentUserRef,
     );
@@ -249,7 +251,7 @@ class _NotificationsListWidgetState extends State<NotificationsListWidget> {
   }
 
   Future<void> _handleNotificationTap(NotificationListItem item) async {
-    final provider = context.read<NotificationListProvider>();
+    final provider = _notificationListProvider!;
     await _markReadIfNeeded(item);
     if (!mounted) {
       return;
@@ -326,20 +328,8 @@ class _NotificationsListWidgetState extends State<NotificationsListWidget> {
     final state = context.selectNotificationList((p) => p.listViewState);
     final notifications = state.notifications;
 
-    // Error state
-    if (state.hasError) {
-      return Center(
-        child: Text(
-          'Failed to load notifications.',
-          style: AppTypography.bodyMedium.copyWith(
-            color: AppColors.pure,
-          ),
-        ),
-      );
-    }
-
-    // Initial loading state (no data yet from stream)
-    if (notifications.isEmpty && state.isListening && !state.hasError) {
+    // Initial loading state - show spinner only while initial load is in progress
+    if (state.isInitialLoadInProgress) {
       return Center(
         child: CircularProgressIndicator(
           color: AppColors.green,
@@ -347,12 +337,96 @@ class _NotificationsListWidgetState extends State<NotificationsListWidget> {
       );
     }
 
-    // Empty state
+    // Error or timeout state - show retry UI
+    if (state.hasError || state.initialLoadTimedOut) {
+      return RefreshIndicator(
+        color: AppColors.green,
+        backgroundColor: AppColors.navy,
+        onRefresh: () async {
+          _notificationListProvider!.retryInitialLoad();
+        },
+        child: CustomScrollView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          slivers: [
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: EdgeInsets.only(
+                  top: MediaQuery.of(context).padding.top + 100,
+                ),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    AppIcon(
+                      icon: AppPhosphorIcons.warning,
+                      size: AppIconSize.section,
+                      color: AppColors.textMuted,
+                    ),
+                    SizedBox(height: AppSpacing.md),
+                    Text(
+                      state.initialLoadTimedOut
+                          ? 'Taking longer than expected'
+                          : 'Unable to load notifications',
+                      style: AppTypography.titleMedium.copyWith(
+                        color: AppColors.textPrimary,
+                      ),
+                    ),
+                    SizedBox(height: AppSpacing.xs),
+                    Text(
+                      'Pull down to refresh or tap retry.',
+                      style: AppTypography.bodyMedium.copyWith(
+                        color: AppColors.textSecondary,
+                      ),
+                    ),
+                    SizedBox(height: AppSpacing.lg),
+                    AppButtonEnhanced(
+                      text: 'Retry',
+                      variant: AppButtonVariant.secondary,
+                      size: AppButtonSize.medium,
+                      onPressed: () {
+                        _notificationListProvider!.retryInitialLoad();
+                      },
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
+    // Empty state - only show after first load completed with no data
+    if (notifications.isEmpty && state.hasReceivedFirstSnapshot) {
+      return RefreshIndicator(
+        color: AppColors.green,
+        backgroundColor: AppColors.navy,
+        onRefresh: () => _notificationListProvider!.refresh(),
+        child: CustomScrollView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          slivers: [
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: EdgeInsets.only(
+                  top: MediaQuery.of(context).padding.top + 100,
+                ),
+                child: AppEmptyStatePremium(
+                  icon: AppPhosphorIcons.notifications,
+                  title: "You're all caught up",
+                  message: 'New activity will appear here.',
+                ),
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
+    // Fallback: if not loading and no data and no error, show empty state
     if (notifications.isEmpty) {
       return RefreshIndicator(
         color: AppColors.green,
         backgroundColor: AppColors.navy,
-        onRefresh: () => context.read<NotificationListProvider>().refresh(),
+        onRefresh: () => _notificationListProvider!.refresh(),
         child: CustomScrollView(
           physics: const AlwaysScrollableScrollPhysics(),
           slivers: [
@@ -377,13 +451,13 @@ class _NotificationsListWidgetState extends State<NotificationsListWidget> {
     return RefreshIndicator(
       color: AppColors.green,
       backgroundColor: AppColors.navy,
-      onRefresh: () => context.read<NotificationListProvider>().refresh(),
+      onRefresh: () => _notificationListProvider!.refresh(),
       child: NotificationListener<ScrollNotification>(
         onNotification: (notification) {
           if (notification.metrics.extentAfter < 200 &&
               !state.isLoadingMore &&
               state.hasMore) {
-            context.read<NotificationListProvider>().loadMore();
+            _notificationListProvider!.loadMore();
           }
           return false;
         },
@@ -394,7 +468,8 @@ class _NotificationsListWidgetState extends State<NotificationsListWidget> {
             AppSpacing.md,
             AppSpacing.xxxl,
           ),
-          itemCount: notifications.length + (state.isLoadingMore || state.loadMoreError ? 1 : 0),
+          itemCount: notifications.length +
+              (state.isLoadingMore || state.loadMoreError ? 1 : 0),
           separatorBuilder: (context, index) => SizedBox(height: AppSpacing.sm),
           itemBuilder: (context, index) {
             // Show loading indicator or error retry at the end
@@ -407,7 +482,7 @@ class _NotificationsListWidgetState extends State<NotificationsListWidget> {
                       text: 'Retry',
                       variant: AppButtonVariant.ghost,
                       size: AppButtonSize.small,
-                      onPressed: () => context.read<NotificationListProvider>().loadMore(),
+                      onPressed: () => _notificationListProvider!.loadMore(),
                     ),
                   ),
                 );
@@ -431,7 +506,8 @@ class _NotificationsListWidgetState extends State<NotificationsListWidget> {
     );
   }
 
-  Widget _buildNotificationItem(BuildContext context, NotificationListItem item) {
+  Widget _buildNotificationItem(
+      BuildContext context, NotificationListItem item) {
     final type = item.type;
     final title = item.title?.trim();
     final body = item.body?.trim();
@@ -491,7 +567,8 @@ class _NotificationsListWidgetState extends State<NotificationsListWidget> {
                             size: AppIconSize.md,
                           ),
                           title: Text('Mark as unread'),
-                          onTap: () => Navigator.of(dialogContext).pop('unread'),
+                          onTap: () =>
+                              Navigator.of(dialogContext).pop('unread'),
                         ),
                         ListTile(
                           leading: AppIcon(
@@ -500,7 +577,8 @@ class _NotificationsListWidgetState extends State<NotificationsListWidget> {
                             size: AppIconSize.md,
                           ),
                           title: Text('Delete'),
-                          onTap: () => Navigator.of(dialogContext).pop('delete'),
+                          onTap: () =>
+                              Navigator.of(dialogContext).pop('delete'),
                         ),
                       ],
                     ),
@@ -647,7 +725,7 @@ class _NotificationsListWidgetState extends State<NotificationsListWidget> {
     }
 
     // Get provider without watching (for stream access only)
-    final provider = context.read<NotificationListProvider>();
+    final provider = _notificationListProvider!;
 
     return [
       StreamBuilder<int>(

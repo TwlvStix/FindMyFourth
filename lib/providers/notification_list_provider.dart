@@ -5,6 +5,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 
 import '/core/utils/app_log.dart';
+import '/core/utils/production_log.dart';
 import '/services/notification_crud_service.dart';
 
 /// Lightweight domain model for notification list items.
@@ -59,6 +60,15 @@ class NotificationListViewState {
   final bool hasMore;
   final bool loadMoreError;
 
+  /// True while waiting for first stream snapshot (show spinner).
+  final bool isInitialLoadInProgress;
+
+  /// True if first load timed out without receiving data.
+  final bool initialLoadTimedOut;
+
+  /// True once first snapshot has been received (even if empty).
+  final bool hasReceivedFirstSnapshot;
+
   const NotificationListViewState({
     required this.notifications,
     required this.hasError,
@@ -66,6 +76,9 @@ class NotificationListViewState {
     required this.isLoadingMore,
     required this.hasMore,
     required this.loadMoreError,
+    required this.isInitialLoadInProgress,
+    required this.initialLoadTimedOut,
+    required this.hasReceivedFirstSnapshot,
   });
 
   @override
@@ -77,7 +90,10 @@ class NotificationListViewState {
           isListening == other.isListening &&
           isLoadingMore == other.isLoadingMore &&
           hasMore == other.hasMore &&
-          loadMoreError == other.loadMoreError;
+          loadMoreError == other.loadMoreError &&
+          isInitialLoadInProgress == other.isInitialLoadInProgress &&
+          initialLoadTimedOut == other.initialLoadTimedOut &&
+          hasReceivedFirstSnapshot == other.hasReceivedFirstSnapshot;
 
   @override
   int get hashCode => Object.hash(
@@ -87,6 +103,9 @@ class NotificationListViewState {
         isLoadingMore,
         hasMore,
         loadMoreError,
+        isInitialLoadInProgress,
+        initialLoadTimedOut,
+        hasReceivedFirstSnapshot,
       );
 }
 
@@ -98,13 +117,18 @@ class NotificationListViewState {
 /// - Dedupe: First page stream + load-more fetch are merged without duplicates
 /// - Domain model: Exposes [NotificationListItem] list, not Firestore types
 /// - Unread count: Separate lightweight stream for badge via [unreadCountStream]
+/// - First-load timeout: Shows retry UI instead of infinite spinner on stall
 class NotificationListProvider extends ChangeNotifier {
-  NotificationListProvider({NotificationCrudService? service})
-      : _service = service ?? NotificationCrudService() {
+  NotificationListProvider({
+    NotificationCrudService? service,
+    Duration initialLoadTimeout = const Duration(seconds: 12),
+  })  : _service = service ?? NotificationCrudService(),
+        _initialLoadTimeout = initialLoadTimeout {
     _init();
   }
 
   final NotificationCrudService _service;
+  final Duration _initialLoadTimeout;
   bool _disposed = false;
   Timer? _notifyTimer;
 
@@ -119,6 +143,14 @@ class NotificationListProvider extends ChangeNotifier {
   // ═══════════════════════════════════════════════════════════════════════════
   bool _isListening = false;
   DocumentReference? _currentUserRef;
+
+  // ═══════════════════════════════════════════════════════════════════════════
+  // FIRST-LOAD STATE (timeout handling for stalled streams)
+  // ═══════════════════════════════════════════════════════════════════════════
+  bool _hasReceivedFirstSnapshot = false;
+  bool _isInitialLoadInProgress = false;
+  bool _initialLoadTimedOut = false;
+  Timer? _initialLoadTimer;
 
   // ═══════════════════════════════════════════════════════════════════════════
   // FIRST PAGE STATE (real-time stream)
@@ -173,6 +205,15 @@ class NotificationListProvider extends ChangeNotifier {
   /// True if actively listening to the first-page stream.
   bool get isListening => _isListening;
 
+  /// True while waiting for first stream snapshot.
+  bool get isInitialLoadInProgress => _isInitialLoadInProgress;
+
+  /// True if first load timed out without receiving data.
+  bool get initialLoadTimedOut => _initialLoadTimedOut;
+
+  /// True once first snapshot has been received (even if empty).
+  bool get hasReceivedFirstSnapshot => _hasReceivedFirstSnapshot;
+
   /// Snapshot of list state for Selector consumption.
   ///
   /// Use with context.select() to only rebuild when relevant state changes.
@@ -183,6 +224,9 @@ class NotificationListProvider extends ChangeNotifier {
         isLoadingMore: _isLoadingMore,
         hasMore: _hasMore,
         loadMoreError: _loadMoreError,
+        isInitialLoadInProgress: _isInitialLoadInProgress,
+        initialLoadTimedOut: _initialLoadTimedOut,
+        hasReceivedFirstSnapshot: _hasReceivedFirstSnapshot,
       );
 
   /// Update the cached notifications list.
@@ -203,12 +247,30 @@ class NotificationListProvider extends ChangeNotifier {
         final newUid = user?.uid;
         if (newUid == _activeUid) return;
 
+        ProductionLog.log(
+          '📱 NotificationListProvider: auth changed from $_activeUid to $newUid',
+        );
+
+        // Preserve whether we were actively listening before stopping
+        final wasListening = _isListening;
+
         // UID changed - stop any active listening and clear state
         if (_isListening) {
           _stopListeningInternal();
         }
         _clearState();
         _activeUid = newUid;
+
+        // If we were listening and have a new valid UID, restart with new user
+        // The widget will call startListening again, but this handles edge cases
+        // where auth changes while notification screen is still mounted
+        if (wasListening && newUid != null) {
+          ProductionLog.log(
+            '📱 NotificationListProvider: restarting listener for new user',
+          );
+          // Note: Widget still holds old userRef, it will call startListening
+          // with new ref in didChangeDependencies
+        }
       },
       onError: (e) {
         AppLog.d('❌ NotificationListProvider._init auth error: $e');
@@ -225,6 +287,12 @@ class NotificationListProvider extends ChangeNotifier {
     _isLoadingMore = false;
     _loadMoreError = false;
     _hasStreamError = false;
+    // Reset first-load state
+    _hasReceivedFirstSnapshot = false;
+    _isInitialLoadInProgress = false;
+    _initialLoadTimedOut = false;
+    _initialLoadTimer?.cancel();
+    _initialLoadTimer = null;
     _updateCachedList();
     _scheduleNotify();
   }
@@ -235,12 +303,60 @@ class NotificationListProvider extends ChangeNotifier {
 
   /// Start listening to the notification stream for the given user.
   ///
-  /// Call from widget's initState. Does nothing if already listening.
+  /// Call from widget's didChangeDependencies. Handles:
+  /// - Already listening to same userRef: no-op
+  /// - Already listening to different userRef: stop old, start new
+  /// - Not listening: start fresh
   void startListening(DocumentReference userRef) {
-    if (_isListening) return;
+    // If already listening to the same userRef, no-op
+    if (_isListening && _currentUserRef?.path == userRef.path) {
+      return;
+    }
+
+    // If listening to a different userRef, stop old subscription first
+    if (_isListening && _currentUserRef?.path != userRef.path) {
+      ProductionLog.log(
+        '📱 NotificationListProvider: userRef changed, restarting stream',
+      );
+      _stopListeningInternal();
+      _clearState();
+    }
+
+    ProductionLog.log(
+      '📱 NotificationListProvider: startListening userRef=${userRef.id} uid=$_activeUid',
+    );
+
     _currentUserRef = userRef;
     _isListening = true;
+
+    // Set first-load state
+    _isInitialLoadInProgress = true;
+    _hasReceivedFirstSnapshot = false;
+    _initialLoadTimedOut = false;
+
+    // Start timeout timer
+    _initialLoadTimer?.cancel();
+    _initialLoadTimer = Timer(_initialLoadTimeout, _onInitialLoadTimeout);
+
     _initFirstPageStream();
+
+    // Notify immediately so UI shows loading state
+    _scheduleNotify();
+  }
+
+  /// Called when first load times out without receiving a snapshot.
+  void _onInitialLoadTimeout() {
+    if (_disposed) return;
+    if (_hasReceivedFirstSnapshot) return; // Already received, ignore
+
+    ProductionLog.log(
+      '⏱️ NotificationListProvider: initial load timed out after ${_initialLoadTimeout.inSeconds}s',
+    );
+
+    _isInitialLoadInProgress = false;
+    _initialLoadTimedOut = true;
+    _hasStreamError = true; // Drive retry UI
+    _scheduleNotify();
   }
 
   /// Stop listening to the notification stream.
@@ -261,6 +377,9 @@ class NotificationListProvider extends ChangeNotifier {
     final userRef = _currentUserRef;
     if (userRef == null) return;
     final uid = _activeUid;
+    final startTime = DateTime.now();
+
+    ProductionLog.log('📱 NotificationListProvider: stream attached');
 
     _firstPageSubscription?.cancel();
     _firstPageSubscription = _service
@@ -268,18 +387,46 @@ class NotificationListProvider extends ChangeNotifier {
         .listen(
       (snapshot) {
         if (_disposed || _activeUid != uid) return;
+
+        // Log first snapshot latency
+        if (!_hasReceivedFirstSnapshot) {
+          final latency = DateTime.now().difference(startTime).inMilliseconds;
+          ProductionLog.log(
+            '✅ NotificationListProvider: first snapshot received, '
+            'docs=${snapshot.docs.length}, latency=${latency}ms',
+          );
+        }
+
         _handleFirstPageUpdate(snapshot);
       },
       onError: (e) {
         if (_disposed || _activeUid != uid) return;
+
+        final errorCode = e is FirebaseException ? e.code : 'unknown';
+        final errorMsg = e is FirebaseException ? e.message : e.toString();
+        ProductionLog.log(
+          '❌ NotificationListProvider: stream error code=$errorCode msg=$errorMsg',
+        );
+
+        // Cancel timeout timer on error
+        _initialLoadTimer?.cancel();
+        _initialLoadTimer = null;
+
+        _isInitialLoadInProgress = false;
         _hasStreamError = true;
         _scheduleNotify();
-        AppLog.d('❌ NotificationListProvider stream error: $e');
       },
     );
   }
 
   void _handleFirstPageUpdate(QuerySnapshot snapshot) {
+    // Cancel timeout timer and update first-load state
+    _initialLoadTimer?.cancel();
+    _initialLoadTimer = null;
+    _hasReceivedFirstSnapshot = true;
+    _isInitialLoadInProgress = false;
+    _initialLoadTimedOut = false;
+
     final newFirstPageIds = <String>{};
     final newDocs = <String, NotificationListItem>{};
 
@@ -388,6 +535,23 @@ class NotificationListProvider extends ChangeNotifier {
     await Future.delayed(const Duration(milliseconds: 300));
   }
 
+  /// Retry initial load after timeout or error.
+  ///
+  /// Stops the current stream and restarts fresh with timeout handling.
+  void retryInitialLoad() {
+    final userRef = _currentUserRef;
+    if (userRef == null) return;
+
+    ProductionLog.log('🔄 NotificationListProvider: retrying initial load');
+
+    // Stop current stream
+    _stopListeningInternal();
+    _clearState();
+
+    // Restart
+    startListening(userRef);
+  }
+
   // ═══════════════════════════════════════════════════════════════════════════
   // UNREAD COUNT STREAM (for badge - lightweight, separate from list)
   // ═══════════════════════════════════════════════════════════════════════════
@@ -492,6 +656,7 @@ class NotificationListProvider extends ChangeNotifier {
   void dispose() {
     _disposed = true;
     _notifyTimer?.cancel();
+    _initialLoadTimer?.cancel();
     _firstPageSubscription?.cancel();
     _authSubscription?.cancel();
     _notificationMap.clear();
