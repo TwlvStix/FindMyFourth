@@ -1,10 +1,12 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_app_check/firebase_app_check.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:cloud_functions/cloud_functions.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/foundation.dart';
 import '/core/config/build_flags.dart';
+import '/core/utils/app_log.dart';
 
 const int _authEmulatorPort =
     int.fromEnvironment('FIREBASE_AUTH_EMULATOR_PORT', defaultValue: 9099);
@@ -48,6 +50,8 @@ Future<void> initFirebase() async {
     await Firebase.initializeApp();
   }
 
+  await _initAppCheck();
+
   if (kDebugMode && kUseFirebaseEmulator) {
     final emulatorHost = _getEmulatorHost();
     FirebaseAuth.instance.useAuthEmulator(emulatorHost, _authEmulatorPort);
@@ -57,6 +61,46 @@ Future<void> initFirebase() async {
         .useFunctionsEmulator(emulatorHost, _functionsEmulatorPort);
     FirebaseStorage.instance
         .useStorageEmulator(emulatorHost, _storageEmulatorPort);
+  }
+}
+
+Future<void> _initAppCheck() async {
+  if (kIsWeb) {
+    // Web needs a reCAPTCHA provider key, which we have not configured yet.
+    AppLog.d('ℹ️ App Check skipped on web (no reCAPTCHA provider configured).');
+    return;
+  }
+
+  if (kUseFirebaseEmulator) {
+    AppLog.d('ℹ️ App Check skipped while using Firebase emulators.');
+    return;
+  }
+
+  final useProductionProviders = kReleaseMode && kAppEnv == 'prod';
+  final debugToken = kAppCheckDebugToken.trim();
+
+  try {
+    if (useProductionProviders) {
+      await FirebaseAppCheck.instance.activate(
+        providerAndroid: const AndroidPlayIntegrityProvider(),
+        providerApple: const AppleAppAttestWithDeviceCheckFallbackProvider(),
+      );
+      AppLog.d('✅ App Check activated with production providers.');
+    } else {
+      await FirebaseAppCheck.instance.activate(
+        providerAndroid: debugToken.isEmpty
+            ? const AndroidDebugProvider()
+            : AndroidDebugProvider(debugToken: debugToken),
+        providerApple: debugToken.isEmpty
+            ? const AppleDebugProvider()
+            : AppleDebugProvider(debugToken: debugToken),
+      );
+      AppLog.d('✅ App Check activated with debug providers.');
+    }
+
+    await FirebaseAppCheck.instance.setTokenAutoRefreshEnabled(true);
+  } catch (error) {
+    AppLog.d('⚠️ App Check activation failed: $error');
   }
 }
 

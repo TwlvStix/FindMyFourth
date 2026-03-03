@@ -979,15 +979,43 @@ exports.deleteAccount = functions
     }
   });
 
+/**
+ * Resolves the authenticated user's UID from context.auth or data.idToken fallback.
+ * Used by onboarding functions to handle race conditions during signup.
+ * Follows the same pattern as deleteAccount (lines 932-944).
+ */
+async function resolveCallableUid(context, data, functionName) {
+  let uid = context.auth?.uid;
+  if (!uid) {
+    const idToken = data?.idToken;
+    if (typeof idToken === "string" && idToken.length > 0) {
+      try {
+        const decoded = await admin.auth().verifyIdToken(idToken);
+        uid = decoded.uid;
+        console.log(`${functionName} verified idToken`, { uid });
+      } catch (error) {
+        console.error(`${functionName} idToken verify failed`, error);
+      }
+    }
+  }
+  if (!uid) {
+    console.error(`${functionName} unauthenticated`, {
+      hasAuth: !!context.auth,
+      idTokenLength:
+        typeof data?.idToken === "string" ? data.idToken.length : 0,
+    });
+    throw new functions.https.HttpsError(
+      "unauthenticated",
+      "Authentication required.",
+    );
+  }
+  return uid;
+}
+
 exports.completeOnboarding = functions
   .region("us-west2")
   .https.onCall(async (data, context) => {
-    if (!context.auth) {
-      throw new functions.https.HttpsError(
-        "unauthenticated",
-        "Authentication required.",
-      );
-    }
+    const uid = await resolveCallableUid(context, data, "completeOnboarding");
     const userDocPath = data?.userDocPath;
     if (typeof userDocPath !== "string" || userDocPath.split("/").length !== 2) {
       throw new functions.https.HttpsError(
@@ -995,7 +1023,7 @@ exports.completeOnboarding = functions
         "A valid user document path is required.",
       );
     }
-    if (context.auth.uid !== userDocPath.split("/")[1]) {
+    if (uid !== userDocPath.split("/")[1]) {
       throw new functions.https.HttpsError(
         "permission-denied",
         "Authenticated user doesn't match provided user reference.",
@@ -1020,12 +1048,11 @@ exports.completeOnboarding = functions
 exports.checkOnboardingComplete = functions
   .region("us-west2")
   .https.onCall(async (data, context) => {
-    if (!context.auth) {
-      throw new functions.https.HttpsError(
-        "unauthenticated",
-        "Authentication required.",
-      );
-    }
+    const uid = await resolveCallableUid(
+      context,
+      data,
+      "checkOnboardingComplete",
+    );
     const userDocPath = data?.userDocPath;
     if (typeof userDocPath !== "string" || userDocPath.split("/").length !== 2) {
       throw new functions.https.HttpsError(
@@ -1033,7 +1060,7 @@ exports.checkOnboardingComplete = functions
         "A valid user document path is required.",
       );
     }
-    if (context.auth.uid !== userDocPath.split("/")[1]) {
+    if (uid !== userDocPath.split("/")[1]) {
       throw new functions.https.HttpsError(
         "permission-denied",
         "Authenticated user doesn't match provided user reference.",

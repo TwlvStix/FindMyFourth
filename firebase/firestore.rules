@@ -333,6 +333,7 @@ service cloud.firestore {
         'vibe_profile.importance',
         'vibe_profile.importance_version',
         'vibe_profile.importance_updated_at',
+        'onboarding_completed',
         'golf_canada_number',
         'profile_completeness',
         'total_verified_rounds',
@@ -543,7 +544,8 @@ service cloud.firestore {
       return isSignedIn() && request.auth.uid == playerId;
     }
 
-    // Is the requesting user the host of this round?
+    // Reserved for Phase 2: Guards host-only operations (cancel others, view all feedback,
+    // trigger exports) when behavioral dataset UI features are implemented.
     function isRoundHost(roundId) {
       return isSignedIn() &&
         get(/databases/$(database)/documents/rounds/$(roundId)).data.host_player_id == request.auth.uid;

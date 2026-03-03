@@ -6,7 +6,6 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import '../auth_manager.dart';
-import '/backend/cloud_functions/cloud_functions.dart';
 import '/core/utils/app_log.dart';
 
 import '/backend/backend.dart';
@@ -556,8 +555,6 @@ class FirebaseAuthManager extends AuthManager
       return;
     }
 
-    final userDocPath = UsersRecord.collection.doc(user.uid).path;
-
     // Always verify profile exists, regardless of what flags say
     bool hasProfileData = false;
     try {
@@ -585,22 +582,12 @@ class FirebaseAuthManager extends AuthManager
       return;
     }
 
-    // Profile exists - ensure onboarding is marked complete
+    // Profile exists - ensure onboarding is marked complete.
     final completedOnboarding = await _hasCompletedOnboarding();
-    final backendConfirmed = await _verifyOnboardingCompleted(userDocPath);
-
     if (!context.mounted) return;
 
-    if (!completedOnboarding || !backendConfirmed) {
-      // Profile exists but onboarding flags not set - fix them
-      try {
-        await makeCloudCall(
-          'completeOnboarding',
-          {'userDocPath': userDocPath},
-        );
-      } catch (e) {
-        AppLog.d('❌ AUTH: completeOnboarding call failed: $e');
-      }
+    if (!completedOnboarding) {
+      await _markOnboardingCompletedLocally(user.uid);
     }
 
     if (!context.mounted) return;
@@ -613,27 +600,15 @@ class FirebaseAuthManager extends AuthManager
     }
   }
 
-  Future<bool> _verifyOnboardingCompleted(String userDocPath) async {
+  Future<void> _markOnboardingCompletedLocally(String uid) async {
     try {
-      final user = FirebaseAuth.instance.currentUser;
-      if (user == null) {
-        return false;
-      }
-      // Refresh token - this can fail with platform errors, not just FirebaseAuthException
-      try {
-        await user.getIdToken(true);
-      } catch (e) {
-        AppLog.d('❌ AUTH: getIdToken failed during onboarding check: $e');
-        return false;
-      }
-      final result = await makeCloudCall(
-        'checkOnboardingComplete',
-        {'userDocPath': userDocPath},
+      await UsersRecord.collection.doc(uid).set(
+        <String, dynamic>{'onboarding_completed': true},
+        SetOptions(merge: true),
       );
-      return result['completed'] == true;
+      AppLog.d('✅ AUTH: onboarding_completed set locally for $uid');
     } catch (e) {
-      AppLog.d('❌ AUTH: Onboarding verification call failed: $e');
-      return false;
+      AppLog.d('❌ AUTH: Failed to set onboarding_completed locally: $e');
     }
   }
 }

@@ -582,6 +582,28 @@ class AppPhosphorIcons {
   static const menOnly = PhosphorIconsRegular.genderMale;
 
   // ══════════════════════════════════════════════════════════════════════════
+  // ARCHETYPE IDENTITY — Vibe style archetype icons
+  // ══════════════════════════════════════════════════════════════════════════
+
+  /// Target — The Grinder archetype
+  static const target = PhosphorIconsRegular.target;
+
+  /// Tree — The Purist archetype
+  static const tree = PhosphorIconsRegular.tree;
+
+  /// Binoculars — The Tourist archetype
+  static const binoculars = PhosphorIconsRegular.binoculars;
+
+  /// Flame — The Juggernaut archetype
+  static const flame = PhosphorIconsRegular.flame;
+
+  /// Diamond — The High Roller archetype
+  static const diamond = PhosphorIconsRegular.diamond;
+
+  /// Megaphone — The Mayor archetype
+  static const megaphone = PhosphorIconsRegular.megaphone;
+
+  // ══════════════════════════════════════════════════════════════════════════
   // DEBUG
   // ══════════════════════════════════════════════════════════════════════════
 

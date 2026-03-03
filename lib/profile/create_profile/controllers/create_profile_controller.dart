@@ -1,5 +1,4 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:cloud_functions/cloud_functions.dart';
 import '/backend/schema/users_record.dart';
 import '/core/utils/app_log.dart';
 import '/services/profile_setup_service.dart';
@@ -92,12 +91,9 @@ class CreateProfileResult {
 class CreateProfileController {
   CreateProfileController({
     ProfileSetupService? profileSetupService,
-    FirebaseFunctions? functions,
-  })  : _profileSetupService = profileSetupService ?? ProfileSetupService(),
-        _functions = functions ?? FirebaseFunctions.instanceFor(region: 'us-west2');
+  }) : _profileSetupService = profileSetupService ?? ProfileSetupService();
 
   final ProfileSetupService _profileSetupService;
-  final FirebaseFunctions _functions;
 
   /// Validates username format.
   ///
@@ -127,8 +123,7 @@ class CreateProfileController {
 
   /// Submits the profile creation.
   ///
-  /// Validates form data, reserves username, saves profile data, and
-  /// calls the completeOnboarding cloud function.
+  /// Validates form data, reserves username, and saves profile data.
   Future<CreateProfileResult> submitProfile({
     required CreateProfileFormData formData,
     required bool isFormValid,
@@ -191,9 +186,6 @@ class CreateProfileController {
       );
     }
 
-    // Refresh token
-    await firebaseUser.getIdToken(true);
-
     final userRef = UsersRecord.collection.doc(firebaseUser.uid);
 
     try {
@@ -218,6 +210,7 @@ class CreateProfileController {
             firstName: formData.firstName,
             lastName: formData.lastName,
             displayName: desiredUsername,
+            onboardingCompleted: true,
             gender: formData.gender,
             dateOfBirth: formData.dateOfBirth,
             friends: [],
@@ -234,19 +227,6 @@ class CreateProfileController {
           userRef: userRef,
         );
         rethrow;
-      }
-
-      // Call completeOnboarding cloud function
-      try {
-        await _functions
-            .httpsCallable('completeOnboarding', options: HttpsCallableOptions())
-            .call({'userDocPath': userRef.path});
-      } catch (e) {
-        AppLog.d('❌ completeOnboarding cloud function failed: $e');
-        return CreateProfileResult.fail(
-          CreateProfileFailure.onboardingFailed,
-          'Unable to finish onboarding. Please try again.',
-        );
       }
 
       // Get the created user document

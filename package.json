@@ -24,6 +24,7 @@
   },
   "homepage": "https://github.com/TwlvStix/FindMyFourth#readme",
   "dependencies": {
-    "firebase-admin": "^13.6.1"
+    "firebase-admin": "^13.6.1",
+    "firebase-functions": "^7.0.6"
   }
 }

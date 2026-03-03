@@ -62,6 +62,7 @@ dependencies:
   provider: 6.1.5+1
   rxdart: 0.28.0
   shared_preferences: ^2.5.4
+  share_plus: ^10.0.0
   sign_in_with_apple: 7.0.1
   stream_transform: 2.1.1
   substring_highlight: 1.0.33
@@ -79,6 +80,7 @@ dependencies:
   firebase_remote_config: ^6.1.4
 
   crypto: ^3.0.0
+  firebase_app_check: ^0.4.1+4
 dependency_overrides:
   # http override: firebase_auth transitively requires http ^1.0.0 but some other
   # dependencies pull in older versions causing resolution conflicts. Pin to 1.4.0

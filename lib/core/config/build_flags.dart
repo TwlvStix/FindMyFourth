@@ -11,3 +11,6 @@ const bool kEnableDevUi =
 
 const bool kUseFirebaseEmulator =
     bool.fromEnvironment('USE_FIREBASE_EMULATOR', defaultValue: false);
+
+const String kAppCheckDebugToken =
+    String.fromEnvironment('APP_CHECK_DEBUG_TOKEN', defaultValue: '');

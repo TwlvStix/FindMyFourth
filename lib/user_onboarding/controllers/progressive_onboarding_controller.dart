@@ -1,7 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
 
 import '/backend/backend.dart';
-import '/backend/cloud_functions/cloud_functions.dart';
 import '/core/custom_functions.dart' as functions;
 import '/core/utils/app_log.dart';
 import '/services/profile_setup_service.dart';
@@ -14,7 +13,7 @@ import 'progressive_onboarding_result.dart';
 /// - Form validation
 /// - Email update (via injected function)
 /// - Profile save via [ProfileSetupService]
-/// - Onboarding completion via cloud function
+/// - Onboarding completion via direct user document update
 ///
 /// Does NOT handle UI concerns (dialogs, snackbars, navigation, mounted checks).
 class ProgressiveOnboardingController {
@@ -142,6 +141,7 @@ class ProgressiveOnboardingController {
           music: music,
           playForMoney: playMoney,
           paceOfPlay: pace,
+          onboardingCompleted: true,
         ),
         phoneNumber: phone.trim(),
       );
@@ -157,23 +157,6 @@ class ProgressiveOnboardingController {
       return OnboardingFailure(
         OnboardingFailureType.unknown,
         'Unable to save profile: $e',
-      );
-    }
-
-    // Complete onboarding via cloud function
-    try {
-      await makeCloudCall(
-        'completeOnboarding',
-        {'userDocPath': userRef.path},
-      );
-      AppLog.d(
-          '✅ ProgressiveOnboardingController.submitOnboarding cloud function complete');
-    } catch (e) {
-      AppLog.d(
-          '❌ ProgressiveOnboardingController.submitOnboarding cloud function error: $e');
-      return const OnboardingFailure(
-        OnboardingFailureType.cloudFunctionFailed,
-        'Unable to finish onboarding; please try again.',
       );
     }
 
