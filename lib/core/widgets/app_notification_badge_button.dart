@@ -45,11 +45,11 @@ class AppNotificationBadgeButton extends StatelessWidget {
               children: [
                 // Bell button - no background/border (matches filter icon style)
                 AppIconButton(
-                  borderColor: Colors.transparent,
+                  borderColor: AppColors.transparent,
                   borderRadius: 30.0,
                   borderWidth: 0,
                   buttonSize: 44.0,
-                  fillColor: Colors.transparent,
+                  fillColor: AppColors.transparent,
                   tooltip: 'Notifications',
                   icon: AppIcon(
                     icon: AppPhosphorIcons.notifications,

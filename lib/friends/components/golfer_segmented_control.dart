@@ -79,7 +79,7 @@ class GolferSegmentedControl extends StatelessWidget {
           decoration: BoxDecoration(
             color: isSelected
                 ? AppColors.navyLight.withValues(alpha: 0.7)
-                : Colors.transparent,
+                : AppColors.transparent,
             borderRadius: BorderRadius.circular(AppBorderRadius.md),
           ),
           child: Center(

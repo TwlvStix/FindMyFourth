@@ -105,7 +105,7 @@ class _NavBarPageState extends State<NavBarPage> {
         backgroundColor: AppColors.navyDark,
         color: AppColors.textMuted,
         activeColor: AppColors.green,
-        tabBackgroundColor: Colors.transparent,
+        tabBackgroundColor: AppColors.transparent,
         tabBorderRadius: 0.0,
         tabMargin: EdgeInsets.all(AppSpacing.xxs),
         padding: EdgeInsets.all(AppSpacing.sm),

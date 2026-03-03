@@ -2,22 +2,20 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '/backend/schema/users_record.dart';
-import '/core/design_tokens/spacing.dart';
 import '/core/utils/app_log.dart';
 import '/core/widgets/app_stream_builder.dart';
-import '/core/widgets/trust/restriction_banner.dart';
 import '/main_function/games_list/components/fixed_games_section.dart';
 import '/main_function/games_list/components/game_list_filter_bottom_sheet.dart';
 import '/main_function/games_list/components/flexible_games_shelf.dart';
 import '/main_function/games_list/components/friends_only_games_section.dart';
 import '/main_function/games_list/components/games_list_empty_state.dart';
+import '/main_function/games_list/components/restriction_banner_selector.dart';
 import '/main_function/games_list/utils/cancelled_game_handler.dart';
 import '/main_function/games_list/utils/game_canonicalization.dart';
 import '/main_function/games_list/utils/game_filter_meta.dart';
 import '/main_function/games_list/utils/game_filtering.dart';
 import '/main_function/games_list/utils/games_list_pipeline.dart';
 import '/models/game.dart';
-import '/providers/trust_provider.dart';
 import '/utils/app_util.dart';
 
 /// Content widget for the games list that handles stream composition,
@@ -156,29 +154,11 @@ class GamesListContent extends StatelessWidget {
               child: CustomScrollView(
                 physics: const AlwaysScrollableScrollPhysics(),
                 slivers: [
-                  // RestrictionBanner
-                  Consumer<TrustProvider>(
-                    builder: (context, trust, _) {
-                      final restriction = trust.myStanding?.currentRestriction;
-                      if (restriction == null) {
-                        return const SliverToBoxAdapter(
-                            child: SizedBox.shrink());
-                      }
-                      return SliverToBoxAdapter(
-                        child: Padding(
-                          padding: EdgeInsets.fromLTRB(
-                            AppSpacing.md,
-                            AppSpacing.md,
-                            AppSpacing.md,
-                            0,
-                          ),
-                          child: RestrictionBanner(
-                            restriction: restriction,
-                            onViewStanding: onNavigateToStanding,
-                          ),
-                        ),
-                      );
-                    },
+                  // RestrictionBanner (uses selector for fine-grained rebuilds)
+                  SliverToBoxAdapter(
+                    child: RestrictionBannerSelector(
+                      onNavigateToStanding: onNavigateToStanding,
+                    ),
                   ),
                   // Flexible Games Shelf
                   if (flexibleGames.isNotEmpty)

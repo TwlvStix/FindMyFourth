@@ -227,7 +227,7 @@ class _Avatar extends StatelessWidget {
         color: AppColors.navyLight.withValues(alpha: 0.4),
         borderRadius: BorderRadius.circular(AppBorderRadius.lg),
         border: Border.all(
-          color: Colors.white.withValues(alpha: 0.2),
+          color: AppColors.glassBorder,
           width: 1.5,
         ),
       ),
@@ -251,7 +251,7 @@ class _AvatarPlaceholder extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      color: Colors.white.withValues(alpha: 0.04),
+      color: AppColors.whiteSubtle,
       child: AppIcon(icon: AppPhosphorIcons.profile, color: _textMuted, size: AppIconSize.md),
     );
   }

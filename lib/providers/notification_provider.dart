@@ -59,6 +59,9 @@ class NotificationProvider extends ChangeNotifier {
   NotificationError? _lastBackendError;
   bool _disposed = false;
 
+  // Debounce timer for notifyListeners
+  Timer? _notifyTimer;
+
   // Offline queue
   final Queue<PendingUpdate> _pendingUpdates = Queue();
 
@@ -118,7 +121,7 @@ class NotificationProvider extends ChangeNotifier {
     _errorMessage = null;
     _lastBackendError = null;
     _pendingUpdates.clear();
-    notifyListeners();
+    _scheduleNotify();
   }
 
   /// Listen for connectivity changes and process queue when online
@@ -148,7 +151,7 @@ class NotificationProvider extends ChangeNotifier {
         _prefs = NotificationPreferences.fromMap(
           Map<String, dynamic>.from(prefsMap),
         );
-        notifyListeners();
+        _scheduleNotify();
       }
     } catch (e) {
       if (kDebugMode) {
@@ -163,7 +166,7 @@ class NotificationProvider extends ChangeNotifier {
     if (uid == null) return; // Not logged in
 
     _prefs = prefs;
-    notifyListeners();
+    _scheduleNotify();
 
     // Check if online
     final connectivityResults = await Connectivity().checkConnectivity();
@@ -176,7 +179,7 @@ class NotificationProvider extends ChangeNotifier {
       // Queue for later
       _pendingUpdates.add(PendingUpdate(prefs, DateTime.now()));
       _syncStatus = SyncStatus.offline;
-      notifyListeners();
+      _scheduleNotify();
       return;
     }
 
@@ -187,7 +190,7 @@ class NotificationProvider extends ChangeNotifier {
   /// Save preferences to Firestore
   Future<void> _saveToFirestore(NotificationPreferences prefs, String uid) async {
     _syncStatus = SyncStatus.saving;
-    notifyListeners();
+    _scheduleNotify();
 
     try {
       final userRef = FirebaseFirestore.instance
@@ -210,7 +213,7 @@ class NotificationProvider extends ChangeNotifier {
         if (_activeUid != uid) return; // Also guard the delayed callback
         if (_syncStatus == SyncStatus.synced) {
           _syncStatus = SyncStatus.idle;
-          notifyListeners();
+          _scheduleNotify();
         }
       });
     } catch (e) {
@@ -224,7 +227,7 @@ class NotificationProvider extends ChangeNotifier {
       }
     }
 
-    notifyListeners();
+    _scheduleNotify();
   }
 
   /// Process all pending updates in the queue
@@ -275,7 +278,7 @@ class NotificationProvider extends ChangeNotifier {
         final hoursSinceError = DateTime.now().difference(error.timestamp).inHours;
         if (hoursSinceError < 24) {
           _lastBackendError = error;
-          notifyListeners();
+          _scheduleNotify();
         }
       }
     } catch (e) {
@@ -292,7 +295,7 @@ class NotificationProvider extends ChangeNotifier {
     if (_syncStatus == SyncStatus.error) {
       _syncStatus = SyncStatus.idle;
     }
-    notifyListeners();
+    _scheduleNotify();
   }
 
   /// Reload preferences from Firestore
@@ -436,9 +439,24 @@ class NotificationProvider extends ChangeNotifier {
     await updatePreferences(newPrefs);
   }
 
+  // ========================================
+  // INTERNAL HELPERS
+  // ========================================
+
+  /// Debounced notifyListeners to avoid excessive rebuilds
+  void _scheduleNotify() {
+    _notifyTimer?.cancel();
+    _notifyTimer = Timer(const Duration(milliseconds: 50), () {
+      if (!_disposed) {
+        notifyListeners();
+      }
+    });
+  }
+
   @override
   void dispose() {
     _disposed = true;
+    _notifyTimer?.cancel();
     _connectivitySub?.cancel();
     _authSubscription?.cancel();
     super.dispose();

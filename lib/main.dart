@@ -387,15 +387,7 @@ class MyAppState extends State<MyApp> {
         scrollbarTheme: ScrollbarThemeData(
           thumbVisibility: WidgetStateProperty.all(false),
           thickness: WidgetStateProperty.all(5.0),
-          thumbColor: WidgetStateProperty.resolveWith((states) {
-            if (states.contains(WidgetState.dragged)) {
-              return Color(0xff402550);
-            }
-            if (states.contains(WidgetState.hovered)) {
-              return Color(0xff402550);
-            }
-            return Color(0xff402550);
-          }),
+          thumbColor: WidgetStateProperty.all(AppColors.scrollbarThumb),
         ),
         useMaterial3: false,
       ),
@@ -415,7 +407,7 @@ class _InternalCrashTestOverlay extends StatelessWidget {
       bottom: AppSpacing.md,
       child: SafeArea(
         child: Material(
-          color: Colors.transparent,
+          color: AppColors.transparent,
           child: InkWell(
             borderRadius: BorderRadius.circular(AppBorderRadius.lg),
             onLongPress: triggerInternalCrashForTesting,
@@ -428,10 +420,10 @@ class _InternalCrashTestOverlay extends StatelessWidget {
                 horizontal: AppSpacing.md,
                 vertical: AppSpacing.xs,
               ),
-              child: const Text(
+              child: Text(
                 'Hold to Crash Test',
                 style: TextStyle(
-                  color: Colors.white,
+                  color: AppColors.pure,
                   fontWeight: FontWeight.w700,
                   fontSize: 12.0,
                 ),

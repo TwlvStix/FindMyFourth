@@ -323,7 +323,7 @@ void dispose() {
 
 ## Design Tokens
 - Use `AppSpacing` tokens — no `SizedBox(height: 16)` or `EdgeInsets.all(12)`
-- Use `AppColors` — no `Color(0xFF...)` or `Colors.white`
+- Use `AppColors` — no `Colors.*`, `Color(0x...)`, `Color.fromARGB()`, or `Color.fromRGBO()`. CI blocks PRs with violations. Allowlist: `tool/hardcoded_color_allowlist.txt`
 - Use `AppTypography` — no `TextStyle(fontSize: 14)`
 - Use `AppBorderRadius` — no `BorderRadius.circular(12)`
 - Use `AppIcon` with `AppPhosphorIcons` — no raw `Icon()` or legacy `AppIcons`

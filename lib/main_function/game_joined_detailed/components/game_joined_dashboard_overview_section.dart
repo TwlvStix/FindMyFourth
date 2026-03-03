@@ -132,7 +132,7 @@ class GameJoinedDashboardOverviewSection extends StatelessWidget {
     final result = await showModalBottomSheet<Map<String, dynamic>?>(
       context: context,
       isScrollControlled: true,
-      backgroundColor: Colors.transparent,
+      backgroundColor: AppColors.transparent,
       builder: (context) => FirmItUpBottomSheet(
         gameRef: game.reference,
       ),

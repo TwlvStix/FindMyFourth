@@ -24,7 +24,7 @@ class GroupVibeBreakdownSheet extends StatelessWidget {
     await showAppBottomSheet<void>(
       context: context,
       isScrollControlled: true,
-      backgroundColor: Colors.transparent,
+      backgroundColor: AppColors.transparent,
       builder: (context) => GroupVibeBreakdownSheet(result: result),
     );
   }

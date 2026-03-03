@@ -49,7 +49,7 @@ class GameDetailsCard extends StatelessWidget {
               AppExpandableText(
                 text: game.coursePlay,
                 style: AppTypography.titleMedium.copyWith(
-                  color: Colors.white,
+                  color: AppColors.pure,
                   fontWeight: FontWeight.w700,
                 ),
                 maxLines: 1,
@@ -57,7 +57,7 @@ class GameDetailsCard extends StatelessWidget {
               Text(
                 game.nameGame,
                 style: AppTypography.bodySmall.copyWith(
-                  color: Colors.white.withValues(alpha: 0.7),
+                  color: AppColors.glassTextSecondary,
                   fontWeight: FontWeight.w500,
                 ),
               ),

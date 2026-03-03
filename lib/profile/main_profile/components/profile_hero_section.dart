@@ -103,7 +103,7 @@ class ProfileHeroSection extends StatelessWidget {
                     button: true,
                     label: 'Change profile photo',
                     child: Material(
-                      color: Colors.transparent,
+                      color: AppColors.transparent,
                       shape: const CircleBorder(),
                       clipBehavior: Clip.antiAlias,
                       child: InkWell(
@@ -146,7 +146,7 @@ class ProfileHeroSection extends StatelessWidget {
                     button: true,
                     label: 'Edit photo',
                     child: Material(
-                      color: Colors.transparent,
+                      color: AppColors.transparent,
                       shape: const CircleBorder(),
                       child: InkWell(
                         onTap: () {

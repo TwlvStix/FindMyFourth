@@ -188,7 +188,7 @@ class AppIconBadge extends StatelessWidget {
         );
       case AppIconBadgeVariant.ghost:
         return (
-          background: Colors.transparent,
+          background: AppColors.transparent,
           iconColor: AppColors.slate,
           borderColor: null
         );

@@ -229,7 +229,7 @@ class _ProfileUserFirebaseWidgetState extends State<ProfileUserFirebaseWidget>
     showAppBottomSheet(
       context: context,
       isScrollControlled: true,
-      backgroundColor: Colors.transparent,
+      backgroundColor: AppColors.transparent,
       enableDrag: true,
       builder: (sheetContext) => MutualFriendsSheet(
         mutualFriends: friends,

@@ -106,7 +106,7 @@ class ChatInputBar extends StatelessWidget {
                           maxLines: 2,
                           overflow: TextOverflow.ellipsis,
                           style: AppTypography.bodySmall.copyWith(
-                            color: Colors.white.withValues(alpha: 0.7),
+                            color: AppColors.glassTextSecondary,
                           ),
                         ),
                       ],

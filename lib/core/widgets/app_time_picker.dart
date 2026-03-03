@@ -370,7 +370,7 @@ class _AppTimePickerState extends State<AppTimePicker> {
                           decoration: BoxDecoration(
                             color: !_isPM
                                 ? AppColors.navyDark
-                                : Colors.transparent,
+                                : AppColors.transparent,
                             borderRadius: BorderRadius.circular(AppBorderRadius.md),
                           ),
                           child: Text(
@@ -398,7 +398,7 @@ class _AppTimePickerState extends State<AppTimePicker> {
                           decoration: BoxDecoration(
                             color: _isPM
                                 ? AppColors.navyDark
-                                : Colors.transparent,
+                                : AppColors.transparent,
                             borderRadius: BorderRadius.circular(AppBorderRadius.md),
                           ),
                           child: Text(
@@ -501,7 +501,7 @@ Future<void> showAppTimePicker({
   HapticFeedback.mediumImpact();
   return showModalBottomSheet(
     context: context,
-    backgroundColor: Colors.transparent,
+    backgroundColor: AppColors.transparent,
     isScrollControlled: true,
     builder: (context) => Padding(
       padding: EdgeInsets.only(

@@ -1,0 +1,14 @@
+# Hardcoded Color Allowlist
+# Files listed here are exempt from the hardcoded color check.
+# Format: one path per line, relative to lib/
+
+# Design token source files (define the tokens themselves)
+core/design_tokens/colors.dart
+core/design_tokens/elevation.dart
+core/design_tokens/archetype_colors.dart
+
+# Legacy theme bridge (scheduled for cleanup)
+core/app_theme.dart
+
+# Brand colors (official third-party brand guidelines)
+core/widgets/google_logo.dart

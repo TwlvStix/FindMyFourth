@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '/core/design_tokens/colors.dart';
 import 'motion_tokens.dart';
 import 'reduced_motion.dart';
 
@@ -44,7 +45,7 @@ Future<T?> showAppDialog<T>({
   return showGeneralDialog<T>(
     context: context,
     barrierDismissible: barrierDismissible,
-    barrierColor: barrierColor ?? Colors.black54,
+    barrierColor: barrierColor ?? AppColors.scrim,
     barrierLabel: barrierLabel ??
         MaterialLocalizations.of(context).modalBarrierDismissLabel,
     transitionDuration:
@@ -170,7 +171,7 @@ class AppBottomSheetRoute<T> extends ModalRoute<T> {
   String? get barrierLabel => 'Dismiss';
 
   @override
-  Color get barrierColor => Colors.black54;
+  Color get barrierColor => AppColors.scrim;
 
   @override
   bool get opaque => false;

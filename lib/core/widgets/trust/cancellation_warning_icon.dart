@@ -57,7 +57,7 @@ class CancellationWarningIcon extends StatelessWidget {
     showAppBottomSheet(
       context: context,
       isScrollControlled: true,
-      backgroundColor: Colors.transparent,
+      backgroundColor: AppColors.transparent,
       enableDrag: true,
       builder: (_) => _CancellationWarningSheet(
         warningCount: warningCount,

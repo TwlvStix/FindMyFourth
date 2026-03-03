@@ -63,14 +63,14 @@ class DraftBanner extends StatelessWidget {
                 Text(
                   'Continue where you left off',
                   style: AppTypography.titleSmall.copyWith(
-                    color: Colors.white,
+                    color: AppColors.pure,
                   ),
                 ),
                 SizedBox(height: AppSpacing.xxs),
                 Text(
                   'Your draft has been restored',
                   style: AppTypography.bodySmall.copyWith(
-                    color: Colors.white.withValues(alpha: 0.8),
+                    color: Colors.white.withValues(alpha: 0.8), // Keep: no 80% token
                     fontSize: 13,
                   ),
                 ),

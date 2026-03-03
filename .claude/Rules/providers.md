@@ -9,7 +9,7 @@ paths: lib/providers/**/*.dart
 - Implement `_disposed` flag, check before `notifyListeners()`
 - Use `_scheduleNotify()` debounce (50ms timer), never call `notifyListeners()` directly
 
-**Known debt**: `UserProvider` is missing the `_disposed` flag — fix when next modified.
+**Known debt**: `ChatProvider` (793 lines) exceeds the 500-line limit — split when next modified.
 
 ## Setter Guards
 When a setter calls `notifyListeners()` (or `_scheduleNotify()`), always guard against no-op updates:
@@ -54,3 +54,44 @@ Provider files should stay under 500 lines. If approaching this limit, split by 
 
 ## Logging
 - Use `AppLog.d()` with emoji prefixes, never `print()` or `debugPrint()`
+
+## Notification Scoping Policy
+
+**Hard rule**: Only call `_scheduleNotify()` when UI needs to react.
+
+### When to notify:
+- **Mutations** (create, update, delete) — UI typically needs to reflect the change
+- **Cache invalidation** — if UI watches the provider for refresh triggers
+- **Error/loading state changes** — UI displays spinners or error messages
+
+### When NOT to notify:
+- **Stream callbacks** — the stream delivers data directly to subscribers; notifying causes redundant rebuilds
+- **Future completions** — the caller awaits the result directly; no need to trigger provider listeners
+- **Internal cache updates** — caching data for later use doesn't require a UI rebuild
+
+### Consumer vs Selector
+
+Prefer **selectors** over `Consumer<Provider>` when watching specific fields:
+
+```dart
+// BAD: Rebuilds entire widget tree on ANY UserProvider change
+Consumer<UserProvider>(
+  builder: (context, userProvider, _) {
+    final pending = userProvider.hasPendingOutgoingRequest(hostRef.id);
+    return MyWidget(hasPending: pending);
+  },
+)
+
+// GOOD: Rebuilds only when this specific value changes
+final pending = context.hasPendingOutgoing(hostRef.id);
+return MyWidget(hasPending: pending);
+```
+
+### Available selector extensions (in `provider_extensions.dart`):
+- `context.selectUser((p) => p.someField)`
+- `context.selectGame((p) => p.someField)`
+- `context.selectChat((p) => p.someField)`
+- `context.selectTrust((p) => p.someField)`
+- `context.selectProfile((p) => p.someField)`
+- `context.selectNotification((p) => p.someField)`
+- `context.hasPendingOutgoing(uid)` — convenience for friend request checks

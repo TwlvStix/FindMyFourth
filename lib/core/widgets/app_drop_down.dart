@@ -5,6 +5,7 @@ import 'package:dropdown_button2/dropdown_button2.dart';
 import '../form_field_controller.dart';
 import '../design_tokens/app_phosphor_icons.dart';
 import '../design_tokens/border_radius.dart';
+import '../design_tokens/colors.dart';
 import '../design_tokens/icon_size.dart';
 import '../design_tokens/spacing.dart';
 import '../widgets/app_icon.dart';
@@ -201,7 +202,7 @@ class _AppDropDownState<T> extends State<AppDropDown<T>> {
       icon: widget.icon,
       isExpanded: true,
       dropdownColor: widget.fillColor,
-      focusColor: Colors.transparent,
+      focusColor: AppColors.transparent,
       decoration: InputDecoration(
         labelText: widget.labelText == null || widget.labelText!.isEmpty
             ? null
@@ -285,7 +286,7 @@ class _AppDropDownState<T> extends State<AppDropDown<T>> {
 
   Widget _buildDropdown() {
     final overlayColor = WidgetStateProperty.resolveWith<Color?>((states) =>
-        states.contains(WidgetState.focused) ? Colors.transparent : null);
+        states.contains(WidgetState.focused) ? AppColors.transparent : null);
     final iconStyleData = widget.icon != null
         ? IconStyleData(icon: widget.icon!)
         : const IconStyleData();

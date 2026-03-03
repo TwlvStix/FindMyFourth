@@ -73,7 +73,7 @@ class FlexibleAvailabilitySummary extends StatelessWidget {
           child: Text(
             _summaryText,
             style: AppTypography.titleSmall.copyWith(
-              color: Colors.white,
+              color: AppColors.pure,
               fontWeight: FontWeight.w600,
             ),
           ),

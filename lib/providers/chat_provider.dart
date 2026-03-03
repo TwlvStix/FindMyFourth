@@ -119,9 +119,9 @@ class ChatProvider extends ChangeNotifier {
     return _service.getChatStream(chatId: chatId).map((chat) {
       if (chat != null) {
         // Cache the chat when it comes through the stream
+        // (no notifyListeners - stream delivers data directly to subscribers)
         _chatCache[chatId] = chat;
         _chatCacheTimestamps[chatId] = DateTime.now();
-        _scheduleNotify();
       }
       return chat;
     });
@@ -150,9 +150,9 @@ class ChatProvider extends ChangeNotifier {
       )
           .map((messages) {
         // Cache messages when they come through the stream
+        // (no notifyListeners - stream delivers data directly to subscribers)
         _messagesCache[chatId] = messages;
         _messagesCacheTimestamps[chatId] = DateTime.now();
-        _scheduleNotify();
         return messages;
       }),
     );
@@ -422,7 +422,7 @@ class ChatProvider extends ChangeNotifier {
   void invalidateChatCache(String chatId) {
     _chatCache.remove(chatId);
     _chatCacheTimestamps.remove(chatId);
-    _scheduleNotify();
+    // No notify - stream consumers get fresh data when resubscribed
   }
 
   /// Invalidate messages cache for a specific chat
@@ -430,7 +430,7 @@ class ChatProvider extends ChangeNotifier {
     _messagesCache.remove(chatId);
     _messagesCacheTimestamps.remove(chatId);
     _messageStreamManagers[chatId]?.clear();
-    _scheduleNotify();
+    // No notify - stream consumers get fresh data when resubscribed
   }
 
   /// Invalidate all chat caches
@@ -443,7 +443,7 @@ class ChatProvider extends ChangeNotifier {
       manager.clear();
     }
     _messageStreamManagers.clear();
-    _scheduleNotify();
+    // No notify - stream consumers get fresh data when resubscribed
   }
 
   /// Refresh a specific chat (invalidate and refetch)

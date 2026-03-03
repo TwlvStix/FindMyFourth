@@ -81,7 +81,7 @@ class _YourStandingScreenState extends State<YourStandingScreen> {
     return FairwayBackgroundDark(
       showOrganic: true,
       child: Scaffold(
-        backgroundColor: Colors.transparent,
+        backgroundColor: AppColors.transparent,
         body: SafeArea(
           child: Column(
             children: [
@@ -133,7 +133,7 @@ class _YourStandingScreenState extends State<YourStandingScreen> {
           Text(
             'Your Standing',
             style: AppTypography.titleLarge.copyWith(
-              color: Colors.white,
+              color: AppColors.pure,
               fontWeight: FontWeight.w700,
             ),
           ),
@@ -207,7 +207,7 @@ class _YourStandingScreenState extends State<YourStandingScreen> {
             Text(
               'No activity yet',
               style: AppTypography.titleLarge.copyWith(
-                color: Colors.white,
+                color: AppColors.pure,
                 fontWeight: FontWeight.w700,
               ),
               textAlign: TextAlign.center,
@@ -304,7 +304,7 @@ class _YourStandingScreenState extends State<YourStandingScreen> {
                     Text(
                       info.label,
                       style: AppTypography.titleMedium.copyWith(
-                        color: Colors.white,
+                        color: AppColors.pure,
                         fontWeight: FontWeight.w700,
                       ),
                     ),
@@ -320,7 +320,7 @@ class _YourStandingScreenState extends State<YourStandingScreen> {
               Text(
                 weighted.toStringAsFixed(1),
                 style: AppTypography.monoMedium.copyWith(
-                  color: Colors.white,
+                  color: AppColors.pure,
                   fontWeight: FontWeight.w700,
                 ),
               ),
@@ -340,7 +340,7 @@ class _YourStandingScreenState extends State<YourStandingScreen> {
                 Text(
                   '${(progress * 100).toStringAsFixed(0)}%',
                   style: AppTypography.labelSmall.copyWith(
-                    color: Colors.white,
+                    color: AppColors.pure,
                     fontWeight: FontWeight.w600,
                   ),
                 ),
@@ -352,7 +352,7 @@ class _YourStandingScreenState extends State<YourStandingScreen> {
               child: LinearProgressIndicator(
                 value: progress,
                 backgroundColor: AppColors.glassBorder,
-                valueColor: const AlwaysStoppedAnimation<Color>(Colors.white),
+                valueColor: const AlwaysStoppedAnimation<Color>(AppColors.pure),
                 minHeight: 6,
               ),
             ),

@@ -29,7 +29,7 @@ class _CommunityWidgetState extends State<CommunityWidget> {
         key: scaffoldKey,
         extendBodyBehindAppBar: true,
         appBar: AppBar(
-          backgroundColor: Colors.transparent,
+          backgroundColor: AppColors.transparent,
           automaticallyImplyLeading: false,
           title: Text(
             'Chats',

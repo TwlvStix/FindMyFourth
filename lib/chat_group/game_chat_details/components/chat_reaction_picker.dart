@@ -38,7 +38,7 @@ class ChatReactionPicker extends StatelessWidget {
             width: 40,
             height: 4,
             decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: 0.3),
+              color: Colors.white.withValues(alpha: 0.3), // Keep: no 30% token
               borderRadius: BorderRadius.circular(AppBorderRadius.xxs),
             ),
           ),

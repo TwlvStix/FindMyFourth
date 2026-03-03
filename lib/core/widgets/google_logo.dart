@@ -36,7 +36,9 @@ class GoogleLogo extends StatelessWidget {
 }
 
 class _GoogleLogoPainter extends CustomPainter {
-  // Official Google brand colors
+  // Official Google brand colors - DO NOT replace with design tokens.
+  // These are mandated by Google's brand guidelines.
+  // See: https://developers.google.com/identity/branding-guidelines
   static const Color _blue = Color(0xFF4285F4);
   static const Color _red = Color(0xFFEA4335);
   static const Color _yellow = Color(0xFFFBBC05);

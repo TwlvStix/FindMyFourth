@@ -163,7 +163,7 @@ class _GlowingThumbShape extends SliderComponentShape {
 
     // Inner highlight for depth
     final highlightPaint = Paint()
-      ..color = Colors.white.withValues(alpha: 0.2)
+      ..color = AppColorsDark.glassBorder
       ..style = PaintingStyle.stroke
       ..strokeWidth = 1;
     canvas.drawCircle(

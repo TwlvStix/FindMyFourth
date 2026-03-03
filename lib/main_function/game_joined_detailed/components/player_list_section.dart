@@ -306,7 +306,7 @@ class _RegisteredPlayerCard extends StatelessWidget {
                 ),
                 borderRadius: 20.0,
                 buttonSize: 40.0,
-                fillColor: Colors.transparent,
+                fillColor: AppColors.transparent,
                 tooltip: 'Remove player',
                 onPressed: onRemove,
               )
@@ -431,7 +431,7 @@ class _GuestPlayerCard extends StatelessWidget {
                 ),
                 borderRadius: 20.0,
                 buttonSize: 40.0,
-                fillColor: Colors.transparent,
+                fillColor: AppColors.transparent,
                 tooltip: 'Remove guest',
                 onPressed: onRemove,
               ),

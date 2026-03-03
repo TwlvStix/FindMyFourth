@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:provider/provider.dart';
 
 import '/auth/firebase_auth/auth_util.dart';
 import '/backend/backend.dart';
@@ -195,7 +194,7 @@ class _EditProfileWidgetState extends State<EditProfileWidget>
       SnackBar(
         content: Text(
           message,
-          style: AppTypography.bodySmall.copyWith(color: Colors.white),
+          style: AppTypography.bodySmall.copyWith(color: AppColors.pure),
         ),
         duration: const Duration(milliseconds: 2500),
         backgroundColor: isError ? AppColors.error : AppColors.success,
@@ -206,7 +205,7 @@ class _EditProfileWidgetState extends State<EditProfileWidget>
   Future<void> _handleChangePhoto() async {
     await showAppBottomSheet(
       isScrollControlled: true,
-      backgroundColor: Colors.transparent,
+      backgroundColor: AppColors.transparent,
       enableDrag: false,
       context: context,
       builder: (context) => Padding(
@@ -218,21 +217,19 @@ class _EditProfileWidgetState extends State<EditProfileWidget>
 
   @override
   Widget build(BuildContext context) {
-    context.watch<AppState>();
-
     return GestureDetector(
       onTap: () => FocusScope.of(context).unfocus(),
       child: Scaffold(
         key: _scaffoldKey,
         extendBodyBehindAppBar: true,
         appBar: AppBar(
-          backgroundColor: Colors.transparent,
+          backgroundColor: AppColors.transparent,
           automaticallyImplyLeading: false,
           elevation: 0,
           leading: const PremiumBackButton(),
           title: Text(
             'Edit Profile',
-            style: AppTypography.titleLarge.copyWith(color: Colors.white),
+            style: AppTypography.titleLarge.copyWith(color: AppColors.pure),
           ),
         ),
         body: FairwayBackgroundDark(

@@ -412,7 +412,7 @@ class _ToggleChip extends StatelessWidget {
         padding: EdgeInsets.symmetric(
             horizontal: AppSpacing.sm - 2, vertical: AppSpacing.xs - 2),
         decoration: BoxDecoration(
-          color: selected ? selectedColor : Colors.transparent,
+          color: selected ? selectedColor : AppColors.transparent,
           borderRadius: BorderRadius.circular(AppBorderRadius.xl),
           border: Border.all(
             color: selected

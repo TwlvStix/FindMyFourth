@@ -42,6 +42,9 @@ class UserProvider extends ChangeNotifier {
   // Debounced notifyListeners to prevent excessive rebuilds (Phase 10-03 A-RACE-001)
   Timer? _notifyDebounce;
 
+  // Disposed flag to prevent post-dispose notifications
+  bool _disposed = false;
+
   // Request managers for caching
   final _friendsManager = StreamRequestManager<List<UsersRecord>>(5);
   final _friendRequestsManager = StreamRequestManager<List<UsersRecord>>(5);
@@ -56,13 +59,13 @@ class UserProvider extends ChangeNotifier {
   /// Add a pending outgoing request (called after successful send)
   void _addPendingOutgoingRequest(String uid) {
     _pendingOutgoingRequests.add(uid);
-    notifyListeners();
+    _scheduleNotify(); // Mutation state - UI needs to know
   }
 
   /// Clear pending outgoing request (e.g., when cancelled or accepted)
   void clearPendingOutgoingRequest(String uid) {
     _pendingOutgoingRequests.remove(uid);
-    notifyListeners();
+    _scheduleNotify(); // Mutation state - UI needs to know
   }
 
   // Individual user document cache
@@ -103,12 +106,12 @@ class UserProvider extends ChangeNotifier {
           clearAllCaches();
         }
 
-        notifyListeners();
+        _scheduleNotify(); // Session state - UI needs to know
       },
       onError: (error) {
         AppLog.d('❌ UserProvider._init error: $error');
         _isLoading = false;
-        notifyListeners();
+        _scheduleNotify(); // Session state - UI needs to know
       },
     );
   }
@@ -136,6 +139,7 @@ class UserProvider extends ChangeNotifier {
 
   @override
   void dispose() {
+    _disposed = true;
     _userSubscription?.cancel();
     _notifyDebounce?.cancel();
     clearAllCaches();
@@ -151,8 +155,10 @@ class UserProvider extends ChangeNotifier {
   /// This prevents Phase 10-03 A-RACE-001 (concurrent notifyListeners during login).
   void _scheduleNotify() {
     _notifyDebounce?.cancel();
-    _notifyDebounce = Timer(Duration(milliseconds: 50), () {
-      notifyListeners();
+    _notifyDebounce = Timer(const Duration(milliseconds: 50), () {
+      if (!_disposed) {
+        notifyListeners();
+      }
     });
   }
 
@@ -162,7 +168,9 @@ class UserProvider extends ChangeNotifier {
   /// such as friend removal where users expect immediate visual feedback.
   void forceNotify() {
     _notifyDebounce?.cancel();
-    notifyListeners();
+    if (!_disposed) {
+      notifyListeners();
+    }
   }
 
   // ========================================
@@ -358,15 +366,19 @@ class UserProvider extends ChangeNotifier {
   }
 
   /// Refresh friends cache
+  ///
+  /// Note: No _scheduleNotify() - cache invalidation doesn't need to notify.
+  /// Stream consumers get fresh data directly from the stream when resubscribed.
   void refreshFriends() {
     _friendsManager.clearRequest('friends_$userId');
-    _scheduleNotify();
   }
 
   /// Refresh friend requests cache
+  ///
+  /// Note: No _scheduleNotify() - cache invalidation doesn't need to notify.
+  /// Stream consumers get fresh data directly from the stream when resubscribed.
   void refreshFriendRequests() {
     _friendRequestsManager.clearRequest('friend_requests_$userId');
-    _scheduleNotify();
   }
 
   Stream<List<UsersRecord>> _queryUsersByRefs(List<DocumentReference> refs) {
@@ -411,9 +423,11 @@ class UserProvider extends ChangeNotifier {
   }
 
   /// Refresh courses cache
+  ///
+  /// Note: No _scheduleNotify() - cache invalidation doesn't need to notify.
+  /// Future consumers get fresh data when they call getCourses() again.
   void refreshCourses() {
     _coursesManager.clearRequest('all_courses');
-    _scheduleNotify();
   }
 
   // ========================================

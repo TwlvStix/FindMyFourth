@@ -96,9 +96,10 @@ class GameProvider extends ChangeNotifier {
     try {
       final game = await _service.getGameById(gameId);
       if (game != null) {
+        // Cache the game when fetched
+        // (no notifyListeners - caller awaits result directly)
         _gameCache[gameId] = game;
         _gameCacheTimestamps[gameId] = DateTime.now();
-        _scheduleNotify();
       }
       return game;
     } catch (e) {
@@ -115,9 +116,9 @@ class GameProvider extends ChangeNotifier {
       return _service.watchGameById(gameId).map((game) {
         if (game != null) {
           // Cache the game when it comes through the stream
+          // (no notifyListeners - stream delivers data directly to subscribers)
           _gameCache[gameId] = game;
           _gameCacheTimestamps[gameId] = DateTime.now();
-          _scheduleNotify();
         }
         return game;
       });
@@ -463,7 +464,7 @@ class GameProvider extends ChangeNotifier {
   void invalidateGameCache(String gameId) {
     _gameCache.remove(gameId);
     _gameCacheTimestamps.remove(gameId);
-    _scheduleNotify();
+    // No notify - stream consumers get fresh data when resubscribed
   }
 
   /// Invalidate user games cache (when user joins/leaves games)
@@ -472,7 +473,7 @@ class GameProvider extends ChangeNotifier {
     _gameStreamManagers[queryKey]?.clear();
     _queryResultCache.remove(queryKey);
     _queryResultCacheTimestamps.remove(queryKey);
-    _scheduleNotify();
+    // No notify - stream consumers get fresh data when resubscribed
   }
 
   /// Invalidate available games cache (when filters change)
@@ -487,7 +488,7 @@ class GameProvider extends ChangeNotifier {
     });
     _queryResultCache.removeWhere((key, value) => key.startsWith('available_'));
     _queryResultCacheTimestamps.removeWhere((key, value) => key.startsWith('available_'));
-    _scheduleNotify();
+    // No notify - stream consumers get fresh data when resubscribed
   }
 
   /// Invalidate all game caches
@@ -500,7 +501,7 @@ class GameProvider extends ChangeNotifier {
       manager.clear();
     }
     _gameStreamManagers.clear();
-    _scheduleNotify();
+    // No notify - stream consumers get fresh data when resubscribed
   }
 
   /// Refresh a specific game (invalidate and refetch)

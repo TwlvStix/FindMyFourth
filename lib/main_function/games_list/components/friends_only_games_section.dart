@@ -1,6 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
 
 import '/core/design_tokens/app_phosphor_icons.dart';
 import '/core/design_tokens/colors.dart';
@@ -8,10 +7,9 @@ import '/core/design_tokens/icon_size.dart';
 import '/core/design_tokens/spacing.dart';
 import '/core/design_tokens/typography.dart';
 import '/core/widgets/app_icon.dart';
-import '/main_function/games_list/components/premium_game_card.dart';
+import '/main_function/games_list/components/friends_only_card_selector.dart';
 import '/main_function/games_list/utils/cancelled_game_handler.dart';
 import '/models/game.dart';
-import '/providers/user_provider.dart';
 
 /// Builds the Friends-Only Games section slivers (header + list).
 ///
@@ -111,48 +109,38 @@ class FriendsOnlyGamesSectionBuilder {
         ),
       ),
       // Game list (only if not hidden)
+      // Uses FriendsOnlyCardSelector for fine-grained rebuilds per card
       if (!hideFriendsOnlyGames)
-        Consumer<UserProvider>(
-          builder: (context, userProvider, _) {
-            return SliverPadding(
-              padding: EdgeInsets.only(
-                top: AppSpacing.sm,
-                bottom: MediaQuery.of(context).padding.bottom + 128.0,
-              ),
-              sliver: SliverList(
-                delegate: SliverChildBuilderDelegate(
-                  (context, index) {
-                    final game = lockedGames[index];
-                    final isLast = index == lockedGames.length - 1;
-                    final hostRef = game.userRef;
-                    final hasPendingRequest = hostRef != null
-                        ? userProvider.hasPendingOutgoingRequest(hostRef.id)
-                        : false;
-                    return Padding(
-                      padding: EdgeInsets.only(
-                        bottom: isLast ? 0.0 : AppSpacing.sm,
-                      ),
-                      child: PremiumGameCard(
-                        game: game,
-                        currentUserReference: currentUserReference,
-                        isLocked: true,
-                        hasPendingFriendRequest: hasPendingRequest,
-                        onAddFriend: hostRef != null
-                            ? () => onSendFriendRequest(context, hostRef)
-                            : null,
-                        getCancelledHandling: getCancelledHandling,
-                        onCancelledGameTap: onCancelledGameTap,
-                        onFriendsOnlyTap: onFriendsOnlyTap,
-                        animationIndex: index,
-                        staggerDelay: Duration(milliseconds: 24 * index),
-                      ),
-                    );
-                  },
-                  childCount: lockedGames.length,
-                ),
-              ),
-            );
-          },
+        SliverPadding(
+          padding: EdgeInsets.only(
+            top: AppSpacing.sm,
+            bottom: MediaQuery.of(context).padding.bottom + 128.0,
+          ),
+          sliver: SliverList(
+            delegate: SliverChildBuilderDelegate(
+              (context, index) {
+                final game = lockedGames[index];
+                final isLast = index == lockedGames.length - 1;
+                return Padding(
+                  padding: EdgeInsets.only(
+                    bottom: isLast ? 0.0 : AppSpacing.sm,
+                  ),
+                  child: FriendsOnlyCardSelector(
+                    game: game,
+                    currentUserReference: currentUserReference,
+                    getCancelledHandling: getCancelledHandling,
+                    onCancelledGameTap: onCancelledGameTap,
+                    onFriendsOnlyTap: onFriendsOnlyTap,
+                    onSendFriendRequest: onSendFriendRequest,
+                    animationIndex: index,
+                    staggerDelay: Duration(milliseconds: 24 * index),
+                    isLast: isLast,
+                  ),
+                );
+              },
+              childCount: lockedGames.length,
+            ),
+          ),
         ),
     ];
   }

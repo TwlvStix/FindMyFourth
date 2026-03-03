@@ -211,7 +211,7 @@ class _DefaultExploreContentState extends State<DefaultExploreContent> {
             '$count ${count == 1 ? 'golfer' : 'golfers'}',
             style: AppTypography.caption.copyWith(
               fontWeight: FontWeight.w500,
-              color: Colors.white.withValues(alpha: 0.5),
+              color: AppColors.glassTextTertiary,
             ),
           ),
         ],

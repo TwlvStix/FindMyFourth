@@ -483,7 +483,7 @@ class _ThumbButton extends StatelessWidget {
         width: 44,
         height: 44,
         decoration: BoxDecoration(
-          color: selected ? activeColor : Colors.transparent,
+          color: selected ? activeColor : AppColors.transparent,
           shape: BoxShape.circle,
           border: Border.all(
             color: selected

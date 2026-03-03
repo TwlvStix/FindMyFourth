@@ -306,7 +306,7 @@ class _AppButtonEnhancedState extends State<AppButtonEnhanced>
       // Ghost variants stay transparent when disabled
       if (widget.variant == AppButtonVariant.ghost ||
           widget.variant == AppButtonVariant.ghostDark) {
-        return Colors.transparent;
+        return AppColors.transparent;
       }
       // Dark theme: use navy surface instead of light cloud
       return AppColors.navyLight;
@@ -325,14 +325,14 @@ class _AppButtonEnhancedState extends State<AppButtonEnhanced>
             ? AppColors.navyLight.withValues(alpha:0.1)
             : _isHovered
                 ? AppColors.navyLight.withValues(alpha:0.05)
-                : Colors.transparent;
+                : AppColors.transparent;
 
       case AppButtonVariant.ghost:
         return _isPressed
             ? AppColors.cloud
             : _isHovered
                 ? AppColors.sand
-                : Colors.transparent;
+                : AppColors.transparent;
 
       case AppButtonVariant.ghostDark:
         // For dark surfaces - subtle glass effect on interaction
@@ -340,11 +340,11 @@ class _AppButtonEnhancedState extends State<AppButtonEnhanced>
             ? AppColors.glassSurface
             : _isHovered
                 ? AppColors.glassSurface
-                : Colors.transparent;
+                : AppColors.transparent;
 
       case AppButtonVariant.premium:
         // Gradient handled separately in build
-        return Colors.transparent;
+        return AppColors.transparent;
 
       case AppButtonVariant.destructive:
         return _isPressed
@@ -359,7 +359,7 @@ class _AppButtonEnhancedState extends State<AppButtonEnhanced>
             ? AppColors.error.withValues(alpha: 0.12)
             : _isHovered
                 ? AppColors.error.withValues(alpha: 0.06)
-                : Colors.transparent;
+                : AppColors.transparent;
 
       case AppButtonVariant.navyFilled:
         return _isPressed
@@ -373,7 +373,7 @@ class _AppButtonEnhancedState extends State<AppButtonEnhanced>
             ? AppColors.navyLight.withValues(alpha: 0.15)
             : _isHovered
                 ? AppColors.navyLight.withValues(alpha: 0.08)
-                : Colors.transparent;
+                : AppColors.transparent;
     }
   }
 
@@ -433,7 +433,7 @@ class _AppButtonEnhancedState extends State<AppButtonEnhanced>
           widget.variant == AppButtonVariant.google) {
         return AppColors.inputBorderIdle;
       }
-      return Colors.transparent;
+      return AppColors.transparent;
     }
 
     switch (widget.variant) {
@@ -460,7 +460,7 @@ class _AppButtonEnhancedState extends State<AppButtonEnhanced>
                 : AppColors.inputBorderIdle;
 
       default:
-        return Colors.transparent;
+        return AppColors.transparent;
     }
   }
 

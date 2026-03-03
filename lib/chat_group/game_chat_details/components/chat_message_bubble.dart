@@ -229,7 +229,7 @@ class ChatMessageBubble extends StatelessWidget {
                                             child: CircularProgressIndicator(
                                               color: isSentByCurrentUser
                                                   ? Colors.white
-                                                      .withValues(alpha: 0.8)
+                                                      .withValues(alpha: 0.8) // Keep: no 80% token
                                                   : AppColors.navyDark,
                                               strokeWidth: 2,
                                             ),

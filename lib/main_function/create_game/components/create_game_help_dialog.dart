@@ -22,7 +22,7 @@ void showCreateGameHelpDialog(
   showAppDialog(
     context: context,
     builder: (context) => Dialog(
-      backgroundColor: Colors.transparent,
+      backgroundColor: AppColors.transparent,
       child: Container(
         decoration: BoxDecoration(
           gradient: LinearGradient(

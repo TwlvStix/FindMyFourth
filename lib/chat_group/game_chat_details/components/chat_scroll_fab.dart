@@ -23,7 +23,7 @@ class ChatScrollFab extends StatelessWidget {
       child: Material(
         elevation: 4,
         borderRadius: BorderRadius.circular(AppBorderRadius.lg),
-        color: Colors.transparent,
+        color: AppColors.transparent,
         child: Container(
           decoration: BoxDecoration(
             gradient: LinearGradient(

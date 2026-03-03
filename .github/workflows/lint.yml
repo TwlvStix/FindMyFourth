@@ -29,3 +29,6 @@ jobs:
         env:
           SETSTATE_BUDGET: "150"
         run: ./scripts/lint_lib.sh
+
+      - name: Check hardcoded colors
+        run: ./tool/check_hardcoded_colors.sh

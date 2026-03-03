@@ -264,7 +264,7 @@ class BrandedGolfHeader extends StatelessWidget {
             Positioned.fill(
               child: CustomPaint(
                 painter: SubtleTopographicPainter(
-                  color: Colors.white,
+                  color: AppColors.pure,
                   opacity: 0.12, // Very subtle, atmospheric
                 ),
               ),
@@ -278,8 +278,8 @@ class BrandedGolfHeader extends StatelessWidget {
                     center: Alignment.topRight,
                     radius: 1.2,
                     colors: [
-                      Colors.white.withValues(alpha: 0.05),
-                      Colors.transparent,
+                      AppColors.whiteSubtle,
+                      AppColors.transparent,
                     ],
                   ),
                 ),
@@ -302,17 +302,17 @@ class BrandedGolfHeader extends StatelessWidget {
                       username,
                       style: AppTypography.headlineMediumSans.copyWith(
                         fontSize: 26,
-                        color: Colors.white,
+                        color: AppColors.pure,
                         letterSpacing: -0.5,
                         height: 1.2,
                         shadows: [
                           Shadow(
-                            color: Colors.black.withValues(alpha: 0.6),
+                            color: AppColors.scrim,
                             offset: Offset(0, 2),
                             blurRadius: 8,
                           ),
                           Shadow(
-                            color: Colors.black.withValues(alpha: 0.3),
+                            color: Colors.black.withValues(alpha: 0.3), // Keep: no 30% token
                             offset: Offset(0, 1),
                             blurRadius: 4,
                           ),
@@ -334,17 +334,17 @@ class BrandedGolfHeader extends StatelessWidget {
                       style: AppTypography.bodySmall.copyWith(
                         fontSize: 15,
                         fontWeight: FontWeight.w500,
-                        color: Colors.white.withValues(alpha: 0.95),
+                        color: AppColors.whiteStrong,
                         letterSpacing: 0.2,
                         height: 1.3,
                         shadows: [
                           Shadow(
-                            color: Colors.black.withValues(alpha: 0.6),
+                            color: AppColors.scrim,
                             offset: Offset(0, 2),
                             blurRadius: 6,
                           ),
                           Shadow(
-                            color: Colors.black.withValues(alpha: 0.3),
+                            color: Colors.black.withValues(alpha: 0.3), // Keep: no 30% token
                             offset: Offset(0, 1),
                             blurRadius: 3,
                           ),
@@ -368,9 +368,9 @@ class BrandedGolfHeader extends StatelessWidget {
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
                     colors: [
-                      Colors.white.withValues(alpha: 0.0),
-                      Colors.white.withValues(alpha: 0.15),
-                      Colors.white.withValues(alpha: 0.0),
+                      AppColors.transparent,
+                      AppColors.whiteMedium,
+                      AppColors.transparent,
                     ],
                   ),
                 ),

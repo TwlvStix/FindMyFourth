@@ -181,7 +181,7 @@ class AppIconBox extends StatelessWidget {
         child: PhosphorIcon(
           icon,
           size: iconSize,
-          color: iconColor ?? Colors.white,
+          color: iconColor ?? AppColors.pure,
           semanticLabel: semanticLabel,
         ),
       ),

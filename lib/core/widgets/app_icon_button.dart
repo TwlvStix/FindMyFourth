@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import '/core/design_tokens/border_radius.dart';
+import '/core/design_tokens/colors.dart';
 import 'app_icon.dart';
 
 class AppIconButton extends StatefulWidget {
@@ -115,7 +116,7 @@ class _AppIconButtonState extends State<AppIconButton> {
               side: BorderSide(
                 color: widget.hoverBorderColor ??
                     widget.borderColor ??
-                    Colors.transparent,
+                    AppColors.transparent,
                 width: widget.borderWidth ?? 0,
               ),
             );
@@ -131,7 +132,7 @@ class _AppIconButtonState extends State<AppIconButton> {
           return RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(widget.borderRadius ?? 0),
             side: BorderSide(
-              color: widget.borderColor ?? Colors.transparent,
+              color: widget.borderColor ?? AppColors.transparent,
               width: widget.borderWidth ?? 0,
             ),
           );
@@ -168,7 +169,7 @@ class _AppIconButtonState extends State<AppIconButton> {
         if (states.contains(WidgetState.pressed)) {
           return null;
         }
-        return widget.hoverColor == null ? null : Colors.transparent;
+        return widget.hoverColor == null ? null : AppColors.transparent;
       }),
     );
 
@@ -189,7 +190,7 @@ class _AppIconButtonState extends State<AppIconButton> {
                     height: iconSize,
                     child: CircularProgressIndicator(
                       valueColor: AlwaysStoppedAnimation<Color>(
-                        iconColor ?? Colors.white,
+                        iconColor ?? AppColors.pure,
                       ),
                     ),
                   )

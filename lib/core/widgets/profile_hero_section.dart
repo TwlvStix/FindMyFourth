@@ -60,7 +60,7 @@ class _ProfileHeroSectionState extends State<ProfileHeroSection>
           colors: [
             AppColors.navyDark,
             AppColors.navyDark.withValues(alpha: 0.8),
-            Colors.transparent,
+            AppColors.transparent,
           ],
           stops: [0.0, 0.5, 1.0],
         ),
@@ -76,7 +76,7 @@ class _ProfileHeroSectionState extends State<ProfileHeroSection>
                   radius: 1.0,
                   colors: [
                     AppColors.gold.withValues(alpha: 0.06),
-                    Colors.transparent,
+                    AppColors.transparent,
                   ],
                 ),
               ),
@@ -154,7 +154,7 @@ class _ProfileHeroSectionState extends State<ProfileHeroSection>
                     bottom: 4,
                     right: 4,
                     child: Material(
-                      color: Colors.transparent,
+                      color: AppColors.transparent,
                       child: InkResponse(
                         onTap: widget.onEditPhoto,
                         radius: 30,
@@ -172,7 +172,7 @@ class _ProfileHeroSectionState extends State<ProfileHeroSection>
                           ),
                           child: AppIcon(
                             icon: AppPhosphorIcons.camera,
-                            color: Colors.white,
+                            color: AppColors.pure,
                             size: AppIconSize.md,
                           ),
                         ),
@@ -196,11 +196,11 @@ class _ProfileHeroSectionState extends State<ProfileHeroSection>
                 style: TextStyle(
                   fontSize: 28,
                   fontWeight: FontWeight.w700,
-                  color: Colors.white,
+                  color: AppColors.pure,
                   letterSpacing: -0.5,
                   shadows: [
                     Shadow(
-                      color: Colors.black.withValues(alpha: 0.4),
+                      color: AppColors.overlayDark,
                       offset: Offset(0, 2),
                       blurRadius: 8,
                     ),

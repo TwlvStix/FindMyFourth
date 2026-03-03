@@ -9,6 +9,7 @@ import 'dart:math' show pow, pi, sin;
 import 'package:intl/intl.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+import '../core/design_tokens/colors.dart';
 import '../main.dart';
 
 export '../core/keep_alive_wrapper.dart';
@@ -169,7 +170,7 @@ Theme wrapInMaterialTimePickerTheme(
         dayPeriodColor: WidgetStateColor.resolveWith((states) =>
             states.contains(WidgetState.selected)
                 ? selectedDateTimeBackgroundColor
-                : Colors.transparent),
+                : AppColors.transparent),
         entryModeIconColor: pickerForegroundColor,
       ),
     ),
@@ -308,8 +309,8 @@ void showSnackbar(
               child: SizedBox(
                 height: 20,
                 width: 20,
-                child: const CircularProgressIndicator(
-                  color: Colors.white,
+                child: CircularProgressIndicator(
+                  color: AppColors.pure,
                 ),
               ),
             ),

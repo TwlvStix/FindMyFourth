@@ -1,14 +1,13 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:provider/provider.dart';
 
 import '/auth/firebase_auth/auth_util.dart';
 import '/core/design_tokens/app_phosphor_icons.dart';
 import '/core/design_tokens/colors.dart';
 import '/core/design_tokens/icon_size.dart';
 import '/core/design_tokens/typography.dart';
-import '/providers/user_provider.dart';
+import '/providers/provider_extensions.dart';
 
 class ProfileAvatarFriendFab extends StatelessWidget {
   const ProfileAvatarFriendFab({
@@ -24,7 +23,8 @@ class ProfileAvatarFriendFab extends StatelessWidget {
   Widget build(BuildContext context) {
     return AuthUserStreamWidget(
       builder: (context) {
-        final userProvider = context.watch<UserProvider>();
+        // Use selector for pending state - only rebuilds when THIS user's pending state changes
+        final hasPendingOutgoing = context.hasPendingOutgoing(userRef.id);
         final currentUserRef = currentUserReference;
         final currentFriends = currentUserDocument?.friends.toList() ?? [];
         final currentRequests =
@@ -34,7 +34,7 @@ class ProfileAvatarFriendFab extends StatelessWidget {
         final hasPending = currentRequests.contains(userRef) ||
             (currentUserRef != null &&
                 friendRequests.contains(currentUserRef)) ||
-            userProvider.hasPendingOutgoingRequest(userRef.id);
+            hasPendingOutgoing;
 
         IconData icon;
         List<Color> gradientColors;
@@ -52,7 +52,7 @@ class ProfileAvatarFriendFab extends StatelessWidget {
           onTap = () async {
             HapticFeedback.lightImpact();
             try {
-              await context.read<UserProvider>().sendFriendRequest(userRef);
+              await context.userProvider.sendFriendRequest(userRef);
               if (!context.mounted) return;
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(

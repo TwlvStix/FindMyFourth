@@ -52,7 +52,7 @@ class NotificationToggle extends StatelessWidget {
             height: 22,
             margin: const EdgeInsets.symmetric(horizontal: 3),
             decoration: BoxDecoration(
-              color: Colors.white,
+              color: AppColors.pure,
               shape: BoxShape.circle,
               boxShadow: [AppElevation.xs],
             ),

@@ -108,7 +108,7 @@ class _TabFriendsWidgetState extends State<TabFriendsWidget> {
     final result = await showModalBottomSheet<FriendFilters>(
       context: context,
       isScrollControlled: true,
-      backgroundColor: Colors.transparent,
+      backgroundColor: AppColors.transparent,
       builder: (context) => FriendFilterBottomSheet(
         currentFilters: friendFilters,
         topPadding: topPadding,
@@ -301,7 +301,7 @@ class _TabFriendsWidgetState extends State<TabFriendsWidget> {
       },
       child: Scaffold(
         key: scaffoldKey,
-        backgroundColor: Colors.transparent,
+        backgroundColor: AppColors.transparent,
         body: FairwayBackgroundDark(
           child: SafeArea(
             top: true,
@@ -450,7 +450,7 @@ class _TabFriendsWidgetState extends State<TabFriendsWidget> {
       child: RefreshIndicator(
         onRefresh: _refreshSearchTab,
         color: AppColors.navy,
-        backgroundColor: Colors.white,
+        backgroundColor: AppColors.pure,
         child: SingleChildScrollView(
           physics: const AlwaysScrollableScrollPhysics(),
           child: GolferSearchSection(
@@ -594,7 +594,7 @@ class _TabFriendsWidgetState extends State<TabFriendsWidget> {
       child: RefreshIndicator(
         onRefresh: _refreshRequestsTab,
         color: AppColors.navy,
-        backgroundColor: Colors.white,
+        backgroundColor: AppColors.pure,
         child: SingleChildScrollView(
           physics: const AlwaysScrollableScrollPhysics(),
           child: AuthUserStreamWidget(
@@ -737,7 +737,7 @@ class _TabFriendsWidgetState extends State<TabFriendsWidget> {
       child: RefreshIndicator(
         onRefresh: _refreshFriendsTab,
         color: AppColors.navy,
-        backgroundColor: Colors.white,
+        backgroundColor: AppColors.pure,
         child: SingleChildScrollView(
           physics: const AlwaysScrollableScrollPhysics(),
           child: AuthUserStreamWidget(

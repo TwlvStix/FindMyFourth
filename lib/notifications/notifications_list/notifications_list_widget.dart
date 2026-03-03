@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 
 import '/auth/firebase_auth/auth_util.dart';
 import '/providers/notification_list_provider.dart';
+import '/providers/provider_extensions.dart';
 import '/core/widgets/app_premium_dialog.dart';
 import '/core/design_tokens/app_phosphor_icons.dart';
 import '/core/design_tokens/border_radius.dart';
@@ -321,11 +322,12 @@ class _NotificationsListWidgetState extends State<NotificationsListWidget> {
   }
 
   Widget _buildNotificationsList(BuildContext context) {
-    final provider = context.watch<NotificationListProvider>();
-    final notifications = provider.notifications;
+    // Select list view state - rebuilds only when this snapshot changes
+    final state = context.selectNotificationList((p) => p.listViewState);
+    final notifications = state.notifications;
 
     // Error state
-    if (provider.hasError) {
+    if (state.hasError) {
       return Center(
         child: Text(
           'Failed to load notifications.',
@@ -337,7 +339,7 @@ class _NotificationsListWidgetState extends State<NotificationsListWidget> {
     }
 
     // Initial loading state (no data yet from stream)
-    if (notifications.isEmpty && provider.isListening && !provider.hasError) {
+    if (notifications.isEmpty && state.isListening && !state.hasError) {
       return Center(
         child: CircularProgressIndicator(
           color: AppColors.green,
@@ -350,7 +352,7 @@ class _NotificationsListWidgetState extends State<NotificationsListWidget> {
       return RefreshIndicator(
         color: AppColors.green,
         backgroundColor: AppColors.navy,
-        onRefresh: () => provider.refresh(),
+        onRefresh: () => context.read<NotificationListProvider>().refresh(),
         child: CustomScrollView(
           physics: const AlwaysScrollableScrollPhysics(),
           slivers: [
@@ -375,13 +377,13 @@ class _NotificationsListWidgetState extends State<NotificationsListWidget> {
     return RefreshIndicator(
       color: AppColors.green,
       backgroundColor: AppColors.navy,
-      onRefresh: () => provider.refresh(),
+      onRefresh: () => context.read<NotificationListProvider>().refresh(),
       child: NotificationListener<ScrollNotification>(
         onNotification: (notification) {
           if (notification.metrics.extentAfter < 200 &&
-              !provider.isLoadingMore &&
-              provider.hasMore) {
-            provider.loadMore();
+              !state.isLoadingMore &&
+              state.hasMore) {
+            context.read<NotificationListProvider>().loadMore();
           }
           return false;
         },
@@ -392,12 +394,12 @@ class _NotificationsListWidgetState extends State<NotificationsListWidget> {
             AppSpacing.md,
             AppSpacing.xxxl,
           ),
-          itemCount: notifications.length + (provider.isLoadingMore || provider.loadMoreError ? 1 : 0),
+          itemCount: notifications.length + (state.isLoadingMore || state.loadMoreError ? 1 : 0),
           separatorBuilder: (context, index) => SizedBox(height: AppSpacing.sm),
           itemBuilder: (context, index) {
             // Show loading indicator or error retry at the end
             if (index == notifications.length) {
-              if (provider.loadMoreError) {
+              if (state.loadMoreError) {
                 return Center(
                   child: Padding(
                     padding: EdgeInsets.all(AppSpacing.md),
@@ -405,7 +407,7 @@ class _NotificationsListWidgetState extends State<NotificationsListWidget> {
                       text: 'Retry',
                       variant: AppButtonVariant.ghost,
                       size: AppButtonSize.small,
-                      onPressed: () => provider.loadMore(),
+                      onPressed: () => context.read<NotificationListProvider>().loadMore(),
                     ),
                   ),
                 );
@@ -634,12 +636,18 @@ class _NotificationsListWidgetState extends State<NotificationsListWidget> {
   }
 
   List<Widget> _buildAppBarActions(DocumentReference userRef) {
-    final provider = context.watch<NotificationListProvider>();
+    // Select hasNotifications - rebuilds only when notifications appear/disappear
+    // Note: Use hasNotifications (not isEmpty) to preserve original behavior during error state
+    final hasNotifications =
+        context.selectNotificationList((p) => p.hasNotifications);
 
     // Only show actions when there are notifications
-    if (provider.notifications.isEmpty) {
+    if (!hasNotifications) {
       return [];
     }
+
+    // Get provider without watching (for stream access only)
+    final provider = context.read<NotificationListProvider>();
 
     return [
       StreamBuilder<int>(
@@ -687,16 +695,16 @@ class _NotificationsListWidgetState extends State<NotificationsListWidget> {
       child: Scaffold(
         key: scaffoldKey,
         extendBodyBehindAppBar: true,
-        backgroundColor: Colors.transparent,
+        backgroundColor: AppColors.transparent,
         appBar: AppBar(
-          backgroundColor: Colors.transparent,
+          backgroundColor: AppColors.transparent,
           automaticallyImplyLeading: false,
           elevation: 0.0,
           leading: const PremiumBackButton(),
           title: Text(
             'Notifications',
             style: AppTypography.headlineMediumSans.copyWith(
-              color: Colors.white,
+              color: AppColors.pure,
               fontWeight: FontWeight.w600,
             ),
           ),

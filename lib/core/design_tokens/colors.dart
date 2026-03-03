@@ -199,6 +199,26 @@ class AppColors {
   static const Color transparent = Color(0x00000000);
 
   // ==========================================================================
+  // WHITE OPACITY VARIANTS (For specific opacity use cases)
+  // ==========================================================================
+
+  /// White subtle - 5% (subtle highlight gradients)
+  static const Color whiteSubtle = Color(0x0DFFFFFF);
+
+  /// White medium - 15% (edge highlights, dividers)
+  static const Color whiteMedium = Color(0x26FFFFFF);
+
+  /// White strong - 95% (near-opaque text on dark backgrounds)
+  static const Color whiteStrong = Color(0xF2FFFFFF);
+
+  // ==========================================================================
+  // UI COMPONENT COLORS
+  // ==========================================================================
+
+  /// Scrollbar thumb color (purple accent for dark theme)
+  static const Color scrollbarThumb = Color(0xFF402550);
+
+  // ==========================================================================
   // GRADIENTS
   // ==========================================================================
 
@@ -394,6 +414,19 @@ class AppColorsDark {
 
   /// Scrim - black at 70%
   static const Color scrim = Color(0xB3000000);
+
+  // ==========================================================================
+  // WHITE OPACITY VARIANTS (Dark - same as light theme)
+  // ==========================================================================
+
+  /// White subtle - 5% (subtle highlight gradients)
+  static const Color whiteSubtle = Color(0x0DFFFFFF);
+
+  /// White medium - 15% (edge highlights, dividers)
+  static const Color whiteMedium = Color(0x26FFFFFF);
+
+  /// White strong - 95% (near-opaque text on dark backgrounds)
+  static const Color whiteStrong = Color(0xF2FFFFFF);
 
   // ==========================================================================
   // GRADIENTS

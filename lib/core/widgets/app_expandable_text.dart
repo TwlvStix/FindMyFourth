@@ -232,7 +232,7 @@ class _TooltipOverlay extends StatelessWidget {
           child: GestureDetector(
             onTap: onDismiss,
             behavior: HitTestBehavior.opaque,
-            child: Container(color: Colors.transparent),
+            child: Container(color: AppColors.transparent),
           ),
         ),
         // Tooltip content

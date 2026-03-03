@@ -52,7 +52,7 @@ class _FriendCardSkeletonState extends State<FriendCardSkeleton>
         color: AppColors.navy.withValues(alpha: 0.3),
         borderRadius: BorderRadius.circular(AppBorderRadius.xl),
         border: Border.all(
-          color: Colors.white.withValues(alpha: 0.1),
+          color: AppColors.glassSurface,
           width: 1.0,
         ),
       ),
@@ -159,9 +159,9 @@ class _FriendCardSkeletonState extends State<FriendCardSkeleton>
           begin: Alignment.centerLeft,
           end: Alignment.centerRight,
           colors: [
-            Colors.white.withValues(alpha: 0.15),
+            AppColors.whiteMedium,
             Colors.white.withValues(alpha: 0.25),
-            Colors.white.withValues(alpha: 0.15),
+            AppColors.whiteMedium,
           ],
           stops: [
             (shimmerPosition - 0.3).clamp(0.0, 1.0),
@@ -183,7 +183,7 @@ class _FriendCardSkeletonState extends State<FriendCardSkeleton>
       decoration: BoxDecoration(
         shape: BoxShape.circle,
         border: Border.all(
-          color: Colors.white.withValues(alpha: 0.2),
+          color: AppColors.glassBorder,
           width: 3,
         ),
       ),
@@ -194,9 +194,9 @@ class _FriendCardSkeletonState extends State<FriendCardSkeleton>
             begin: Alignment.centerLeft,
             end: Alignment.centerRight,
             colors: [
-              Colors.white.withValues(alpha: 0.15),
+              AppColors.whiteMedium,
               Colors.white.withValues(alpha: 0.25),
-              Colors.white.withValues(alpha: 0.15),
+              AppColors.whiteMedium,
             ],
             stops: [
               (shimmerPosition - 0.3).clamp(0.0, 1.0),

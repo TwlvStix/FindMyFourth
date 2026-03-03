@@ -443,7 +443,7 @@ class _ProfileCard extends StatelessWidget {
                   end: Alignment.bottomRight,
                   colors: [
                     AppColors.green.withValues(alpha: 0.08),
-                    Colors.transparent,
+                    AppColors.transparent,
                   ],
                   stops: const [0.0, 0.5],
                 )

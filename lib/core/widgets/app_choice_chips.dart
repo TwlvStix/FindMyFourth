@@ -2,6 +2,7 @@ import '../form_field_controller.dart';
 import '/core/utils/state_update.dart';
 
 import 'package:flutter/material.dart';
+import '/core/design_tokens/colors.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import '/core/design_tokens/border_radius.dart';
 import 'package:flutter/scheduler.dart';
@@ -104,7 +105,7 @@ class _AppChoiceChipsState extends State<AppChoiceChips> {
         final style =
             selected ? widget.selectedChipStyle : widget.unselectedChipStyle;
         return Theme(
-          data: Theme.of(context).copyWith(canvasColor: Colors.transparent),
+          data: Theme.of(context).copyWith(canvasColor: AppColors.transparent),
           child: ChoiceChip(
             selected: selected,
             onSelected: widget.onChanged != null
@@ -154,7 +155,7 @@ class _AppChoiceChipsState extends State<AppChoiceChips> {
             shape: RoundedRectangleBorder(
               borderRadius: style.borderRadius ?? BorderRadius.circular(AppBorderRadius.lg),
               side: BorderSide(
-                color: style.borderColor ?? Colors.transparent,
+                color: style.borderColor ?? AppColors.transparent,
                 width: style.borderWidth ?? 0,
               ),
             ),

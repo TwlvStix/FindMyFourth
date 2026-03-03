@@ -254,7 +254,7 @@ class _EditVibesWidgetState extends State<EditVibesWidget> {
       key: scaffoldKey,
       extendBodyBehindAppBar: true,
       appBar: AppBar(
-        backgroundColor: Colors.transparent,
+        backgroundColor: AppColors.transparent,
         automaticallyImplyLeading: false,
         elevation: 0,
         leading: const PremiumBackButton(),

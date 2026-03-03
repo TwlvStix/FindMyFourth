@@ -107,7 +107,7 @@ class _SignUpAccountWidgetState extends State<SignUpAccountWidget> {
                             maxWidth: 430.0,
                           ),
                           decoration: BoxDecoration(
-                            color: Colors.transparent,
+                            color: AppColors.transparent,
                           ),
                           child: Align(
                             alignment: AlignmentDirectional(0.0, 0.0),
@@ -599,10 +599,10 @@ class _SignUpAccountWidgetState extends State<SignUpAccountWidget> {
                                     child: Padding(
                                       padding: AppSpacing.verticalXs,
                                       child: InkWell(
-                                        splashColor: Colors.transparent,
-                                        focusColor: Colors.transparent,
-                                        hoverColor: Colors.transparent,
-                                        highlightColor: Colors.transparent,
+                                        splashColor: AppColors.transparent,
+                                        focusColor: AppColors.transparent,
+                                        hoverColor: AppColors.transparent,
+                                        highlightColor: AppColors.transparent,
                                         onTap: () async {
                                           context.pushSignIn(
                                             transition: TransitionStandards

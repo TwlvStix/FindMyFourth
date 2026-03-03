@@ -6,6 +6,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart' show DragStartBehavior;
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
+import '/core/design_tokens/colors.dart';
 
 const double _kTabHeight = 46.0;
 
@@ -251,8 +252,8 @@ class AppButtonTabBar extends StatefulWidget
     this.labelColor,
     this.unselectedLabelColor,
     this.borderWidth = 0,
-    this.borderColor = Colors.transparent,
-    this.unselectedBorderColor = Colors.transparent,
+    this.borderColor = AppColors.transparent,
+    this.unselectedBorderColor = AppColors.transparent,
     this.physics = const BouncingScrollPhysics(),
     this.labelPadding = const EdgeInsets.symmetric(horizontal: 4),
     this.buttonMargin = const EdgeInsets.all(4),
@@ -648,7 +649,7 @@ class _AppButtonTabBarState extends State<AppButtonTabBar>
         BoxDecoration(
           color: widget.unselectedDecoration?.color ??
               widget.unselectedBackgroundColor ??
-              Colors.transparent,
+              AppColors.transparent,
           boxShadow: widget.unselectedDecoration?.boxShadow,
           gradient: widget.unselectedDecoration?.gradient,
           borderRadius: widget.useToggleButtonStyle
@@ -658,7 +659,7 @@ class _AppButtonTabBarState extends State<AppButtonTabBar>
         BoxDecoration(
           color: widget.decoration?.color ??
               widget.backgroundColor ??
-              Colors.transparent,
+              AppColors.transparent,
           boxShadow: widget.decoration?.boxShadow,
           gradient: widget.decoration?.gradient,
           borderRadius: widget.useToggleButtonStyle
@@ -674,7 +675,7 @@ class _AppButtonTabBarState extends State<AppButtonTabBar>
         boxDecoration = boxDecoration.copyWith(
           border: Border(
             right: BorderSide(
-              color: widget.unselectedBorderColor ?? Colors.transparent,
+              color: widget.unselectedBorderColor ?? AppColors.transparent,
               width: widget.borderWidth / 2,
             ),
           ),
@@ -683,7 +684,7 @@ class _AppButtonTabBarState extends State<AppButtonTabBar>
         boxDecoration = boxDecoration.copyWith(
           border: Border(
             left: BorderSide(
-              color: widget.unselectedBorderColor ?? Colors.transparent,
+              color: widget.unselectedBorderColor ?? AppColors.transparent,
               width: widget.borderWidth / 2,
             ),
           ),
@@ -692,7 +693,7 @@ class _AppButtonTabBarState extends State<AppButtonTabBar>
         boxDecoration = boxDecoration.copyWith(
           border: Border.symmetric(
             vertical: BorderSide(
-              color: widget.unselectedBorderColor ?? Colors.transparent,
+              color: widget.unselectedBorderColor ?? AppColors.transparent,
               width: widget.borderWidth / 2,
             ),
           ),
@@ -727,7 +728,7 @@ class _AppButtonTabBarState extends State<AppButtonTabBar>
                     side: (widget.borderWidth == 0)
                         ? BorderSide.none
                         : BorderSide(
-                            color: borderColor ?? Colors.transparent,
+                            color: borderColor ?? AppColors.transparent,
                             width: widget.borderWidth,
                           ),
                     borderRadius: BorderRadius.circular(widget.borderRadius),
@@ -813,7 +814,7 @@ class _AppButtonTabBarState extends State<AppButtonTabBar>
                     side: (widget.borderWidth == 0)
                         ? BorderSide.none
                         : BorderSide(
-                            color: widget.borderColor ?? Colors.transparent,
+                            color: widget.borderColor ?? AppColors.transparent,
                             width: widget.borderWidth,
                             style: BorderStyle.solid,
                           ),

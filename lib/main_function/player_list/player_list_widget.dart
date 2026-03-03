@@ -78,7 +78,7 @@ class _PlayerListWidgetState extends State<PlayerListWidget> {
     await showModalBottomSheet(
       context: context,
       isScrollControlled: true,
-      backgroundColor: Colors.transparent,
+      backgroundColor: AppColors.transparent,
       builder: (BuildContext context) {
         return AddPlayerModal(
           slotIndex: slotIndex,
@@ -205,11 +205,11 @@ class _PlayerListWidgetState extends State<PlayerListWidget> {
               key: scaffoldKey,
               extendBodyBehindAppBar: true,
               appBar: AppBar(
-                backgroundColor: Colors.transparent,
-                surfaceTintColor: Colors.transparent,
+                backgroundColor: AppColors.transparent,
+                surfaceTintColor: AppColors.transparent,
                 scrolledUnderElevation: 0.0,
                 elevation: 0.0,
-                shadowColor: Colors.transparent,
+                shadowColor: AppColors.transparent,
                 automaticallyImplyLeading: false,
                 leading: widget.isEditMode ? const PremiumBackButton() : null,
                 title: Text(

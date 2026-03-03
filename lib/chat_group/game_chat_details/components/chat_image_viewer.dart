@@ -19,7 +19,7 @@ class ChatImageViewer extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Dialog(
-      backgroundColor: Colors.transparent,
+      backgroundColor: AppColors.transparent,
       insetPadding: const EdgeInsets.all(10),
       child: Stack(
         children: [
@@ -38,7 +38,7 @@ class ChatImageViewer extends StatelessWidget {
                           ? loadingProgress.cumulativeBytesLoaded /
                               loadingProgress.expectedTotalBytes!
                           : null,
-                      color: Colors.white,
+                      color: AppColors.pure,
                     ),
                   );
                 },

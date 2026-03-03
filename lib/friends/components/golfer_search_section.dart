@@ -245,7 +245,7 @@ class _GolferSearchSectionState extends State<GolferSearchSection> {
                       decoration: InputDecoration(
                         helperText: null,
                         helperStyle: AppTypography.labelSmall.copyWith(
-                          color: Colors.white,
+                          color: AppColors.pure,
                         ),
                         labelStyle: AppTypography.labelMedium.copyWith(
                           color: AppColors.pure,
@@ -298,14 +298,14 @@ class _GolferSearchSectionState extends State<GolferSearchSection> {
                     child: AppIconButton(
                       borderColor: widget.friendFilters?.hasActiveFilters == true
                           ? AppColors.navy.withValues(alpha:0.2)
-                          : Colors.transparent,
+                          : AppColors.transparent,
                       borderRadius: 30.0,
                       borderWidth:
                           widget.friendFilters?.hasActiveFilters == true ? 2.0 : 1.0,
                       buttonSize: 44.0,
                       fillColor: widget.friendFilters?.hasActiveFilters == true
                           ? AppColors.navy.withValues(alpha:0.1)
-                          : Colors.transparent,
+                          : AppColors.transparent,
                       tooltip: 'Filters',
                       icon: Icon(
                         AppPhosphorIcons.tune,
@@ -321,7 +321,7 @@ class _GolferSearchSectionState extends State<GolferSearchSection> {
                 Padding(
                   padding: EdgeInsets.only(left: AppSpacing.sm),
                   child: AppIconButton(
-                    borderColor: Colors.transparent,
+                    borderColor: AppColors.transparent,
                     borderRadius: 30.0,
                     borderWidth: 1.0,
                     buttonSize: 44.0,

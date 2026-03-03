@@ -71,12 +71,12 @@ class _GamesJoinedWidgetState extends State<GamesJoinedWidget> {
         key: scaffoldKey,
         extendBodyBehindAppBar: true,
         appBar: AppBar(
-          backgroundColor: Colors.transparent,
+          backgroundColor: AppColors.transparent,
           automaticallyImplyLeading: false,
           title: Text(
             'My Games',
             style: AppTypography.headlineMediumSans.copyWith(
-              color: Colors.white,
+              color: AppColors.pure,
               fontWeight: FontWeight.w600,
             ),
           ),
@@ -437,7 +437,7 @@ class _GamesJoinedWidgetState extends State<GamesJoinedWidget> {
                               Text(
                                 'Owner',
                                 style: AppTypography.labelSmall.copyWith(
-                                  color: Colors.white,
+                                  color: AppColors.pure,
                                   fontWeight: FontWeight.w600,
                                 ),
                               ),
@@ -506,7 +506,7 @@ class _GamesJoinedWidgetState extends State<GamesJoinedWidget> {
                               text: valueOrDefault<String>(
                                   game.coursePlay, 'Course Name'),
                               style: AppTypography.titleSmall.copyWith(
-                                color: Colors.white,
+                                color: AppColors.pure,
                                 fontWeight: FontWeight.w600,
                               ),
                               maxLines: 1,

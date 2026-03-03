@@ -151,7 +151,7 @@ class _GameAlertsPageWidgetState extends State<GameAlertsPageWidget> {
           SnackBar(
             content: Text(
               'Alert settings saved',
-              style: AppTypography.bodySmall.copyWith(color: Colors.white),
+              style: AppTypography.bodySmall.copyWith(color: AppColors.pure),
             ),
             backgroundColor: AppColors.navy,
             duration: const Duration(seconds: 2),
@@ -212,7 +212,7 @@ class _GameAlertsPageWidgetState extends State<GameAlertsPageWidget> {
     final selected = await showModalBottomSheet<List<Course>>(
       context: context,
       isScrollControlled: true,
-      backgroundColor: Colors.transparent,
+      backgroundColor: AppColors.transparent,
       builder: (context) => _CoursesPickerSheet(
         allCourses: _allCourses,
         selectedCourses: _selectedCourses,
@@ -246,14 +246,14 @@ class _GameAlertsPageWidgetState extends State<GameAlertsPageWidget> {
     final isDisabled = _isSaving;
 
     return Material(
-      color: Colors.transparent,
+      color: AppColors.transparent,
       child: InkWell(
         onTap: isDisabled ? null : _reset,
         borderRadius: BorderRadius.circular(AppBorderRadius.md),
         child: Container(
           height: 56,
           decoration: BoxDecoration(
-            color: Colors.transparent,
+            color: AppColors.transparent,
             borderRadius: BorderRadius.circular(AppBorderRadius.md),
             border: Border.all(
               color: isDisabled
@@ -279,7 +279,7 @@ class _GameAlertsPageWidgetState extends State<GameAlertsPageWidget> {
     final isDisabled = _isSaving || !_hasChanges;
 
     return Material(
-      color: Colors.transparent,
+      color: AppColors.transparent,
       child: InkWell(
         onTap: isDisabled ? null : _save,
         borderRadius: BorderRadius.circular(AppBorderRadius.md),
@@ -292,7 +292,7 @@ class _GameAlertsPageWidgetState extends State<GameAlertsPageWidget> {
             borderRadius: BorderRadius.circular(AppBorderRadius.md),
             border: Border.all(
               color: isDisabled
-                  ? Colors.transparent
+                  ? AppColors.transparent
                   : AppColors.pure.withValues(alpha: 0.3),
               width: 2.0,
             ),
@@ -374,16 +374,16 @@ class _GameAlertsPageWidgetState extends State<GameAlertsPageWidget> {
     return Scaffold(
       key: scaffoldKey,
       extendBodyBehindAppBar: true,
-      backgroundColor: Colors.transparent,
+      backgroundColor: AppColors.transparent,
       appBar: AppBar(
-        backgroundColor: Colors.transparent,
+        backgroundColor: AppColors.transparent,
         automaticallyImplyLeading: false,
         elevation: 0.0,
         leading: const PremiumBackButton(),
         title: Text(
           'Game Alerts',
           style: AppTypography.headlineMediumSans.copyWith(
-            color: Colors.white,
+            color: AppColors.pure,
           ),
         ),
         centerTitle: false,
@@ -404,7 +404,7 @@ class _GameAlertsPageWidgetState extends State<GameAlertsPageWidget> {
                       Text(
                         'Loading alert settings...',
                         style: AppTypography.bodyMedium.copyWith(
-                          color: Colors.white.withValues(alpha: 0.7),
+                          color: AppColors.glassTextSecondary,
                         ),
                       ),
                     ],
@@ -415,7 +415,7 @@ class _GameAlertsPageWidgetState extends State<GameAlertsPageWidget> {
                       child: Text(
                         'Failed to load subscription',
                         style: AppTypography.bodyLarge.copyWith(
-                          color: Colors.white,
+                          color: AppColors.pure,
                         ),
                       ),
                     )
@@ -459,7 +459,7 @@ class _GameAlertsPageWidgetState extends State<GameAlertsPageWidget> {
                                         _errorMessage!,
                                         style:
                                             AppTypography.bodySmall.copyWith(
-                                          color: Colors.white,
+                                          color: AppColors.pure,
                                         ),
                                       ),
                                     ),
@@ -504,7 +504,7 @@ class _GameAlertsPageWidgetState extends State<GameAlertsPageWidget> {
                                           'Notification permission required',
                                           style:
                                               AppTypography.titleSmall.copyWith(
-                                            color: Colors.white,
+                                            color: AppColors.pure,
                                           ),
                                           textAlign: TextAlign.center,
                                         ),
@@ -514,7 +514,7 @@ class _GameAlertsPageWidgetState extends State<GameAlertsPageWidget> {
                                           style:
                                               AppTypography.bodySmall.copyWith(
                                             color: Colors.white
-                                                .withValues(alpha: 0.8),
+                                                .withValues(alpha: 0.8), // Keep: no 80% token
                                           ),
                                           textAlign: TextAlign.center,
                                         ),
@@ -691,7 +691,7 @@ class _GameAlertsPageWidgetState extends State<GameAlertsPageWidget> {
                             decoration: BoxDecoration(
                               gradient: LinearGradient(
                                 colors: [
-                                  Colors.transparent,
+                                  AppColors.transparent,
                                   AppColors.navyDark.withValues(alpha: 0.95),
                                   AppColors.navyDark,
                                 ],
@@ -777,7 +777,7 @@ class _CoursesPickerSheetState extends State<_CoursesPickerSheet> {
             width: 40,
             height: 4,
             decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: 0.3),
+              color: Colors.white.withValues(alpha: 0.3), // Keep: no 30% token
               borderRadius: BorderRadius.circular(AppBorderRadius.xxs),
             ),
           ),
@@ -791,7 +791,7 @@ class _CoursesPickerSheetState extends State<_CoursesPickerSheet> {
                   child: Text(
                     'Select Courses',
                     style: AppTypography.headlineSmallSans.copyWith(
-                      color: Colors.white,
+                      color: AppColors.pure,
                     ),
                   ),
                 ),
@@ -810,11 +810,11 @@ class _CoursesPickerSheetState extends State<_CoursesPickerSheet> {
             padding: EdgeInsets.symmetric(horizontal: AppSpacing.md),
             child: TextField(
               onChanged: (value) => updateState(this, () => _searchQuery = value),
-              style: AppTypography.bodyMedium.copyWith(color: Colors.white),
+              style: AppTypography.bodyMedium.copyWith(color: AppColors.pure),
               decoration: InputDecoration(
                 hintText: 'Search courses...',
                 hintStyle: AppTypography.bodyMedium.copyWith(
-                  color: Colors.white.withValues(alpha: 0.5),
+                  color: AppColors.glassTextTertiary,
                 ),
                 prefixIcon: AppIcon(
                   icon: AppPhosphorIcons.search,
@@ -822,7 +822,7 @@ class _CoursesPickerSheetState extends State<_CoursesPickerSheet> {
                   size: AppIconSize.md,
                 ),
                 filled: true,
-                fillColor: Colors.white.withValues(alpha: 0.1),
+                fillColor: AppColors.glassSurface,
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(AppBorderRadius.md),
                   borderSide: BorderSide.none,
@@ -840,7 +840,7 @@ class _CoursesPickerSheetState extends State<_CoursesPickerSheet> {
                     child: Text(
                       'No courses found',
                       style: AppTypography.bodyMedium.copyWith(
-                        color: Colors.white.withValues(alpha: 0.5),
+                        color: AppColors.glassTextTertiary,
                       ),
                     ),
                   )
@@ -869,13 +869,13 @@ class _CoursesPickerSheetState extends State<_CoursesPickerSheet> {
                           decoration: BoxDecoration(
                             color: isSelected
                                 ? AppColors.green.withValues(alpha: 0.2)
-                                : Colors.white.withValues(alpha: 0.05),
+                                : AppColors.whiteSubtle,
                             borderRadius:
                                 BorderRadius.circular(AppBorderRadius.md),
                             border: Border.all(
                               color: isSelected
                                   ? AppColors.green
-                                  : Colors.white.withValues(alpha: 0.1),
+                                  : AppColors.glassSurface,
                               width: 1.5,
                             ),
                           ),
@@ -896,10 +896,10 @@ class _CoursesPickerSheetState extends State<_CoursesPickerSheet> {
                                   course.name,
                                   style: isSelected
                                       ? AppTypography.titleMedium.copyWith(
-                                          color: Colors.white,
+                                          color: AppColors.pure,
                                         )
                                       : AppTypography.bodyLarge.copyWith(
-                                          color: Colors.white,
+                                          color: AppColors.pure,
                                           fontWeight: AppTypography.medium,
                                         ),
                                 ),

@@ -76,7 +76,7 @@ class GolferSearchBar extends StatelessWidget {
               decoration: BoxDecoration(
                 color: hasActiveFilters
                     ? AppColors.navyLight.withValues(alpha: 0.3)
-                    : Colors.transparent,
+                    : AppColors.transparent,
                 borderRadius: BorderRadius.circular(AppBorderRadius.sm),
               ),
               child: AppIcon(

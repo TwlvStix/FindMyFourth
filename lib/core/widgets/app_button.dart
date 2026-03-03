@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:auto_size_text/auto_size_text.dart';
 import '/core/design_tokens/border_radius.dart';
+import '/core/design_tokens/colors.dart';
 
 class AppButtonOptions {
   const AppButtonOptions({
@@ -126,7 +127,7 @@ class _AppButtonState extends State<AppButton> {
                 height: 23,
                 child: CircularProgressIndicator(
                   valueColor: AlwaysStoppedAnimation<Color>(
-                    widget.options.textStyle?.color ?? Colors.white,
+                    widget.options.textStyle?.color ?? AppColors.pure,
                   ),
                 ),
               ),
@@ -183,7 +184,7 @@ class _AppButtonState extends State<AppButton> {
             widget.options.hoverTextColor != null) {
           return widget.options.hoverTextColor;
         }
-        return widget.options.textStyle?.color ?? Colors.white;
+        return widget.options.textStyle?.color ?? AppColors.pure;
       }),
       backgroundColor: WidgetStateProperty.resolveWith<Color?>((states) {
         if (states.contains(WidgetState.disabled) &&
@@ -200,7 +201,7 @@ class _AppButtonState extends State<AppButton> {
         if (states.contains(WidgetState.pressed)) {
           return widget.options.splashColor;
         }
-        return widget.options.hoverColor == null ? null : Colors.transparent;
+        return widget.options.hoverColor == null ? null : AppColors.transparent;
       }),
       padding: WidgetStateProperty.all(
         widget.options.padding ??

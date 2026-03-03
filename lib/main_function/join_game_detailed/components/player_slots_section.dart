@@ -35,7 +35,7 @@ class PlayerSlotsSectionHeader extends StatelessWidget {
         Text(
           'Players',
           style: AppTypography.titleMedium.copyWith(
-            color: Colors.white,
+            color: AppColors.pure,
             fontWeight: FontWeight.w600,
           ),
         ),

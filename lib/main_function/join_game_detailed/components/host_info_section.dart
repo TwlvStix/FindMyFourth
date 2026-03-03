@@ -25,7 +25,7 @@ class HostInfoSection extends StatelessWidget {
     return Container(
       padding: EdgeInsets.all(AppSpacing.sm),
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.05),
+        color: AppColors.whiteSubtle,
         borderRadius: BorderRadius.circular(AppBorderRadius.md),
       ),
       child: Row(
@@ -39,7 +39,7 @@ class HostInfoSection extends StatelessWidget {
               ),
               borderRadius: BorderRadius.circular(AppBorderRadius.lg),
               border: Border.all(
-                color: Colors.white.withValues(alpha: 0.2),
+                color: AppColors.glassBorder,
                 width: 1.5,
               ),
             ),
@@ -70,7 +70,7 @@ class HostInfoSection extends StatelessWidget {
                 Text(
                   'Hosted by',
                   style: AppTypography.labelSmall.copyWith(
-                    color: Colors.white.withValues(alpha: 0.6),
+                    color: Colors.white.withValues(alpha: 0.6), // Keep: no 60% token
                   ),
                 ),
                 Text(
@@ -78,7 +78,7 @@ class HostInfoSection extends StatelessWidget {
                       ? hostUser.displayName
                       : 'Golfer',
                   style: AppTypography.titleSmall.copyWith(
-                    color: Colors.white,
+                    color: AppColors.pure,
                     fontWeight: FontWeight.w600,
                   ),
                 ),
@@ -100,7 +100,7 @@ class HostInfoSection extends StatelessWidget {
                 vertical: AppSpacing.xs,
               ),
               decoration: BoxDecoration(
-                color: Colors.white.withValues(alpha: 0.1),
+                color: AppColors.glassSurface,
                 borderRadius: BorderRadius.circular(AppBorderRadius.xl),
               ),
               child: Row(
@@ -109,13 +109,13 @@ class HostInfoSection extends StatelessWidget {
                   Text(
                     'View',
                     style: AppTypography.labelSmall.copyWith(
-                      color: Colors.white.withValues(alpha: 0.8),
+                      color: Colors.white.withValues(alpha: 0.8), // Keep: no 80% token
                     ),
                   ),
                   AppSpacing.horizontalXxs,
                   AppIcon(
                     icon: AppPhosphorIcons.chevronRight,
-                    color: Colors.white.withValues(alpha: 0.8),
+                    color: Colors.white.withValues(alpha: 0.8), // Keep: no 80% token
                     size: AppIconSize.xs,
                   ),
                 ],

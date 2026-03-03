@@ -72,7 +72,7 @@ class ProfileUserContent extends StatelessWidget {
       key: scaffoldKey,
       extendBodyBehindAppBar: true,
       appBar: AppBar(
-        backgroundColor: Colors.transparent,
+        backgroundColor: AppColors.transparent,
         automaticallyImplyLeading: false,
         elevation: 0.0,
         leading: PremiumBackButton(

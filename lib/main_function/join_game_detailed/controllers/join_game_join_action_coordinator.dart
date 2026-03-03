@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+
+import '/core/design_tokens/colors.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:provider/provider.dart';
 
@@ -112,7 +114,7 @@ class JoinGameJoinActionCoordinator {
     final submittedRequest = await showAppBottomSheet<JoinRequest?>(
       context: context,
       isScrollControlled: true,
-      backgroundColor: Colors.transparent,
+      backgroundColor: AppColors.transparent,
       builder: (context) => VibeFloorBottomSheet(
         ownerFirstName: payload.ownerFirstName,
         playerName: payload.playerName,

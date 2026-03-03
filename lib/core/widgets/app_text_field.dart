@@ -126,7 +126,7 @@ class _AppTextFieldState extends State<AppTextField> {
           Text(
             widget.label!,
             style: AppTypography.labelMedium.copyWith(
-              color: Colors.white,
+              color: AppColors.pure,
             ),
           ),
           SizedBox(height: AppSpacing.xxs),

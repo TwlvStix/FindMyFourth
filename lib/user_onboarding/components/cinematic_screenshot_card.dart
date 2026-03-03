@@ -22,7 +22,7 @@ class CinematicScreenshotCard extends StatelessWidget {
             borderRadius: BorderRadius.circular(AppBorderRadius.xl),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withValues(alpha: 0.12),
+                color: Colors.black.withValues(alpha: 0.12), // Keep: no 12% token
                 blurRadius: 40,
                 offset: const Offset(0, 12),
               ),

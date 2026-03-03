@@ -222,7 +222,7 @@ class _GroupedFriendsListState extends State<GroupedFriendsList> {
     HapticFeedback.lightImpact();
     showModalBottomSheet(
       context: context,
-      backgroundColor: Colors.transparent,
+      backgroundColor: AppColors.transparent,
       isScrollControlled: true,
       builder: (ctx) => _RemoveFriendSheet(
         friend: friend,
@@ -252,14 +252,14 @@ class _RemoveFriendSheet extends StatefulWidget {
 class _RemoveFriendSheetState extends State<_RemoveFriendSheet> {
   bool _showConfirm = false;
 
-  // Confirmation styling colors
-  static const _confirmBg = Color(0x0FB43C3C); // rgba(180,60,60,0.06)
-  static const _confirmBorder = Color(0x1FB43C3C); // rgba(180,60,60,0.12)
-  static const _cancelBg = Color(0x0FFFFFFF); // rgba(255,255,255,0.06)
-  static const _cancelBorder = Color(0x1AFFFFFF); // rgba(255,255,255,0.1)
-  static const _removeBg = Color(0x33C83C3C); // rgba(200,60,60,0.2)
-  static const _removeBorder = Color(0x4DC83C3C); // rgba(200,60,60,0.3)
-  static const _removeText = Color(0xFFF06464); // rgba(240,100,100,1)
+  // Confirmation styling colors - using AppColors semantic tokens
+  static Color get _confirmBg => AppColors.error.withValues(alpha: 0.06);
+  static Color get _confirmBorder => AppColors.error.withValues(alpha: 0.12);
+  static Color get _cancelBg => AppColors.whiteSubtle; // 5% white
+  static Color get _cancelBorder => AppColors.glassSurface; // 10% white
+  static Color get _removeBg => AppColors.error.withValues(alpha: 0.2);
+  static Color get _removeBorder => AppColors.error.withValues(alpha: 0.3);
+  static Color get _removeText => AppColors.errorHovered;
 
   @override
   Widget build(BuildContext context) {
@@ -319,7 +319,7 @@ class _RemoveFriendSheetState extends State<_RemoveFriendSheet> {
   Widget _buildRemoveButton() {
     return Material(
       key: const ValueKey('remove_button'),
-      color: Colors.transparent,
+      color: AppColors.transparent,
       child: InkWell(
         onTap: () {
           HapticFeedback.lightImpact();
@@ -412,7 +412,7 @@ class _RemoveFriendSheetState extends State<_RemoveFriendSheet> {
               // Cancel button
               Expanded(
                 child: Material(
-                  color: Colors.transparent,
+                  color: AppColors.transparent,
                   child: InkWell(
                     onTap: () {
                       HapticFeedback.lightImpact();
@@ -442,7 +442,7 @@ class _RemoveFriendSheetState extends State<_RemoveFriendSheet> {
               // Remove button
               Expanded(
                 child: Material(
-                  color: Colors.transparent,
+                  color: AppColors.transparent,
                   child: InkWell(
                     onTap: () {
                       HapticFeedback.mediumImpact();

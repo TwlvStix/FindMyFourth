@@ -93,7 +93,7 @@ class _SignInWidgetState extends State<SignInWidget> {
                             maxWidth: 430.0,
                           ),
                           decoration: BoxDecoration(
-                            color: Colors.transparent,
+                            color: AppColors.transparent,
                           ),
                           child: Padding(
                             padding: EdgeInsetsDirectional.fromSTEB(
@@ -466,10 +466,10 @@ class _SignInWidgetState extends State<SignInWidget> {
                                     padding: EdgeInsetsDirectional.fromSTEB(
                                         0.0, AppSpacing.sm, 0.0, AppSpacing.sm),
                                     child: InkWell(
-                                      splashColor: Colors.transparent,
-                                      focusColor: Colors.transparent,
-                                      hoverColor: Colors.transparent,
-                                      highlightColor: Colors.transparent,
+                                      splashColor: AppColors.transparent,
+                                      focusColor: AppColors.transparent,
+                                      hoverColor: AppColors.transparent,
+                                      highlightColor: AppColors.transparent,
                                       onTap: () async {
                                         context.pushSignUpAccount(
                                           transition: TransitionStandards
@@ -514,10 +514,10 @@ class _SignInWidgetState extends State<SignInWidget> {
                                     padding: EdgeInsetsDirectional.fromSTEB(
                                         0.0, AppSpacing.sm, 0.0, AppSpacing.sm),
                                     child: InkWell(
-                                      splashColor: Colors.transparent,
-                                      focusColor: Colors.transparent,
-                                      hoverColor: Colors.transparent,
-                                      highlightColor: Colors.transparent,
+                                      splashColor: AppColors.transparent,
+                                      focusColor: AppColors.transparent,
+                                      hoverColor: AppColors.transparent,
+                                      highlightColor: AppColors.transparent,
                                       onTap: () async {
                                         context.pushRecoverPassword(
                                           transition: TransitionStandards

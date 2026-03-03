@@ -259,11 +259,11 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
           key: scaffoldKey,
           extendBodyBehindAppBar: true,
           appBar: AppBar(
-            backgroundColor: Colors.transparent,
-            surfaceTintColor: Colors.transparent,
+            backgroundColor: AppColors.transparent,
+            surfaceTintColor: AppColors.transparent,
             scrolledUnderElevation: 0.0,
             elevation: 0.0,
-            shadowColor: Colors.transparent,
+            shadowColor: AppColors.transparent,
             automaticallyImplyLeading: false,
             leading: const PremiumBackButton(),
             title: Text(

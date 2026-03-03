@@ -3,6 +3,7 @@ import 'dart:typed_data';
 import 'package:flutter/material.dart';
 
 import '/core/design_tokens/border_radius.dart';
+import '/core/design_tokens/colors.dart';
 import '/core/design_tokens/spacing.dart';
 
 class PendingUploadItem {
@@ -60,11 +61,11 @@ class ChatPendingUploadBubble extends StatelessWidget {
                 Container(
                   width: 200,
                   height: 200,
-                  color: Colors.black.withValues(alpha: 0.45),
+                  color: AppColors.overlayDark,
                 ),
                 CircularProgressIndicator(
                   value: upload.progress > 0 ? upload.progress : null,
-                  color: Colors.white,
+                  color: AppColors.pure,
                   strokeWidth: 3,
                 ),
               ],

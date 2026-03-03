@@ -99,7 +99,7 @@ class GamesMultiSelect extends StatelessWidget {
                   border: Border.all(
                     color: isSelected
                         ? AppColors.green
-                        : Colors.white.withValues(alpha: 0.1),
+                        : AppColors.glassSurface,
                     width: isSelected ? 2 : 1,
                   ),
                   boxShadow: isSelected ? [AppElevation.glowGreen] : null,
@@ -116,7 +116,7 @@ class GamesMultiSelect extends StatelessWidget {
                                 colors: [AppColors.green, AppColors.greenLight],
                               )
                             : null,
-                        color: isSelected ? null : Colors.white.withValues(alpha: 0.1),
+                        color: isSelected ? null : AppColors.glassSurface,
                         borderRadius: BorderRadius.circular(AppBorderRadius.sm),
                       ),
                       child: Center(
@@ -132,7 +132,7 @@ class GamesMultiSelect extends StatelessWidget {
                       option['label'] as String,
                       textAlign: TextAlign.center,
                       style: AppTypography.labelMicro.copyWith(
-                        color: Colors.white,
+                        color: AppColors.pure,
                         fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
                       ),
                       maxLines: 1,

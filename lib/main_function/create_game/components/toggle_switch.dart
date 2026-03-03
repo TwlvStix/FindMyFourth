@@ -42,7 +42,7 @@ class ToggleSwitch extends StatelessWidget {
         border: Border.all(
           color: value
               ? AppColors.green.withValues(alpha: 0.5)
-              : Colors.white.withValues(alpha: 0.1),
+              : AppColors.glassSurface,
           width: value ? 2 : 1,
         ),
       ),
@@ -55,14 +55,14 @@ class ToggleSwitch extends StatelessWidget {
                 Text(
                   label,
                   style: AppTypography.titleSmall.copyWith(
-                    color: Colors.white,
+                    color: AppColors.pure,
                   ),
                 ),
                 SizedBox(height: AppSpacing.xxs),
                 Text(
                   description,
                   style: AppTypography.bodySmall.copyWith(
-                    color: Colors.white.withValues(alpha: 0.7),
+                    color: AppColors.glassTextSecondary,
                     fontSize: 13,
                   ),
                 ),
@@ -85,7 +85,7 @@ class ToggleSwitch extends StatelessWidget {
                         colors: [AppColors.green, AppColors.greenLight],
                       )
                     : null,
-                color: value ? null : Colors.white.withValues(alpha: 0.2),
+                color: value ? null : AppColors.glassBorder,
                 borderRadius: BorderRadius.circular(AppBorderRadius.lg),
               ),
               child: AnimatedAlign(
@@ -97,7 +97,7 @@ class ToggleSwitch extends StatelessWidget {
                   height: 26,
                   margin: EdgeInsets.symmetric(horizontal: 3),
                   decoration: BoxDecoration(
-                    color: Colors.white,
+                    color: AppColors.pure,
                     shape: BoxShape.circle,
                     boxShadow: [AppElevation.sm],
                   ),

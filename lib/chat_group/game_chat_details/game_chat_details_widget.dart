@@ -209,7 +209,7 @@ class _GameChatDetailsWidgetState extends State<GameChatDetailsWidget>
   void _showImageFullscreen(String imageUrl) {
     showAppDialog(
       context: context,
-      barrierColor: Colors.black87,
+      barrierColor: Colors.black87, // Keep: no 87% token
       builder: (BuildContext dialogContext) => ChatImageViewer(
         imageUrl: imageUrl,
         onClose: () => Navigator.of(dialogContext).pop(),
@@ -245,7 +245,7 @@ class _GameChatDetailsWidgetState extends State<GameChatDetailsWidget>
 
     showAppBottomSheet(
       context: context,
-      backgroundColor: Colors.transparent,
+      backgroundColor: AppColors.transparent,
       builder: (BuildContext context) => ChatReactionPicker(
         message: message,
         currentUserId: currentUserId,
@@ -629,7 +629,7 @@ class _GameChatDetailsWidgetState extends State<GameChatDetailsWidget>
       },
       child: AnnotatedRegion<SystemUiOverlayStyle>(
         value: SystemUiOverlayStyle(
-          statusBarColor: Colors.transparent,
+          statusBarColor: AppColors.transparent,
           statusBarIconBrightness: Brightness.light,
           statusBarBrightness: Brightness.dark,
         ),
@@ -637,12 +637,12 @@ class _GameChatDetailsWidgetState extends State<GameChatDetailsWidget>
           extendBodyBehindAppBar: true,
           backgroundColor: backgroundGreen,
           appBar: AppBar(
-            backgroundColor: Colors.transparent,
-            surfaceTintColor: Colors.transparent,
+            backgroundColor: AppColors.transparent,
+            surfaceTintColor: AppColors.transparent,
             scrolledUnderElevation: 0,
             foregroundColor: AppColors.pure,
             elevation: 0.0,
-            shadowColor: Colors.transparent,
+            shadowColor: AppColors.transparent,
             leading: PremiumBackButton(
               onTap: () => Navigator.of(context).maybePop(),
             ),

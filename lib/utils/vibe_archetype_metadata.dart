@@ -2,6 +2,7 @@ import 'package:flutter/widgets.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 
 import '/core/design_tokens/app_phosphor_icons.dart';
+import '/core/design_tokens/archetype_colors.dart';
 import '/core/design_tokens/colors.dart';
 import '/utils/vibe_archetypes.dart';
 
@@ -44,19 +45,19 @@ class VibeArchetypeMetadata {
 
   /// Maps archetype names to their accent colors for glow and divider.
   static const Map<String, Color> archetypeColors = {
-    'The Grinder': Color(0xFFE05A3A), // Intense red-orange
-    'The Shark': Color(0xFFE05A3A), // Intense red-orange
-    'The Purist': Color(0xFF8BAAB5), // Cool slate blue
-    'The Ghost': Color(0xFF7A8BA0), // Muted steel
-    'The Tourist': Color(0xFF6BBF8A), // Fresh green
-    'The Vibe King': Color(0xFFD4A017), // Rich gold
-    'The Juggernaut': Color(0xFFE07B3A), // Bold orange
-    'The Everyman': Color(0xFF6B8AFF), // Friendly blue
-    'The Hustler': Color(0xFF4CAF50), // Money green
-    'The DJ': Color(0xFFD4A017), // Gold (music)
-    'The High Roller': Color(0xFFD4A017), // Gold (premium)
-    'The Mayor': Color(0xFF6B8AFF), // Social blue
-    'The Warden': Color(0xFFB0B0B0), // Neutral silver
+    'The Grinder': ArchetypeColors.grinder,
+    'The Shark': ArchetypeColors.shark,
+    'The Purist': ArchetypeColors.purist,
+    'The Ghost': ArchetypeColors.ghost,
+    'The Tourist': ArchetypeColors.tourist,
+    'The Vibe King': ArchetypeColors.vibeKing,
+    'The Juggernaut': ArchetypeColors.juggernaut,
+    'The Everyman': ArchetypeColors.everyman,
+    'The Hustler': ArchetypeColors.hustler,
+    'The DJ': ArchetypeColors.dj,
+    'The High Roller': ArchetypeColors.highRoller,
+    'The Mayor': ArchetypeColors.mayor,
+    'The Warden': ArchetypeColors.warden,
   };
 
   // ===========================================================================

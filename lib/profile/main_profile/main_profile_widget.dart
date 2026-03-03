@@ -67,7 +67,7 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
   Future<void> _openChangePhotoSheet() async {
     await showAppBottomSheet(
       isScrollControlled: true,
-      backgroundColor: Colors.transparent,
+      backgroundColor: AppColors.transparent,
       enableDrag: false,
       context: context,
       builder: (context) {
@@ -124,7 +124,7 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
         key: scaffoldKey,
         extendBodyBehindAppBar: true,
         appBar: AppBar(
-          backgroundColor: Colors.transparent,
+          backgroundColor: AppColors.transparent,
           automaticallyImplyLeading: false,
           elevation: 0.0,
           actions: [

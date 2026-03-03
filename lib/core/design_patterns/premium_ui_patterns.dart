@@ -171,7 +171,7 @@ class GradientIconBox extends StatelessWidget {
       ),
       child: Icon(
         icon,
-        color: Colors.white,
+        color: AppColors.pure,
         size: iconSize,
       ),
     );
@@ -308,7 +308,7 @@ class _AnimatedAvatarRingState extends State<AnimatedAvatarRing>
                 ),
                 child: AppIcon(
                   icon: AppPhosphorIcons.camera,
-                  color: Colors.white,
+                  color: AppColors.pure,
                   size: AppIconSize.button,
                 ),
               ),
@@ -379,11 +379,11 @@ class StatCard extends StatelessWidget {
             value,
             style: isTextValue
                 ? AppTypography.labelSmall.copyWith(
-                    color: Colors.white,
+                    color: AppColors.pure,
                     fontWeight: FontWeight.w600,
                   )
                 : AppTypography.monoLarge.copyWith(
-                    color: Colors.white,
+                    color: AppColors.pure,
                     fontWeight: FontWeight.w700,
                   ),
             textAlign: TextAlign.center,
@@ -738,7 +738,7 @@ class NotificationBadge extends StatelessWidget {
       child: Text(
         displayText,
         style: AppTypography.labelSmall.copyWith(
-          color: Colors.white,
+          color: AppColors.pure,
           fontWeight: FontWeight.w700,
         ),
       ),

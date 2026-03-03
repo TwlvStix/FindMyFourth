@@ -49,7 +49,7 @@ class SegmentedControl extends StatelessWidget {
             color: AppColors.navy.withValues(alpha: 0.2),
             borderRadius: BorderRadius.circular(AppBorderRadius.md),
             border: Border.all(
-              color: Colors.white.withValues(alpha: 0.1),
+              color: AppColors.glassSurface,
             ),
           ),
           padding: AppSpacing.allXxs,
@@ -88,16 +88,16 @@ class SegmentedControl extends StatelessWidget {
                           AppIcon(
                             icon: option['phosphorIcon'] as PhosphorIconData,
                             color: isSelected
-                                ? Colors.white
-                                : Colors.white.withValues(alpha: 0.6),
+                                ? AppColors.pure
+                                : Colors.white.withValues(alpha: 0.6), // Keep: no 60% token
                             size: iconSize,
                           )
                         else
                           Icon(
                             option['icon'] as IconData,
                             color: isSelected
-                                ? Colors.white
-                                : Colors.white.withValues(alpha: 0.6),
+                                ? AppColors.pure
+                                : Colors.white.withValues(alpha: 0.6), // Keep: no 60% token
                             size: iconSize,
                           ),
                         SizedBox(width: spacing),
@@ -106,8 +106,8 @@ class SegmentedControl extends StatelessWidget {
                             option['label'] as String,
                             style: AppTypography.labelMedium.copyWith(
                               color: isSelected
-                                  ? Colors.white
-                                  : Colors.white.withValues(alpha: 0.6),
+                                  ? AppColors.pure
+                                  : Colors.white.withValues(alpha: 0.6), // Keep: no 60% token
                               fontSize: fontSize,
                               fontWeight:
                                   isSelected ? FontWeight.w700 : FontWeight.w500,

@@ -98,7 +98,7 @@ class _FlexibleGameInfoAccordionState extends State<FlexibleGameInfoAccordion> {
         decoration: BoxDecoration(
           color: AppColors.navy.withValues(alpha: 0.3),
           borderRadius: BorderRadius.circular(AppBorderRadius.lg),
-          border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
+          border: Border.all(color: AppColors.glassSurface),
         ),
         child: GestureDetector(
           onTap: _toggleExpanded,
@@ -132,7 +132,7 @@ class _FlexibleGameInfoAccordionState extends State<FlexibleGameInfoAccordion> {
           child: Text(
             '$_weekHintOnly · $_timeSummary · $_spotsLabel',
             style: AppTypography.titleSmall.copyWith(
-              color: Colors.white,
+              color: AppColors.pure,
               fontWeight: FontWeight.w600,
             ),
           ),

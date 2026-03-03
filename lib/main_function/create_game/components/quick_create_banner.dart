@@ -63,14 +63,14 @@ class QuickCreateBanner extends StatelessWidget {
                 Text(
                   'Quick Create',
                   style: AppTypography.titleSmall.copyWith(
-                    color: Colors.white,
+                    color: AppColors.pure,
                   ),
                 ),
                 SizedBox(height: AppSpacing.xxs),
                 Text(
                   'Use smart defaults for faster setup',
                   style: AppTypography.bodySmall.copyWith(
-                    color: Colors.white.withValues(alpha: 0.8),
+                    color: Colors.white.withValues(alpha: 0.8), // Keep: no 80% token
                     fontSize: 13,
                   ),
                 ),

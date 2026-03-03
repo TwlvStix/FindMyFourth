@@ -88,7 +88,7 @@ class PremiumSectionHeader extends StatelessWidget {
                     Text(
                       title,
                       style: AppTypography.titleMedium.copyWith(
-                        color: Colors.white,
+                        color: AppColors.pure,
                         fontWeight: FontWeight.w600,
                       ),
                     ),
@@ -104,7 +104,7 @@ class PremiumSectionHeader extends StatelessWidget {
               : Text(
                   title,
                   style: AppTypography.titleMedium.copyWith(
-                    color: Colors.white,
+                    color: AppColors.pure,
                     fontWeight: FontWeight.w600,
                   ),
                 ),

@@ -135,7 +135,7 @@ class TrustProfileSection extends StatelessWidget {
                 gradient: LinearGradient(
                   colors: [
                     AppColors.glassSurface,
-                    Colors.transparent,
+                    AppColors.transparent,
                   ],
                   begin: Alignment.topLeft,
                   end: Alignment.bottomCenter,
@@ -166,7 +166,7 @@ class TrustProfileSection extends StatelessWidget {
                     Text(
                       info.label,
                       style: AppTypography.titleSmall.copyWith(
-                        color: Colors.white,
+                        color: AppColors.pure,
                         fontWeight: FontWeight.w700,
                         letterSpacing: 0.2,
                       ),
@@ -199,7 +199,7 @@ class TrustProfileSection extends StatelessWidget {
                     Text(
                       joinYear,
                       style: AppTypography.titleSmall.copyWith(
-                        color: Colors.white,
+                        color: AppColors.pure,
                         fontWeight: FontWeight.w700,
                       ),
                     ),
@@ -525,7 +525,7 @@ class TrustProfileSection extends StatelessWidget {
     showAppBottomSheet(
       context: context,
       isScrollControlled: true,
-      backgroundColor: Colors.transparent,
+      backgroundColor: AppColors.transparent,
       enableDrag: true,
       builder: (context) => _WarningDetailSheet(
         warningCount: user.cancellationWarningCount,

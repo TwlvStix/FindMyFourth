@@ -125,7 +125,7 @@ class EditProfileHeroSection extends StatelessWidget {
                 button: true,
                 label: 'Edit profile photo',
                 child: Material(
-                  color: Colors.transparent,
+                  color: AppColors.transparent,
                   child: InkResponse(
                     radius: 30,
                     onTap: () {

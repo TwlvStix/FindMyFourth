@@ -1,10 +1,14 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'chat_provider.dart';
 import 'group_vibe_provider.dart';
 import 'game_provider.dart';
 import 'join_request_provider.dart';
 import 'notification_provider.dart';
 import 'notification_list_provider.dart';
+import 'profile_provider.dart';
+import 'trust_provider.dart';
 import 'user_provider.dart';
 
 /// Convenient extensions for accessing providers throughout the app
@@ -61,6 +65,64 @@ extension ProviderExtensions on BuildContext {
   T selectUser<T>(T Function(UserProvider provider) selector) {
     return select<UserProvider, T>(selector);
   }
+
+  // ========================================
+  // ADDITIONAL PROVIDER SELECTORS
+  // ========================================
+
+  /// Select specific data from GameProvider
+  T selectGame<T>(T Function(GameProvider provider) selector) {
+    return select<GameProvider, T>(selector);
+  }
+
+  /// Select specific data from ChatProvider
+  T selectChat<T>(T Function(ChatProvider provider) selector) {
+    return select<ChatProvider, T>(selector);
+  }
+
+  /// Select specific data from TrustProvider
+  T selectTrust<T>(T Function(TrustProvider provider) selector) {
+    return select<TrustProvider, T>(selector);
+  }
+
+  /// Select specific data from ProfileProvider
+  T selectProfile<T>(T Function(ProfileProvider provider) selector) {
+    return select<ProfileProvider, T>(selector);
+  }
+
+  /// Select specific data from NotificationProvider
+  T selectNotification<T>(T Function(NotificationProvider provider) selector) {
+    return select<NotificationProvider, T>(selector);
+  }
+
+  /// Select specific data from NotificationListProvider
+  ///
+  /// Use for rebuild boundary optimization:
+  /// - `context.selectNotificationList((p) => p.isEmpty)` for app bar visibility
+  /// - `context.selectNotificationList((p) => p.listViewState)` for list body
+  T selectNotificationList<T>(
+      T Function(NotificationListProvider provider) selector) {
+    return select<NotificationListProvider, T>(selector);
+  }
+
+  // ========================================
+  // CONVENIENCE SELECTORS
+  // ========================================
+
+  /// Select whether user has pending outgoing request to specific uid
+  /// Only rebuilds when the pending state for this specific uid changes
+  bool hasPendingOutgoing(String uid) =>
+      selectUser((p) => p.hasPendingOutgoingRequest(uid));
+
+  /// Select current user reference only
+  DocumentReference? get currentUserRef =>
+      selectUser((p) => p.currentUser?.reference);
+
+  /// Select isLoading state only
+  bool get userIsLoading => selectUser((p) => p.isLoading);
+
+  /// Select isLoggedIn state only
+  bool get userIsLoggedIn => selectUser((p) => p.isLoggedIn);
 }
 
 /// Extension for UserProvider to provide common convenience methods

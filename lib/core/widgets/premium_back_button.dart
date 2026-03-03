@@ -56,12 +56,12 @@ class PremiumBackButton extends StatelessWidget {
             color: AppColors.navy.withValues(alpha: 0.3),
             borderRadius: BorderRadius.circular(AppBorderRadius.md),
             border: Border.all(
-              color: Colors.white.withValues(alpha: 0.1),
+              color: AppColors.glassSurface,
             ),
           ),
           child: AppIcon(
             icon: AppPhosphorIcons.chevronLeft,
-            color: Colors.white,
+            color: AppColors.pure,
             size: AppIconSize.lg,
           ),
         ),

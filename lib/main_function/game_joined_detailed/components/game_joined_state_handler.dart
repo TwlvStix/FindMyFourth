@@ -121,7 +121,7 @@ class GameJoinedStateHandler extends StatelessWidget {
               Text(
                 title,
                 style: AppTypography.titleSmall.copyWith(
-                  color: Colors.white,
+                  color: AppColors.pure,
                   fontWeight: FontWeight.w600,
                 ),
               ),
@@ -129,7 +129,7 @@ class GameJoinedStateHandler extends StatelessWidget {
               Text(
                 subtitle,
                 style: AppTypography.bodySmall.copyWith(
-                  color: Colors.white.withValues(alpha: 0.6),
+                  color: Colors.white.withValues(alpha: 0.6), // Keep: no 60% token
                 ),
               ),
             ],
@@ -158,7 +158,7 @@ class GameJoinedStateHandler extends StatelessWidget {
               Text(
                 'Loading game details...',
                 style: AppTypography.bodySmall.copyWith(
-                  color: Colors.white.withValues(alpha: 0.7),
+                  color: AppColors.glassTextSecondary,
                 ),
               ),
             ],

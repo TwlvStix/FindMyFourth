@@ -120,8 +120,8 @@ class AppPopupMenu extends StatelessWidget {
       ),
       color: AppColors.inputBackground,
       elevation: 0, // We use custom shadow via decoration
-      shadowColor: Colors.transparent,
-      surfaceTintColor: Colors.transparent,
+      shadowColor: AppColors.transparent,
+      surfaceTintColor: AppColors.transparent,
       onSelected: onSelected,
       itemBuilder: (context) => items.map((item) {
         final effectiveIconColor = item.iconColor ??
@@ -219,7 +219,7 @@ class _AppPopupMenuStyledState extends State<AppPopupMenuStyled> {
       color: AppColors.inputBackground,
       elevation: 8,
       shadowColor: AppColors.navyDark,
-      surfaceTintColor: Colors.transparent,
+      surfaceTintColor: AppColors.transparent,
       items: widget.items.map((item) {
         final effectiveIconColor = item.iconColor ??
             (item.isDestructive ? AppColors.error : AppColors.textSecondary);
@@ -268,7 +268,7 @@ class _AppPopupMenuStyledState extends State<AppPopupMenuStyled> {
       icon: AppIcon(
         icon: widget.icon ?? PhosphorIconsRegular.dotsThreeVertical,
         color: widget.enabled
-            ? (widget.iconColor ?? Colors.white)
+            ? (widget.iconColor ?? AppColors.pure)
             : AppColors.textMuted,
         size: AppIconSize.md,
       ),

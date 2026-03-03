@@ -177,7 +177,7 @@ class AppInfoCard extends StatelessWidget {
 
     if (onTap != null) {
       return Material(
-        color: Colors.transparent,
+        color: AppColors.transparent,
         borderRadius: BorderRadius.circular(AppBorderRadius.lg),
         child: InkWell(
           onTap: onTap,

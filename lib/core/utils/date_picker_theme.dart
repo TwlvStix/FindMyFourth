@@ -47,14 +47,14 @@ class AppDatePickerTheme {
           if (states.contains(WidgetState.selected)) {
             return AppColors.green;
           }
-          return Colors.transparent;
+          return AppColors.transparent;
         }),
         dayForegroundColor: WidgetStateProperty.all(AppColors.textPrimary),
         dayBackgroundColor: WidgetStateProperty.resolveWith((states) {
           if (states.contains(WidgetState.selected)) {
             return AppColors.green;
           }
-          return Colors.transparent;
+          return AppColors.transparent;
         }),
       ),
     );

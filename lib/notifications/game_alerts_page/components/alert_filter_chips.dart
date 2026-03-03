@@ -57,12 +57,12 @@ class AlertFilterChips extends StatelessWidget {
               decoration: BoxDecoration(
                 color: isSelected
                     ? AppColors.green
-                    : Colors.white.withValues(alpha: 0.1),
+                    : AppColors.glassSurface,
                 borderRadius: BorderRadius.circular(AppBorderRadius.lg),
                 border: Border.all(
                   color: isSelected
                       ? AppColors.green
-                      : Colors.white.withValues(alpha: 0.2),
+                      : AppColors.glassBorder,
                   width: 1.5,
                 ),
               ),
@@ -70,8 +70,8 @@ class AlertFilterChips extends StatelessWidget {
                 label,
                 style: AppTypography.labelMedium.copyWith(
                   color: isSelected
-                      ? Colors.white
-                      : Colors.white.withValues(alpha: 0.9),
+                      ? AppColors.pure
+                      : AppColors.whiteStrong,
                 ),
               ),
             ),

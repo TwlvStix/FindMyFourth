@@ -28,7 +28,7 @@ class GamesListAppBar extends StatelessWidget implements PreferredSizeWidget {
   @override
   Widget build(BuildContext context) {
     return AppBar(
-      backgroundColor: Colors.transparent,
+      backgroundColor: AppColors.transparent,
       automaticallyImplyLeading: false,
       title: Text(
         'Game List',
@@ -49,13 +49,13 @@ class GamesListAppBar extends StatelessWidget implements PreferredSizeWidget {
           child: AppIconButton(
             borderColor: hasActiveFilters
                 ? AppColors.navy.withValues(alpha: 0.2)
-                : Colors.transparent,
+                : AppColors.transparent,
             borderRadius: 30.0,
             borderWidth: hasActiveFilters ? 2.0 : 1.0,
             buttonSize: 44.0,
             fillColor: hasActiveFilters
                 ? AppColors.navy.withValues(alpha: 0.12)
-                : Colors.transparent,
+                : AppColors.transparent,
             tooltip: 'Filter games',
             icon: AppIcon(
               icon: AppPhosphorIcons.filter,

@@ -131,7 +131,7 @@ class _LeaveGameWidgetState extends State<LeaveGameWidget> {
                           child: Container(
                             width: double.infinity,
                             decoration: BoxDecoration(
-                              color: Colors.white,
+                              color: AppColors.pure,
                             ),
                           ),
                         ),

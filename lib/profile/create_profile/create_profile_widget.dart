@@ -19,7 +19,6 @@ import '/profile/create_profile/components/personal_info_section.dart';
 import '/profile/create_profile/components/golf_profile_section.dart';
 import '/profile/create_profile/controllers/create_profile_controller.dart';
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
 
 class CreateProfileWidget extends StatefulWidget {
   const CreateProfileWidget({super.key});
@@ -185,7 +184,7 @@ class _CreateProfileWidgetState extends State<CreateProfileWidget>
   Future<void> _showChangePhotoSheet() async {
     await showAppBottomSheet(
       isScrollControlled: true,
-      backgroundColor: Colors.transparent,
+      backgroundColor: AppColors.transparent,
       enableDrag: false,
       context: context,
       builder: (context) => Padding(
@@ -197,8 +196,6 @@ class _CreateProfileWidgetState extends State<CreateProfileWidget>
 
   @override
   Widget build(BuildContext context) {
-    context.watch<AppState>();
-
     return GestureDetector(
       onTap: () {
         FocusScope.of(context).unfocus();

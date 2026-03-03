@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '/core/design_tokens/colors.dart';
 import '/core/design_tokens/spacing.dart';
 
 /// Premium dialog variant types
@@ -15,24 +16,24 @@ enum PremiumDialogVariant {
 
 /// Design tokens for the premium dialog system
 class _DialogTokens {
-  // Colors
-  static const Color overlay = Color(0x8C000000); // rgba(0, 0, 0, 0.55)
-  static const Color modalBackground = Color(0xFF0F1B24);
-  static const Color titleColor = Color(0xFFF2F5F7);
-  static const Color bodyColor = Color(0xFFA8B3BC);
-  static const Color cancelColor = Color(0xFF8FA3AD);
+  // Colors - mapped to AppColors where semantically equivalent
+  static Color get overlay => AppColors.scrim; // 60% black overlay
+  static Color get modalBackground => AppColors.navyDark;
+  static Color get titleColor => AppColors.textPrimary;
+  static Color get bodyColor => AppColors.textSecondary;
+  static Color get cancelColor => AppColors.textMuted;
 
-  // Destructive variant
-  static const Color destructiveColor = Color(0xFFD96B6B);
-  static const Color destructiveBadgeBg = Color(0x1FD96B6B); // 12% opacity
+  // Destructive variant - using semantic error tokens
+  static Color get destructiveColor => AppColors.error;
+  static Color get destructiveBadgeBg => AppColors.error.withValues(alpha: 0.12);
 
-  // Confirmation variant
-  static const Color confirmationColor = Color(0xFF3A9B6A);
-  static const Color confirmationBadgeBg = Color(0x241F6F4A); // 14% opacity
+  // Confirmation variant - using semantic success/green tokens
+  static Color get confirmationColor => AppColors.greenLight;
+  static Color get confirmationBadgeBg => AppColors.greenLight.withValues(alpha: 0.14);
 
-  // Informational variant
-  static const Color informationalColor = Color(0xFF7A9BB5);
-  static const Color informationalBadgeBg = Color(0x1F7A9BB5); // 12% opacity
+  // Informational variant - using muted stone tone
+  static Color get informationalColor => AppColors.stone;
+  static Color get informationalBadgeBg => AppColors.stone.withValues(alpha: 0.12);
 
   // Dimensions
   static const double maxWidth = 420;
@@ -68,10 +69,10 @@ class _DialogTokens {
   static const Curve enterCurve = Curves.easeOutCubic;
   static const Curve exitCurve = Curves.easeInCubic;
 
-  // Shadow
-  static const List<BoxShadow> modalShadow = [
+  // Shadow - using AppColors.overlayDark for 40% black
+  static List<BoxShadow> get modalShadow => [
     BoxShadow(
-      color: Color(0x66000000), // rgba(0, 0, 0, 0.4)
+      color: AppColors.overlayDark,
       blurRadius: 40,
       offset: Offset(0, 12),
     ),
@@ -207,7 +208,7 @@ class _PremiumDialogContent extends StatelessWidget {
 
     return Center(
       child: Material(
-        color: Colors.transparent,
+        color: AppColors.transparent,
         child: Container(
           width: dialogWidth,
           decoration: BoxDecoration(
@@ -246,7 +247,7 @@ class _PremiumDialogContent extends StatelessWidget {
               // Title
               Text(
                 title,
-                style: const TextStyle(
+                style: TextStyle(
                   fontFamily: '.SF Pro Text',
                   fontSize: _DialogTokens.titleSize,
                   fontWeight: _DialogTokens.titleWeight,
@@ -260,7 +261,7 @@ class _PremiumDialogContent extends StatelessWidget {
               // Body
               Text(
                 body,
-                style: const TextStyle(
+                style: TextStyle(
                   fontFamily: '.SF Pro Text',
                   fontSize: _DialogTokens.bodySize,
                   fontWeight: _DialogTokens.bodyWeight,
@@ -279,7 +280,7 @@ class _PremiumDialogContent extends StatelessWidget {
                       child: _DialogButton(
                         label: cancelLabel,
                         textColor: _DialogTokens.cancelColor,
-                        backgroundColor: Colors.transparent,
+                        backgroundColor: AppColors.transparent,
                         fontWeight: _DialogTokens.cancelWeight,
                         onTap: () => Navigator.of(context).pop(false),
                       ),

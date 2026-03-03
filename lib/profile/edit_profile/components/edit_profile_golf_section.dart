@@ -148,7 +148,7 @@ class EditProfileGolfSection extends StatelessWidget {
         ),
         fillColor: AppColors.inputBackground,
         elevation: 0,
-        borderColor: Colors.transparent,
+        borderColor: AppColors.transparent,
         borderWidth: 0,
         borderRadius: AppBorderRadius.card,
         margin: EdgeInsetsDirectional.only(start: AppSpacing.md),

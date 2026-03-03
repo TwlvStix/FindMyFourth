@@ -47,6 +47,49 @@ class NotificationListItem {
   }
 }
 
+/// Immutable snapshot of notification list state for selector consumption.
+///
+/// Equality based on list identity (not deep) + primitive flags.
+/// Provider caches unmodifiable list reference to ensure stable comparisons.
+class NotificationListViewState {
+  final List<NotificationListItem> notifications;
+  final bool hasError;
+  final bool isListening;
+  final bool isLoadingMore;
+  final bool hasMore;
+  final bool loadMoreError;
+
+  const NotificationListViewState({
+    required this.notifications,
+    required this.hasError,
+    required this.isListening,
+    required this.isLoadingMore,
+    required this.hasMore,
+    required this.loadMoreError,
+  });
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is NotificationListViewState &&
+          identical(notifications, other.notifications) &&
+          hasError == other.hasError &&
+          isListening == other.isListening &&
+          isLoadingMore == other.isLoadingMore &&
+          hasMore == other.hasMore &&
+          loadMoreError == other.loadMoreError;
+
+  @override
+  int get hashCode => Object.hash(
+        identityHashCode(notifications),
+        hasError,
+        isListening,
+        isLoadingMore,
+        hasMore,
+        loadMoreError,
+      );
+}
+
 /// Provider for notification list operations with lazy streaming and pagination.
 ///
 /// Features:
@@ -85,6 +128,10 @@ class NotificationListProvider extends ChangeNotifier {
   StreamSubscription<QuerySnapshot>? _firstPageSubscription;
   bool _hasStreamError = false;
 
+  /// Cached unmodifiable list for stable selector comparisons.
+  /// Updated only when list content/order actually changes.
+  List<NotificationListItem> _cachedNotificationsList = const [];
+
   // ═══════════════════════════════════════════════════════════════════════════
   // LOAD-MORE STATE (fetch-based pagination)
   // ═══════════════════════════════════════════════════════════════════════════
@@ -101,8 +148,8 @@ class NotificationListProvider extends ChangeNotifier {
   // ═══════════════════════════════════════════════════════════════════════════
 
   /// Ordered list of notifications (first page + loaded more, deduped).
-  List<NotificationListItem> get notifications =>
-      _orderedIds.map((id) => _notificationMap[id]!).toList();
+  /// Returns cached unmodifiable list for stable selector comparisons.
+  List<NotificationListItem> get notifications => _cachedNotificationsList;
 
   /// True if the stream encountered an error.
   bool get hasError => _hasStreamError;
@@ -119,8 +166,32 @@ class NotificationListProvider extends ChangeNotifier {
   /// True if no notifications exist and no error occurred.
   bool get isEmpty => _notificationMap.isEmpty && !_hasStreamError;
 
+  /// True if there are notifications to display (regardless of error state).
+  /// Use for app bar action visibility.
+  bool get hasNotifications => _notificationMap.isNotEmpty;
+
   /// True if actively listening to the first-page stream.
   bool get isListening => _isListening;
+
+  /// Snapshot of list state for Selector consumption.
+  ///
+  /// Use with context.select() to only rebuild when relevant state changes.
+  NotificationListViewState get listViewState => NotificationListViewState(
+        notifications: _cachedNotificationsList,
+        hasError: _hasStreamError,
+        isListening: _isListening,
+        isLoadingMore: _isLoadingMore,
+        hasMore: _hasMore,
+        loadMoreError: _loadMoreError,
+      );
+
+  /// Update the cached notifications list.
+  /// Call this whenever _orderedIds or _notificationMap content changes.
+  void _updateCachedList() {
+    _cachedNotificationsList = List.unmodifiable(
+      _orderedIds.map((id) => _notificationMap[id]!),
+    );
+  }
 
   // ═══════════════════════════════════════════════════════════════════════════
   // INIT & AUTH STATE
@@ -154,6 +225,7 @@ class NotificationListProvider extends ChangeNotifier {
     _isLoadingMore = false;
     _loadMoreError = false;
     _hasStreamError = false;
+    _updateCachedList();
     _scheduleNotify();
   }
 
@@ -243,6 +315,7 @@ class NotificationListProvider extends ChangeNotifier {
     _orderedIds = [...newFirstPageIds, ...loadMoreIds];
 
     _hasStreamError = false;
+    _updateCachedList();
     _scheduleNotify();
   }
 
@@ -289,6 +362,7 @@ class NotificationListProvider extends ChangeNotifier {
       _hasMore = docs.length >= _pageSize;
       _isLoadingMore = false;
       _loadMoreError = false;
+      _updateCachedList();
       _scheduleNotify();
     } catch (e) {
       if (_disposed || _activeUid != uid) return;
@@ -309,6 +383,7 @@ class NotificationListProvider extends ChangeNotifier {
     _orderedIds = _orderedIds.take(_firstPageSize).toList();
     _loadMoreError = false;
     _hasMore = true;
+    _updateCachedList();
     _scheduleNotify();
     await Future.delayed(const Duration(milliseconds: 300));
   }
@@ -357,6 +432,7 @@ class NotificationListProvider extends ChangeNotifier {
     // Optimistic removal
     _notificationMap.remove(item.id);
     _orderedIds.remove(item.id);
+    _updateCachedList();
     _scheduleNotify();
 
     try {

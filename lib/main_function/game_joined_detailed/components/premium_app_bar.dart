@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '/core/design_tokens/colors.dart';
 import '/core/design_tokens/typography.dart';
 import '/core/navigation/nav_extensions.dart';
 import '/core/widgets/premium_back_button.dart';
@@ -18,7 +19,7 @@ class PremiumAppBar extends StatelessWidget implements PreferredSizeWidget {
   @override
   Widget build(BuildContext context) {
     return AppBar(
-      backgroundColor: Colors.transparent,
+      backgroundColor: AppColors.transparent,
       automaticallyImplyLeading: false,
       leading: PremiumBackButton(
         onTap: () {
@@ -28,7 +29,7 @@ class PremiumAppBar extends StatelessWidget implements PreferredSizeWidget {
       title: Text(
         title,
         style: AppTypography.headlineMediumSans.copyWith(
-          color: Colors.white,
+          color: AppColors.pure,
           fontWeight: FontWeight.w600,
         ),
       ),

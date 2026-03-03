@@ -24,7 +24,7 @@ Future<GameListFilters?> showGameListFilterSheet({
   return showModalBottomSheet<GameListFilters>(
     context: context,
     isScrollControlled: true,
-    backgroundColor: Colors.transparent,
+    backgroundColor: AppColors.transparent,
     builder: (context) => GameListFilterBottomSheet(
       currentFilters: currentFilters,
       availableGameTypes: filterMeta.availableGameTypes,
@@ -47,7 +47,7 @@ void showFlexibleGamesSheet({
   showModalBottomSheet(
     context: context,
     isScrollControlled: true,
-    backgroundColor: Colors.transparent,
+    backgroundColor: AppColors.transparent,
     builder: (context) => FlexibleGamesBottomSheet(
       games: games,
       currentUserReference: currentUserReference,

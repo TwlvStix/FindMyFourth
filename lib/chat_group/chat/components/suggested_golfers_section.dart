@@ -260,7 +260,7 @@ class _SuggestedGolferCard extends StatelessWidget {
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: AppTypography.titleSmall.copyWith(
-                      color: Colors.white,
+                      color: AppColors.pure,
                       fontWeight: FontWeight.w600,
                     ),
                   ),

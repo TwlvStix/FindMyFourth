@@ -450,12 +450,12 @@ class _PremiumFriendCardState extends State<PremiumFriendCard>
         iconColor = AppColors.textPrimary;
       case ActionButtonVariant.secondary:
         // Transparent, navyLight border - neutral secondary actions
-        backgroundColor = Colors.transparent;
+        backgroundColor = AppColors.transparent;
         borderColor = AppColors.navyLight;
         iconColor = AppColors.textSecondary;
       case ActionButtonVariant.muted:
         // Transparent, stone border - de-emphasized/destructive actions
-        backgroundColor = Colors.transparent;
+        backgroundColor = AppColors.transparent;
         borderColor = AppColors.stone;
         iconColor = AppColors.textMuted;
     }
@@ -471,7 +471,7 @@ class _PremiumFriendCardState extends State<PremiumFriendCard>
             : null,
       ),
       child: Material(
-        color: Colors.transparent,
+        color: AppColors.transparent,
         child: InkWell(
           onTap: isLoading ? null : onPressed,
           borderRadius: BorderRadius.circular(AppBorderRadius.md),

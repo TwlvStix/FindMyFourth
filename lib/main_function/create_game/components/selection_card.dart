@@ -69,7 +69,7 @@ class SelectionCard extends StatelessWidget {
           border: Border.all(
             color: isSelected
                 ? AppColors.green
-                : Colors.white.withValues(alpha: 0.1),
+                : AppColors.glassSurface,
             width: isSelected ? 2 : 1,
           ),
           boxShadow: isSelected ? [AppElevation.glowGreen] : null,
@@ -87,7 +87,7 @@ class SelectionCard extends StatelessWidget {
                         colors: [AppColors.green, AppColors.greenLight],
                       )
                     : null,
-                color: isSelected ? null : Colors.white.withValues(alpha: 0.1),
+                color: isSelected ? null : AppColors.glassSurface,
                 borderRadius: BorderRadius.circular(AppBorderRadius.sm),
               ),
               child: phosphorIcon != null
@@ -114,7 +114,7 @@ class SelectionCard extends StatelessWidget {
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
                 style: AppTypography.labelSmall.copyWith(
-                  color: Colors.white,
+                  color: AppColors.pure,
                   height: 1.2,
                   fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
                 ),
