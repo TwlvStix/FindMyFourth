@@ -195,6 +195,9 @@ class AppColors {
   /// Scrim - black at 60% (modal backdrops)
   static const Color scrim = Color(0x99000000);
 
+  /// Transparent - for bottom sheet backgrounds, invisible containers
+  static const Color transparent = Color(0x00000000);
+
   // ==========================================================================
   // GRADIENTS
   // ==========================================================================

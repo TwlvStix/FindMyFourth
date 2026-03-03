@@ -1,16 +1,9 @@
-import 'dart:async';
-import '/core/utils/state_update.dart';
+import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 import '/auth/firebase_auth/auth_util.dart';
 import '/backend/backend.dart';
-import '/backend/push_notifications/push_notifications_util.dart';
-import '/core/content/app_copy.dart';
-import '/core/design_tokens/colors.dart';
-import '/core/design_tokens/spacing.dart';
-import '/core/design_tokens/typography.dart';
-import '/core/exceptions/app_exceptions.dart';
-import '/core/utils/app_log.dart';
-import '/core/widgets/app_premium_dialog.dart';
+import '/core/utils/state_update.dart';
 import '/core/widgets/fairway_background.dart';
 import '/models/game.dart';
 import '/models/join_request.dart';
@@ -18,20 +11,19 @@ import '/models/vibe_profile.dart';
 import '/providers/game_provider.dart';
 import '/providers/group_vibe_provider.dart';
 import '/providers/join_request_provider.dart';
-import '/providers/profile_provider.dart';
-import '/providers/provider_extensions.dart';
 import '/services/vibe_group_matcher.dart';
 import '/services/vibe_repository.dart';
 import '/utils/app_util.dart';
-import 'package:flutter/material.dart';
-import 'package:phosphor_flutter/phosphor_flutter.dart';
-import 'package:provider/provider.dart';
 
-import 'components/edit_game_details_bottom_sheet.dart';
 import 'components/game_joined_dashboard_content.dart';
 import 'components/game_joined_state_handler.dart';
 import 'components/open_premium_vibe_page.dart';
 import 'components/premium_app_bar.dart';
+import 'controllers/game_joined_detailed_controller.dart';
+import 'controllers/game_joined_edit_actions.dart';
+import 'controllers/game_joined_player_actions.dart';
+import 'controllers/game_joined_request_actions.dart';
+import 'controllers/game_joined_stream_controller.dart';
 
 class GameJoinedDetailedWidget extends StatefulWidget {
   const GameJoinedDetailedWidget({
@@ -54,272 +46,94 @@ class _GameJoinedDetailedWidgetState extends State<GameJoinedDetailedWidget>
   final scaffoldKey = GlobalKey<ScaffoldState>();
   final VibeRepository _vibeRepository = VibeRepository();
 
-  bool _hasAnimated = false;
+  // Controllers
+  late final GameJoinedDetailedController _controller;
+  late final GameJoinedStreamController _streamController;
+  late final GameJoinedRequestActions _requestActions;
+  late final GameJoinedPlayerActions _playerActions;
+  late final GameJoinedEditActions _editActions;
 
+  // UI State (owned by widget)
+  bool _hasAnimated = false;
   List<JoinRequest> _pendingRequests = [];
-  bool _isLoadingPendingRequests = false;
-  String? _loadedPendingRequestsGameId;
   VibeProfile? _ownerVibeProfile;
   String? _expandedRequestId;
 
-  // Stream subscription for game data (side effects handled via subscription)
-  StreamSubscription<GamesRecord?>? _gameSubscription;
-
-  // Local state for game data (replaces StreamBuilder to avoid duplicate listeners)
+  // Stream state
   GamesRecord? _gamesRecord;
   bool _hasStreamError = false;
-
-  // Tracking by cache key (not gameId) since roster changes affect key
-  String? _loadedGroupVibeCacheKey;
-  bool _hasTriggeredAnimation = false;
 
   @override
   void initState() {
     super.initState();
+    _controller = GameJoinedDetailedController(
+      joinRequestProvider: context.read<JoinRequestProvider>(),
+      gameProvider: context.read<GameProvider>(),
+      appState: context.read<AppState>(),
+      vibeRepository: _vibeRepository,
+    );
+    _streamController = GameJoinedStreamController(vibeRepository: _vibeRepository);
+    _requestActions = GameJoinedRequestActions(controller: _controller);
+    _playerActions = GameJoinedPlayerActions(controller: _controller);
+    _editActions = GameJoinedEditActions(controller: _controller);
     _initGameSubscription();
   }
 
   @override
   void didUpdateWidget(GameJoinedDetailedWidget oldWidget) {
     super.didUpdateWidget(oldWidget);
-
-    // If gameRef changed, cancel old subscription and reinitialize
     if (widget.gameRef?.id != oldWidget.gameRef?.id) {
-      _gameSubscription?.cancel();
-
-      // Reset all tracking state
-      _loadedGroupVibeCacheKey = null;
-      _loadedPendingRequestsGameId = null;
-      _hasTriggeredAnimation = false;
-
-      // Reset UI state for new game
+      _streamController.resetAndCancel();
       _pendingRequests = [];
-      _isLoadingPendingRequests = false;
       _ownerVibeProfile = null;
       _expandedRequestId = null;
-
-      // Reset stream state
       _gamesRecord = null;
       _hasStreamError = false;
-
       _initGameSubscription();
     }
   }
 
   @override
   void dispose() {
-    _gameSubscription?.cancel();
+    _streamController.dispose();
     super.dispose();
   }
 
   void _initGameSubscription() {
     final gameRef = widget.gameRef;
     if (gameRef == null) return;
-
-    final gameStream = context.read<GameProvider>().watchGame(gameRef.id);
-    _gameSubscription = gameStream.listen(
-      _onGameDataReceived,
-      onError: (Object error) {
-        AppLog.d('❌ GameJoinedDetailed stream error: $error');
-        if (mounted) {
-          updateState(this, () {
-            _hasStreamError = true;
-          });
-        }
+    _streamController.initSubscription(
+      context: context,
+      gameId: gameRef.id,
+      onData: _onGameDataReceived,
+      onError: (hasError) {
+        if (mounted) updateState(this, () => _hasStreamError = hasError);
       },
     );
   }
 
   void _onGameDataReceived(GamesRecord? gamesRecord) {
     if (!mounted) return;
-
-    // Store the record and clear error state, trigger rebuild
     updateState(this, () {
       _gamesRecord = gamesRecord;
       _hasStreamError = false;
     });
-
     if (gamesRecord == null) return;
-
-    final currentUserRef = currentUserReference;
-    final currentUserId = currentUserRef?.id;
-    final game = Game.fromRecord(gamesRecord);
-
-    // 1. Trigger entrance animation (once per widget lifetime)
-    if (!_hasTriggeredAnimation) {
-      _hasTriggeredAnimation = true;
-      updateState(this, () => _hasAnimated = true);
-    }
-
-    // 2. Load pending requests for owner (once per gameId)
-    if (game.userRef == currentUserRef && currentUserRef != null) {
-      _loadPendingRequestsIfNeeded(game.reference.id, currentUserRef.id);
-    }
-
-    // 3. Load group vibe data (once per cache key — includes roster)
-    if (currentUserId != null) {
-      _loadGroupVibeIfNeeded(game, currentUserId);
-    }
-  }
-
-  void _loadPendingRequestsIfNeeded(String gameId, String ownerId) {
-    if (_loadedPendingRequestsGameId == gameId || _isLoadingPendingRequests) {
-      return;
-    }
-    _loadedPendingRequestsGameId = gameId;
-    _isLoadingPendingRequests = true;
-    _loadPendingRequests(gameId, ownerId);
-  }
-
-  Future<void> _loadPendingRequests(String gameId, String ownerId) async {
-    if (!mounted) return;
-
-    try {
-      final results = await Future.wait([
-        context
-            .read<JoinRequestProvider>()
-            .getPendingRequestsForGame(gameId, ownerId),
-        _vibeRepository.getVibeProfileForUser(ownerId),
-      ]);
-
-      if (!mounted) return;
-
-      final requests = results[0] as List<JoinRequest>;
-      requests.sort((a, b) => a.createdAt.compareTo(b.createdAt));
-
-      updateState(this, () {
-        _pendingRequests = requests;
-        _ownerVibeProfile = results[1] as VibeProfile;
-        _isLoadingPendingRequests = false;
-        if (_pendingRequests.isNotEmpty) {
-          _expandedRequestId = _pendingRequests.first.id;
-        }
-      });
-    } catch (error) {
-      AppLog.d('❌ GameJoinedDetailed._loadPendingRequests error: $error');
-      if (mounted) {
+    _streamController.processGameData(
+      state: this,
+      context: context,
+      gamesRecord: gamesRecord,
+      currentUserRef: currentUserReference,
+      onAnimationTrigger: () => updateState(this, () => _hasAnimated = true),
+      onPendingRequestsLoaded: (requests, ownerProfile, expandedId) {
         updateState(this, () {
-          _isLoadingPendingRequests = false;
+          _pendingRequests = requests;
+          _ownerVibeProfile = ownerProfile;
+          _expandedRequestId = expandedId;
         });
-      }
-    }
-  }
-
-  void _loadGroupVibeIfNeeded(Game game, String currentUserId) {
-    final groupVibeProvider = context.read<GroupVibeProvider>();
-
-    final cacheKey = groupVibeProvider.buildGameCacheKey(
-      gameRecord: game,
-      currentUserId: currentUserId,
-    );
-
-    // Skip if already loaded this cache key or provider says no load needed
-    if (_loadedGroupVibeCacheKey == cacheKey) return;
-    if (!groupVibeProvider.shouldLoad(cacheKey)) return;
-
-    _loadedGroupVibeCacheKey = cacheKey;
-    _loadGroupVibeData(game, currentUserId, cacheKey);
-  }
-
-  Future<void> _loadGroupVibeData(
-    Game game,
-    String currentUserId,
-    String cacheKey,
-  ) async {
-    if (!mounted) return;
-
-    final groupVibeProvider = context.read<GroupVibeProvider>();
-    final memberIds = groupVibeProvider.otherMemberIdsForGame(
-      gameRecord: game,
-      currentUserId: currentUserId,
-    );
-
-    await groupVibeProvider.ensureGroupVibeMatch(
-      cacheKey: cacheKey,
-      memberUserIds: memberIds,
-      memberLoader: (userIds) async {
-        final profileMap =
-            await context.read<ProfileProvider>().batchGetProfiles(userIds);
-        final members = <GroupVibeMember>[];
-        for (final entry in profileMap.entries) {
-          final userRecord = entry.value;
-          final displayName = userRecord.displayName.isNotEmpty
-              ? userRecord.displayName
-              : 'Player';
-          members.add(
-            GroupVibeMember(
-              id: entry.key,
-              name: displayName,
-              profile: VibeProfile.fromFirestore(userRecord.vibeProfile),
-            ),
-          );
-        }
-        return members;
       },
+      onLoadingChanged: (_) {},
     );
-  }
-
-  Future<void> _handleApproveRequest(
-      JoinRequest request, String? chatId) async {
-    try {
-      await context.read<JoinRequestProvider>().approveJoinRequest(
-            gameId: request.gameId,
-            requestId: request.id,
-            requesterId: request.requesterId,
-            chatId: chatId,
-          );
-      if (mounted) {
-        context.gameProvider.invalidateAvailableGamesCache();
-      }
-    } on GameOperationException catch (error) {
-      if (error.code == 'game-full' && mounted) {
-        showSnackbar(context, AppVibeFloorCopy.roundFullError);
-        context.read<JoinRequestProvider>().notifyRoundFilledBeforeApproval(
-              request.gameId,
-              request.requesterId,
-            );
-      }
-    } catch (_) {
-      if (mounted) {
-        showSnackbar(context, 'Failed to approve request. Please try again.');
-      }
-    }
-  }
-
-  Future<void> _handleDeclineRequest(JoinRequest request) async {
-    try {
-      await context.read<JoinRequestProvider>().declineJoinRequest(
-            gameId: request.gameId,
-            requestId: request.id,
-            requesterId: request.requesterId,
-          );
-    } catch (_) {
-      if (mounted) {
-        showSnackbar(context, 'Failed to decline request. Please try again.');
-      }
-    }
-  }
-
-  void _removeRequestFromList(String requestId) {
-    if (!mounted) {
-      return;
-    }
-
-    updateState(this, () {
-      _pendingRequests.removeWhere((r) => r.id == requestId);
-      if (_expandedRequestId == requestId) {
-        _expandedRequestId =
-            _pendingRequests.isNotEmpty ? _pendingRequests.first.id : null;
-      }
-    });
-  }
-
-  void _expandRequest(String requestId) {
-    if (_expandedRequestId != requestId) {
-      updateState(this, () {
-        _expandedRequestId = requestId;
-      });
-    }
   }
 
   @override
@@ -340,7 +154,6 @@ class _GameJoinedDetailedWidgetState extends State<GameJoinedDetailedWidget>
 
     final currentUserRef = currentUserReference;
 
-    // Handle stream error state
     if (_hasStreamError) {
       return GameJoinedStateHandler(
         props: GameJoinedStateProps(
@@ -354,7 +167,6 @@ class _GameJoinedDetailedWidgetState extends State<GameJoinedDetailedWidget>
       );
     }
 
-    // Handle loading or null data state
     final gamesRecord = _gamesRecord;
     if (gamesRecord == null) {
       return GameJoinedStateHandler(
@@ -371,16 +183,12 @@ class _GameJoinedDetailedWidgetState extends State<GameJoinedDetailedWidget>
     final gameRecord = Game.fromRecord(gamesRecord);
     final currentUserId = currentUserRef?.id;
 
-    // Build cache key for GroupVibe selectors (pure function, no reactivity)
     final groupVibeCacheKey = currentUserId == null
         ? null
         : context.read<GroupVibeProvider>().buildGameCacheKey(
             gameRecord: gameRecord,
             currentUserId: currentUserId,
           );
-
-    // PURE BUILD: Side effects handled via stream subscription in _onGameDataReceived()
-    // GroupVibe selects moved into GroupVibeSummarySelector and PlayerListSectionSelector
 
     return Scaffold(
       key: scaffoldKey,
@@ -400,255 +208,86 @@ class _GameJoinedDetailedWidgetState extends State<GameJoinedDetailedWidget>
           expandedRequestId: _expandedRequestId,
           onApproveRequest: _handleApproveRequest,
           onDeclineRequest: _handleDeclineRequest,
-          onRemoveRequest: _removeRequestFromList,
-          onExpandRequest: _expandRequest,
-          onShowRemovePlayerDialog: _showRemovePlayerDialog,
-          onOpenPremiumVibePage: _openPremiumVibePage,
+          onRemoveRequest: _handleRemoveRequest,
+          onExpandRequest: _handleExpandRequest,
+          onShowRemovePlayerDialog: _handleShowRemovePlayerDialog,
+          onOpenPremiumVibePage: _handleOpenPremiumVibePage,
           onEditGameDetails: _handleEditGameDetails,
         ),
       ),
     );
   }
 
-  Future<void> _openPremiumVibePage(
+  // Callback delegates
+
+  Future<void> _handleApproveRequest(JoinRequest request, String? chatId) =>
+      _requestActions.handleApproveRequest(
+          context: context, state: this, request: request, chatId: chatId);
+
+  Future<void> _handleDeclineRequest(JoinRequest request) =>
+      _requestActions.handleDeclineRequest(
+          context: context, state: this, request: request);
+
+  void _handleRemoveRequest(String requestId) =>
+      _requestActions.removeRequestFromList(
+        state: this,
+        requestId: requestId,
+        pendingRequests: _pendingRequests,
+        expandedRequestId: _expandedRequestId,
+        onChanged: (requests, expandedId) {
+          _pendingRequests = requests;
+          _expandedRequestId = expandedId;
+        },
+      );
+
+  void _handleExpandRequest(String requestId) => _requestActions.expandRequest(
+        state: this,
+        requestId: requestId,
+        currentExpandedId: _expandedRequestId,
+        onExpandedChanged: (id) => _expandedRequestId = id,
+      );
+
+  Future<void> _handleShowRemovePlayerDialog({
+    required BuildContext context,
+    required String playerName,
+    required DocumentReference? playerRef,
+    required bool isGuest,
+    String? guestName,
+    required Game gameRecord,
+  }) =>
+      _playerActions.showRemovePlayerDialog(
+        context: context,
+        state: this,
+        playerName: playerName,
+        playerRef: playerRef,
+        isGuest: isGuest,
+        guestName: guestName,
+        gameRecord: gameRecord,
+        currentUserRef: currentUserReference,
+        gameRef: widget.gameRef,
+      );
+
+  Future<void> _handleOpenPremiumVibePage(
     BuildContext context,
     DocumentReference userRef,
     String userName,
     String userPhotoUrl,
     GroupVibeMemberResult? memberMatch,
-  ) {
-    return openPremiumVibePage(
-      context: context,
-      vibeRepository: _vibeRepository,
-      userRef: userRef,
-      userName: userName,
-      userPhotoUrl: userPhotoUrl,
-      memberMatch: memberMatch,
-    );
-  }
-
-  Future<void> _showRemovePlayerDialog({
-    required BuildContext context,
-    required String playerName,
-    required DocumentReference? playerRef,
-    required bool isGuest,
-    String? guestName,
-    required Game gameRecord,
-  }) async {
-    final currentUserRef = currentUserReference;
-
-    if (!isGuest && playerRef == currentUserRef) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content:
-              Text('You cannot remove yourself. Use "Cancel game" instead.'),
-          backgroundColor: AppColors.error,
-        ),
-      );
-      return;
-    }
-
-    final confirmed = await showPremiumDialog(
-          context: context,
-          variant: PremiumDialogVariant.destructive,
-          icon: PhosphorIconsRegular.userMinus,
-          title: 'Remove Player',
-          body: 'This will remove $playerName from the game.',
-          actionLabel: 'Remove',
-        ) ??
-        false;
-
-    if (confirmed) {
-      if (!context.mounted) {
-        return;
-      }
-      await _removePlayer(
+  ) =>
+      openPremiumVibePage(
         context: context,
-        playerRef: playerRef,
-        isGuest: isGuest,
-        guestName: guestName,
-        playerName: playerName,
+        vibeRepository: _vibeRepository,
+        userRef: userRef,
+        userName: userName,
+        userPhotoUrl: userPhotoUrl,
+        memberMatch: memberMatch,
+      );
+
+  Future<void> _handleEditGameDetails(BuildContext context, Game gameRecord) =>
+      _editActions.handleEditGameDetails(
+        context: context,
+        state: this,
         gameRecord: gameRecord,
+        currentUserUid: currentUserReference?.id,
       );
-    }
-  }
-
-  Future<void> _removePlayer({
-    required BuildContext context,
-    required DocumentReference? playerRef,
-    required bool isGuest,
-    String? guestName,
-    required String playerName,
-    required Game gameRecord,
-  }) async {
-    final gameRef = widget.gameRef;
-    if (gameRef == null) {
-      AppLog.d('Player Management: gameRef is null');
-      return;
-    }
-
-    try {
-      await context.gameProvider.removePlayer(
-        gameRef.id,
-        playerId: playerRef?.id,
-        guestName: guestName,
-        isGuest: isGuest,
-        chatId: gameRecord.chatRef?.id,
-      );
-
-      if (!context.mounted) {
-        return;
-      }
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('$playerName removed from game'),
-            backgroundColor: AppColors.success,
-            duration: Duration(seconds: 2),
-          ),
-        );
-      }
-    } catch (_) {
-      if (!context.mounted) {
-        return;
-      }
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Failed to remove player. Please try again.'),
-            backgroundColor: AppColors.error,
-          ),
-        );
-      }
-    }
-  }
-
-  Future<void> _handleEditGameDetails(
-    BuildContext context,
-    Game gameRecord,
-  ) async {
-    final teeTime = gameRecord.date;
-    if (teeTime != null) {
-      final hoursUntilTeeTime = teeTime.difference(DateTime.now()).inHours;
-      if (hoursUntilTeeTime < 2) {
-        await showPremiumDialog(
-          context: context,
-          variant: PremiumDialogVariant.informational,
-          icon: PhosphorIconsRegular.info,
-          title: 'Cannot Edit',
-          body:
-              'Tee time is less than 2 hours away. Consider cancelling this game and creating a new one instead.',
-          actionLabel: 'Got It',
-        );
-        return;
-      }
-    }
-
-    final result = await showModalBottomSheet<Map<String, dynamic>?>(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (context) => EditGameDetailsBottomSheet(
-        gameRef: gameRecord.reference,
-        initialDate: gameRecord.date ?? DateTime.now(),
-        initialCourse: gameRecord.coursePlay,
-        initialCourseRef: gameRecord.courseRef,
-      ),
-    );
-
-    if (result != null && context.mounted) {
-      await _updateGameDetails(context, gameRecord, result);
-    }
-  }
-
-  Future<void> _updateGameDetails(
-    BuildContext context,
-    Game gameRecord,
-    Map<String, dynamic> updateData,
-  ) async {
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (context) => Center(
-        child: Card(
-          margin: EdgeInsets.all(AppSpacing.xl),
-          child: Padding(
-            padding: EdgeInsets.all(AppSpacing.lg),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                CircularProgressIndicator(color: AppColors.green),
-                SizedBox(height: AppSpacing.md),
-                Text(
-                  'Updating game details...',
-                  style: AppTypography.bodySmall,
-                ),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-
-    try {
-      await context.gameProvider.updateGame(
-        gameRecord.reference.id,
-        <String, dynamic>{
-          'date': updateData['date'],
-          'course_play': updateData['course'],
-          'courseRef': updateData['courseRef'],
-        },
-      );
-
-      final currentUserUid = currentUserReference?.id;
-      final recipients = gameRecord.joinedPlayers
-          .where((ref) => ref.id != currentUserUid)
-          .toList();
-
-      if (recipients.isNotEmpty) {
-        final newDate = updateData['date'] as DateTime;
-        final newCourse = updateData['course'] as String;
-        final dayName = dateTimeFormat('EEEE', newDate);
-        final dateStr = dateTimeFormat('MMM d', newDate);
-        final timeStr = dateTimeFormat('jm', newDate);
-        final notificationText =
-            'Game updated — now $dayName $dateStr, $timeStr at $newCourse';
-
-        triggerPushNotification(
-          notificationTitle: 'Game Details Updated',
-          notificationText: notificationText,
-          userRefs: recipients,
-          initialPageName: 'GameJoinedDetailed',
-          parameterData: {'gameRef': gameRecord.reference.path},
-        );
-      }
-
-      if (!context.mounted) {
-        return;
-      }
-      if (mounted) {
-        Navigator.pop(context);
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Game details updated!'),
-            backgroundColor: AppColors.success,
-          ),
-        );
-      }
-    } catch (error) {
-      AppLog.d('Edit Game Details failed: $error');
-      if (!context.mounted) {
-        return;
-      }
-      if (mounted) {
-        Navigator.pop(context);
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Failed to update game details: $error'),
-            backgroundColor: AppColors.error,
-          ),
-        );
-      }
-    }
-  }
 }
