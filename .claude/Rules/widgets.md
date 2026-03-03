@@ -10,7 +10,6 @@ Widget files MUST stay under 300 lines. If a widget is approaching this limit, d
 - The screen-level widget should compose smaller widgets, not contain all logic
 
 **Legacy exceptions** (tech debt — do NOT increase, only refactor):
-- `cinematic_onboarding_widget.dart` (990 lines)
 - `games_list_widget.dart` (731 lines)
 - `join_game_detailed_widget.dart` (678 lines)
 - `game_joined_detailed_widget.dart` (654 lines)
@@ -23,6 +22,23 @@ Widget files MUST stay under 300 lines. If a widget is approaching this limit, d
 - `progressive_onboarding_widget.dart` (324 lines)
 
 When modifying these files, either keep line count the same or lower, or extract components to reduce size.
+
+## Component Extraction Naming
+
+When extracting sub-widgets to a `components/` subfolder, use a **feature-specific prefix** to distinguish them from generic reusable widgets:
+
+**Pattern:** `{Feature}{Component}.dart` → `{Feature}{Component}` class
+
+**Examples:**
+- `cinematic_onboarding_slide.dart` → `CinematicOnboardingSlide`
+- `cinematic_progress_dots.dart` → `CinematicProgressDots`
+- `game_joined_player_card.dart` → `GameJoinedPlayerCard`
+
+**Why:** Prevents naming collisions with generic `core/widgets/` components and makes the component's scope immediately clear.
+
+**Contrast with core widgets:** Generic reusable widgets in `lib/core/widgets/` use the `App` prefix:
+- `app_button_enhanced.dart` → `AppButtonEnhanced`
+- `app_card.dart` → `AppCard`
 
 ## Separation of Concerns
 - NEVER call Firestore, Firebase Auth, or any backend service directly from a widget
@@ -116,6 +132,48 @@ The `build()` method must be **pure** — it reads state and returns widgets. No
 
 **Instead:** Trigger side effects from stream callbacks, button handlers, or lifecycle methods.
 
+### Object Creation Anti-Pattern
+
+NEVER create disposable objects in `build()` — they leak on every rebuild:
+
+**Don't:**
+```dart
+@override
+Widget build(BuildContext context) {
+  return KeyboardListener(
+    focusNode: FocusNode()..requestFocus(),  // ❌ New FocusNode every build
+    // ...
+  );
+}
+```
+
+**Do:**
+```dart
+late FocusNode _focusNode;
+
+@override
+void initState() {
+  super.initState();
+  _focusNode = FocusNode();
+}
+
+@override
+void dispose() {
+  _focusNode.dispose();
+  super.dispose();
+}
+
+@override
+Widget build(BuildContext context) {
+  return KeyboardListener(
+    focusNode: _focusNode,  // ✅ Reused across builds
+    // ...
+  );
+}
+```
+
+This applies to: `FocusNode`, `TextEditingController`, `ScrollController`, `AnimationController`, `PageController`, and any other object that requires disposal.
+
 ### Stream Subscription Pattern
 
 When a widget needs reactive Firestore data AND must trigger side effects on data changes:
@@ -206,6 +264,54 @@ void _scheduleWork() {
 - Every `StreamSubscription` declared in a widget MUST be cancelled in `dispose()`
 - Every `ScrollController`, `TextEditingController`, `FocusNode`, or `AnimationController` MUST be disposed in `dispose()`
 - If you create it, you clean it up — no exceptions
+
+## Animation Controller Patterns
+
+When a widget needs multiple similar animation controllers (e.g., one per slide, one per list item):
+
+**Don't:**
+```dart
+late AnimationController _slide1Controller;
+late AnimationController _slide2Controller;
+late AnimationController _slide3Controller;
+late AnimationController _slide4Controller;
+
+@override
+void dispose() {
+  _slide1Controller.dispose();
+  _slide2Controller.dispose();
+  _slide3Controller.dispose();
+  _slide4Controller.dispose();
+  super.dispose();
+}
+```
+
+**Do:**
+```dart
+late List<AnimationController> _slideControllers;
+
+@override
+void initState() {
+  super.initState();
+  _slideControllers = List.generate(
+    _totalSlides,
+    (_) => AnimationController(
+      duration: const Duration(milliseconds: 500),
+      vsync: this,
+    ),
+  );
+}
+
+@override
+void dispose() {
+  for (final controller in _slideControllers) {
+    controller.dispose();
+  }
+  super.dispose();
+}
+```
+
+**Benefits:** Easier to add/remove items, cleaner disposal, works with dynamic counts.
 
 ## Logging
 - Use `AppLog.d()` with emoji prefixes, never `print()` or `debugPrint()`
