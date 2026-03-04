@@ -227,6 +227,7 @@ class _GamesListWidgetState extends State<GamesListWidget> {
         extendBodyBehindAppBar: true,
         appBar: GamesListAppBar(
           hasActiveFilters: _filters.hasActiveFilters,
+          activeFilterCount: _filters.activeFilterCount,
           onFilterTap: _handleFilterButtonTap,
           onNotificationTap: () => context.pushNotifications(),
         ),

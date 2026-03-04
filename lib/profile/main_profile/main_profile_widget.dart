@@ -239,6 +239,8 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                           showDebugOptions: kDebugMode,
                           onDebugNotificationRouting: () =>
                               context.push('/debug/notification-routing'),
+                          onDebugStreakPreview: () =>
+                              context.push('/debug/streak'),
                         ),
 
                         SizedBox(height: AppSpacing.xxxl),

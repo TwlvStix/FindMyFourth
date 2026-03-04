@@ -22,6 +22,7 @@ class ProfileSettingsSection extends StatelessWidget {
     required this.onLogout,
     this.showDebugOptions = false,
     this.onDebugNotificationRouting,
+    this.onDebugStreakPreview,
   });
 
   /// Called when the user taps "Notifications".
@@ -39,6 +40,9 @@ class ProfileSettingsSection extends StatelessWidget {
 
   /// Called when the user taps "Test Notification Routing" (debug only).
   final VoidCallback? onDebugNotificationRouting;
+
+  /// Called when the user taps "Streak UI Preview" (debug only).
+  final VoidCallback? onDebugStreakPreview;
 
   @override
   Widget build(BuildContext context) {
@@ -81,7 +85,7 @@ class ProfileSettingsSection extends StatelessWidget {
                     onYourStanding();
                   },
                 ),
-                // Debug: Notification routing test (only in debug mode)
+                // Debug options (only in debug mode)
                 if (showDebugOptions && kDebugMode) ...[
                   Divider(height: 1, color: AppColors.navyLight, indent: 56),
                   _buildSettingsRow(
@@ -90,6 +94,15 @@ class ProfileSettingsSection extends StatelessWidget {
                     onTap: () {
                       HapticFeedback.lightImpact();
                       onDebugNotificationRouting?.call();
+                    },
+                  ),
+                  Divider(height: 1, color: AppColors.navyLight, indent: 56),
+                  _buildSettingsRow(
+                    phosphorIcon: AppPhosphorIcons.flame,
+                    label: 'Streak UI Preview',
+                    onTap: () {
+                      HapticFeedback.lightImpact();
+                      onDebugStreakPreview?.call();
                     },
                   ),
                 ],

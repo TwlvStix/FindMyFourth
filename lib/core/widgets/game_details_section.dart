@@ -36,7 +36,6 @@ class GameDetailsSection extends StatelessWidget {
 
   Widget _buildJustForFunLayout() {
     final isFriendsOnly = game.friendGame.toLowerCase() == 'yes';
-    final showEligibilityRow = game.playerEligibility != PlayerEligibility.openToAll;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -109,16 +108,19 @@ class GameDetailsSection extends StatelessWidget {
                 icon: isFriendsOnly ? AppPhosphorIcons.friendsOnly : AppPhosphorIcons.visibility,
                 label: 'Visibility',
                 value: isFriendsOnly ? 'Friends Only' : 'Public',
-                showDivider: showEligibilityRow,
+                showDivider: true,
               ),
-              // Eligibility row (conditional)
-              if (showEligibilityRow)
-                AppDetailRow(
-                  icon: AppPhosphorIcons.golfers,
-                  label: 'Who Can Join',
-                  value: game.playerEligibility == PlayerEligibility.womenOnly ? 'Women Only' : 'Men Only',
-                  showDivider: false,
-                ),
+              // Eligibility row
+              AppDetailRow(
+                icon: AppPhosphorIcons.golfers,
+                label: 'Who Can Join',
+                value: switch (game.playerEligibility) {
+                  PlayerEligibility.womenOnly => 'Women Only',
+                  PlayerEligibility.menOnly => 'Men Only',
+                  PlayerEligibility.openToAll => 'Everyone',
+                },
+                showDivider: false,
+              ),
             ],
           ),
         ),
@@ -157,7 +159,6 @@ class GameDetailsSection extends StatelessWidget {
 
   Widget _buildCompetitiveLayout() {
     final isFriendsOnly = game.friendGame.toLowerCase() == 'yes';
-    final showEligibilityRow = game.playerEligibility != PlayerEligibility.openToAll;
 
     // Build list of rows, filtering out empty values
     final rows = <_DetailRowData>[];
@@ -223,14 +224,16 @@ class GameDetailsSection extends StatelessWidget {
       value: isFriendsOnly ? 'Friends Only' : 'Public',
     ));
 
-    // Eligibility (conditional)
-    if (showEligibilityRow) {
-      rows.add(_DetailRowData(
-        icon: AppPhosphorIcons.golfers,
-        label: 'Who Can Join',
-        value: game.playerEligibility == PlayerEligibility.womenOnly ? 'Women Only' : 'Men Only',
-      ));
-    }
+    // Eligibility
+    rows.add(_DetailRowData(
+      icon: AppPhosphorIcons.golfers,
+      label: 'Who Can Join',
+      value: switch (game.playerEligibility) {
+        PlayerEligibility.womenOnly => 'Women Only',
+        PlayerEligibility.menOnly => 'Men Only',
+        PlayerEligibility.openToAll => 'Everyone',
+      },
+    ));
 
     return Container(
       decoration: BoxDecoration(

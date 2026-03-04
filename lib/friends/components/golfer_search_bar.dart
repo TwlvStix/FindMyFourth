@@ -15,6 +15,7 @@ class GolferSearchBar extends StatelessWidget {
   final VoidCallback? onFilterPressed;
   final ValueChanged<String>? onChanged;
   final bool hasActiveFilters;
+  final int activeFilterCount;
 
   const GolferSearchBar({
     super.key,
@@ -23,6 +24,7 @@ class GolferSearchBar extends StatelessWidget {
     this.onFilterPressed,
     this.onChanged,
     this.hasActiveFilters = false,
+    this.activeFilterCount = 0,
   });
 
   @override
@@ -74,17 +76,42 @@ class GolferSearchBar extends StatelessWidget {
               height: 40,
               margin: EdgeInsets.only(right: AppSpacing.xs - 2),
               decoration: BoxDecoration(
-                color: hasActiveFilters
-                    ? AppColors.navyLight.withValues(alpha: 0.3)
-                    : AppColors.transparent,
+                color: AppColors.transparent,
                 borderRadius: BorderRadius.circular(AppBorderRadius.sm),
               ),
-              child: AppIcon(
-                icon: AppPhosphorIcons.filter,
-                color: hasActiveFilters
-                    ? AppColors.textPrimary
-                    : AppColors.textMuted,
-                size: AppIconSize.button,
+              child: Stack(
+                clipBehavior: Clip.none,
+                children: [
+                  Center(
+                    child: AppIcon(
+                      icon: AppPhosphorIcons.filter,
+                      color: AppColors.textMuted,
+                      size: AppIconSize.button,
+                    ),
+                  ),
+                  if (hasActiveFilters)
+                    Positioned(
+                      right: 2,
+                      top: 2,
+                      child: Container(
+                        padding: EdgeInsets.symmetric(horizontal: 4, vertical: 1),
+                        decoration: BoxDecoration(
+                          color: AppColors.info,
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        constraints: BoxConstraints(minWidth: 16, minHeight: 16),
+                        child: Center(
+                          child: Text(
+                            '$activeFilterCount',
+                            style: AppTypography.labelMicro.copyWith(
+                              color: AppColors.pure,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                ],
               ),
             ),
           ),

@@ -10,20 +10,82 @@ import '/core/design_tokens/spacing.dart';
 import '/core/design_tokens/typography.dart';
 import '/core/design_tokens/border_radius.dart';
 import '/core/widgets/app_icon.dart';
+import '/debug/components/game_picker_bottom_sheet.dart';
+import '/debug/services/game_trust_status_service.dart';
 
 /// Debug screen for testing notification tap → navigation routing.
 ///
 /// Lists all notification types grouped by category. Tap any type to
 /// navigate to the destination screen and verify routing works correctly.
-class NotificationRoutingTestScreen extends StatelessWidget {
+class NotificationRoutingTestScreen extends StatefulWidget {
   const NotificationRoutingTestScreen({super.key});
 
   static const routeName = 'NotificationRoutingTest';
   static const routePath = '/debug/notification-routing';
 
-  // Test game reference for screens that require it
+  @override
+  State<NotificationRoutingTestScreen> createState() =>
+      _NotificationRoutingTestScreenState();
+}
+
+class _NotificationRoutingTestScreenState
+    extends State<NotificationRoutingTestScreen> {
+  static const _defaultGamePath = 'games/Z2tRgD57KF6R2nXVQFn6';
+
+  final _trustService = GameTrustStatusService();
+
+  DocumentReference? _selectedGameRef;
+  String _selectedGameName = 'Default test game';
+  GameTrustStatus? _trustStatus;
+  bool _loadingStatus = false;
+
   DocumentReference get _testGameRef =>
-      FirebaseFirestore.instance.doc('games/Z2tRgD57KF6R2nXVQFn6');
+      _selectedGameRef ?? FirebaseFirestore.instance.doc(_defaultGamePath);
+
+  @override
+  void initState() {
+    super.initState();
+    _loadTrustStatus();
+  }
+
+  Future<void> _loadTrustStatus() async {
+    setState(() => _loadingStatus = true);
+    try {
+      final status = await _trustService.fetchGameTrustStatus(_testGameRef);
+      if (!mounted) return;
+      setState(() {
+        _trustStatus = status;
+        _loadingStatus = false;
+      });
+    } catch (_) {
+      if (!mounted) return;
+      setState(() => _loadingStatus = false);
+    }
+  }
+
+  Future<void> _showGamePicker() async {
+    final selected = await GamePickerBottomSheet.show(
+      context,
+      currentSelection: _selectedGameRef,
+    );
+
+    if (!mounted) return;
+    if (selected != null) {
+      // Fetch the game name
+      final gameDoc = await selected.get();
+      final gameName =
+          (gameDoc.data() as Map<String, dynamic>?)?['name_game'] as String? ??
+              'Selected game';
+
+      if (!mounted) return;
+      setState(() {
+        _selectedGameRef = selected;
+        _selectedGameName = gameName;
+        _trustStatus = null;
+      });
+      _loadTrustStatus();
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -42,26 +104,25 @@ class NotificationRoutingTestScreen extends StatelessWidget {
       body: ListView(
         padding: AppSpacing.screen,
         children: [
-          _buildInfoCard(context),
+          _buildInfoCard(),
           const SizedBox(height: AppSpacing.lg),
-          _buildCategory(context, 'Game Notifications', _gameNotifications),
-          _buildCategory(context, 'Chat Notifications', _chatNotifications),
+          _buildCategory('Game Notifications', _gameNotifications),
+          _buildCategory('Chat Notifications', _chatNotifications),
+          _buildCategory('Trust Game Notifications', _trustGameNotifications),
           _buildCategory(
-              context, 'Trust Game Notifications', _trustGameNotifications),
+              'Account Standing Notifications', _accountNotifications),
+          _buildCategory('Badge Notifications', _badgeNotifications),
+          _buildCategory('Social Notifications', _socialNotifications),
+          _buildCategory('Dispute Notifications', _disputeNotifications),
           _buildCategory(
-              context, 'Account Standing Notifications', _accountNotifications),
-          _buildCategory(context, 'Badge Notifications', _badgeNotifications),
-          _buildCategory(context, 'Social Notifications', _socialNotifications),
-          _buildCategory(
-              context, 'Dispute Notifications', _disputeNotifications),
-          _buildCategory(
-              context, 'Join Request Notifications', _joinRequestNotifications),
+              'Join Request Notifications', _joinRequestNotifications),
+          _buildCategory('Streak Notifications', _streakNotifications),
         ],
       ),
     );
   }
 
-  Widget _buildInfoCard(BuildContext context) {
+  Widget _buildInfoCard() {
     return Container(
       padding: AppSpacing.card,
       decoration: BoxDecoration(
@@ -96,11 +157,166 @@ class NotificationRoutingTestScreen extends StatelessWidget {
               color: AppColors.textSecondary,
             ),
           ),
-          const SizedBox(height: AppSpacing.xs),
+          const SizedBox(height: AppSpacing.md),
+
+          // Selected game section
+          _buildSelectedGameSection(),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSelectedGameSection() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Selected game:',
+          style: AppTypography.labelSmall.copyWith(
+            color: AppColors.textMuted,
+          ),
+        ),
+        const SizedBox(height: AppSpacing.xs),
+
+        // Game name + change button
+        Row(
+          children: [
+            Expanded(
+              child: Text(
+                _selectedGameName,
+                style: AppTypography.titleMedium.copyWith(
+                  color: AppColors.textPrimary,
+                  fontWeight: FontWeight.w600,
+                ),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+            const SizedBox(width: AppSpacing.sm),
+            GestureDetector(
+              onTap: _showGamePicker,
+              child: Container(
+                padding: EdgeInsets.symmetric(
+                  horizontal: AppSpacing.sm,
+                  vertical: AppSpacing.xxs,
+                ),
+                decoration: BoxDecoration(
+                  color: AppColors.green.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(AppBorderRadius.sm),
+                  border: Border.all(
+                    color: AppColors.green.withValues(alpha: 0.3),
+                  ),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    AppIcon(
+                      icon: PhosphorIconsRegular.caretDown,
+                      size: AppIconSize.xs,
+                      color: AppColors.green,
+                    ),
+                    const SizedBox(width: AppSpacing.xxs),
+                    Text(
+                      'Change',
+                      style: AppTypography.labelSmall.copyWith(
+                        color: AppColors.green,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: AppSpacing.sm),
+
+        // Trust status chips
+        _buildTrustStatusChips(),
+      ],
+    );
+  }
+
+  Widget _buildTrustStatusChips() {
+    if (_loadingStatus) {
+      return Row(
+        children: [
+          SizedBox(
+            width: 12,
+            height: 12,
+            child: CircularProgressIndicator(
+              strokeWidth: 2,
+              color: AppColors.textMuted,
+            ),
+          ),
+          const SizedBox(width: AppSpacing.xs),
           Text(
-            'Test game: games/Z2tRgD57KF6R2nXVQFn6',
+            'Checking prerequisites...',
             style: AppTypography.labelSmall.copyWith(
               color: AppColors.textMuted,
+            ),
+          ),
+        ],
+      );
+    }
+
+    if (_trustStatus == null) {
+      return const SizedBox.shrink();
+    }
+
+    return Wrap(
+      spacing: AppSpacing.xs,
+      runSpacing: AppSpacing.xxs,
+      children: [
+        _buildStatusChip(
+          label: 'HostCheckin',
+          valid: _trustStatus!.validForHostCheckin,
+          detail: '${_trustStatus!.participantCount} participants',
+        ),
+        _buildStatusChip(
+          label: 'PeerRating',
+          valid: _trustStatus!.validForPeerRating,
+          detail: _trustStatus!.hasAttendanceRecords
+              ? 'attendance recorded'
+              : 'no attendance',
+        ),
+      ],
+    );
+  }
+
+  Widget _buildStatusChip({
+    required String label,
+    required bool valid,
+    required String detail,
+  }) {
+    final color = valid ? AppColors.success : AppColors.textMuted;
+
+    return Container(
+      padding: EdgeInsets.symmetric(
+        horizontal: AppSpacing.sm,
+        vertical: AppSpacing.xxs,
+      ),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(AppBorderRadius.sm),
+        border: Border.all(color: color.withValues(alpha: 0.3)),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          AppIcon(
+            icon: valid
+                ? PhosphorIconsRegular.checkCircle
+                : PhosphorIconsRegular.xCircle,
+            size: AppIconSize.xs,
+            color: color,
+          ),
+          const SizedBox(width: AppSpacing.xxs),
+          Text(
+            '$label ($detail)',
+            style: AppTypography.labelSmall.copyWith(
+              color: color,
+              fontWeight: FontWeight.w500,
             ),
           ),
         ],
@@ -109,7 +325,6 @@ class NotificationRoutingTestScreen extends StatelessWidget {
   }
 
   Widget _buildCategory(
-    BuildContext context,
     String title,
     List<_NotificationType> types,
   ) {
@@ -128,20 +343,20 @@ class NotificationRoutingTestScreen extends StatelessWidget {
             ),
           ),
         ),
-        ...types.map((type) => _buildNotificationTile(context, type)),
+        ...types.map((type) => _buildNotificationTile(type)),
         const SizedBox(height: AppSpacing.lg),
       ],
     );
   }
 
-  Widget _buildNotificationTile(BuildContext context, _NotificationType type) {
+  Widget _buildNotificationTile(_NotificationType type) {
     return Padding(
       padding: const EdgeInsets.only(bottom: AppSpacing.xs),
       child: Material(
         color: AppColors.navy,
         borderRadius: BorderRadius.circular(AppBorderRadius.card),
         child: InkWell(
-          onTap: () => _navigateToDestination(context, type),
+          onTap: () => _navigateToDestination(type),
           borderRadius: BorderRadius.circular(AppBorderRadius.card),
           child: Container(
             padding: const EdgeInsets.symmetric(
@@ -202,7 +417,7 @@ class NotificationRoutingTestScreen extends StatelessWidget {
     );
   }
 
-  void _navigateToDestination(BuildContext context, _NotificationType type) {
+  void _navigateToDestination(_NotificationType type) {
     switch (type.routeType) {
       case _RouteType.gameRef:
         context.pushNamed(
@@ -476,6 +691,50 @@ class NotificationRoutingTestScreen extends StatelessWidget {
           routeType: _RouteType.gamesList,
           icon: AppPhosphorIcons.games,
           iconColor: AppColors.info,
+        ),
+      ];
+
+  // Streak Notifications
+  List<_NotificationType> get _streakNotifications => [
+        _NotificationType(
+          typeName: 'streak_weekend_nudge',
+          destinationScreen: 'GamesList',
+          routeName: 'GamesList',
+          routeType: _RouteType.gamesList,
+          icon: PhosphorIconsRegular.flame,
+          iconColor: AppColors.info,
+        ),
+        _NotificationType(
+          typeName: 'streak_freeze_unlocked',
+          destinationScreen: 'MainProfile',
+          routeName: 'MainProfile',
+          routeType: _RouteType.noParams,
+          icon: PhosphorIconsRegular.snowflake,
+          iconColor: AppColors.gold,
+        ),
+        _NotificationType(
+          typeName: 'streak_freeze_prompt',
+          destinationScreen: 'MainProfile',
+          routeName: 'MainProfile',
+          routeType: _RouteType.noParams,
+          icon: PhosphorIconsRegular.snowflake,
+          iconColor: AppColors.warning,
+        ),
+        _NotificationType(
+          typeName: 'streak_milestone_reached',
+          destinationScreen: 'MainProfile',
+          routeName: 'MainProfile',
+          routeType: _RouteType.noParams,
+          icon: PhosphorIconsRegular.trophy,
+          iconColor: AppColors.gold,
+        ),
+        _NotificationType(
+          typeName: 'streak_broken',
+          destinationScreen: 'MainProfile',
+          routeName: 'MainProfile',
+          routeType: _RouteType.noParams,
+          icon: PhosphorIconsRegular.heartBreak,
+          iconColor: AppColors.error,
         ),
       ];
 }

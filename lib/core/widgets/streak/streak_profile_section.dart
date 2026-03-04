@@ -8,6 +8,15 @@ import '/core/design_tokens/typography.dart';
 import '/core/widgets/app_icon.dart';
 import '/models/streak_profile.dart';
 
+/// Visual variant for the streak profile section.
+enum StreakSectionVariant {
+  /// Light background (sand/cloud) for use on dark screens.
+  light,
+
+  /// Dark background (navy) for use on dark screens.
+  dark,
+}
+
 /// Full streak section for displaying on the user's own profile.
 ///
 /// Shows:
@@ -30,6 +39,7 @@ class StreakProfileSection extends StatelessWidget {
     this.seasonLabel,
     this.showFreezeStatus = true,
     this.onFreezeTap,
+    this.variant = StreakSectionVariant.light,
   });
 
   /// The streak profile to display.
@@ -45,6 +55,18 @@ class StreakProfileSection extends StatelessWidget {
   /// Callback when freeze indicator is tapped.
   final VoidCallback? onFreezeTap;
 
+  /// Visual variant (light or dark theme).
+  final StreakSectionVariant variant;
+
+  // Color getters based on variant
+  bool get _isDark => variant == StreakSectionVariant.dark;
+  Color get _containerBg => _isDark ? AppColors.navy : AppColors.sand;
+  Color get _containerBorder => _isDark ? AppColors.navyLight : AppColors.mist;
+  Color get _titleText => _isDark ? AppColors.textPrimary : AppColors.onyx;
+  Color get _subtitleText => _isDark ? AppColors.textSecondary : AppColors.stone;
+  Color get _bodyText => _isDark ? AppColors.textSecondary : AppColors.slate;
+  Color get _statsBg => _isDark ? AppColors.navyLight : AppColors.cloud;
+
   @override
   Widget build(BuildContext context) {
     final effectiveSeasonLabel =
@@ -53,10 +75,10 @@ class StreakProfileSection extends StatelessWidget {
     return Container(
       padding: AppSpacing.card,
       decoration: BoxDecoration(
-        color: AppColors.sand,
+        color: _containerBg,
         borderRadius: BorderRadius.circular(AppBorderRadius.card),
         border: Border.all(
-          color: AppColors.mist,
+          color: _containerBorder,
           width: 1,
         ),
       ),
@@ -90,14 +112,14 @@ class StreakProfileSection extends StatelessWidget {
       children: [
         AppIcon(
           icon: AppPhosphorIcons.flame,
-          color: profile.hasActiveStreak ? AppColors.green : AppColors.stone,
+          color: profile.hasActiveStreak ? AppColors.green : _subtitleText,
           size: 20,
         ),
         SizedBox(width: AppSpacing.xs),
         Text(
           'Weekly Streak',
           style: AppTypography.titleMedium.copyWith(
-            color: AppColors.onyx,
+            color: _titleText,
           ),
         ),
         const Spacer(),
@@ -105,7 +127,7 @@ class StreakProfileSection extends StatelessWidget {
           Text(
             seasonLabel,
             style: AppTypography.labelSmall.copyWith(
-              color: AppColors.stone,
+              color: _subtitleText,
             ),
           ),
       ],
@@ -167,7 +189,7 @@ class StreakProfileSection extends StatelessWidget {
                 Text(
                   profile.currentWeeksText,
                   style: AppTypography.bodySmall.copyWith(
-                    color: AppColors.slate,
+                    color: _bodyText,
                   ),
                 ),
               ],
@@ -193,28 +215,28 @@ class StreakProfileSection extends StatelessWidget {
         vertical: AppSpacing.sm,
       ),
       decoration: BoxDecoration(
-        color: AppColors.cloud,
+        color: _statsBg,
         borderRadius: BorderRadius.circular(AppBorderRadius.md),
       ),
       child: Row(
         children: [
           AppIcon(
             icon: PhosphorIconsRegular.clockCounterClockwise,
-            color: AppColors.stone,
+            color: _subtitleText,
             size: 16,
           ),
           SizedBox(width: AppSpacing.xs),
           Text(
             'Previous streak',
             style: AppTypography.bodySmall.copyWith(
-              color: AppColors.stone,
+              color: _subtitleText,
             ),
           ),
           const Spacer(),
           Text(
             profile.previousWeeksText ?? '',
             style: AppTypography.monoMedium.copyWith(
-              color: AppColors.slate,
+              color: _bodyText,
             ),
           ),
         ],
@@ -261,7 +283,7 @@ class StreakProfileSection extends StatelessWidget {
         vertical: AppSpacing.xs,
       ),
       decoration: BoxDecoration(
-        color: AppColors.cloud,
+        color: _statsBg,
         borderRadius: BorderRadius.circular(AppBorderRadius.sm),
       ),
       child: Row(
@@ -279,13 +301,13 @@ class StreakProfileSection extends StatelessWidget {
                 Text(
                   label,
                   style: AppTypography.labelSmall.copyWith(
-                    color: AppColors.stone,
+                    color: _subtitleText,
                   ),
                 ),
                 Text(
                   value,
                   style: AppTypography.monoSmall.copyWith(
-                    color: AppColors.slate,
+                    color: _bodyText,
                   ),
                 ),
               ],
@@ -306,7 +328,7 @@ class StreakProfileSection extends StatelessWidget {
     PhosphorIconData icon;
 
     if (used) {
-      iconColor = AppColors.stone;
+      iconColor = _subtitleText;
       statusText = 'Used';
       icon = PhosphorIconsRegular.snowflake;
     } else if (canUse) {
@@ -314,11 +336,11 @@ class StreakProfileSection extends StatelessWidget {
       statusText = 'Available';
       icon = PhosphorIconsRegular.snowflake;
     } else if (!earned) {
-      iconColor = AppColors.stone;
+      iconColor = _subtitleText;
       statusText = 'Locked';
       icon = PhosphorIconsRegular.lock;
     } else {
-      iconColor = AppColors.stone;
+      iconColor = _subtitleText;
       statusText = 'Unavailable';
       icon = PhosphorIconsRegular.snowflake;
     }
@@ -331,7 +353,7 @@ class StreakProfileSection extends StatelessWidget {
       decoration: BoxDecoration(
         color: canUse
             ? AppColors.info.withValues(alpha: 0.1)
-            : AppColors.cloud,
+            : _statsBg,
         borderRadius: BorderRadius.circular(AppBorderRadius.sm),
         border: canUse
             ? Border.all(
@@ -355,13 +377,13 @@ class StreakProfileSection extends StatelessWidget {
                 Text(
                   'Freeze',
                   style: AppTypography.labelSmall.copyWith(
-                    color: AppColors.stone,
+                    color: _subtitleText,
                   ),
                 ),
                 Text(
                   statusText,
                   style: AppTypography.labelSmall.copyWith(
-                    color: canUse ? AppColors.info : AppColors.slate,
+                    color: canUse ? AppColors.info : _bodyText,
                     fontWeight: canUse ? FontWeight.w600 : FontWeight.w500,
                   ),
                 ),
@@ -388,9 +410,9 @@ class StreakProfileSection extends StatelessWidget {
     switch (tier) {
       case StreakTier.none:
         return (
-          background: AppColors.cloud,
-          textColor: AppColors.stone,
-          borderColor: AppColors.mist,
+          background: _statsBg,
+          textColor: _subtitleText,
+          borderColor: _containerBorder,
           gradient: [AppColors.stone, AppColors.slate],
         );
       case StreakTier.ember:

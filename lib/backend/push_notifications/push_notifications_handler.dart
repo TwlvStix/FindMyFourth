@@ -237,6 +237,22 @@ _PushRoute? _resolveRouteFromType(Map<String, dynamic> data) {
       parameterData: {'initialSegment': 'friends'},
     );
   }
+  // Streak notifications
+  if (type == 'streak_weekend_nudge') {
+    return const _PushRoute(
+      pageName: 'GamesList',
+      parameterData: {},
+    );
+  }
+  if (type == 'streak_freeze_unlocked' ||
+      type == 'streak_freeze_prompt' ||
+      type == 'streak_milestone_reached' ||
+      type == 'streak_broken') {
+    return const _PushRoute(
+      pageName: 'MainProfile',
+      parameterData: {},
+    );
+  }
   return null;
 }
 

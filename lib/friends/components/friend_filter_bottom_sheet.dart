@@ -474,6 +474,15 @@ class FriendFilters {
         hasGolfCanadaNumber;
   }
 
+  int get activeFilterCount {
+    int count = 0;
+    if (handicapRange != null) count++;
+    if (vibeRange != null) count++;
+    if (homeCourse != null) count++;
+    if (hasGolfCanadaNumber) count++;
+    return count;
+  }
+
   bool matchesUser(dynamic user) {
     // Handicap filter
     if (handicapRange != null) {

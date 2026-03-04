@@ -60,6 +60,18 @@ class GameListFilters {
       selectedEligibility.isNotEmpty ||
       (selectedCourse != null && selectedCourse!.trim().isNotEmpty) ||
       selectedDateRange != GameDateRange.any;
+
+  int get activeFilterCount {
+    int count = 0;
+    count += selectedGameTypes.length;
+    count += selectedVibes.length;
+    count += selectedStakes.length;
+    count += selectedHandicaps.length;
+    count += selectedEligibility.length;
+    if (selectedCourse != null && selectedCourse!.trim().isNotEmpty) count++;
+    if (selectedDateRange != GameDateRange.any) count++;
+    return count;
+  }
 }
 
 class GameListFilterBottomSheet extends StatefulWidget {

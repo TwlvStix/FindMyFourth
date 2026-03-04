@@ -14,11 +14,13 @@ class GamesListAppBar extends StatelessWidget implements PreferredSizeWidget {
   const GamesListAppBar({
     super.key,
     required this.hasActiveFilters,
+    required this.activeFilterCount,
     required this.onFilterTap,
     required this.onNotificationTap,
   });
 
   final bool hasActiveFilters;
+  final int activeFilterCount;
   final VoidCallback onFilterTap;
   final VoidCallback onNotificationTap;
 
@@ -47,20 +49,43 @@ class GamesListAppBar extends StatelessWidget implements PreferredSizeWidget {
         Padding(
           padding: EdgeInsets.only(right: AppSpacing.sm),
           child: AppIconButton(
-            borderColor: hasActiveFilters
-                ? AppColors.navy.withValues(alpha: 0.2)
-                : AppColors.transparent,
+            borderColor: AppColors.transparent,
             borderRadius: 30.0,
-            borderWidth: hasActiveFilters ? 2.0 : 1.0,
+            borderWidth: 1.0,
             buttonSize: 44.0,
-            fillColor: hasActiveFilters
-                ? AppColors.navy.withValues(alpha: 0.12)
-                : AppColors.transparent,
+            fillColor: AppColors.transparent,
             tooltip: 'Filter games',
-            icon: AppIcon(
-              icon: AppPhosphorIcons.filter,
-              color: hasActiveFilters ? AppColors.navy : AppColors.pure,
-              size: AppIconSize.md,
+            icon: Stack(
+              clipBehavior: Clip.none,
+              children: [
+                AppIcon(
+                  icon: AppPhosphorIcons.filter,
+                  color: AppColors.pure,
+                  size: AppIconSize.md,
+                ),
+                if (hasActiveFilters)
+                  Positioned(
+                    right: -6,
+                    top: -6,
+                    child: Container(
+                      padding: EdgeInsets.symmetric(horizontal: 4, vertical: 1),
+                      decoration: BoxDecoration(
+                        color: AppColors.info,
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      constraints: BoxConstraints(minWidth: 16, minHeight: 16),
+                      child: Center(
+                        child: Text(
+                          '$activeFilterCount',
+                          style: AppTypography.labelMicro.copyWith(
+                            color: AppColors.pure,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+              ],
             ),
             onPressed: onFilterTap,
           ),

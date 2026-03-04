@@ -41,6 +41,7 @@ class GolferSearchSection extends StatefulWidget {
     this.loadingWidget,
     this.externalSearchTerm,
     this.hideInternalSearchBar = false,
+    this.onClearSearch,
   });
 
   final String currentUserId;
@@ -62,6 +63,10 @@ class GolferSearchSection extends StatefulWidget {
 
   /// When true, hides the internal search bar (use when parent provides search).
   final bool hideInternalSearchBar;
+
+  /// Callback to clear external search when using externalSearchTerm.
+  /// Called when user presses "Clear Search" in empty state.
+  final VoidCallback? onClearSearch;
 
   @override
   State<GolferSearchSection> createState() => _GolferSearchSectionState();
@@ -140,7 +145,12 @@ class _GolferSearchSectionState extends State<GolferSearchSection> {
   }
 
   void _clearSearch() {
-    _textController?.clear();
+    // When using external search, delegate to parent callback
+    if (widget.externalSearchTerm != null && widget.onClearSearch != null) {
+      widget.onClearSearch!();
+    } else {
+      _textController?.clear();
+    }
     FocusScope.of(context).unfocus();
   }
 

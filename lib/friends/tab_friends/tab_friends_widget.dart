@@ -122,6 +122,11 @@ class _TabFriendsWidgetState extends State<TabFriendsWidget> {
     }
   }
 
+  void _clearSearch() {
+    _searchController.clear();
+    _searchFocusNode.unfocus();
+  }
+
   Future<void> _refreshSearchTab() async {
     if (mounted) {
       updateState(this, () => isRefreshing = true);
@@ -339,6 +344,7 @@ class _TabFriendsWidgetState extends State<TabFriendsWidget> {
                     focusNode: _searchFocusNode,
                     onFilterPressed: _showFilterBottomSheet,
                     hasActiveFilters: friendFilters.hasActiveFilters,
+                    activeFilterCount: friendFilters.activeFilterCount,
                   ),
                 ),
 
@@ -460,6 +466,7 @@ class _TabFriendsWidgetState extends State<TabFriendsWidget> {
             searchDebounce: const Duration(milliseconds: 300),
             externalSearchTerm: _searchTerm,
             hideInternalSearchBar: true,
+            onClearSearch: _clearSearch,
             itemBuilder: (context, listViewUsersRecord) {
               return AuthUserStreamWidget(
                 builder: (context) {
