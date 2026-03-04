@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:cloud_functions/cloud_functions.dart';
+import '/core/exceptions/app_exceptions.dart';
 import '/core/utils/app_log.dart';
 
 /// FriendService provides centralized access to friend-related Firestore operations
@@ -103,35 +104,87 @@ class FriendService {
     }
   }
 
-  /// Accept a friend request
+  /// Accept a friend request (atomic, idempotent)
   ///
-  /// Removes requester from current user's friend_requests, then adds each to the other's friends list.
+  /// Runs a Firestore transaction to:
+  /// 1. Remove requester from friend_requests (both DocumentReference and id formats)
+  /// 2. Add requester to current user's friends
+  /// 3. Add current user to requester's friends
+  ///
+  /// Idempotency: If request is missing but users aren't already friends,
+  /// proceeds with friend add (graceful race recovery). If already friends,
+  /// returns success (no-op).
   Future<void> acceptFriendRequest({
     required String currentUserId,
     required DocumentReference requesterRef,
   }) async {
     final currentUserRef = _firestore.collection('users').doc(currentUserId);
 
-    // Remove from friend_requests (non-fatal if fails)
     try {
-      await currentUserRef.update({
-        'friend_requests': FieldValue.arrayRemove([requesterRef, requesterRef.id]),
-      });
-    } on FirebaseException catch (e) {
-      AppLog.d('❌ FriendService: Failed to remove from friend_requests: ${e.code} - ${e.message}');
-    }
+      await _firestore.runTransaction((transaction) async {
+        // 1. Read both documents
+        final currentUserDoc = await transaction.get(currentUserRef);
+        final requesterDoc = await transaction.get(requesterRef);
 
-    // Add to friends lists (both directions)
-    try {
-      await currentUserRef.update({
-        'friends': FieldValue.arrayUnion([requesterRef]),
+        if (!currentUserDoc.exists) {
+          throw FriendOperationException(
+            'Current user not found',
+            code: 'user-not-found',
+          );
+        }
+        if (!requesterDoc.exists) {
+          throw FriendOperationException(
+            'Requester not found',
+            code: 'requester-not-found',
+          );
+        }
+
+        // 2. Check current state for idempotency
+        final currentUserData = currentUserDoc.data()!;
+        final requesterData = requesterDoc.data()! as Map<String, dynamic>;
+
+        final currentFriends = (currentUserData['friends'] as List?) ?? [];
+        final requesterFriends = (requesterData['friends'] as List?) ?? [];
+
+        // Check if already friends (both directions)
+        final alreadyFriendsOnCurrentSide = currentFriends.any((f) =>
+            (f is DocumentReference && f.id == requesterRef.id) ||
+            (f is String &&
+                (f == requesterRef.id || f.endsWith('/${requesterRef.id}'))));
+        final alreadyFriendsOnRequesterSide = requesterFriends.any((f) =>
+            (f is DocumentReference && f.id == currentUserId) ||
+            (f is String &&
+                (f == currentUserId || f.endsWith('/$currentUserId'))));
+
+        // If both sides already friends, no-op (idempotent success)
+        if (alreadyFriendsOnCurrentSide && alreadyFriendsOnRequesterSide) {
+          AppLog.d('📖 FriendService: Already friends, no-op');
+          return;
+        }
+
+        // 3. Atomic writes - all or nothing
+        // Remove from friend_requests (both legacy formats)
+        transaction.update(currentUserRef, {
+          'friend_requests':
+              FieldValue.arrayRemove([requesterRef, requesterRef.id]),
+        });
+
+        // Add to current user's friends
+        transaction.update(currentUserRef, {
+          'friends': FieldValue.arrayUnion([requesterRef]),
+        });
+
+        // Add to requester's friends
+        transaction.update(requesterRef, {
+          'friends': FieldValue.arrayUnion([currentUserRef]),
+        });
       });
-      await requesterRef.update({
-        'friends': FieldValue.arrayUnion([currentUserRef]),
-      });
-      AppLog.d('✅ FriendService: Friend request accepted between $currentUserId and ${requesterRef.id}');
+
+      AppLog.d(
+          '✅ FriendService: Friend request accepted between $currentUserId and ${requesterRef.id}');
     } on FirebaseException catch (e, stackTrace) {
-      AppLog.d('❌ FriendService.acceptFriendRequest error: ${e.code} - ${e.message}');
+      AppLog.d(
+          '❌ FriendService.acceptFriendRequest error: ${e.code} - ${e.message}');
       AppLog.d('❌ FriendService.acceptFriendRequest stackTrace: $stackTrace');
       rethrow;
     }

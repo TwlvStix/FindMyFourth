@@ -408,7 +408,7 @@ class _GamesJoinedWidgetState extends State<GamesJoinedWidget> {
                                 BorderRadius.circular(AppBorderRadius.md),
                           ),
                           child: Text(
-                            'Completed',
+                            'Played',
                             style: AppTypography.labelSmall.copyWith(
                               color: AppColors.warning,
                               fontWeight: FontWeight.w600,

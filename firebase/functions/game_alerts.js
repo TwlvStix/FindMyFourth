@@ -240,25 +240,91 @@ function hasMemberDiscount(memberDiscount) {
 }
 
 /**
- * Check if user is eligible for game based on gender restrictions
- * @param {string|null} userGender - User's gender ('Male' or 'Female')
- * @param {string|null} playerEligibility - Game's eligibility ('open_to_all', 'women_only', 'men_only')
+ * Normalize gender value to canonical form.
+ * Accepts common aliases and variations.
+ * @param {string|null|undefined} value - Raw gender value
+ * @returns {'male'|'female'|null} Canonical gender or null if unknown
+ */
+function normalizeGender(value) {
+  if (!value || typeof value !== "string") {
+    return null;
+  }
+
+  const normalized = value.toLowerCase().trim();
+
+  // Male aliases
+  if (normalized === "male" || normalized === "man" || normalized === "m") {
+    return "male";
+  }
+
+  // Female aliases
+  if (normalized === "female" || normalized === "woman" || normalized === "f") {
+    return "female";
+  }
+
+  return null;
+}
+
+/**
+ * Normalize player eligibility value to canonical form.
+ * Accepts common aliases and variations (camelCase, Title Case, spaces).
+ * @param {string|null|undefined} value - Raw eligibility value
+ * @returns {'open_to_all'|'women_only'|'men_only'|null} Canonical eligibility or null if unknown
+ */
+function normalizePlayerEligibility(value) {
+  if (!value || typeof value !== "string") {
+    return null;
+  }
+
+  const normalized = value.toLowerCase().trim().replace(/[\s_-]+/g, "");
+
+  // open_to_all aliases
+  if (normalized === "opentoall" || normalized === "open" || normalized === "all") {
+    return "open_to_all";
+  }
+
+  // women_only aliases
+  if (normalized === "womenonly" || normalized === "femaleonly" || normalized === "ladies" || normalized === "ladiesonly") {
+    return "women_only";
+  }
+
+  // men_only aliases
+  if (normalized === "menonly" || normalized === "maleonly" || normalized === "gentlemen" || normalized === "gentlemenonly") {
+    return "men_only";
+  }
+
+  return null;
+}
+
+/**
+ * Check if user is eligible for game based on gender restrictions.
+ * Uses normalized values to handle legacy aliases and variations.
+ * @param {string|null} userGender - User's gender (e.g. 'Male', 'Female', 'man', 'woman')
+ * @param {string|null} playerEligibility - Game's eligibility (e.g. 'open_to_all', 'women_only', 'Women Only')
  * @returns {boolean} Whether user can join this game
  */
 function isUserEligibleByGender(userGender, playerEligibility) {
-  // open_to_all or no restriction - everyone can join
-  if (!playerEligibility || playerEligibility === "open_to_all") {
+  const normalizedEligibility = normalizePlayerEligibility(playerEligibility);
+
+  // open_to_all, null eligibility, or no restriction - everyone can join
+  if (!normalizedEligibility || normalizedEligibility === "open_to_all") {
     return true;
   }
-  // women_only - only Female users
-  if (playerEligibility === "women_only") {
-    return userGender === "Female";
+
+  const normalizedGender = normalizeGender(userGender);
+
+  // women_only - only female users
+  if (normalizedEligibility === "women_only") {
+    return normalizedGender === "female";
   }
-  // men_only - only Male users
-  if (playerEligibility === "men_only") {
-    return userGender === "Male";
+
+  // men_only - only male users
+  if (normalizedEligibility === "men_only") {
+    return normalizedGender === "male";
   }
-  // Unknown eligibility value - default to allowing
+
+  // Unknown eligibility value after normalization - log warning and allow (fail-open policy)
+  console.warn(`[GameAlerts] Unknown eligibility value after normalization: "${playerEligibility}" - allowing access (fail-open)`);
   return true;
 }
 
@@ -392,6 +458,9 @@ exports.sendGameCreatedNotifications = functions
     const gameId = context.params.gameId;
     const creatorUid = gameData.userRef?.id || gameData.uid || null;
 
+    const rawEligibility = gameData.player_eligibility;
+    const normalizedEligibility = normalizePlayerEligibility(rawEligibility);
+
     console.log(`[GameAlerts] New game created: ${gameId}`);
     console.log(`[GameAlerts] Game data:`, {
       name: gameData.name_game,
@@ -400,7 +469,8 @@ exports.sendGameCreatedNotifications = functions
       stakes: gameData.style_game,
       format: gameData.game_type,
       handicap: gameData.scoring,
-      eligibility: gameData.player_eligibility,
+      eligibility: rawEligibility,
+      eligibilityNormalized: normalizedEligibility,
     });
 
     try {
@@ -658,6 +728,8 @@ exports.sendGameCreatedNotifications = functions
 module.exports = {
   ...exports,
   // Test helpers
+  normalizeGender,
+  normalizePlayerEligibility,
   isUserEligibleByGender,
   doesAlertSubMatchGame,
   isWithinQuietHours,
