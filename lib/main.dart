@@ -53,10 +53,23 @@ Future<void> main() async {
     // ✅ CRITICAL: Set up error handlers immediately (synchronous)
     _setupErrorHandlers();
 
-    // ✅ CRITICAL: Create AppState instance (but don't load persisted state yet)
+    // ✅ CRITICAL: Create AppState instance and load persisted state
     final appState = AppState();
+    try {
+      await appState.initializePersistedState();
+    } catch (e, stackTrace) {
+      AppLog.d('⚠️ AppState.initializePersistedState failed: $e');
+      if (!kIsWeb) {
+        FirebaseCrashlytics.instance.recordError(
+          e,
+          stackTrace,
+          reason: 'AppState.initializePersistedState failed at startup',
+        );
+      }
+      // Continue with in-memory defaults - app still works
+    }
 
-    // 🚀 OPTIMIZATION: Show first frame ASAP
+    // 🚀 Show first frame
     runApp(
       MultiProvider(
         providers: [
@@ -134,13 +147,10 @@ void _setupErrorHandlers() {
 }
 
 /// Initialize non-critical services after first frame
-/// This includes Crashlytics metadata and persisted state
+/// This includes Crashlytics metadata and Remote Config
 /// Note: Notification service is initialized by the auth stream listener
 Future<void> _initializeNonCriticalServices(AppState appState) async {
   try {
-    // Load persisted state in background (doesn't block UI)
-    await appState.initializePersistedState();
-
     // Set Crashlytics metadata (just metadata, not critical)
     await _configureCrashlyticsMetadata();
 

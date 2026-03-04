@@ -19,9 +19,11 @@ class AppState extends ChangeNotifier {
   }
 
   Future<void> initializePersistedState() async {
-    prefs = await SharedPreferences.getInstance();
+    if (_prefs != null) return; // Idempotency guard
+
+    _prefs = await SharedPreferences.getInstance();
     _safeInit(() {
-      final stored = prefs.getString('cancelledGameHandlingByPath');
+      final stored = _prefs!.getString('cancelledGameHandlingByPath');
       if (stored != null && stored.isNotEmpty) {
         final decoded = jsonDecode(stored);
         if (decoded is Map<String, dynamic>) {
@@ -32,7 +34,7 @@ class AppState extends ChangeNotifier {
       }
     }, 'cancelledGameHandlingByPath');
     _safeInit(() {
-      final stored = prefs.getString('cancelledGameHideAtByPath');
+      final stored = _prefs!.getString('cancelledGameHideAtByPath');
       if (stored != null && stored.isNotEmpty) {
         final decoded = jsonDecode(stored);
         if (decoded is Map<String, dynamic>) {
@@ -46,7 +48,7 @@ class AppState extends ChangeNotifier {
       }
     }, 'cancelledGameHideAtByPath');
     _safeInit(() {
-      _hideFriendsOnlyGames = prefs.getBool('hideFriendsOnlyGames') ?? false;
+      _hideFriendsOnlyGames = _prefs!.getBool('hideFriendsOnlyGames') ?? false;
     }, 'hideFriendsOnlyGames');
   }
 
@@ -55,7 +57,8 @@ class AppState extends ChangeNotifier {
     notifyListeners();
   }
 
-  late SharedPreferences prefs;
+  SharedPreferences? _prefs;
+  bool get isInitialized => _prefs != null;
 
   Map<String, String> _cancelledGameHandlingByPath = {};
   String? getCancelledGameHandling(String gamePath) =>
@@ -63,7 +66,10 @@ class AppState extends ChangeNotifier {
   void setCancelledGameHandling(String gamePath, String handling) {
     if (_cancelledGameHandlingByPath[gamePath] == handling) return;
     _cancelledGameHandlingByPath[gamePath] = handling;
-    prefs.setString(
+    if (_prefs == null) {
+      AppLog.d('⚠️ AppState.setCancelledGameHandling: _prefs null, skipping persistence');
+    }
+    _prefs?.setString(
       'cancelledGameHandlingByPath',
       jsonEncode(_cancelledGameHandlingByPath),
     );
@@ -83,7 +89,10 @@ class AppState extends ChangeNotifier {
     final millis = hideAt.millisecondsSinceEpoch;
     if (_cancelledGameHideAtByPath[gamePath] == millis) return;
     _cancelledGameHideAtByPath[gamePath] = millis;
-    prefs.setString(
+    if (_prefs == null) {
+      AppLog.d('⚠️ AppState.setCancelledGameHideAt: _prefs null, skipping persistence');
+    }
+    _prefs?.setString(
       'cancelledGameHideAtByPath',
       jsonEncode(_cancelledGameHideAtByPath),
     );
@@ -95,7 +104,10 @@ class AppState extends ChangeNotifier {
   set hideFriendsOnlyGames(bool value) {
     if (_hideFriendsOnlyGames == value) return;
     _hideFriendsOnlyGames = value;
-    prefs.setBool('hideFriendsOnlyGames', value);
+    if (_prefs == null) {
+      AppLog.d('⚠️ AppState.hideFriendsOnlyGames: _prefs null, skipping persistence');
+    }
+    _prefs?.setBool('hideFriendsOnlyGames', value);
     notifyListeners();
   }
 }
