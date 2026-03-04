@@ -20,10 +20,7 @@ import 'package:flutter/material.dart';
 import 'pending_requests_section.dart';
 import 'player_list_section_selector.dart';
 
-typedef ApproveJoinRequestCallback = Future<void> Function(
-  JoinRequest request,
-  String? chatId,
-);
+typedef ApproveJoinRequestCallback = Future<void> Function(JoinRequest request);
 typedef DeclineJoinRequestCallback = Future<void> Function(JoinRequest request);
 typedef RemoveRequestCallback = void Function(String requestId);
 typedef ExpandRequestCallback = void Function(String requestId);
@@ -109,8 +106,7 @@ class GameJoinedDashboardDetailsPlayersSection extends StatelessWidget {
                     pendingRequests: pendingRequests,
                     ownerVibeProfile: ownerVibeProfile!,
                     expandedRequestId: expandedRequestId,
-                    onApprove: (request) =>
-                        onApproveRequest(request, game.chatRef?.id),
+                    onApprove: (request) => onApproveRequest(request),
                     onDecline: onDeclineRequest,
                     onRemoved: onRemoveRequest,
                     onExpandRequest: onExpandRequest,

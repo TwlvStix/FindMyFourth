@@ -220,9 +220,9 @@ class _GameJoinedDetailedWidgetState extends State<GameJoinedDetailedWidget>
 
   // Callback delegates
 
-  Future<void> _handleApproveRequest(JoinRequest request, String? chatId) =>
+  Future<void> _handleApproveRequest(JoinRequest request) =>
       _requestActions.handleApproveRequest(
-          context: context, state: this, request: request, chatId: chatId);
+          context: context, state: this, request: request);
 
   Future<void> _handleDeclineRequest(JoinRequest request) =>
       _requestActions.handleDeclineRequest(

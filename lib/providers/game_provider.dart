@@ -6,7 +6,6 @@ import '/backend/backend.dart';
 import '/core/request_manager.dart';
 import '/core/utils/app_log.dart';
 import '/models/join_game_result.dart';
-import '/services/chat_service.dart';
 import '/services/vibe_floor_service.dart';
 
 /// GameProvider manages global game state and provides cached access to game data
@@ -282,8 +281,8 @@ class GameProvider extends ChangeNotifier {
       }
 
       // Proceed with join
+      // Note: Chat membership is synced automatically by syncGameChatMembers trigger
       await _service.joinGame(gameId, userId, userGender: userGender);
-      await _ensureChatMembership(gameId, userId);
       // Invalidate game cache to force refresh
       invalidateGameCache(gameId);
       // Invalidate user games cache to refresh joined games list
@@ -299,22 +298,12 @@ class GameProvider extends ChangeNotifier {
 
   /// Leave a game
   ///
-  /// Removes user from joined_players and optionally from chat.
+  /// Removes user from joined_players.
+  /// Chat membership is synced automatically by syncGameChatMembers trigger.
   /// Invalidates game cache and refreshes data.
-  Future<void> leaveGame(String gameId, String userId, {String? chatId}) async {
+  Future<void> leaveGame(String gameId, String userId) async {
     try {
       await _service.leaveGame(gameId, userId);
-
-      // Remove from chat if chatId provided
-      if (chatId != null) {
-        try {
-          await ChatService().removeMember(chatId: chatId, uid: userId);
-          AppLog.d('✅ GameProvider.leaveGame: Removed from chat');
-        } catch (chatError) {
-          AppLog.d('❌ GameProvider.leaveGame: Chat removal failed: $chatError');
-          // Continue - game removal succeeded
-        }
-      }
 
       // Invalidate game cache to force refresh
       invalidateGameCache(gameId);
@@ -364,37 +353,6 @@ class GameProvider extends ChangeNotifier {
     }
   }
 
-  Future<void> _ensureChatMembership(String gameId, String userId) async {
-    try {
-      final userRef =
-          FirebaseFirestore.instance.collection('users').doc(userId);
-      final gameRef =
-          FirebaseFirestore.instance.collection('games').doc(gameId);
-
-      for (var attempt = 0; attempt < 3; attempt += 1) {
-        final gameSnap = await gameRef.get();
-        if (!gameSnap.exists) {
-          return;
-        }
-
-        final data = gameSnap.data() ?? {};
-        final joinedPlayers = data['joined_players'];
-        final inGame = joinedPlayers is List &&
-            joinedPlayers.any((entry) => entry == userRef || entry == userId);
-        final chatRef = data['chatRef'];
-
-        if (inGame && chatRef is DocumentReference) {
-          await ChatService().addMember(chatId: chatRef.id, uid: userId);
-          return;
-        }
-
-        await Future.delayed(const Duration(milliseconds: 250));
-      }
-    } catch (error) {
-      AppLog.d('❌ GameProvider: chat membership sync failed: $error');
-    }
-  }
-
   /// Cancel a game
   ///
   /// Invalidates game cache and refreshes data
@@ -413,8 +371,9 @@ class GameProvider extends ChangeNotifier {
 
   /// Remove a player from a game (owner action)
   ///
-  /// For registered players: removes from joined_players and chat
+  /// For registered players: removes from joined_players
   /// For guest players: removes from guest_players array
+  /// Chat membership is synced automatically by syncGameChatMembers trigger.
   ///
   /// Invalidates game cache after removal
   Future<void> removePlayer(
@@ -422,7 +381,6 @@ class GameProvider extends ChangeNotifier {
     String? playerId,
     String? guestName,
     required bool isGuest,
-    String? chatId,
   }) async {
     try {
       await _service.removePlayer(
@@ -431,17 +389,6 @@ class GameProvider extends ChangeNotifier {
         guestName: guestName,
         isGuest: isGuest,
       );
-
-      // Remove from chat if registered player and chatId provided
-      if (!isGuest && playerId != null && chatId != null) {
-        try {
-          await ChatService().removeMember(chatId: chatId, uid: playerId);
-          AppLog.d('✅ GameProvider.removePlayer: Removed from chat');
-        } catch (chatError) {
-          AppLog.d('❌ GameProvider.removePlayer: Chat removal failed: $chatError');
-          // Continue - game removal succeeded
-        }
-      }
 
       // Invalidate game cache
       invalidateGameCache(gameId);

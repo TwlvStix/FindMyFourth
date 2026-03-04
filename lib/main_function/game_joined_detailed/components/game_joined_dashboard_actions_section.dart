@@ -79,7 +79,6 @@ class GameJoinedDashboardActionsSection extends StatelessWidget {
       await gameProvider.leaveGame(
         game.reference.id,
         currentUserRef!.id,
-        chatId: game.chatRef?.id,
       );
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(

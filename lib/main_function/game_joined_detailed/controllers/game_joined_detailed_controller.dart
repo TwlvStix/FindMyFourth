@@ -87,14 +87,12 @@ class GameJoinedDetailedController {
 
   Future<GameJoinedActionResult> approveRequest({
     required JoinRequest request,
-    required String? chatId,
   }) async {
     try {
       await _joinRequestProvider.approveJoinRequest(
         gameId: request.gameId,
         requestId: request.id,
         requesterId: request.requesterId,
-        chatId: chatId,
       );
       _gameProvider.invalidateAvailableGamesCache();
       return GameJoinedActionResult.ok;
@@ -156,10 +154,9 @@ class GameJoinedDetailedController {
   Future<GameJoinedActionResult> leaveGame({
     required String gameId,
     required String userId,
-    required String? chatId,
   }) async {
     try {
-      await _gameProvider.leaveGame(gameId, userId, chatId: chatId);
+      await _gameProvider.leaveGame(gameId, userId);
       return GameJoinedActionResult.ok;
     } on FirebaseException catch (error) {
       return GameJoinedActionResult.fail(
@@ -231,7 +228,6 @@ class GameJoinedDetailedController {
     required bool isGuest,
     required DocumentReference? playerRef,
     required String? guestName,
-    required String? chatId,
   }) async {
     try {
       await _gameProvider.removePlayer(
@@ -239,7 +235,6 @@ class GameJoinedDetailedController {
         playerId: playerRef?.id,
         guestName: guestName,
         isGuest: isGuest,
-        chatId: chatId,
       );
       return GameJoinedActionResult.ok;
     } catch (_) {

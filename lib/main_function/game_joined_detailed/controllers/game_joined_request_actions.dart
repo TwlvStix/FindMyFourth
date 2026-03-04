@@ -32,11 +32,9 @@ class GameJoinedRequestActions {
     required BuildContext context,
     required State state,
     required JoinRequest request,
-    required String? chatId,
   }) async {
     final result = await controller.approveRequest(
       request: request,
-      chatId: chatId,
     );
 
     if (!state.mounted || !context.mounted) return;

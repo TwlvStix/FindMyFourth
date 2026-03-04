@@ -11,10 +11,7 @@ import 'game_joined_dashboard_details_players_section.dart';
 import 'game_joined_dashboard_overview_section.dart';
 
 // Public callback typedefs - exported for parent widget wiring
-typedef ApproveJoinRequestCallback = Future<void> Function(
-  JoinRequest request,
-  String? chatId,
-);
+typedef ApproveJoinRequestCallback = Future<void> Function(JoinRequest request);
 typedef DeclineJoinRequestCallback = Future<void> Function(JoinRequest request);
 typedef RemoveRequestCallback = void Function(String requestId);
 typedef ExpandRequestCallback = void Function(String requestId);

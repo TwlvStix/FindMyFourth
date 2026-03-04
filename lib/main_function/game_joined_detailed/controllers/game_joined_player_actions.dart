@@ -94,7 +94,6 @@ class GameJoinedPlayerActions {
       isGuest: isGuest,
       playerRef: playerRef,
       guestName: guestName,
-      chatId: gameRecord.chatRef?.id,
     );
 
     if (!context.mounted) return;

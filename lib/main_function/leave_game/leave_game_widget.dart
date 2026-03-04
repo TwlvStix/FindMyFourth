@@ -165,7 +165,6 @@ class _LeaveGameWidgetState extends State<LeaveGameWidget> {
                                 await context.gameProvider.leaveGame(
                                   widget.gameRef.reference.id,
                                   currentUserId,
-                                  chatId: widget.gameRef.chatRef?.id,
                                 );
                               } on FirebaseException catch (error) {
                                 if (!context.mounted) return;

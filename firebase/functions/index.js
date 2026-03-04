@@ -73,8 +73,8 @@ function extractJoinedUids(list) {
   return uids;
 }
 
-function userRefsFromUids(uids) {
-  return uids.map((uid) => firestore.collection("users").doc(uid));
+function userRefsFromUids(uids, db = firestore) {
+  return uids.map((uid) => db.collection("users").doc(uid));
 }
 
 function getUserNotificationPrefs(userData) {
@@ -1065,74 +1065,305 @@ exports.onUserDeleted = functions
     }
   });
 
+/**
+ * Handler logic for syncGameChatMembers.
+ * Extracted for testability - accepts optional db parameter for mock injection.
+ *
+ * @param {Object} change - Firestore change object with before/after snapshots
+ * @param {Object} context - Cloud Functions context with params
+ * @param {Object} db - Firestore instance (defaults to firestore for production)
+ */
+async function _syncGameChatMembersHandler(change, context, db = firestore) {
+  const before = change.before.data() || {};
+  const after = change.after.data() || {};
+
+  const beforeJoined = extractJoinedUids(before.joined_players);
+  const afterJoined = extractJoinedUids(after.joined_players);
+
+  const beforeSet = new Set(beforeJoined);
+  const afterSet = new Set(afterJoined);
+
+  const added = afterJoined.filter((uid) => !beforeSet.has(uid));
+  const removed = beforeJoined.filter((uid) => !afterSet.has(uid));
+
+  if (added.length === 0 && removed.length === 0) {
+    return;
+  }
+
+  const chatRef = after.chatRef;
+  if (!(chatRef instanceof admin.firestore.DocumentReference)) {
+    console.log(
+      `syncGameChatMembers: missing chatRef for game ${context.params.gameId}`,
+    );
+    return;
+  }
+
+  const chatId = chatRef.id;
+  const chatDocRef = db.collection("chats").doc(chatId);
+
+  // Check if chat document exists - if not, this is non-retryable
+  const chatDoc = await chatDocRef.get();
+  if (!chatDoc.exists) {
+    console.warn(
+      `syncGameChatMembers: chat ${chatId} not found for game ${context.params.gameId}`,
+      { added, removed },
+    );
+    return; // Non-retryable - don't throw
+  }
+
+  const batch = db.batch();
+
+  // Handle removed members
+  if (removed.length > 0) {
+    const removeUpdate = {
+      memberIds: admin.firestore.FieldValue.arrayRemove(...removed),
+      users: admin.firestore.FieldValue.arrayRemove(
+        ...userRefsFromUids(removed, db),
+      ),
+      updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+    };
+    for (const uid of removed) {
+      removeUpdate[`unreadCountByUser.${uid}`] =
+        admin.firestore.FieldValue.delete();
+      // Delete user's chatRef for this chat
+      batch.delete(db.doc(`users/${uid}/chatRefs/${chatId}`));
+    }
+    batch.update(chatDocRef, removeUpdate);
+  }
+
+  // Handle added members
+  if (added.length > 0) {
+    const addUpdate = {
+      memberIds: admin.firestore.FieldValue.arrayUnion(...added),
+      users: admin.firestore.FieldValue.arrayUnion(
+        ...userRefsFromUids(added, db),
+      ),
+      updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+    };
+    for (const uid of added) {
+      addUpdate[`unreadCountByUser.${uid}`] = 0;
+      // Record join timestamp for "fresh start on rejoin" feature
+      addUpdate[`memberJoinedAt.${uid}`] =
+        admin.firestore.FieldValue.serverTimestamp();
+      // Create user's chatRef for this chat
+      batch.set(db.doc(`users/${uid}/chatRefs/${chatId}`), {
+        chatId: chatId,
+        lastMessageAt: admin.firestore.FieldValue.serverTimestamp(),
+      });
+    }
+    batch.update(chatDocRef, addUpdate);
+  }
+
+  try {
+    await batch.commit();
+    console.log(
+      `syncGameChatMembers: synced ${added.length} added, ${removed.length} removed for game ${context.params.gameId}`,
+    );
+  } catch (error) {
+    console.error(
+      `syncGameChatMembers: failed for game ${context.params.gameId}`,
+      { error: error.message, added, removed },
+    );
+    throw error; // Retry on failure
+  }
+}
+
+// Export handler for testing
+exports._syncGameChatMembersHandler = _syncGameChatMembersHandler;
+
+/**
+ * Syncs chat membership when game participants change.
+ *
+ * Maintains consistency across three data locations:
+ * 1. games/{gameId}.joined_players - game participation (source of truth)
+ * 2. chats/{chatId}.memberIds - chat membership
+ * 3. users/{uid}/chatRefs/{chatId} - user's chat list for queries
+ *
+ * Uses batched write for atomicity - all updates succeed or all fail.
+ * Throws on failure to enable Cloud Functions retry.
+ */
 exports.syncGameChatMembers = functions
   .region("us-west2")
   .firestore.document("games/{gameId}")
-  .onUpdate(async (change, context) => {
-    const before = change.before.data() || {};
-    const after = change.after.data() || {};
+  .onUpdate((change, context) => _syncGameChatMembersHandler(change, context));
 
-    const beforeJoined = extractJoinedUids(before.joined_players);
-    const afterJoined = extractJoinedUids(after.joined_players);
+/**
+ * Handler logic for reconcileChatMembership.
+ * Extracted for testability - accepts optional db parameter for mock injection.
+ *
+ * @param {Object} data - Request data with gameId
+ * @param {Object} context - Cloud Functions context with auth
+ * @param {Object} db - Firestore instance (defaults to firestore for production)
+ */
+async function _reconcileChatMembershipHandler(data, context, db = firestore) {
+  // Enforce admin-only access
+  if (!context.auth) {
+    throw new functions.https.HttpsError(
+      "unauthenticated",
+      "Authentication required",
+    );
+  }
+  if (context.auth.token.admin !== true) {
+    throw new functions.https.HttpsError(
+      "permission-denied",
+      "Admin access required",
+    );
+  }
 
-    const beforeSet = new Set(beforeJoined);
-    const afterSet = new Set(afterJoined);
+  const { gameId } = data;
 
-    const added = afterJoined.filter((uid) => !beforeSet.has(uid));
-    const removed = beforeJoined.filter((uid) => !afterSet.has(uid));
+  if (!gameId) {
+    throw new functions.https.HttpsError(
+      "invalid-argument",
+      "gameId is required",
+    );
+  }
 
-    if (added.length === 0 && removed.length === 0) {
-      return;
+  const gameDoc = await db.collection("games").doc(gameId).get();
+  if (!gameDoc.exists) {
+    return {
+      status: "game_not_found",
+      gameId,
+      chatId: null,
+      fixes: 0,
+      added: [],
+      removed: [],
+    };
+  }
+
+  const gameData = gameDoc.data();
+  const chatRef = gameData.chatRef;
+  if (!(chatRef instanceof admin.firestore.DocumentReference)) {
+    return {
+      status: "no_chat",
+      gameId,
+      chatId: null,
+      fixes: 0,
+      added: [],
+      removed: [],
+    };
+  }
+
+  const chatId = chatRef.id;
+  const joinedUids = extractJoinedUids(gameData.joined_players);
+
+  const chatDoc = await db.collection("chats").doc(chatId).get();
+  if (!chatDoc.exists) {
+    return {
+      status: "chat_not_found",
+      gameId,
+      chatId,
+      fixes: 0,
+      added: [],
+      removed: [],
+    };
+  }
+
+  const chatData = chatDoc.data() || {};
+  // Normalize memberIds - ensure it's a string array
+  const rawMemberIds = chatData.memberIds;
+  const memberIds = Array.isArray(rawMemberIds)
+    ? rawMemberIds.filter((id) => typeof id === "string")
+    : [];
+
+  const joinedSet = new Set(joinedUids);
+  const memberSet = new Set(memberIds);
+
+  // Find UIDs that need to be added (in game but not in chat)
+  const toAdd = joinedUids.filter((uid) => !memberSet.has(uid));
+
+  // Find UIDs that need to be removed (in chat but not in game)
+  const toRemove = memberIds.filter((uid) => !joinedSet.has(uid));
+
+  if (toAdd.length === 0 && toRemove.length === 0) {
+    return {
+      status: "ok",
+      gameId,
+      chatId,
+      fixes: 0,
+      added: [],
+      removed: [],
+    };
+  }
+
+  const batch = db.batch();
+  const chatDocRef = db.collection("chats").doc(chatId);
+
+  // Add missing members
+  if (toAdd.length > 0) {
+    const addUpdate = {
+      memberIds: admin.firestore.FieldValue.arrayUnion(...toAdd),
+      users: admin.firestore.FieldValue.arrayUnion(
+        ...userRefsFromUids(toAdd, db),
+      ),
+      updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+    };
+    for (const uid of toAdd) {
+      addUpdate[`unreadCountByUser.${uid}`] = 0;
+      addUpdate[`memberJoinedAt.${uid}`] =
+        admin.firestore.FieldValue.serverTimestamp();
+      batch.set(db.doc(`users/${uid}/chatRefs/${chatId}`), {
+        chatId: chatId,
+        lastMessageAt: admin.firestore.FieldValue.serverTimestamp(),
+      });
     }
+    batch.update(chatDocRef, addUpdate);
+  }
 
-    const chatRef = after.chatRef;
-    if (!(chatRef instanceof admin.firestore.DocumentReference)) {
-      console.log(
-        `syncGameChatMembers: missing chatRef for game ${context.params.gameId}`,
-      );
-      return;
+  // Remove orphaned members
+  if (toRemove.length > 0) {
+    const removeUpdate = {
+      memberIds: admin.firestore.FieldValue.arrayRemove(...toRemove),
+      users: admin.firestore.FieldValue.arrayRemove(
+        ...userRefsFromUids(toRemove, db),
+      ),
+      updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+    };
+    for (const uid of toRemove) {
+      removeUpdate[`unreadCountByUser.${uid}`] =
+        admin.firestore.FieldValue.delete();
+      batch.delete(db.doc(`users/${uid}/chatRefs/${chatId}`));
     }
+    batch.update(chatDocRef, removeUpdate);
+  }
 
-    const chatDocRef = firestore.collection("chats").doc(chatRef.id);
-    const updates = [];
+  await batch.commit();
 
-    if (removed.length > 0) {
-      const removeUpdate = {
-        memberIds: admin.firestore.FieldValue.arrayRemove(...removed),
-        users: admin.firestore.FieldValue.arrayRemove(
-          ...userRefsFromUids(removed),
-        ),
-        updatedAt: admin.firestore.FieldValue.serverTimestamp(),
-      };
-      for (const uid of removed) {
-        removeUpdate[`unreadCountByUser.${uid}`] =
-          admin.firestore.FieldValue.delete();
-      }
-      updates.push(chatDocRef.update(removeUpdate));
-    }
+  console.log(
+    `reconcileChatMembership: fixed ${toAdd.length} added, ${toRemove.length} removed for game ${gameId}`,
+  );
 
-    if (added.length > 0) {
-      const addUpdate = {
-        memberIds: admin.firestore.FieldValue.arrayUnion(...added),
-        users: admin.firestore.FieldValue.arrayUnion(
-          ...userRefsFromUids(added),
-        ),
-        updatedAt: admin.firestore.FieldValue.serverTimestamp(),
-      };
-      for (const uid of added) {
-        addUpdate[`unreadCountByUser.${uid}`] = 0;
-      }
-      updates.push(chatDocRef.update(addUpdate));
-    }
+  return {
+    status: "fixed",
+    gameId,
+    chatId,
+    fixes: toAdd.length + toRemove.length,
+    added: toAdd,
+    removed: toRemove,
+  };
+}
 
-    try {
-      await Promise.all(updates);
-    } catch (error) {
-      console.log(
-        `syncGameChatMembers: failed for game ${context.params.gameId}: ${error}`,
-      );
-    }
-  });
+// Export handler for testing
+exports._reconcileChatMembershipHandler = _reconcileChatMembershipHandler;
+
+/**
+ * Reconcile chat membership for a game.
+ *
+ * Repairs historical drift by ensuring consistency between:
+ * 1. games/{gameId}.joined_players (source of truth)
+ * 2. chats/{chatId}.memberIds
+ * 3. users/{uid}/chatRefs/{chatId}
+ *
+ * Call this for games that may have membership desync from before
+ * the atomic syncGameChatMembers trigger was deployed.
+ *
+ * AUTHORIZATION: Admin-only. Requires context.auth.token.admin === true.
+ */
+exports.reconcileChatMembership = functions
+  .region("us-west2")
+  .https.onCall((data, context) =>
+    _reconcileChatMembershipHandler(data, context),
+  );
 
 exports.monitorUsernameChanges = functions
   .region("us-west2")

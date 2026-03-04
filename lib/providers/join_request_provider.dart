@@ -5,7 +5,6 @@ import 'package:flutter/foundation.dart';
 import '/core/exceptions/app_exceptions.dart';
 import '/core/utils/app_log.dart';
 import '/models/join_request.dart';
-import '/services/chat_service.dart';
 import '/services/join_request_service.dart';
 
 /// JoinRequestProvider manages join request state and provides cached access
@@ -19,12 +18,9 @@ import '/services/join_request_service.dart';
 class JoinRequestProvider extends ChangeNotifier {
   JoinRequestProvider({
     JoinRequestService? service,
-    ChatService? chatService,
-  })  : _service = service ?? JoinRequestService(),
-        _chatService = chatService ?? ChatService();
+  }) : _service = service ?? JoinRequestService();
 
   final JoinRequestService _service;
-  final ChatService _chatService;
 
   // Track disposal state for safe async operations
   bool _disposed = false;
@@ -225,7 +221,7 @@ class JoinRequestProvider extends ChangeNotifier {
   /// 1. Checks for available spots
   /// 2. Updates request status to approved
   /// 3. Adds player to game's joined_players
-  /// 4. Adds player to game's chat
+  /// 4. Chat membership is synced automatically by syncGameChatMembers trigger
   /// 5. Triggers notification to player
   ///
   /// Throws [GameOperationException] with code 'game-full' if no spots available.
@@ -233,31 +229,21 @@ class JoinRequestProvider extends ChangeNotifier {
     required String gameId,
     required String requestId,
     required String requesterId,
-    String? chatId,
   }) async {
     try {
       // 1. Atomic approve + add to game
+      // Note: Chat membership is synced automatically by syncGameChatMembers trigger
       await _service.approveRequest(
         gameId: gameId,
         requestId: requestId,
         requesterId: requesterId,
       );
 
-      // 2. Add player to chat (non-blocking, log but don't fail)
-      if (chatId != null) {
-        try {
-          await _chatService.addMember(chatId: chatId, uid: requesterId);
-          AppLog.d('✅ JoinRequestProvider: Added player to chat $chatId');
-        } catch (e) {
-          AppLog.d('❌ JoinRequestProvider: Failed to add to chat (non-fatal): $e');
-        }
-      }
-
-      // 3. Invalidate caches
+      // 2. Invalidate caches
       _invalidateGameCache(gameId);
       _invalidateUserCache(requesterId);
 
-      // 4. Trigger notification (fire and forget)
+      // 3. Trigger notification (fire and forget)
       _notifyRequestApproved(gameId, requesterId);
 
       AppLog.d('✅ JoinRequestProvider: Approved request $requestId');

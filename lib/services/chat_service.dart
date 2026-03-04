@@ -5,6 +5,7 @@ import 'package:cloud_functions/cloud_functions.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:rxdart/rxdart.dart';
 
+import '/core/exceptions/app_exceptions.dart';
 import '/core/utils/app_log.dart';
 import '/models/chat.dart';
 import '/models/chat_message.dart';
@@ -281,33 +282,67 @@ class ChatService {
     return chatRef;
   }
 
+  /// Add a member to a chat (for non-game chats like direct messages).
+  ///
+  /// Note: For game chats, membership is managed by the syncGameChatMembers
+  /// Cloud Function trigger which watches games/{gameId}.joined_players.
+  ///
+  /// Updates chat.memberIds and creates users/{uid}/chatRefs/{chatId}.
+  /// Uses sequential writes due to Firestore rules requiring membership first.
   Future<void> addMember({
     required String chatId,
     required String uid,
   }) async {
-    await _firestore.collection('chats').doc(chatId).update({
-      'memberIds': FieldValue.arrayUnion([uid]),
-      'updatedAt': FieldValue.serverTimestamp(),
-      'unreadCountByUser.$uid': 0,
-      // Record join timestamp so the member sees only messages from this point
-      // forward if they previously left and are now rejoining.
-      'memberJoinedAt.$uid': FieldValue.serverTimestamp(),
-    });
-    await _userChatRef(uid, chatId).set({
-      'chatId': chatId,
-      'lastMessageAt': FieldValue.serverTimestamp(),
-    }, SetOptions(merge: true));
+    try {
+      // Sequential writes - rules require memberIds update before chatRef creation
+      await _firestore.collection('chats').doc(chatId).update({
+        'memberIds': FieldValue.arrayUnion([uid]),
+        'updatedAt': FieldValue.serverTimestamp(),
+        'unreadCountByUser.$uid': 0,
+        // Record join timestamp so the member sees only messages from this point
+        // forward if they previously left and are now rejoining.
+        'memberJoinedAt.$uid': FieldValue.serverTimestamp(),
+      });
+      await _userChatRef(uid, chatId).set({
+        'chatId': chatId,
+        'lastMessageAt': FieldValue.serverTimestamp(),
+      }, SetOptions(merge: true));
+      AppLog.d('✅ ChatService.addMember: Added $uid to chat $chatId');
+    } on FirebaseException catch (e) {
+      AppLog.d('❌ ChatService.addMember error: ${e.code} - ${e.message}');
+      throw ChatOperationException(
+        'Failed to add member to chat',
+        code: e.code,
+        cause: e,
+      );
+    }
   }
 
+  /// Remove a member from a chat (for non-game chats like direct messages).
+  ///
+  /// Note: For game chats, membership is managed by the syncGameChatMembers
+  /// Cloud Function trigger which watches games/{gameId}.joined_players.
+  ///
+  /// Updates chat.memberIds and deletes users/{uid}/chatRefs/{chatId}.
   Future<void> removeMember({
     required String chatId,
     required String uid,
   }) async {
-    await _firestore.collection('chats').doc(chatId).update({
-      'memberIds': FieldValue.arrayRemove([uid]),
-      'updatedAt': FieldValue.serverTimestamp(),
-    });
-    await _userChatRef(uid, chatId).delete();
+    try {
+      await _firestore.collection('chats').doc(chatId).update({
+        'memberIds': FieldValue.arrayRemove([uid]),
+        'updatedAt': FieldValue.serverTimestamp(),
+      });
+      await _userChatRef(uid, chatId).delete();
+      AppLog.d('✅ ChatService.removeMember: Removed $uid from chat $chatId');
+    } on FirebaseException catch (e) {
+      AppLog.d('❌ ChatService.removeMember error: ${e.code} - ${e.message}');
+      throw ChatOperationException(
+        'Failed to remove member from chat',
+        code: e.code,
+        cause: e,
+      );
+    }
   }
 
   /// Check if a user is the last member of a chat
