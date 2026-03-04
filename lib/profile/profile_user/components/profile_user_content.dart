@@ -7,6 +7,8 @@ import '/core/design_tokens/colors.dart';
 import '/core/design_tokens/spacing.dart';
 import '/core/widgets/fairway_background.dart';
 import '/core/widgets/premium_back_button.dart';
+import '/core/widgets/streak/streak_chip.dart';
+import '/models/streak_profile.dart';
 import '/profile/profile_user/components/golf_info_section.dart';
 import '/profile/profile_user/components/profile_hero_section.dart';
 import '/profile/profile_user/components/profile_quick_actions_grid.dart';
@@ -65,6 +67,29 @@ class ProfileUserContent extends StatelessWidget {
   final VoidCallback onOpenVibe;
   final VoidCallback onMessageTap;
   final VoidCallback onMutualFriendsTap;
+
+  /// Build streak chip from user record data.
+  Widget _buildStreakChip() {
+    final profile = StreakProfile.fromUserRecord(userRecord);
+    if (!profile.hasActiveStreak) {
+      return const SizedBox.shrink();
+    }
+
+    return Padding(
+      padding: EdgeInsets.symmetric(
+        horizontal: AppSpacing.screenPadding,
+        vertical: AppSpacing.sm,
+      ),
+      child: Row(
+        children: [
+          StreakChipExtended(
+            profile: profile,
+            size: StreakChipSize.medium,
+          ),
+        ],
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -154,6 +179,8 @@ class ProfileUserContent extends StatelessWidget {
                         user: userRecord,
                         isOwnProfile: isSelf,
                       ),
+                      // Streak chip for public profiles
+                      _buildStreakChip(),
                       GolfInfoSection(
                         golfCanadaNumber: golfCanadaNumber,
                         email: email,

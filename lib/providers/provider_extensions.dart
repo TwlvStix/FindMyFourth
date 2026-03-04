@@ -8,6 +8,7 @@ import 'join_request_provider.dart';
 import 'notification_provider.dart';
 import 'notification_list_provider.dart';
 import 'profile_provider.dart';
+import 'streak_provider.dart';
 import 'trust_provider.dart';
 import 'user_provider.dart';
 
@@ -54,6 +55,12 @@ extension ProviderExtensions on BuildContext {
   /// Access NotificationListProvider and listen for changes
   NotificationListProvider get watchNotificationListProvider =>
       watch<NotificationListProvider>();
+
+  /// Access StreakProvider without listening for changes
+  StreakProvider get streakProvider => read<StreakProvider>();
+
+  /// Access StreakProvider and listen for changes
+  StreakProvider get watchStreakProvider => watch<StreakProvider>();
 
   /// Select specific data from UserProvider
   /// Only rebuilds when the selected data changes
@@ -103,6 +110,11 @@ extension ProviderExtensions on BuildContext {
   T selectNotificationList<T>(
       T Function(NotificationListProvider provider) selector) {
     return select<NotificationListProvider, T>(selector);
+  }
+
+  /// Select specific data from StreakProvider
+  T selectStreak<T>(T Function(StreakProvider provider) selector) {
+    return select<StreakProvider, T>(selector);
   }
 
   // ========================================

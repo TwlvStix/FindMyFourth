@@ -79,7 +79,7 @@ class VibeArchetypes {
   static const grinder = VibeArchetype(
     name: 'The Grinder',
     description:
-        'Fast pace, fierce competition, zero distractions. You don\'t talk on my backswing because I don\'t talk on yours.',
+        'I walk fast, I play fast, and I don\'t miss anything. I keep score in my head and I already know yours.',
     ideal: {
       VibeCategory.pace: 5,
       VibeCategory.competitive: 5,
@@ -93,7 +93,7 @@ class VibeArchetypes {
   static const shark = VibeArchetype(
     name: 'The Shark',
     description:
-        'I play fast, I compete hard, and I\'ll talk trash the entire round. I\'ll buy you a beer after I take your money.',
+        'I\'m in your head by the third hole. That\'s the point. I talk, I compete, I back it up, and I\'ll buy you a beer after I take your money.',
     ideal: {
       VibeCategory.pace: 5,
       VibeCategory.competitive: 5,
@@ -107,7 +107,7 @@ class VibeArchetypes {
   static const purist = VibeArchetype(
     name: 'The Purist',
     description:
-        'I play fast and I take the game seriously. No speakers, no bets, no distractions. Just me and the course. That\'s enough.',
+        'I can hear the wind, the birds, and my club cutting through the air. No speakers, no bets, no chatter. Just me and the course. That\'s enough.',
     ideal: {
       VibeCategory.pace: 5,
       VibeCategory.competitive: 3,
@@ -121,7 +121,7 @@ class VibeArchetypes {
   static const ghost = VibeArchetype(
     name: 'The Ghost',
     description:
-        'Don\'t mistake my silence for not caring. I take my time, I read every putt, and I\'m competing whether you know it or not. You\'ll figure it out on 18.',
+        'Don\'t mistake my silence for not caring. I take my time, I read every break, and I let the scorecard do the talking. It always does.',
     ideal: {
       VibeCategory.pace: 2,
       VibeCategory.competitive: 3,
@@ -135,7 +135,7 @@ class VibeArchetypes {
   static const tourist = VibeArchetype(
     name: 'The Tourist',
     description:
-        'I\'ve got no agenda, no pressure, no rush. I take in every hole like it\'s the first time. My scorecard\'s in the cart somewhere, probably.',
+        'I\'m here for the hole with the waterfall, the par 3 over the canyon, the tee shot I\'ll talk about for a month. The score? My scorecard\'s in the cart somewhere, probably',
     ideal: {
       VibeCategory.pace: 0,
       VibeCategory.competitive: 0,
@@ -163,7 +163,7 @@ class VibeArchetypes {
   static const juggernaut = VibeArchetype(
     name: 'The Juggernaut',
     description:
-        'I want it all. Skins on the front, nassau on the back, speaker\'s blasting, beer\'s cold, and I\'m still trying to birdie every hole. Why choose?',
+        'I want it all. \$2 Vegas from the first tee, skins, music up, drinks flowing, and I\'m still firing at every pin. Why choose?',
     ideal: {
       VibeCategory.pace: 3,
       VibeCategory.competitive: 5,
@@ -191,7 +191,7 @@ class VibeArchetypes {
   static const hustler = VibeArchetype(
     name: 'The Hustler',
     description:
-        'I play fast and there\'s always money on it. I\'ve already done the math on the bet before we reach the first tee. You\'ll figure out the damage on 18.',
+        'You\'re all in? Good. Don\'t need strokes? Perfect. I\'ve played this track more times than I\'ll ever tell you. I know every break, every bounce, every carry. You think I\'m being generous. I\'m not',
     ideal: {
       VibeCategory.pace: 5,
       VibeCategory.competitive: 3,
@@ -205,7 +205,7 @@ class VibeArchetypes {
   static const dj = VibeArchetype(
     name: 'The DJ',
     description:
-        'I\'m not here to compete or bet. Good company and the perfect playlist — that\'s my round. My speaker goes in the cart before the clubs do.',
+        'The playlist was built before the tee time was booked. Right song, right hole, right vibe — that\'s the round. My speaker goes in the cart before the clubs do.',
     ideal: {
       VibeCategory.pace: 2,
       VibeCategory.competitive: 0,
@@ -219,7 +219,7 @@ class VibeArchetypes {
   static const highRoller = VibeArchetype(
     name: 'The High Roller',
     description:
-        'Big bets, big energy, drinks are flowing, and I\'m competing on every hole. If there\'s nothing on the line, what are we even doing out here?',
+        'I don\'t play for fun, I play for every dollar in your golf bag — even the loose change. No strokes, and I\'m not giving you that three-footer. If there\'s nothing on the line, what are we even doing out here?',
     ideal: {
       VibeCategory.pace: 3,
       VibeCategory.competitive: 5,
@@ -250,7 +250,7 @@ class VibeArchetypes {
   static const warden = VibeArchetype(
     name: 'The Warden',
     description:
-        'I know exactly what I want and what I won\'t put up with. Cross the line and you\'ll know about it before the turn.',
+        'I\'m easy to play with — as long as we\'re on the same page about a few things. You\'ll know what they are if we\'re not. It\'s not personal, it\'s just how I enjoy the game.',
     ideal: {},
   );
 
@@ -292,7 +292,6 @@ class VibeArchetypes {
     'The Shark': [
       _Gate(VibeCategory.competitive, true), // must be HIGH
       _Gate(VibeCategory.money, true), // must be HIGH
-      _Gate(VibeCategory.chat, true), // must be HIGH
       _Gate(VibeCategory.pace, true), // must be HIGH
     ],
     'The Purist': [
@@ -309,7 +308,6 @@ class VibeArchetypes {
     'The Tourist': [
       _Gate(VibeCategory.pace, false), // must be LOW
       _Gate(VibeCategory.competitive, false), // must be LOW
-      _Gate(VibeCategory.money, false), // must be LOW
     ],
     'The Vibe King': [
       _Gate(VibeCategory.chat, true), // must be HIGH
@@ -342,7 +340,6 @@ class VibeArchetypes {
     'The Mayor': [
       _Gate(VibeCategory.chat, true), // must be HIGH
       _Gate(VibeCategory.competitive, false), // must be LOW
-      _Gate(VibeCategory.money, false), // must be LOW
     ],
   };
 
@@ -455,7 +452,7 @@ class VibeArchetypes {
     if (archetype.name == 'The Everyman') {
       for (final category in VibeCategory.values) {
         final value = userValues[category] ?? 0;
-        if (value > 4 || value < 1) return false;
+        if (value > 3 || value < 2) return false;
       }
       return true;
     }

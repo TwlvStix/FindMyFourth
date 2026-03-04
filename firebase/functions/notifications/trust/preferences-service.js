@@ -50,9 +50,10 @@ async function getUserPreferences(userId) {
   return {
     pushEnabled: typeof prefs.push_enabled === 'boolean' ? prefs.push_enabled : true,
     trustCategories: {
-      postRound:   typeof tc.post_round   === 'boolean' ? tc.post_round   : true,
-      trustAlerts: typeof tc.trust_alerts === 'boolean' ? tc.trust_alerts : true,
-      badges:      typeof tc.badges       === 'boolean' ? tc.badges       : true,
+      postRound:      typeof tc.post_round      === 'boolean' ? tc.post_round      : true,
+      trustAlerts:    typeof tc.trust_alerts    === 'boolean' ? tc.trust_alerts    : true,
+      badges:         typeof tc.badges          === 'boolean' ? tc.badges          : true,
+      weeklyActivity: typeof tc.weekly_activity === 'boolean' ? tc.weekly_activity : true,
     },
     quietHours: {
       enabled: typeof qh.enabled === 'boolean' ? qh.enabled : false,

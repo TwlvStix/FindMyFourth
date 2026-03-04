@@ -353,9 +353,10 @@ async function routeNotification(event, db) {
       }
     } else {
       const categoryEnabledMap = {
-        [TrustCategory.POST_ROUND]:   prefs.trustCategories.postRound,
-        [TrustCategory.TRUST_ALERTS]: prefs.trustCategories.trustAlerts,
-        [TrustCategory.BADGES]:       prefs.trustCategories.badges,
+        [TrustCategory.POST_ROUND]:      prefs.trustCategories.postRound,
+        [TrustCategory.TRUST_ALERTS]:    prefs.trustCategories.trustAlerts,
+        [TrustCategory.BADGES]:          prefs.trustCategories.badges,
+        [TrustCategory.WEEKLY_ACTIVITY]: prefs.trustCategories.weeklyActivity,
       };
       const categoryEnabled = categoryEnabledMap[eventConfig.category];
 

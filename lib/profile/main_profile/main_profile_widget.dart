@@ -21,6 +21,7 @@ import 'components/vibe_completion_banner.dart';
 import 'components/profile_quick_actions_grid.dart';
 import 'components/profile_golf_info_section.dart';
 import 'components/profile_settings_section.dart';
+import 'components/profile_streak_section.dart';
 
 /// Main profile page showing user info, stats, and settings.
 ///
@@ -220,6 +221,9 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                                 user: userDoc, isOwnProfile: true);
                           },
                         ),
+
+                        // Streak Profile Section
+                        const ProfileStreakSection(),
 
                         // Golf Info Section
                         const ProfileGolfInfoSection(),

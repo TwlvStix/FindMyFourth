@@ -242,6 +242,63 @@ class UsersRecord extends FirestoreRecord {
   DateTime? get lastVibeEditAt => _lastVibeEditAt;
   bool hasLastVibeEditAt() => _lastVibeEditAt != null;
 
+  // ── Weekly Streak Fields ──────────────────────────────────────────────────
+
+  // "streak_current_weeks" field. Current consecutive weeks in active season.
+  int? _streakCurrentWeeks;
+  int get streakCurrentWeeks => _streakCurrentWeeks ?? 0;
+  bool hasStreakCurrentWeeks() => _streakCurrentWeeks != null;
+
+  // "streak_previous_weeks" field. Previous streak before break (same season).
+  int? _streakPreviousWeeks;
+  int? get streakPreviousWeeks => _streakPreviousWeeks;
+  bool hasStreakPreviousWeeks() => _streakPreviousWeeks != null;
+
+  // "streak_longest_weeks" field. Lifetime best streak.
+  int? _streakLongestWeeks;
+  int get streakLongestWeeks => _streakLongestWeeks ?? 0;
+  bool hasStreakLongestWeeks() => _streakLongestWeeks != null;
+
+  // "streak_season_id" field. Year string (e.g., "2026").
+  String? _streakSeasonId;
+  String? get streakSeasonId => _streakSeasonId;
+  bool hasStreakSeasonId() => _streakSeasonId != null;
+
+  // "streak_weeks_played" field. List of Monday keys (YYYY-MM-DD).
+  List<String>? _streakWeeksPlayed;
+  List<String> get streakWeeksPlayed => _streakWeeksPlayed ?? const [];
+  bool hasStreakWeeksPlayed() => _streakWeeksPlayed != null;
+
+  // "streak_weeks_pending" field. Weeks awaiting verification.
+  List<String>? _streakWeeksPending;
+  List<String> get streakWeeksPending => _streakWeeksPending ?? const [];
+  bool hasStreakWeeksPending() => _streakWeeksPending != null;
+
+  // "streak_last_completed_week_key" field.
+  String? _streakLastCompletedWeekKey;
+  String? get streakLastCompletedWeekKey => _streakLastCompletedWeekKey;
+  bool hasStreakLastCompletedWeekKey() => _streakLastCompletedWeekKey != null;
+
+  // "streak_freeze_earned" field.
+  bool? _streakFreezeEarned;
+  bool get streakFreezeEarned => _streakFreezeEarned ?? false;
+  bool hasStreakFreezeEarned() => _streakFreezeEarned != null;
+
+  // "streak_freeze_used" field.
+  bool? _streakFreezeUsed;
+  bool get streakFreezeUsed => _streakFreezeUsed ?? false;
+  bool hasStreakFreezeUsed() => _streakFreezeUsed != null;
+
+  // "streak_freeze_used_week_key" field.
+  String? _streakFreezeUsedWeekKey;
+  String? get streakFreezeUsedWeekKey => _streakFreezeUsedWeekKey;
+  bool hasStreakFreezeUsedWeekKey() => _streakFreezeUsedWeekKey != null;
+
+  // "streak_milestone_level" field. 0, 4, 8, 13, or 26.
+  int? _streakMilestoneLevel;
+  int get streakMilestoneLevel => _streakMilestoneLevel ?? 0;
+  bool hasStreakMilestoneLevel() => _streakMilestoneLevel != null;
+
   void _initializeFields() {
     _photoUrl = snapshotData['photo_url'] as String?;
     _createdTime = snapshotData['created_time'] as DateTime?;
@@ -326,6 +383,25 @@ class UsersRecord extends FirestoreRecord {
     _dateOfBirth = snapshotData['date_of_birth'] as DateTime?;
     _vibeEditCount = castToType<int>(snapshotData['vibe_edit_count']);
     _lastVibeEditAt = snapshotData['last_vibe_edit_at'] as DateTime?;
+
+    // Streak fields
+    _streakCurrentWeeks =
+        castToType<int>(snapshotData['streak_current_weeks']);
+    _streakPreviousWeeks =
+        castToType<int>(snapshotData['streak_previous_weeks']);
+    _streakLongestWeeks =
+        castToType<int>(snapshotData['streak_longest_weeks']);
+    _streakSeasonId = snapshotData['streak_season_id'] as String?;
+    _streakWeeksPlayed = getDataList(snapshotData['streak_weeks_played']);
+    _streakWeeksPending = getDataList(snapshotData['streak_weeks_pending']);
+    _streakLastCompletedWeekKey =
+        snapshotData['streak_last_completed_week_key'] as String?;
+    _streakFreezeEarned = snapshotData['streak_freeze_earned'] as bool?;
+    _streakFreezeUsed = snapshotData['streak_freeze_used'] as bool?;
+    _streakFreezeUsedWeekKey =
+        snapshotData['streak_freeze_used_week_key'] as String?;
+    _streakMilestoneLevel =
+        castToType<int>(snapshotData['streak_milestone_level']);
   }
 
   static CollectionReference get collection =>

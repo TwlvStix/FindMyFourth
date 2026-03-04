@@ -15,6 +15,7 @@ const trustSystem = require("./trust_system");
 const confirmationFlow = require("./confirmation_flow");
 const trustProfileModule = require("./trust_profile");
 const gameAlerts = require("./game_alerts");
+const streaks = require("./streaks");
 const { generateInitialsAvatar } = require("./avatar-generator");
 const { getAvatarUrl } = require("./utils/avatar-utils");
 const {
@@ -2651,5 +2652,83 @@ exports.cleanupScheduledChats = functions
       console.log("Scheduled chats cleanup results:", results);
     } catch (error) {
       console.error("Scheduled chats cleanup failed:", error);
+    }
+  });
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Weekly Streak System
+// ─────────────────────────────────────────────────────────────────────────────
+
+/**
+ * Callable: deployStreakFreeze
+ * User deploys their freeze for the current week.
+ */
+exports.deployStreakFreeze = streaks.deployStreakFreeze;
+
+/**
+ * Friday 18:00 Vancouver: Nudge users with active streak who haven't played yet.
+ */
+exports.streakFridayNudge = functions
+  .region("us-west2")
+  .runWith({ timeoutSeconds: 540, memory: "256MB" })
+  .pubsub.schedule("0 18 * * 5") // Friday 18:00
+  .timeZone("America/Vancouver")
+  .onRun(async () => {
+    try {
+      const result = await streaks.fridayNudgeHandler();
+      console.log("[streakFridayNudge]", result);
+    } catch (error) {
+      console.error("[streakFridayNudge] failed:", error);
+    }
+  });
+
+/**
+ * Sunday 20:00 Vancouver: Prompt users with freeze available who haven't played.
+ */
+exports.streakSundayPrompt = functions
+  .region("us-west2")
+  .runWith({ timeoutSeconds: 540, memory: "256MB" })
+  .pubsub.schedule("0 20 * * 0") // Sunday 20:00
+  .timeZone("America/Vancouver")
+  .onRun(async () => {
+    try {
+      const result = await streaks.sundayPromptHandler();
+      console.log("[streakSundayPrompt]", result);
+    } catch (error) {
+      console.error("[streakSundayPrompt] failed:", error);
+    }
+  });
+
+/**
+ * Monday 00:01 Vancouver: Break streaks for users who missed previous week.
+ */
+exports.streakMondayRollover = functions
+  .region("us-west2")
+  .runWith({ timeoutSeconds: 540, memory: "256MB" })
+  .pubsub.schedule("1 0 * * 1") // Monday 00:01
+  .timeZone("America/Vancouver")
+  .onRun(async () => {
+    try {
+      const result = await streaks.mondayRolloverHandler();
+      console.log("[streakMondayRollover]", result);
+    } catch (error) {
+      console.error("[streakMondayRollover] failed:", error);
+    }
+  });
+
+/**
+ * Nov 1 00:05 Vancouver: Season close — reset streak state.
+ */
+exports.streakSeasonClose = functions
+  .region("us-west2")
+  .runWith({ timeoutSeconds: 540, memory: "256MB" })
+  .pubsub.schedule("5 0 1 11 *") // Nov 1 00:05
+  .timeZone("America/Vancouver")
+  .onRun(async () => {
+    try {
+      const result = await streaks.seasonCloseHandler();
+      console.log("[streakSeasonClose]", result);
+    } catch (error) {
+      console.error("[streakSeasonClose] failed:", error);
     }
   });

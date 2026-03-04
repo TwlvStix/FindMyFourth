@@ -217,10 +217,10 @@ describe('getUserPreferences', () => {
     expect(Object.keys(prefs).sort()).toEqual(['pushEnabled', 'quietHours', 'trustCategories']);
   });
 
-  test('trustCategories has exactly postRound, trustAlerts, badges', async () => {
+  test('trustCategories has exactly postRound, trustAlerts, badges, weeklyActivity', async () => {
     setUserDoc({});
     const prefs = await getUserPreferences('user123');
-    expect(Object.keys(prefs.trustCategories).sort()).toEqual(['badges', 'postRound', 'trustAlerts']);
+    expect(Object.keys(prefs.trustCategories).sort()).toEqual(['badges', 'postRound', 'trustAlerts', 'weeklyActivity']);
   });
 
   test('quietHours has exactly enabled, start, end', async () => {

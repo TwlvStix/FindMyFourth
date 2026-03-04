@@ -28,9 +28,9 @@ const {
 // ── Enum value correctness ────────────────────────────────────────────────────
 
 describe('TrustEventType enum', () => {
-  test('all 23 values use snake_case', () => {
+  test('all 28 values use snake_case', () => {
     const values = Object.values(TrustEventType);
-    expect(values).toHaveLength(23); // 18 original + 5 join request events
+    expect(values).toHaveLength(28); // 18 original + 5 join request + 5 streak events
     for (const v of values) {
       // snake_case: lowercase letters, digits, and underscores only
       expect(v).toMatch(/^[a-z][a-z0-9_]*$/);
@@ -74,11 +74,13 @@ describe('NotificationPriority enum', () => {
 });
 
 describe('TrustCategory enum', () => {
-  test('contains post_round, trust_alerts, badges, games', () => {
+  test('contains post_round, trust_alerts, badges, games, social, weekly_activity', () => {
     expect(TrustCategory.POST_ROUND).toBe('post_round');
     expect(TrustCategory.TRUST_ALERTS).toBe('trust_alerts');
     expect(TrustCategory.BADGES).toBe('badges');
     expect(TrustCategory.GAMES).toBe('games');
+    expect(TrustCategory.SOCIAL).toBe('social');
+    expect(TrustCategory.WEEKLY_ACTIVITY).toBe('weekly_activity');
   });
 
   test('is frozen', () => {
@@ -447,6 +449,77 @@ describe('renderTemplate: game_cancelled', () => {
 
   test('throws when course_name missing', () => {
     expectMissingVar(type, { game_date: 'Sunday' }, 'course_name');
+  });
+});
+
+// ── renderTemplate — weekly streaks ───────────────────────────────────────────
+
+describe('renderTemplate: streak_weekend_nudge', () => {
+  const type = TrustEventType.STREAK_WEEKEND_NUDGE;
+
+  test('renders current_weeks', () => {
+    const result = renderTemplate(type, { current_weeks: 5 });
+    expectRendered(result, 'Keep your streak alive', '5-week streak');
+  });
+
+  test('throws when current_weeks missing', () => {
+    expectMissingVar(type, {}, 'current_weeks');
+  });
+});
+
+describe('renderTemplate: streak_freeze_unlocked', () => {
+  const type = TrustEventType.STREAK_FREEZE_UNLOCKED;
+
+  test('renders current_weeks', () => {
+    const result = renderTemplate(type, { current_weeks: 4 });
+    expectRendered(result, 'Freeze unlocked', '4 consecutive weeks');
+  });
+
+  test('throws when current_weeks missing', () => {
+    expectMissingVar(type, {}, 'current_weeks');
+  });
+});
+
+describe('renderTemplate: streak_freeze_prompt', () => {
+  const type = TrustEventType.STREAK_FREEZE_PROMPT;
+
+  test('renders current_weeks', () => {
+    const result = renderTemplate(type, { current_weeks: 7 });
+    expectRendered(result, 'Use your freeze?', '7-week streak');
+  });
+
+  test('throws when current_weeks missing', () => {
+    expectMissingVar(type, {}, 'current_weeks');
+  });
+});
+
+describe('renderTemplate: streak_milestone_reached', () => {
+  const type = TrustEventType.STREAK_MILESTONE_REACHED;
+
+  test('renders milestone and current_weeks', () => {
+    const result = renderTemplate(type, { milestone: 8, current_weeks: 8 });
+    expectRendered(result, '8-week streak!', '8 consecutive weeks');
+  });
+
+  test('throws when milestone missing', () => {
+    expectMissingVar(type, { current_weeks: 8 }, 'milestone');
+  });
+
+  test('throws when current_weeks missing', () => {
+    expectMissingVar(type, { milestone: 8 }, 'current_weeks');
+  });
+});
+
+describe('renderTemplate: streak_broken', () => {
+  const type = TrustEventType.STREAK_BROKEN;
+
+  test('renders previous_weeks', () => {
+    const result = renderTemplate(type, { previous_weeks: 6 });
+    expectRendered(result, 'Streak ended', '6-week streak');
+  });
+
+  test('throws when previous_weeks missing', () => {
+    expectMissingVar(type, {}, 'previous_weeks');
   });
 });
 

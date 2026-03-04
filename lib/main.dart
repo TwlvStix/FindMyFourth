@@ -30,6 +30,7 @@ import '/providers/join_request_provider.dart';
 import '/providers/profile_provider.dart';
 import '/providers/notification_provider.dart';
 import '/providers/notification_list_provider.dart';
+import '/providers/streak_provider.dart';
 import '/providers/trust_provider.dart';
 import '/services/notification_orchestration_service.dart';
 import '/services/remote_config_service.dart';
@@ -70,6 +71,8 @@ Future<void> main() async {
           ChangeNotifierProvider<NotificationListProvider>(
               create: (_) => NotificationListProvider()),
           ChangeNotifierProvider<TrustProvider>(create: (_) => TrustProvider()),
+          ChangeNotifierProvider<StreakProvider>(
+              create: (_) => StreakProvider()),
           ChangeNotifierProvider<JoinRequestProvider>(
               create: (_) => JoinRequestProvider()),
           ChangeNotifierProvider<GroupVibeProvider>(

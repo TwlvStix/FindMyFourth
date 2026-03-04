@@ -37,6 +37,12 @@ const TrustEventType = Object.freeze({
   JOIN_REQUEST_DECLINED:    'join_request_declined',
   JOIN_REQUEST_ROUND_FILLED:'join_request_round_filled',
   JOIN_REQUEST_EXPIRED:     'join_request_expired',
+  // Weekly streak events
+  STREAK_WEEKEND_NUDGE:     'streak_weekend_nudge',
+  STREAK_FREEZE_UNLOCKED:   'streak_freeze_unlocked',
+  STREAK_FREEZE_PROMPT:     'streak_freeze_prompt',
+  STREAK_MILESTONE_REACHED: 'streak_milestone_reached',
+  STREAK_BROKEN:            'streak_broken',
 });
 
 const NotificationPriority = Object.freeze({
@@ -47,11 +53,12 @@ const NotificationPriority = Object.freeze({
 });
 
 const TrustCategory = Object.freeze({
-  POST_ROUND:   'post_round',
-  TRUST_ALERTS: 'trust_alerts',
-  BADGES:       'badges',
-  GAMES:        'games',
-  SOCIAL:       'social',
+  POST_ROUND:       'post_round',
+  TRUST_ALERTS:     'trust_alerts',
+  BADGES:           'badges',
+  GAMES:            'games',
+  SOCIAL:           'social',
+  WEEKLY_ACTIVITY:  'weekly_activity',
 });
 
 // ── Priority → FCM Delivery Config ───────────────────────────────────────────
@@ -471,6 +478,83 @@ const EVENT_REGISTRY = Object.freeze({
     threadId:         'social',
     androidChannelId: 'default',
     icon:             'info',
+  },
+
+  // ── Weekly Streaks ────────────────────────────────────────────────────────
+
+  [TrustEventType.STREAK_WEEKEND_NUDGE]: {
+    priority:        NotificationPriority.DEFAULT,
+    category:        TrustCategory.WEEKLY_ACTIVITY,
+    maxDeliveries:   1,
+    timing:          'scheduled',
+    template: {
+      title: 'Keep your streak alive',
+      body:  "You haven't played this week yet. Find a game to maintain your {current_weeks}-week streak.",
+    },
+    deepLink:         'findmyfourth://games',
+    threadId:         'streak',
+    androidChannelId: 'default',
+    icon:             'local_fire_department',
+  },
+
+  [TrustEventType.STREAK_FREEZE_UNLOCKED]: {
+    priority:        NotificationPriority.HIGH,
+    category:        TrustCategory.WEEKLY_ACTIVITY,
+    maxDeliveries:   1,
+    timing:          'immediate',
+    template: {
+      title: 'Freeze unlocked',
+      body:  "You've reached {current_weeks} consecutive weeks. You now have a freeze to protect your streak if you miss a week.",
+    },
+    deepLink:         'findmyfourth://profile',
+    threadId:         'streak',
+    androidChannelId: 'important',
+    icon:             'ac_unit',
+  },
+
+  [TrustEventType.STREAK_FREEZE_PROMPT]: {
+    priority:        NotificationPriority.HIGH,
+    category:        TrustCategory.WEEKLY_ACTIVITY,
+    maxDeliveries:   1,
+    timing:          'scheduled',
+    template: {
+      title: 'Use your freeze?',
+      body:  "You haven't played this week. Use your freeze before midnight to protect your {current_weeks}-week streak.",
+    },
+    deepLink:         'findmyfourth://profile',
+    threadId:         'streak',
+    androidChannelId: 'important',
+    icon:             'ac_unit',
+  },
+
+  [TrustEventType.STREAK_MILESTONE_REACHED]: {
+    priority:        NotificationPriority.HIGH,
+    category:        TrustCategory.WEEKLY_ACTIVITY,
+    maxDeliveries:   1,
+    timing:          'immediate',
+    template: {
+      title: '{milestone}-week streak!',
+      body:  "You've played {current_weeks} consecutive weeks this season. Keep it going.",
+    },
+    deepLink:         'findmyfourth://profile',
+    threadId:         'streak',
+    androidChannelId: 'important',
+    icon:             'local_fire_department',
+  },
+
+  [TrustEventType.STREAK_BROKEN]: {
+    priority:        NotificationPriority.DEFAULT,
+    category:        TrustCategory.WEEKLY_ACTIVITY,
+    maxDeliveries:   1,
+    timing:          'immediate',
+    template: {
+      title: 'Streak ended',
+      body:  'Your {previous_weeks}-week streak has ended. Start a new one with your next round.',
+    },
+    deepLink:         'findmyfourth://games',
+    threadId:         'streak',
+    androidChannelId: 'default',
+    icon:             'local_fire_department',
   },
 });
 

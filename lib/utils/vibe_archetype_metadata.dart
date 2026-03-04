@@ -27,13 +27,13 @@ class VibeArchetypeMetadata {
     'The Grinder': AppPhosphorIcons.target,
     'The Shark': AppPhosphorIcons.lightning,
     'The Purist': AppPhosphorIcons.tree,
-    'The Ghost': AppPhosphorIcons.eye,
+    'The Ghost': AppPhosphorIcons.ghost,
     'The Tourist': AppPhosphorIcons.binoculars,
-    'The Vibe King': AppPhosphorIcons.owner, // crown
+    'The Vibe King': AppPhosphorIcons.crown,
     'The Juggernaut': AppPhosphorIcons.flame,
     'The Everyman': AppPhosphorIcons.handshake,
-    'The Hustler': AppPhosphorIcons.highStakes, // coins
-    'The DJ': AppPhosphorIcons.music, // musicNotes
+    'The Hustler': AppPhosphorIcons.piggyBank,
+    'The DJ': AppPhosphorIcons.speakerHifi,
     'The High Roller': AppPhosphorIcons.diamond,
     'The Mayor': AppPhosphorIcons.megaphone,
     'The Warden': AppPhosphorIcons.shield,
@@ -70,15 +70,15 @@ class VibeArchetypeMetadata {
     'The Shark': 'Play hard. Talk loud. Win big.',
     'The Purist': 'Just me, the course, and silence.',
     'The Ghost': 'Quiet confidence, loud results.',
-    'The Tourist': 'Every hole is a new adventure.',
+    'The Tourist': 'Collecting courses, not trophies',
     'The Vibe King': 'The party starts at the first tee.',
     'The Juggernaut': 'All gas, no brakes.',
     'The Everyman': 'Down for whatever.',
-    'The Hustler': 'The math was done before the tee.',
-    'The DJ': 'The playlist is as important as the clubs.',
+    'The Hustler': 'You lost before you teed up.',
+    'The DJ': 'Every round needs a soundtrack.',
     'The High Roller': 'Big stakes, bigger energy.',
     'The Mayor': 'I know everyone, everywhere.',
-    'The Warden': 'My way or the highway.',
+    'The Warden': 'Standards don\'t keep themselves.',
   };
 
   // ===========================================================================
@@ -88,19 +88,19 @@ class VibeArchetypeMetadata {
   /// Estimated percentage of golfers in each archetype.
   /// Used to calculate rarity labels.
   static const Map<String, int> archetypeDistribution = {
-    'The Grinder': 4, // LEGENDARY
-    'The Shark': 6, // RARE
-    'The Purist': 5, // RARE
-    'The Ghost': 7, // RARE
-    'The Tourist': 8, // RARE
-    'The Vibe King': 5, // RARE
+    'The Grinder': 2, // LEGENDARY
+    'The Shark': 3, // LEGENDARY
+    'The Purist': 2, // LEGENDARY
+    'The Ghost': 8, // RARE
+    'The Tourist': 9, // RARE
+    'The Vibe King': 6, // RARE
     'The Juggernaut': 3, // LEGENDARY
-    'The Everyman': 25, // FAN FAVORITE
-    'The Hustler': 6, // RARE
+    'The Everyman': 26, // FAN FAVORITE
+    'The Hustler': 8, // RARE
     'The DJ': 9, // RARE
     'The High Roller': 4, // LEGENDARY
-    'The Mayor': 12, // UNCOMMON
-    'The Warden': 6, // RARE
+    'The Mayor': 9, // RARE
+    'The Warden': 11, // UNCOMMON
   };
 
   // ===========================================================================
@@ -109,16 +109,16 @@ class VibeArchetypeMetadata {
 
   /// The two archetypes each archetype pairs best with.
   static const Map<String, List<String>> bestWith = {
-    'The Grinder': ['The Shark', 'The Hustler'],
-    'The Shark': ['The Grinder', 'The High Roller'],
-    'The Purist': ['The Ghost', 'The Tourist'],
-    'The Ghost': ['The Purist', 'The Grinder'],
-    'The Tourist': ['The Purist', 'The DJ'],
-    'The Vibe King': ['The DJ', 'The Mayor'],
-    'The Juggernaut': ['The High Roller', 'The Shark'],
-    'The Everyman': ['The Mayor', 'The DJ'],
-    'The Hustler': ['The Grinder', 'The Shark'],
-    'The DJ': ['The Vibe King', 'The Tourist'],
+    'The Grinder': ['The Hustler', 'The Shark'],
+    'The Shark': ['The Hustler', 'The High Roller'],
+    'The Purist': ['The Ghost', 'The Grinder'],
+    'The Ghost': ['The Purist', 'The Tourist'],
+    'The Tourist': ['The Ghost', 'The Mayor'],
+    'The Vibe King': ['The DJ', 'The Everyman'],
+    'The Juggernaut': ['The High Roller', 'The Everyman'],
+    'The Everyman': ['The Mayor', 'The Vibe King'],
+    'The Hustler': ['The Shark', 'The Grinder'],
+    'The DJ': ['The Vibe King', 'The Everyman'],
     'The High Roller': ['The Juggernaut', 'The Shark'],
     'The Mayor': ['The Everyman', 'The Vibe King'],
     'The Warden': ['The Everyman', 'The Purist'],
@@ -127,17 +127,17 @@ class VibeArchetypeMetadata {
   /// The archetype each archetype should watch out for (potential friction).
   static const Map<String, String> watchOutFor = {
     'The Grinder': 'The Vibe King',
-    'The Shark': 'The Ghost',
-    'The Purist': 'The Vibe King',
-    'The Ghost': 'The Shark',
-    'The Tourist': 'The Grinder',
+    'The Shark': 'The Vibe King',
+    'The Purist': 'The Juggernaut',
+    'The Ghost': 'The Juggernaut',
+    'The Tourist': 'The Juggernaut',
     'The Vibe King': 'The Grinder',
-    'The Juggernaut': 'The Ghost',
-    'The Everyman': 'The Warden',
-    'The Hustler': 'The Tourist',
+    'The Juggernaut': 'The Tourist',
+    'The Everyman': 'The Grinder',
+    'The Hustler': 'The Vibe King',
     'The DJ': 'The Grinder',
     'The High Roller': 'The Tourist',
-    'The Mayor': 'The Ghost',
+    'The Mayor': 'The Grinder',
     'The Warden': 'The Vibe King',
   };
 

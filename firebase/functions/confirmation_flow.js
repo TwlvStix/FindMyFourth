@@ -36,6 +36,7 @@
 const functions = require("firebase-functions/v1");
 const admin = require("firebase-admin");
 const trustProfile = require("./trust_profile");
+const streaks = require("./streaks");
 const { routeNotification } = require('./notifications/trust/router');
 const { onGameConfirmed, onHostCheckinCompleted } = require('./notifications/trust/hooks');
 const { onJoinRequestExpired } = require('./join_request_notifications');
@@ -496,7 +497,16 @@ async function _onGameStatusToPlayedHandler(change, context, db) {
 
     await batch.commit();
 
-    // ── 3. Schedule Trust System notification tasks ──────────────────────
+    // ── 3. Mark round as pending for streak tracking ─────────────────────
+    try {
+      const playerUserIds = appUserRefs.map(ref => ref.id);
+      await streaks.onRoundPending(db, gameId, teeTimeTs, playerUserIds, after);
+    } catch (err) {
+      // Non-fatal: streak tracking shouldn't block confirmation flow
+      console.warn(`onGameStatusToPlayed: streak pending failed for game ${gameId}:`, err);
+    }
+
+    // ── 4. Schedule Trust System notification tasks ──────────────────────
     const playerUserIds = appUserRefs.map(ref => ref.id);
     const gameDate = _formatGameDate(teeTimeTs);
 
@@ -1334,6 +1344,18 @@ async function _finalizeRoundVerification(db, roundRef, roundData, gameRef) {
     )
   );
   await Promise.all(trustUpdates);
+
+  // ── 7. Stage 6: update streak tracking for verified round ─────────────────
+  try {
+    const teeTime = roundData.tee_time;
+    await streaks.onRoundVerified(db, gameRef, teeTime, presentUids);
+    await streaks.clearPendingForAllParticipants(db, gameRef, teeTime);
+  } catch (err) {
+    // Non-fatal: streak tracking shouldn't block verification flow
+    console.warn(
+      `_finalizeRoundVerification: streak verification failed for round ${roundRef.id}:`, err
+    );
+  }
 }
 
 /**

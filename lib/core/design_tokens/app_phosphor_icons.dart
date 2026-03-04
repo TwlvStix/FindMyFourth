@@ -603,6 +603,18 @@ class AppPhosphorIcons {
   /// Megaphone — The Mayor archetype
   static const megaphone = PhosphorIconsRegular.megaphone;
 
+  /// Ghost — The Ghost archetype
+  static const ghost = PhosphorIconsRegular.ghost;
+
+  /// Crown — The Vibe King archetype
+  static const crown = PhosphorIconsRegular.crown;
+
+  /// Speaker HiFi — The DJ archetype
+  static const speakerHifi = PhosphorIconsRegular.speakerHifi;
+
+  /// Piggy Bank — The Hustler archetype
+  static const piggyBank = PhosphorIconsRegular.piggyBank;
+
   // ══════════════════════════════════════════════════════════════════════════
   // DEBUG
   // ══════════════════════════════════════════════════════════════════════════

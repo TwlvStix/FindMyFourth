@@ -65,6 +65,12 @@ const EVENT_DATA = {
   [TrustEventType.JOIN_REQUEST_DECLINED]: { game_name: 'Sunday at Cypress Point' },
   [TrustEventType.JOIN_REQUEST_ROUND_FILLED]: { game_name: 'Friday at Augusta National' },
   [TrustEventType.JOIN_REQUEST_EXPIRED]: { game_name: 'Monday at Merion' },
+  // Streak events
+  [TrustEventType.STREAK_WEEKEND_NUDGE]: { current_weeks: 5 },
+  [TrustEventType.STREAK_FREEZE_UNLOCKED]: { current_weeks: 4 },
+  [TrustEventType.STREAK_FREEZE_PROMPT]: { current_weeks: 7 },
+  [TrustEventType.STREAK_MILESTONE_REACHED]: { milestone: 8, current_weeks: 8 },
+  [TrustEventType.STREAK_BROKEN]: { previous_weeks: 6 },
 };
 
 /** Interpolates {game_id} in a string, mirroring the engine's logic. */
