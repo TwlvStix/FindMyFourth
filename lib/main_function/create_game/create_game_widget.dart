@@ -134,17 +134,29 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
   }
 
   Future<void> _submitGame() async {
+    final userProvider = context.userProvider;
+    final userId = userProvider.userIdOrNull;
+    if (!userProvider.isAuthReady || userId == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Signing you in... Please try again in a moment.'),
+          backgroundColor: AppColors.warning,
+        ),
+      );
+      return;
+    }
+
     final chatProvider = context.read<ChatProvider>();
     final result = await _controller.submitGame(
       formData: _formData,
       isFormValid:
           formKey.currentState != null && formKey.currentState!.validate(),
-      currentUserRef: context.userProvider.currentUser?.reference,
+      currentUserRef: userProvider.currentUser?.reference,
       createGameChat: chatProvider.createGameChat,
       invalidateAvailableGamesCache:
           context.gameProvider.invalidateAvailableGamesCache,
       invalidateUserGamesCache: context.gameProvider.invalidateUserGamesCache,
-      userIdForCache: context.userProvider.userId,
+      userIdForCache: userId,
     );
 
     if (!mounted) {

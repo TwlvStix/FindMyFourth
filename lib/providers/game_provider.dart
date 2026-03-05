@@ -416,7 +416,12 @@ class GameProvider extends ChangeNotifier {
 
   /// Invalidate user games cache (when user joins/leaves games)
   void invalidateUserGamesCache(String userId) {
-    final queryKey = 'user_games_$userId';
+    final normalizedUserId = userId.trim();
+    if (normalizedUserId.isEmpty) {
+      AppLog.d('⚠️ GameProvider.invalidateUserGamesCache: skipped (empty userId)');
+      return;
+    }
+    final queryKey = 'user_games_$normalizedUserId';
     _gameStreamManagers[queryKey]?.clear();
     _queryResultCache.remove(queryKey);
     _queryResultCacheTimestamps.remove(queryKey);

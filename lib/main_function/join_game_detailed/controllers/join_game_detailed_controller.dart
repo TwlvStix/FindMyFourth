@@ -184,7 +184,12 @@ class JoinGameDetailedController {
     }
 
     gameProvider.invalidateAvailableGamesCache();
-    gameProvider.invalidateUserGamesCache(userProvider.userId);
+    final userId = userProvider.userIdOrNull;
+    if (userId != null && userId.isNotEmpty) {
+      gameProvider.invalidateUserGamesCache(userId);
+    } else {
+      AppLog.d('⚠️ JoinGameDetailedController: skipping user games cache invalidation (no userId)');
+    }
     if (game.chatRef != null) {
       final chatId = game.chatRef!.id;
       chatProvider.invalidateChatCache(chatId);

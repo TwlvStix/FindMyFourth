@@ -66,10 +66,23 @@ class GameJoinedDashboardActionsSection extends StatelessWidget {
   }
 
   Future<void> _handleLeaveGame(BuildContext context) async {
+    // Capture user ref and id before async gap
+    final userRef = currentUserRef;
+    if (userRef == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Signing you in... Please try again in a moment.'),
+          backgroundColor: AppColors.warning,
+        ),
+      );
+      return;
+    }
+    final userId = userRef.id;
+
     final gameProvider = context.gameProvider;
     final confirmed =
         await CancellationWarningModal.show(context, game: game);
-    if (confirmed != true || currentUserRef == null) {
+    if (confirmed != true) {
       return;
     }
     if (!context.mounted) {
@@ -78,7 +91,7 @@ class GameJoinedDashboardActionsSection extends StatelessWidget {
     try {
       await gameProvider.leaveGame(
         game.reference.id,
-        currentUserRef!.id,
+        userId,
       );
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -119,12 +132,24 @@ class GameJoinedDashboardActionsSection extends StatelessWidget {
   }
 
   Future<void> _handleCancelGame(BuildContext context) async {
-    final gameProvider = context.gameProvider;
-    final userProvider = context.userProvider;
-    final chatProvider = context.read<ChatProvider>();
-    if (currentUserRef == null || screenGameRef == null) {
+    // Capture refs and ids before async gap
+    final userRef = currentUserRef;
+    final gameRef = screenGameRef;
+    if (userRef == null || gameRef == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Signing you in... Please try again in a moment.'),
+          backgroundColor: AppColors.warning,
+        ),
+      );
       return;
     }
+    final userId = userRef.id;
+    final gameId = gameRef.id;
+    final gamePath = gameRef.path;
+
+    final gameProvider = context.gameProvider;
+    final chatProvider = context.read<ChatProvider>();
     final confirmDialogResponse = await showPremiumDialog(
           context: context,
           variant: PremiumDialogVariant.destructive,
@@ -158,13 +183,12 @@ class GameJoinedDashboardActionsSection extends StatelessWidget {
       return;
     }
     context.read<AppState>().setCancelledGameHandling(
-      screenGameRef!.path,
+      gamePath,
       'removeNow',
     );
 
     try {
-      await gameProvider.cancelGame(screenGameRef!.id);
-      final currentUserId = currentUserRef!.id;
+      await gameProvider.cancelGame(gameId);
       final chatRef = game.chatRef;
       if (chatRef != null) {
         final gameName = game.nameGame;
@@ -174,7 +198,7 @@ class GameJoinedDashboardActionsSection extends StatelessWidget {
         try {
           await chatProvider.sendMessage(
             chatId: chatRef.id,
-            senderId: currentUserId,
+            senderId: userId,
             text: cancelMessage,
           );
           await chatRef.update({
@@ -201,9 +225,7 @@ class GameJoinedDashboardActionsSection extends StatelessWidget {
             duration: Duration(seconds: 2),
           ),
         );
-        gameProvider.invalidateUserGamesCache(
-          userProvider.userId,
-        );
+        gameProvider.invalidateUserGamesCache(userId);
         context.goGamesList();
       }
     } catch (error, stackTrace) {

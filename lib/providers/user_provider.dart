@@ -95,6 +95,13 @@ class UserProvider extends ChangeNotifier {
         _currentUser = user;
         _isLoading = false;
 
+        // Log auth transitions for crash correlation
+        if (wasLoggedIn && !isNowLoggedIn) {
+          AppLog.d('🔐 UserProvider: auth transition → logged out');
+        } else if (!wasLoggedIn && isNowLoggedIn) {
+          AppLog.d('🔐 UserProvider: auth transition → logged in (${user.reference.id})');
+        }
+
         // Ensure friend_requests field exists for logged-in user
         if (isNowLoggedIn) {
           // Run in background, don't block the login flow
@@ -178,6 +185,13 @@ class UserProvider extends ChangeNotifier {
   // ========================================
 
   String get userId => _currentUser?.reference.id ?? '';
+
+  /// Returns userId or null if auth not ready. Prefer this for guards.
+  String? get userIdOrNull => _currentUser?.reference.id;
+
+  /// True when auth has resolved AND user is logged in with valid ID.
+  bool get isAuthReady => !_isLoading && userIdOrNull != null;
+
   String get displayName => _currentUser?.displayName ?? '';
   String get firstName => _currentUser?.firstName ?? '';
   String get lastName => _currentUser?.lastName ?? '';
