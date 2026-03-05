@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:cloud_functions/cloud_functions.dart';
 import 'package:flutter/foundation.dart' show kIsWeb, visibleForTesting;
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -330,6 +331,21 @@ class FirebaseAuthManager extends AuthManager
     }
   }
 
+  /// Requests signup confirmation email (non-blocking, fire-and-forget).
+  /// Server enforces idempotency - safe to call multiple times.
+  Future<void> _requestSignupConfirmationEmail() async {
+    try {
+      final callable = FirebaseFunctions.instanceFor(region: 'us-west2')
+          .httpsCallable('sendSignupConfirmationEmail');
+      final result = await callable.call<Map<String, dynamic>>();
+      final status = result.data['status'] as String?;
+      AppLog.d('✅ AUTH: Signup email result: $status');
+    } catch (e) {
+      AppLog.d('⚠️ AUTH: Signup email request failed: $e');
+      // Non-blocking - don't rethrow
+    }
+  }
+
   /// Tries to sign in or create an account using Firebase Auth.
   /// Returns the User object if sign in was successful.
   Future<BaseAuthUser?> _signInOrCreateAccount(
@@ -347,6 +363,12 @@ class FirebaseAuthManager extends AuthManager
         AppLog.d('🔐 AUTH: Creating/updating user document.');
         await ensureUserDocReady(firebaseUser);
         AppLog.d('🔐 AUTH: User document created/updated successfully');
+
+        // Request signup confirmation email for new users (non-blocking).
+        // Server enforces idempotency - safe even if called multiple times.
+        if (userCredential?.additionalUserInfo?.isNewUser == true) {
+          unawaited(_requestSignupConfirmationEmail());
+        }
       }
       return userCredential == null
           ? null
@@ -453,6 +475,10 @@ class FirebaseAuthManager extends AuthManager
       if (firebaseUser != null) {
         await ensureUserDocReady(firebaseUser);
         AppLog.d('🔐 AUTH: Email account created.');
+
+        // Email signup is always a new user - request confirmation email.
+        // Server enforces idempotency - safe even if called multiple times.
+        unawaited(_requestSignupConfirmationEmail());
       }
       return userCredential == null
           ? null
@@ -555,15 +581,18 @@ class FirebaseAuthManager extends AuthManager
       return;
     }
 
-    // Always verify profile exists, regardless of what flags say
+    // Check for profile completion - require user-entered fields, not just
+    // OAuth-provided displayName. Google Auth pre-populates displayName,
+    // so we need to check fields that users explicitly fill out.
     bool hasProfileData = false;
     try {
       final userDoc = await UsersRecord.getDocumentOnce(
         UsersRecord.collection.doc(user.uid),
       );
-      hasProfileData = userDoc.displayName.isNotEmpty ||
-          userDoc.firstName.isNotEmpty ||
-          userDoc.lastName.isNotEmpty;
+      hasProfileData = userDoc.firstName.isNotEmpty &&
+          userDoc.lastName.isNotEmpty &&
+          userDoc.hasGender() &&
+          userDoc.hasDateOfBirth();
     } catch (e) {
       // Document doesn't exist or fetch failed - user needs onboarding
       AppLog.d('📖 AUTH: Profile check failed for ${user.uid}: $e');

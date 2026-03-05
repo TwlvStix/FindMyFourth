@@ -2,6 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:image_cropper/image_cropper.dart';
 import 'package:image_picker/image_picker.dart';
 import '/core/design_tokens/app_phosphor_icons.dart';
+import '/core/design_tokens/border_radius.dart';
+import '/core/design_tokens/colors.dart';
+import '/core/design_tokens/spacing.dart';
+import '/core/design_tokens/typography.dart';
 import '/core/widgets/app_icon.dart';
 
 /// Shows a bottom sheet asking the user to pick Camera or Gallery,
@@ -10,21 +14,59 @@ import '/core/widgets/app_icon.dart';
 Future<String?> showProfileImageSourceSheet(BuildContext context) async {
   final ImageSource? source = await showModalBottomSheet<ImageSource>(
     context: context,
+    backgroundColor: AppColors.navyDark,
+    shape: RoundedRectangleBorder(
+      borderRadius: BorderRadius.vertical(
+        top: Radius.circular(AppBorderRadius.lg),
+      ),
+    ),
     builder: (ctx) => SafeArea(
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          ListTile(
-            leading: AppIcon(icon: AppPhosphorIcons.camera),
-            title: const Text('Camera'),
-            onTap: () => Navigator.of(ctx).pop(ImageSource.camera),
-          ),
-          ListTile(
-            leading: AppIcon(icon: AppPhosphorIcons.imageGallery),
-            title: const Text('Photo Library'),
-            onTap: () => Navigator.of(ctx).pop(ImageSource.gallery),
-          ),
-        ],
+      child: Padding(
+        padding: EdgeInsets.symmetric(
+          horizontal: AppSpacing.md,
+          vertical: AppSpacing.sm,
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // Drag handle
+            Container(
+              width: 40,
+              height: 4,
+              margin: EdgeInsets.only(bottom: AppSpacing.md),
+              decoration: BoxDecoration(
+                color: AppColors.navyLight,
+                borderRadius: BorderRadius.circular(AppBorderRadius.xxs),
+              ),
+            ),
+            ListTile(
+              leading: AppIcon(
+                icon: AppPhosphorIcons.camera,
+                color: AppColors.textSecondary,
+              ),
+              title: Text(
+                'Camera',
+                style: AppTypography.bodyMedium.copyWith(
+                  color: AppColors.textPrimary,
+                ),
+              ),
+              onTap: () => Navigator.of(ctx).pop(ImageSource.camera),
+            ),
+            ListTile(
+              leading: AppIcon(
+                icon: AppPhosphorIcons.imageGallery,
+                color: AppColors.textSecondary,
+              ),
+              title: Text(
+                'Photo Library',
+                style: AppTypography.bodyMedium.copyWith(
+                  color: AppColors.textPrimary,
+                ),
+              ),
+              onTap: () => Navigator.of(ctx).pop(ImageSource.gallery),
+            ),
+          ],
+        ),
       ),
     ),
   );

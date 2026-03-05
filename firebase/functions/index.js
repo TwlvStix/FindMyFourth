@@ -1545,17 +1545,75 @@ exports.backfillAlertSubs = functions
 
 const sgMail = require("@sendgrid/mail");
 
-exports.onUserCreated = functions
+/**
+ * Sends a signup confirmation email to a newly created user.
+ * Uses transactional idempotency to guarantee exactly-once delivery.
+ *
+ * Returns:
+ * - { status: 'sent' } - Email was sent successfully
+ * - { status: 'skipped_already_sent' } - Email was already sent (idempotent)
+ * - { status: 'skipped_no_email' } - User has no email address
+ * - { status: 'send_failed' } - SendGrid failed (marker set to prevent retry spam)
+ */
+exports.sendSignupConfirmationEmail = functions
   .region("us-west2")
   .runWith({ secrets: ["SENDGRID_API_KEY"] })
-  .auth.user()
-  .onCreate(async (user) => {
-    const email = user.email;
-    if (!email) {
-      // Skip anonymous or phone-only accounts that have no email address.
-      return;
+  .https.onCall(async (data, context) => {
+    // 1. Require authentication
+    if (!context.auth) {
+      throw new functions.https.HttpsError(
+        "unauthenticated",
+        "User must be authenticated to request signup email.",
+      );
+    }
+    const uid = context.auth.uid;
+
+    // 2. Resolve email (Auth → private/info fallback)
+    let email;
+    try {
+      const authUser = await admin.auth().getUser(uid);
+      email = authUser.email;
+    } catch (authError) {
+      console.error(`sendSignupConfirmationEmail: Failed to get auth user ${uid}:`, authError);
+      throw new functions.https.HttpsError("internal", "Failed to resolve user email");
     }
 
+    if (!email) {
+      // Fallback to private profile email
+      const privateDoc = await db.doc(`users/${uid}/private/info`).get();
+      email = privateDoc.data()?.email;
+    }
+
+    if (!email) {
+      console.log(`sendSignupConfirmationEmail: No email found for user ${uid}`);
+      return { status: "skipped_no_email" };
+    }
+
+    // 3. Transactional idempotency check
+    const userRef = db.doc(`users/${uid}`);
+    let shouldSend = false;
+
+    await db.runTransaction(async (tx) => {
+      const userDoc = await tx.get(userRef);
+      if (userDoc.data()?.signup_email_sent_at) {
+        shouldSend = false;
+        return;
+      }
+      // Set marker atomically before sending
+      tx.set(
+        userRef,
+        { signup_email_sent_at: admin.firestore.FieldValue.serverTimestamp() },
+        { merge: true },
+      );
+      shouldSend = true;
+    });
+
+    if (!shouldSend) {
+      console.log(`sendSignupConfirmationEmail: Already sent for user ${uid}`);
+      return { status: "skipped_already_sent" };
+    }
+
+    // 4. Send email (outside transaction)
     sgMail.setApiKey(process.env.SENDGRID_API_KEY);
 
     const msg = {
@@ -1582,9 +1640,12 @@ exports.onUserCreated = functions
 
     try {
       await sgMail.send(msg);
-      console.log(`Welcome email sent to ${email}`);
+      console.log(`sendSignupConfirmationEmail: Welcome email sent to ${email} (uid: ${uid})`);
+      return { status: "sent" };
     } catch (error) {
-      console.error("Error sending welcome email:", error);
+      console.error(`sendSignupConfirmationEmail: Error sending to ${uid}:`, error);
+      // Email failed but marker is set - prevents retry spam
+      return { status: "send_failed" };
     }
   });
 
@@ -2035,51 +2096,6 @@ exports.notifyRoundFilledBeforeApproval = functions
       console.error('notifyRoundFilledBeforeApproval error:', error);
       const message = error?.message || error?.errorInfo?.message || 'Notification delivery failed';
       throw new functions.https.HttpsError('internal', message);
-    }
-  });
-
-// Welcome email — restored from main (accidentally dropped in checkpoint branch)
-// Note: sgMail already declared at top of file
-
-exports.onUserCreated = functions
-  .region("us-west2")
-  .runWith({ secrets: ["SENDGRID_API_KEY"] })
-  .auth.user()
-  .onCreate(async (user) => {
-    const email = user.email;
-    if (!email) {
-      return;
-    }
-
-    sgMail.setApiKey(process.env.SENDGRID_API_KEY);
-
-    const msg = {
-      to: email,
-      from: "findmyfourth@gmail.com",
-      subject: "Welcome to Find My Fourth!",
-      text: [
-        "Welcome to Find My Fourth!",
-        "",
-        "Your account has been successfully created. We're excited to have you on the course!",
-        "",
-        "Head back to the app to complete your profile and start finding your next round.",
-        "",
-        "See you on the fairway,",
-        "The Find My Fourth Team",
-      ].join("\n"),
-      html: [
-        "<p>Welcome to <strong>Find My Fourth</strong>!</p>",
-        "<p>Your account has been successfully created. We're excited to have you on the course!</p>",
-        "<p>Head back to the app to complete your profile and start finding your next round.</p>",
-        "<p>See you on the fairway,<br/>The Find My Fourth Team</p>",
-      ].join(""),
-    };
-
-    try {
-      await sgMail.send(msg);
-      console.log(`Welcome email sent to ${email}`);
-    } catch (error) {
-      console.error("Error sending welcome email:", error);
     }
   });
 
