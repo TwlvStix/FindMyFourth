@@ -111,28 +111,68 @@ class VibeFloorService {
       return const JoinEligibilityResult(eligibility: JoinEligibility.autoJoin);
     }
 
-    // 1. Check if player and owner are friends
+    // 1. Check if player and owner are friends (friends always bypass vibe floor)
     final areFriends = await _friendService.areFriends(ownerId, playerId);
     if (areFriends) {
       AppLog.d('✅ VibeFloorService: Player is friends with owner — auto-join');
       return const JoinEligibilityResult(eligibility: JoinEligibility.autoJoin);
     }
 
-    // 2. Fetch both vibe profiles
+    // 2. Wait for Remote Config readiness (1200ms timeout)
+    // This ensures we use the actual remote floor, not just local defaults
+    final remoteConfigReady = await _vibeFloorConfig.waitForRemoteConfig();
+
+    // 3. Fetch both vibe profiles
     final ownerProfile = await _vibeRepository.getVibeProfileForUser(ownerId);
     final playerProfile = await _vibeRepository.getVibeProfileForUser(playerId);
 
-    // 3. Calculate owner's score for the player
+    // 4. Calculate owner's score for the player
     // VibeMatcher.score(mine, theirs) returns myFitPercent = how "mine" feels about "theirs"
     final matchResult = VibeMatcher.score(ownerProfile, playerProfile);
     final ownerScore = matchResult.myFitPercent;
 
-    // 4. Get the vibe floor threshold
+    // 5. Get the vibe floor threshold
     final floor = await _vibeFloorConfig.getVibeFloor();
 
+    // 6. FAIL-CLOSED: If remote config not ready, never auto-join non-friends
+    // This prevents under-enforcement when remote floor > local default
+    if (!remoteConfigReady) {
+      AppLog.d(
+        '🚦 VibeFloorService: Remote config not ready — fail-closed for non-friend '
+        '(score=$ownerScore, defaultFloor=$floor)',
+      );
+
+      // Check for existing request first
+      final existingRequest =
+          await _joinRequestService.checkExistingRequest(gameId, playerId);
+      if (existingRequest != null) {
+        AppLog.d('📖 VibeFloorService: Player already has pending request ${existingRequest.id}');
+        return JoinEligibilityResult(
+          eligibility: JoinEligibility.alreadyRequested,
+          vibeScore: ownerScore,
+          vibeFloor: floor,
+          existingRequestId: existingRequest.id,
+          matchResult: matchResult,
+          ownerProfile: ownerProfile,
+          playerProfile: playerProfile,
+        );
+      }
+
+      // Fail closed: require approval even if score would pass default floor
+      return JoinEligibilityResult(
+        eligibility: JoinEligibility.requiresApproval,
+        vibeScore: ownerScore,
+        vibeFloor: floor,
+        matchResult: matchResult,
+        ownerProfile: ownerProfile,
+        playerProfile: playerProfile,
+      );
+    }
+
+    // Remote config ready — proceed with normal floor comparison
     AppLog.d('📖 VibeFloorService: Owner score for player = $ownerScore, floor = $floor');
 
-    // 5. Compare score to floor
+    // 7. Compare score to floor
     if (ownerScore >= floor) {
       AppLog.d('✅ VibeFloorService: Score >= floor — auto-join');
       return JoinEligibilityResult(
@@ -142,7 +182,7 @@ class VibeFloorService {
       );
     }
 
-    // 6. Score is below floor — check for existing pending request
+    // 8. Score is below floor — check for existing pending request
     final existingRequest =
         await _joinRequestService.checkExistingRequest(gameId, playerId);
     if (existingRequest != null) {
@@ -158,7 +198,7 @@ class VibeFloorService {
       );
     }
 
-    // 7. Return requiresApproval with the score data and profiles for UI rendering
+    // 9. Return requiresApproval with the score data and profiles for UI rendering
     AppLog.d('🚦 VibeFloorService: Score < floor — requires approval');
     return JoinEligibilityResult(
       eligibility: JoinEligibility.requiresApproval,

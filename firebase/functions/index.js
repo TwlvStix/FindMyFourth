@@ -1912,7 +1912,8 @@ exports.notifyNewJoinRequest = functions
       return { success: true, result: result.result };
     } catch (error) {
       console.error('notifyNewJoinRequest error:', error);
-      throw new functions.https.HttpsError('internal', error.message);
+      const message = error?.message || error?.errorInfo?.message || 'Notification delivery failed';
+      throw new functions.https.HttpsError('internal', message);
     }
   });
 
@@ -1964,7 +1965,8 @@ exports.notifyJoinRequestApproved = functions
       return { success: true, result: result.result };
     } catch (error) {
       console.error('notifyJoinRequestApproved error:', error);
-      throw new functions.https.HttpsError('internal', error.message);
+      const message = error?.message || error?.errorInfo?.message || 'Notification delivery failed';
+      throw new functions.https.HttpsError('internal', message);
     }
   });
 
@@ -1997,7 +1999,8 @@ exports.notifyJoinRequestDeclined = functions
       return { success: true, result: result.result };
     } catch (error) {
       console.error('notifyJoinRequestDeclined error:', error);
-      throw new functions.https.HttpsError('internal', error.message);
+      const message = error?.message || error?.errorInfo?.message || 'Notification delivery failed';
+      throw new functions.https.HttpsError('internal', message);
     }
   });
 
@@ -2030,7 +2033,8 @@ exports.notifyRoundFilledBeforeApproval = functions
       return { success: true, result: result.result };
     } catch (error) {
       console.error('notifyRoundFilledBeforeApproval error:', error);
-      throw new functions.https.HttpsError('internal', error.message);
+      const message = error?.message || error?.errorInfo?.message || 'Notification delivery failed';
+      throw new functions.https.HttpsError('internal', message);
     }
   });
 

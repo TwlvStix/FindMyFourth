@@ -69,6 +69,10 @@ Future<void> main() async {
       // Continue with in-memory defaults - app still works
     }
 
+    // ✅ CRITICAL: Set Remote Config defaults before any UI can trigger joins
+    // This is a local operation (<1ms) and guarantees safe vibe floor fallback
+    await RemoteConfigService.instance.ensureDefaults();
+
     // 🚀 Show first frame
     runApp(
       MultiProvider(
@@ -147,14 +151,15 @@ void _setupErrorHandlers() {
 }
 
 /// Initialize non-critical services after first frame
-/// This includes Crashlytics metadata and Remote Config
+/// This includes Crashlytics metadata and Remote Config network fetch
+/// Note: Remote Config defaults already set before runApp() via ensureDefaults()
 /// Note: Notification service is initialized by the auth stream listener
 Future<void> _initializeNonCriticalServices(AppState appState) async {
   try {
     // Set Crashlytics metadata (just metadata, not critical)
     await _configureCrashlyticsMetadata();
 
-    // Initialize Remote Config (non-blocking, uses defaults if fails)
+    // Fetch remote config values (defaults already set before runApp)
     await RemoteConfigService.instance.initialize();
   } catch (error, stackTrace) {
     AppLog.d('⚠️ Non-critical initialization failed: $error');

@@ -325,6 +325,7 @@
         { "fieldPath": "eventType", "order": "ASCENDING" },
         { "fieldPath": "sourceId", "order": "ASCENDING" },
         { "fieldPath": "recipientUserId", "order": "ASCENDING" },
+        { "fieldPath": "status", "order": "ASCENDING" },
         { "fieldPath": "timestamp", "order": "DESCENDING" }
       ]
     },

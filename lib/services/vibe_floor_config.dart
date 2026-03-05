@@ -12,6 +12,19 @@ class VibeFloorConfig {
   /// Cooldown period between vibe profile edits (30 days)
   static const int vibeEditCooldownDays = 30;
 
+  /// Wait for Remote Config to be ready (network fetch complete).
+  ///
+  /// Returns true if ready within timeout, false otherwise.
+  /// Use this for fail-closed behavior: if not ready, require approval.
+  Future<bool> waitForRemoteConfig({
+    Duration timeout = const Duration(milliseconds: 1200),
+  }) async {
+    return RemoteConfigService.instance.waitUntilReady(timeout: timeout);
+  }
+
+  /// Whether Remote Config has completed initialization (network fetch done).
+  bool get isRemoteConfigReady => RemoteConfigService.instance.isInitialized;
+
   /// Get the current vibe floor threshold
   ///
   /// Returns the configured floor value from Remote Config if available,
