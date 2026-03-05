@@ -8,10 +8,13 @@ import '/notification_settings/components/notification_toggle.dart';
 /// Expanded content for the Trust and Reliability notification category card.
 ///
 /// Shows:
-/// - Three sub-toggle rows with dividers:
-///   - Post-round check-ins
+/// - Two sub-toggle rows with dividers:
 ///   - Account standing
 ///   - Badge progress
+///
+/// NOTE: Post-round check-ins toggle is intentionally hidden (see commented
+/// code in build()). Post-round check-ins are a core system feature and cannot
+/// be disabled by users.
 ///
 /// Delivery frequency selector hidden until backend digest logic is complete.
 /// To re-enable: add ExpandSectionLabel + DeliveryFrequencySelector with
@@ -29,19 +32,29 @@ class TrustContent extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       mainAxisSize: MainAxisSize.min,
       children: [
-        // Row 1: Post-round check-ins
-        _buildToggleRow(
-          context: context,
-          label: 'Post-round check-ins',
-          hint: 'Reminders after your rounds',
-          value: trust.postRound,
-          onChanged: (val) {
-            context.notificationProvider.updateTrustCategories(postRound: val);
-          },
-        ),
-        _buildDivider(),
+        // ================================================================
+        // POST-ROUND CHECK-INS TOGGLE (HIDDEN)
+        // ----------------------------------------------------------------
+        // This toggle allowed users to turn off post-round check-in
+        // notifications. It has been hidden because post-round check-ins
+        // are a core part of our trust system and should always be enabled.
+        // The underlying preference value (trust.postRound) remains in the
+        // data model but should always be true.
+        //
+        // Original code:
+        // _buildToggleRow(
+        //   context: context,
+        //   label: 'Post-round check-ins',
+        //   hint: 'Reminders after your rounds',
+        //   value: trust.postRound,
+        //   onChanged: (val) {
+        //     context.notificationProvider.updateTrustCategories(postRound: val);
+        //   },
+        // ),
+        // _buildDivider(),
+        // ================================================================
 
-        // Row 2: Account standing
+        // Row 1: Account standing
         _buildToggleRow(
           context: context,
           label: 'Account standing',
@@ -54,7 +67,7 @@ class TrustContent extends StatelessWidget {
         ),
         _buildDivider(),
 
-        // Row 3: Badge progress (no trailing divider)
+        // Row 2: Badge progress (no trailing divider)
         _buildToggleRow(
           context: context,
           label: 'Badge progress',

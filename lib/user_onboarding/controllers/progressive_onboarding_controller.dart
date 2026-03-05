@@ -59,9 +59,6 @@ class ProgressiveOnboardingController {
   ///
   /// Returns [OnboardingSuccess] on success, or [OnboardingFailure]
   /// with typed error and message on failure. Never throws.
-  ///
-  /// The [updateEmailFn] parameter allows the widget to handle email updates
-  /// with proper context (required for Firebase Auth).
   Future<ProgressiveOnboardingResult> submitOnboarding({
     required DocumentReference userRef,
     required String firstName,
@@ -76,7 +73,6 @@ class ProgressiveOnboardingController {
     required int music,
     required int playMoney,
     required int pace,
-    required Future<void> Function(String email) updateEmailFn,
   }) async {
     // Validate required fields
     if (firstName.trim().isEmpty || lastName.trim().isEmpty) {
@@ -109,7 +105,7 @@ class ProgressiveOnboardingController {
     if (trimmedDesiredEmail.isNotEmpty &&
         trimmedDesiredEmail != currentEmail) {
       try {
-        await updateEmailFn(trimmedDesiredEmail);
+        await _profileSetupService.updateUserEmail(trimmedDesiredEmail);
       } on FirebaseAuthException catch (e) {
         AppLog.d(
             '❌ ProgressiveOnboardingController.submitOnboarding email error: ${e.code}');
@@ -177,21 +173,9 @@ class ProgressiveOnboardingController {
 
   /// Ensures the user record exists and is ready.
   Future<bool> _ensureUserRecord() async {
-    final user = await _profileSetupService.currentUserOrWait(
+    return _profileSetupService.ensureUserDocumentReady(
       timeout: const Duration(seconds: 1),
     );
-    if (user == null) {
-      return false;
-    }
-    try {
-      await ensureUserDocReady(user);
-      return true;
-    } catch (error, stackTrace) {
-      AppLog.d(
-          '❌ ProgressiveOnboardingController._ensureUserRecord error: $error');
-      AppLog.d('❌ Stack trace: $stackTrace');
-      return false;
-    }
   }
 
   /// Ensures user record exists. Call on init.

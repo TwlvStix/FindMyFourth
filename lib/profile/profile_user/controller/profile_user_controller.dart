@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 
 import '/backend/schema/users_record.dart';
 import '/models/vibe_profile.dart';
+import '/services/friend_service.dart';
 import '/services/vibe_matcher.dart';
 import '/services/vibe_repository.dart';
 
@@ -34,12 +35,12 @@ class VibeMatchLoadResult {
 class ProfileUserController {
   ProfileUserController({
     VibeRepository? vibeRepository,
-    FirebaseFirestore? firestore,
+    FriendService? friendService,
   })  : _vibeRepository = vibeRepository ?? VibeRepository(),
-        _firestore = firestore ?? FirebaseFirestore.instance;
+        _friendService = friendService ?? FriendService();
 
   final VibeRepository _vibeRepository;
-  final FirebaseFirestore _firestore;
+  final FriendService _friendService;
 
   bool shouldLoadVibeMatch({
     required bool isLoading,
@@ -97,21 +98,13 @@ class ProfileUserController {
 
     onRemoteFetchStart?.call();
 
-    try {
-      final futures = mutualUids.map(
-        (uid) => UsersRecord.getDocumentOnce(
-            _firestore.collection('users').doc(uid)),
-      );
-      final results = await Future.wait(futures);
-      return MutualFriendsResult(
-        friends: results,
-        loaded: true,
-      );
-    } catch (_) {
-      return const MutualFriendsResult(
-        friends: <UsersRecord>[],
-        loaded: true,
-      );
-    }
+    final results = await _friendService.getMutualFriends(
+      myFriends: myFriends,
+      theirFriends: theirFriends,
+    );
+    return MutualFriendsResult(
+      friends: results,
+      loaded: true,
+    );
   }
 }

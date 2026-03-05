@@ -111,6 +111,18 @@ class JoinGameJoinActionCoordinator {
     }
 
     final eligibility = payload.eligibilityData;
+
+    // Validate required vibe data is present
+    if (eligibility.matchResult == null ||
+        eligibility.ownerProfile == null ||
+        eligibility.playerProfile == null ||
+        eligibility.vibeScore == null ||
+        eligibility.vibeFloor == null) {
+      return const JoinActionError(
+        message: 'Vibe profiles unavailable. Please complete your profile first.',
+      );
+    }
+
     final submittedRequest = await showAppBottomSheet<JoinRequest?>(
       context: context,
       isScrollControlled: true,

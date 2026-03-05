@@ -158,14 +158,16 @@ UploadedFile uploadedFileFromString(String uploadedFileStr) =>
 
 DocumentReference _deserializeDocumentReference(
   String refStr,
-  List<String> collectionNamePath,
-) {
+  List<String> collectionNamePath, {
+  FirebaseFirestore? firestore,
+}) {
+  final fs = firestore ?? FirebaseFirestore.instance;
   var path = '';
   final docIds = refStr.split(_kDocIdDelimeter);
   for (int i = 0; i < docIds.length && i < collectionNamePath.length; i++) {
     path += '/${collectionNamePath[i]}/${docIds[i]}';
   }
-  return FirebaseFirestore.instance.doc(path);
+  return fs.doc(path);
 }
 
 enum ParamType {
@@ -247,19 +249,28 @@ dynamic deserializeParam<T>(
   }
 }
 
+/// Creates a function that fetches a single document by ID.
+///
+/// Accepts optional [firestore] parameter for testability.
 Future<T> Function(String) getDoc<T>(
   List<String> collectionNamePath,
-  RecordBuilder<T> recordBuilder,
-) {
-  return (String ids) => _deserializeDocumentReference(ids, collectionNamePath)
-      .get()
-      .then((s) => recordBuilder(s));
+  RecordBuilder<T> recordBuilder, {
+  FirebaseFirestore? firestore,
+}) {
+  return (String ids) =>
+      _deserializeDocumentReference(ids, collectionNamePath, firestore: firestore)
+          .get()
+          .then((s) => recordBuilder(s));
 }
 
+/// Creates a function that fetches multiple documents by IDs.
+///
+/// Accepts optional [firestore] parameter for testability.
 Future<List<T>> Function(String) getDocList<T>(
   List<String> collectionNamePath,
-  RecordBuilder<T> recordBuilder,
-) {
+  RecordBuilder<T> recordBuilder, {
+  FirebaseFirestore? firestore,
+}) {
   return (String idsList) {
     List<String> docIds = [];
     try {
@@ -268,9 +279,10 @@ Future<List<T>> Function(String) getDocList<T>(
     } catch (_) {}
     return Future.wait(
       docIds.map(
-        (ids) => _deserializeDocumentReference(ids, collectionNamePath)
-            .get()
-            .then((s) => recordBuilder(s)),
+        (ids) =>
+            _deserializeDocumentReference(ids, collectionNamePath, firestore: firestore)
+                .get()
+                .then((s) => recordBuilder(s)),
       ),
     ).then((docs) => docs.where((d) => d != null).map((d) => d!).toList());
   };

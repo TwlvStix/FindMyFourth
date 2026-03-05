@@ -35,6 +35,18 @@ class _SuccessProfileSetupService extends ProfileSetupService {
   }) async {
     return MockFirebaseAuth().currentUser;
   }
+
+  @override
+  Future<void> updateUserEmail(String email) async {
+    // Simulate successful email update
+  }
+
+  @override
+  Future<bool> ensureUserDocumentReady({
+    Duration timeout = const Duration(seconds: 1),
+  }) async {
+    return true;
+  }
 }
 
 class _UsernameTakenService extends ProfileSetupService {
@@ -59,6 +71,64 @@ class _UsernameTakenService extends ProfileSetupService {
     Duration timeout = const Duration(seconds: 5),
   }) async {
     return MockFirebaseAuth().currentUser;
+  }
+
+  @override
+  Future<void> updateUserEmail(String email) async {
+    // Simulate successful email update
+  }
+
+  @override
+  Future<bool> ensureUserDocumentReady({
+    Duration timeout = const Duration(seconds: 1),
+  }) async {
+    return true;
+  }
+}
+
+class _ReauthRequiredService extends ProfileSetupService {
+  _ReauthRequiredService()
+      : super(
+          firestore: FakeFirebaseFirestore(),
+          auth: MockFirebaseAuth(),
+        );
+
+  @override
+  Future<void> updateUserEmail(String email) async {
+    throw FirebaseAuthException(
+      code: 'requires-recent-login',
+      message: 'Reauth required',
+    );
+  }
+
+  @override
+  Future<bool> ensureUserDocumentReady({
+    Duration timeout = const Duration(seconds: 1),
+  }) async {
+    return true;
+  }
+}
+
+class _EmailUpdateFailedService extends ProfileSetupService {
+  _EmailUpdateFailedService()
+      : super(
+          firestore: FakeFirebaseFirestore(),
+          auth: MockFirebaseAuth(),
+        );
+
+  @override
+  Future<void> updateUserEmail(String email) async {
+    throw FirebaseAuthException(
+      code: 'invalid-email',
+      message: 'Invalid email',
+    );
+  }
+
+  @override
+  Future<bool> ensureUserDocumentReady({
+    Duration timeout = const Duration(seconds: 1),
+  }) async {
+    return true;
   }
 }
 
@@ -177,8 +247,7 @@ void main() {
         music: 2,
         playMoney: 2,
         pace: 2,
-        updateEmailFn: (_) async {},
-      );
+              );
 
       expect(result, isA<OnboardingFailure>());
       final failure = result as OnboardingFailure;
@@ -204,8 +273,7 @@ void main() {
         music: 2,
         playMoney: 2,
         pace: 2,
-        updateEmailFn: (_) async {},
-      );
+              );
 
       expect(result, isA<OnboardingFailure>());
       final failure = result as OnboardingFailure;
@@ -231,8 +299,7 @@ void main() {
         music: 2,
         playMoney: 2,
         pace: 2,
-        updateEmailFn: (_) async {},
-      );
+              );
 
       expect(result, isA<OnboardingFailure>());
       final failure = result as OnboardingFailure;
@@ -258,8 +325,7 @@ void main() {
         music: 2,
         playMoney: 2,
         pace: 2,
-        updateEmailFn: (_) async {},
-      );
+              );
 
       expect(result, isA<OnboardingFailure>());
       final failure = result as OnboardingFailure;
@@ -285,8 +351,7 @@ void main() {
         music: 2,
         playMoney: 2,
         pace: 2,
-        updateEmailFn: (_) async {},
-      );
+              );
 
       expect(result, isA<OnboardingFailure>());
       final failure = result as OnboardingFailure;
@@ -297,7 +362,7 @@ void main() {
     test('returns requiresReauth when email update throws requires-recent-login',
         () async {
       final controller = ProgressiveOnboardingController(
-        profileSetupService: _SuccessProfileSetupService(),
+        profileSetupService: _ReauthRequiredService(),
       );
 
       final result = await controller.submitOnboarding(
@@ -314,12 +379,6 @@ void main() {
         music: 2,
         playMoney: 2,
         pace: 2,
-        updateEmailFn: (_) async {
-          throw FirebaseAuthException(
-            code: 'requires-recent-login',
-            message: 'Reauth required',
-          );
-        },
       );
 
       expect(result, isA<OnboardingFailure>());
@@ -331,7 +390,7 @@ void main() {
     test('returns emailUpdateFailed when email update throws other error',
         () async {
       final controller = ProgressiveOnboardingController(
-        profileSetupService: _SuccessProfileSetupService(),
+        profileSetupService: _EmailUpdateFailedService(),
       );
 
       final result = await controller.submitOnboarding(
@@ -348,12 +407,6 @@ void main() {
         music: 2,
         playMoney: 2,
         pace: 2,
-        updateEmailFn: (_) async {
-          throw FirebaseAuthException(
-            code: 'invalid-email',
-            message: 'Invalid email',
-          );
-        },
       );
 
       expect(result, isA<OnboardingFailure>());

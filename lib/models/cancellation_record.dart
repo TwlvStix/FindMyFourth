@@ -63,7 +63,15 @@ class CancellationRecord {
     }
   }
 
-  static CancellationRecord fromDoc(DocumentSnapshot doc) {
+  /// Creates a CancellationRecord from a Firestore document.
+  ///
+  /// Accepts optional [firestore] parameter for testability and to avoid
+  /// direct FirebaseFirestore.instance calls in the model layer.
+  static CancellationRecord fromDoc(
+    DocumentSnapshot doc, {
+    FirebaseFirestore? firestore,
+  }) {
+    final fs = firestore ?? FirebaseFirestore.instance;
     final data = (doc.data() as Map<String, dynamic>?) ?? <String, dynamic>{};
 
     final cancelledAt =
@@ -85,9 +93,9 @@ class CancellationRecord {
     return CancellationRecord(
       reference: doc.reference,
       playerRef: data['player_ref'] as DocumentReference? ??
-          FirebaseFirestore.instance.collection('users').doc('unknown'),
+          fs.collection('users').doc('unknown'),
       gameRef: data['game_ref'] as DocumentReference? ??
-          FirebaseFirestore.instance.collection('games').doc('unknown'),
+          fs.collection('games').doc('unknown'),
       cancelledAt: cancelledAt,
       teeTime: teeTime,
       hoursBeforeTeeTime: hours,

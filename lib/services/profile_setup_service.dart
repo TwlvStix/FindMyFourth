@@ -1,6 +1,9 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
+import '/backend/backend.dart' as backend;
+import '/core/utils/app_log.dart';
+
 /// Encapsulates profile/onboarding Firestore/Auth write flows so widgets stay UI-only.
 class ProfileSetupService {
   ProfileSetupService({
@@ -26,6 +29,40 @@ class ProfileSetupService {
           .timeout(timeout);
     } catch (_) {
       return null;
+    }
+  }
+
+  /// Updates the current user's email address.
+  ///
+  /// Sends a verification email to the new address before updating.
+  /// Throws [FirebaseAuthException] on failure (e.g., requires-recent-login).
+  Future<void> updateUserEmail(String email) async {
+    final user = _auth.currentUser;
+    if (user == null) {
+      throw FirebaseAuthException(code: 'user-not-found');
+    }
+    await user.verifyBeforeUpdateEmail(email);
+    AppLog.d('✅ ProfileSetupService: Email update initiated for $email');
+  }
+
+  /// Ensures the user document exists and is ready.
+  ///
+  /// Waits for auth state if needed, then ensures the Firestore user doc exists.
+  /// Returns true if successful, false if user not authenticated or doc creation failed.
+  Future<bool> ensureUserDocumentReady({
+    Duration timeout = const Duration(seconds: 1),
+  }) async {
+    final user = await currentUserOrWait(timeout: timeout);
+    if (user == null) {
+      return false;
+    }
+    try {
+      await backend.ensureUserDocReady(user);
+      return true;
+    } catch (error, stackTrace) {
+      AppLog.d('❌ ProfileSetupService.ensureUserDocumentReady error: $error');
+      AppLog.d('❌ Stack trace: $stackTrace');
+      return false;
     }
   }
 

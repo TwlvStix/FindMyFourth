@@ -568,6 +568,9 @@ service cloud.firestore {
           isSelfFriendRequestChange(document) ||
           isSelfFriendChange(document));
       allow create: if request.auth.uid == document;
+      // Profile fields are intentionally readable by authenticated users for social features
+      // (game rosters, friend requests, vibe matching, chat display).
+      // Sensitive fields (email, phone) are protected in /users/{uid}/private/*.
       allow read: if request.auth != null;
       allow delete: if false;
 

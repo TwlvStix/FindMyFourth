@@ -204,6 +204,64 @@ class NotificationCrudService {
     return null;
   }
 
+  // ── Preference Methods ─────────────────────────────────────────────────────
+
+  /// Loads notification preferences for a user.
+  ///
+  /// Returns the raw notification_prefs map from the user document,
+  /// or null if not found.
+  Future<Map<String, dynamic>?> loadPreferences(String uid) async {
+    try {
+      final userDoc = await _resolvedFirestore.collection('users').doc(uid).get();
+      final prefsMap = userDoc.data()?['notification_prefs'];
+      if (prefsMap != null && prefsMap is Map) {
+        return Map<String, dynamic>.from(prefsMap);
+      }
+      return null;
+    } on FirebaseException catch (e) {
+      AppLog.d(
+          '❌ NotificationCrudService.loadPreferences: ${e.code} - ${e.message}');
+      rethrow;
+    }
+  }
+
+  /// Saves notification preferences for a user.
+  ///
+  /// Merges the notification_prefs field into the user document.
+  Future<void> savePreferences(String uid, Map<String, dynamic> prefs) async {
+    try {
+      final userRef = _resolvedFirestore.collection('users').doc(uid);
+      await userRef.set({
+        'notification_prefs': prefs,
+      }, SetOptions(merge: true));
+      AppLog.d('✅ NotificationCrudService: Saved preferences for $uid');
+    } on FirebaseException catch (e) {
+      AppLog.d(
+          '❌ NotificationCrudService.savePreferences: ${e.code} - ${e.message}');
+      rethrow;
+    }
+  }
+
+  /// Checks for backend notification errors (e.g., send failures).
+  ///
+  /// Returns the last_error map from notification_state, or null if not found.
+  Future<Map<String, dynamic>?> checkBackendErrors(String uid) async {
+    try {
+      final userDoc = await _resolvedFirestore.collection('users').doc(uid).get();
+      final errorData = userDoc.data()?['notification_state']?['last_error'];
+      if (errorData != null && errorData is Map) {
+        return Map<String, dynamic>.from(errorData);
+      }
+      return null;
+    } on FirebaseException catch (e) {
+      AppLog.d(
+          '❌ NotificationCrudService.checkBackendErrors: ${e.code} - ${e.message}');
+      rethrow;
+    }
+  }
+
+  // ── Game Blocking ─────────────────────────────────────────────────────────
+
   /// Returns true when a game should be blocked because it's friends-only and
   /// the current user is not in the host's friend list.
   Future<bool> shouldBlockFriendsOnlyGame({

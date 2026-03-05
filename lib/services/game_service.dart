@@ -12,7 +12,7 @@ import '/services/game_eligibility_service.dart';
 /// This service follows the established pattern from ChatService:
 /// - Static methods only (no instance state)
 /// - Pure functions without UI dependencies
-/// - Firestore error handling with try-catch, debugPrint, and rethrow
+/// - Firestore error handling with try-catch, AppLog.d(), and rethrow
 /// - No business logic (filtering, vibe matching) - that stays in providers
 ///
 /// Usage:

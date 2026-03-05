@@ -1,7 +1,35 @@
 ---
-paths: lib/services/**/*.dart
+paths:
+  - lib/services/**/*.dart
+  - lib/**/controllers/**/*.dart
+  - lib/providers/**/*.dart
 ---
 # Service Layer Rules
+
+## ⛔ No Direct Firebase Calls Outside Services
+
+Firebase SDK calls are only permitted in `lib/services/`, `lib/backend/schema/` (legacy records), and `lib/backend/firebase/` (init). **Controllers and providers must never import or call Firebase directly.**
+
+This applies to:
+- `FirebaseAuth.instance` / `FirebaseAuth.instance.currentUser`
+- `FirebaseFirestore.instance.collection(...)` / `.doc(...)`
+- Any direct Firestore query, snapshot, or stream
+
+**If the service method you need doesn't exist yet — create it first, then call it.**
+
+```dart
+// ❌ Never in a controller or provider
+final uid = FirebaseAuth.instance.currentUser?.uid;
+final snap = await FirebaseFirestore.instance.collection('users').get();
+
+// ✅ Add to the relevant service, then call it
+// In ProfileService:
+Future<String?> getCurrentUserId() => FirebaseAuth.instance.currentUser?.uid;
+// In controller:
+final uid = await _profileService.getCurrentUserId();
+```
+
+The data flow is: **Widget → Controller → Provider → Service → Firebase**. Each layer only talks to the layer below it.
 
 ## Class Structure
 - Services are instance classes, not static-only

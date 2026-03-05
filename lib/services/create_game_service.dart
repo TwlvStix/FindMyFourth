@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 import '/core/utils/app_log.dart';
 import '/main_function/create_game/models/create_game_form_data.dart';
@@ -7,9 +8,14 @@ import '/main_function/create_game/models/create_game_form_data.dart';
 ///
 /// Follows the service pattern with injectable Firestore instance.
 class CreateGameService {
-  CreateGameService({FirebaseFirestore? firestore}) : _firestore = firestore;
+  CreateGameService({FirebaseFirestore? firestore, FirebaseAuth? auth})
+      : _firestore = firestore,
+        _auth = auth;
 
   final FirebaseFirestore? _firestore;
+  final FirebaseAuth? _auth;
+
+  FirebaseAuth get _resolvedAuth => _auth ?? FirebaseAuth.instance;
 
   FirebaseFirestore get _resolvedFirestore =>
       _firestore ?? FirebaseFirestore.instance;
@@ -76,5 +82,10 @@ class CreateGameService {
   /// Returns a typed user document reference for the given uid.
   DocumentReference userRefForUid(String uid) {
     return _resolvedFirestore.collection('users').doc(uid);
+  }
+
+  /// Returns the current authenticated user's UID, or null if not authenticated.
+  String? getCurrentUserId() {
+    return _resolvedAuth.currentUser?.uid;
   }
 }

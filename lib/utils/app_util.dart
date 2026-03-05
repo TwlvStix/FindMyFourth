@@ -281,7 +281,10 @@ extension IterableExt<T> on Iterable<T> {
 }
 
 extension StringDocRef on String {
-  DocumentReference get ref => FirebaseFirestore.instance.doc(this);
+  /// Converts a Firestore path string to a DocumentReference.
+  /// Accepts optional [firestore] parameter for testability.
+  DocumentReference toDocRef({FirebaseFirestore? firestore}) =>
+      (firestore ?? FirebaseFirestore.instance).doc(this);
 }
 
 void setDarkModeSetting(BuildContext context, ThemeMode themeMode) =>

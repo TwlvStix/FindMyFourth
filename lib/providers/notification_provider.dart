@@ -6,6 +6,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 import '/core/utils/app_log.dart';
 import '/models/notification_preferences.dart';
+import '/services/notification_crud_service.dart';
 
 /// NotificationProvider manages notification preferences with offline support
 ///
@@ -48,9 +49,18 @@ class NotificationError {
 }
 
 class NotificationProvider extends ChangeNotifier {
-  NotificationProvider() {
+  NotificationProvider({
+    NotificationCrudService? service,
+    FirebaseAuth? auth,
+  })  : _service = service ?? NotificationCrudService(),
+        _auth = auth {
     _init();
   }
+
+  final NotificationCrudService _service;
+  final FirebaseAuth? _auth;
+
+  FirebaseAuth get _resolvedAuth => _auth ?? FirebaseAuth.instance;
 
   // State
   NotificationPreferences _prefs = NotificationPreferences.defaults();
@@ -86,7 +96,7 @@ class NotificationProvider extends ChangeNotifier {
 
   /// Listen to auth state changes and manage UID transitions
   void _listenToAuthState() {
-    _authSubscription = FirebaseAuth.instance.authStateChanges().listen(
+    _authSubscription = _resolvedAuth.authStateChanges().listen(
       (user) {
         final newUid = user?.uid;
         final oldUid = _activeUid;
@@ -138,19 +148,13 @@ class NotificationProvider extends ChangeNotifier {
   /// Load current preferences from Firestore
   Future<void> _loadPreferences(String uid) async {
     try {
-      final userDoc = await FirebaseFirestore.instance
-          .collection('users')
-          .doc(uid)
-          .get();
+      final prefsMap = await _service.loadPreferences(uid);
 
       // Stale result guard - UID changed during await
       if (_activeUid != uid) return;
 
-      final prefsMap = userDoc.data()?['notification_prefs'];
-      if (prefsMap != null && prefsMap is Map) {
-        _prefs = NotificationPreferences.fromMap(
-          Map<String, dynamic>.from(prefsMap),
-        );
+      if (prefsMap != null) {
+        _prefs = NotificationPreferences.fromMap(prefsMap);
         _scheduleNotify();
       }
     } catch (e) {
@@ -193,13 +197,7 @@ class NotificationProvider extends ChangeNotifier {
     _scheduleNotify();
 
     try {
-      final userRef = FirebaseFirestore.instance
-          .collection('users')
-          .doc(uid);
-
-      await userRef.set({
-        'notification_prefs': prefs.toFirestore(),
-      }, SetOptions(merge: true));
+      await _service.savePreferences(uid, prefs.toFirestore());
 
       // Stale result guard - UID changed during await
       if (_activeUid != uid) return;
@@ -260,19 +258,13 @@ class NotificationProvider extends ChangeNotifier {
   /// Check for backend errors (e.g., notification send failures)
   Future<void> _checkBackendErrors(String uid) async {
     try {
-      final userDoc = await FirebaseFirestore.instance
-          .collection('users')
-          .doc(uid)
-          .get();
+      final errorData = await _service.checkBackendErrors(uid);
 
       // Stale result guard - UID changed during await
       if (_activeUid != uid) return;
 
-      final errorData = userDoc.data()?['notification_state']?['last_error'];
-      if (errorData != null && errorData is Map) {
-        final error = NotificationError.fromMap(
-          Map<String, dynamic>.from(errorData),
-        );
+      if (errorData != null) {
+        final error = NotificationError.fromMap(errorData);
 
         // Only show if within last 24 hours
         final hoursSinceError = DateTime.now().difference(error.timestamp).inHours;

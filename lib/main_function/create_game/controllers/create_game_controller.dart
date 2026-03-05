@@ -1,5 +1,4 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 
 import '/core/utils/app_log.dart';
 import '/main_function/create_game/create_game_validator.dart';
@@ -69,14 +68,11 @@ class CreateGameController {
   CreateGameController({
     CreateGameDraftService? draftService,
     CreateGameService? gameService,
-    FirebaseAuth? auth,
   })  : _draftService = draftService ?? CreateGameDraftService(),
-        _gameService = gameService ?? CreateGameService(),
-        _auth = auth ?? FirebaseAuth.instance;
+        _gameService = gameService ?? CreateGameService();
 
   final CreateGameDraftService _draftService;
   final CreateGameService _gameService;
-  final FirebaseAuth _auth;
 
   Future<CreateGameFormData?> loadDraft() => _draftService.loadDraft();
 
@@ -111,8 +107,8 @@ class CreateGameController {
       );
     }
 
-    final currentUser = _auth.currentUser;
-    if (currentUser == null) {
+    final currentUserId = _gameService.getCurrentUserId();
+    if (currentUserId == null) {
       return CreateGameSubmitResult.failure(
         CreateGameSubmitFailure.unauthenticated,
         message: 'Please sign in to create a game.',
@@ -120,14 +116,14 @@ class CreateGameController {
     }
 
     final userRef =
-        currentUserRef ?? _gameService.userRefForUid(currentUser.uid);
+        currentUserRef ?? _gameService.userRefForUid(currentUserId);
     final gameName = formData.ensureGameName();
     final gameRef = _gameService.generateGameRef();
 
     DocumentReference chatRef;
     try {
       chatRef = await createGameChat(
-        createdByUid: currentUser.uid,
+        createdByUid: currentUserId,
         gameId: gameRef.id,
         gameName: gameName,
       );
@@ -144,7 +140,7 @@ class CreateGameController {
       await _gameService.createGameWithRef(
         gameRef: gameRef,
         formData: formData,
-        uid: currentUser.uid,
+        uid: currentUserId,
         userRef: userRef,
         chatRef: chatRef,
       );

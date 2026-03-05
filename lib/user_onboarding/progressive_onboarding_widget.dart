@@ -146,10 +146,6 @@ class _ProgressiveOnboardingWidgetState
         music: _musicValue,
         playMoney: _playMoneyValue,
         pace: _paceValue,
-        updateEmailFn: (email) => authManager.updateEmail(
-          email: email,
-          context: context,
-        ),
       );
 
       if (!mounted) return;

@@ -205,7 +205,7 @@ class GameJoinedDashboardActionsSection extends StatelessWidget {
             'isReadOnly': true,
             'pinnedMessage': cancelMessage,
             'pinnedAt': FieldValue.serverTimestamp(),
-            'archivedAt': Timestamp.fromDate(
+            'deletesAt': Timestamp.fromDate(
               getCurrentTimestamp.add(
                 Duration(days: _cancelledChatArchiveDays),
               ),

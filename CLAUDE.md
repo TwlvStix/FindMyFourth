@@ -96,6 +96,25 @@ firebase deploy
 
 **Data Flow**: Widget → Provider → Service → Firestore. Providers handle caching and state; services handle Firestore reads/writes. Do not bypass this flow.
 
+> **⛔ HARD RULE — No Firebase in Controllers or Providers**
+> Controllers extract logic from widgets but are **not** a layer above services — they still delegate all Firebase operations to services via providers. Providers call services; they do not call Firebase directly.
+>
+> **Violations** (never do this in a controller or provider):
+> ```dart
+> // ❌ Direct Firebase in a controller
+> final uid = FirebaseAuth.instance.currentUser?.uid;
+> final snap = await FirebaseFirestore.instance.collection('users').get();
+> ```
+> **Correct pattern** — if the needed service method doesn't exist yet, **create it first**, then call it:
+> ```dart
+> // ✅ Add to the relevant service, then call via provider
+> // In FriendService:
+> Future<List<UserProfile>> getMutualFriends(String uid) async { ... }
+> // In controller:
+> final mutual = await _friendService.getMutualFriends(uid);
+> ```
+> See `.claude/rules/services.md` for the full rule and examples.
+
 **Key Directories**:
 - `models/` - Domain models with business logic (Game, Chat, UserProfile, VibeProfile)
 - `services/` - Firestore operations and business logic
@@ -405,7 +424,7 @@ When adding a new feature, the typical file set is:
 - **Don't use `setState` after `await` without a mounted check** — always add `if (!mounted) return;`
 - **Don't use empty `setState(() {})`** — use targeted state updates via Provider
 - **Don't forget to cancel `StreamSubscription`** — every subscription declared in a widget or provider must be cancelled in `dispose()`
-- **Don't put direct Firebase calls in controllers** — controllers extract logic from widgets but still delegate to services via providers
+- **Don't put direct Firebase calls in controllers or providers** — see the ⛔ HARD RULE block in the Architecture section above and `.claude/rules/services.md`
 - **`lib/custom_code/`** is excluded from analysis — avoid depending on it for new features
 - **`lib/app_state.dart`** is legacy — only holds SharedPreferences-backed cancelled game state; use domain providers instead
 

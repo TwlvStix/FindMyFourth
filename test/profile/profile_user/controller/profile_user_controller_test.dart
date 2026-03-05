@@ -1,9 +1,12 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 import 'package:firebase_auth_mocks/firebase_auth_mocks.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import 'package:find_my_fourth/backend/schema/users_record.dart';
 import 'package:find_my_fourth/models/vibe_profile.dart';
 import 'package:find_my_fourth/profile/profile_user/controller/profile_user_controller.dart';
+import 'package:find_my_fourth/services/friend_service.dart';
 import 'package:find_my_fourth/services/vibe_repository.dart';
 
 class _ThrowingVibeRepository extends VibeRepository {
@@ -27,6 +30,32 @@ class _StubVibeRepository extends VibeRepository {
         );
 }
 
+class _FakeFriendService extends FriendService {
+  _FakeFriendService(this._firestore) : super(firestore: _firestore);
+
+  final FakeFirebaseFirestore _firestore;
+
+  @override
+  Future<List<UsersRecord>> getMutualFriends({
+    required List<DocumentReference> myFriends,
+    required List<DocumentReference> theirFriends,
+  }) async {
+    final myUids = myFriends.map((r) => r.id).toSet();
+    final theirUids = theirFriends.map((r) => r.id).toSet();
+    final mutualUids = myUids.intersection(theirUids);
+
+    if (mutualUids.isEmpty) {
+      return <UsersRecord>[];
+    }
+
+    final futures = mutualUids.map(
+      (uid) => UsersRecord.getDocumentOnce(
+          _firestore.collection('users').doc(uid)),
+    );
+    return Future.wait(futures);
+  }
+}
+
 void main() {
   group('ProfileUserController.fetchMutualFriends', () {
     late FakeFirebaseFirestore firestore;
@@ -35,7 +64,7 @@ void main() {
     setUp(() {
       firestore = FakeFirebaseFirestore();
       controller = ProfileUserController(
-        firestore: firestore,
+        friendService: _FakeFriendService(firestore),
         vibeRepository: _StubVibeRepository(),
       );
     });
@@ -112,7 +141,7 @@ void main() {
       final snapshot = await firestore.collection('users').doc('them').get();
 
       final controller = ProfileUserController(
-        firestore: firestore,
+        friendService: _FakeFriendService(firestore),
         vibeRepository: VibeRepository(firestore: firestore, auth: auth),
       );
 
@@ -130,7 +159,7 @@ void main() {
       final snapshot = await firestore.collection('users').doc('them').get();
 
       final controller = ProfileUserController(
-        firestore: firestore,
+        friendService: _FakeFriendService(firestore),
         vibeRepository: _ThrowingVibeRepository(),
       );
 
@@ -148,7 +177,7 @@ void main() {
     test('returns false when loading is in progress', () async {
       final firestore = FakeFirebaseFirestore();
       final controller = ProfileUserController(
-        firestore: firestore,
+        friendService: _FakeFriendService(firestore),
         vibeRepository: _StubVibeRepository(),
       );
       await firestore

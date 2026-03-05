@@ -12,11 +12,17 @@ String usernameCreator(String username) {
   return username.replaceAll(' ', '').toLowerCase();
 }
 
-DocumentReference? returnDocRefFromUID(String? data) {
+/// Converts a user UID string to a DocumentReference.
+/// Accepts optional [firestore] parameter for testability.
+DocumentReference? returnDocRefFromUID(
+  String? data, {
+  FirebaseFirestore? firestore,
+}) {
   if (data == null) {
     return null;
   }
-  return FirebaseFirestore.instance.collection('users').doc(data);
+  final fs = firestore ?? FirebaseFirestore.instance;
+  return fs.collection('users').doc(data);
 }
 
 List<GamesRecord>? filterFunction(

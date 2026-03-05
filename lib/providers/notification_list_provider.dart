@@ -121,14 +121,19 @@ class NotificationListViewState {
 class NotificationListProvider extends ChangeNotifier {
   NotificationListProvider({
     NotificationCrudService? service,
+    FirebaseAuth? auth,
     Duration initialLoadTimeout = const Duration(seconds: 12),
   })  : _service = service ?? NotificationCrudService(),
+        _auth = auth,
         _initialLoadTimeout = initialLoadTimeout {
     _init();
   }
 
   final NotificationCrudService _service;
+  final FirebaseAuth? _auth;
   final Duration _initialLoadTimeout;
+
+  FirebaseAuth get _resolvedAuth => _auth ?? FirebaseAuth.instance;
   bool _disposed = false;
   Timer? _notifyTimer;
 
@@ -242,7 +247,7 @@ class NotificationListProvider extends ChangeNotifier {
   // ═══════════════════════════════════════════════════════════════════════════
 
   void _init() {
-    _authSubscription = FirebaseAuth.instance.authStateChanges().listen(
+    _authSubscription = _resolvedAuth.authStateChanges().listen(
       (user) {
         final newUid = user?.uid;
         if (newUid == _activeUid) return;

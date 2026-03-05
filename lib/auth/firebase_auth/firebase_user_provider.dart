@@ -40,7 +40,8 @@ class FindMyFourthFirebaseUser extends BaseAuthUser {
   bool get emailVerified {
     // Reloads the user when checking in order to get the most up to date
     // email verified status.
-    if (loggedIn && !user!.emailVerified) {
+    final currentUser = user;
+    if (currentUser != null && loggedIn && !currentUser.emailVerified) {
       refreshUser();
     }
     return user?.emailVerified ?? false;
@@ -66,7 +67,8 @@ Stream<BaseAuthUser> findMyFourthFirebaseUserStream() => FirebaseAuth.instance
             : const Stream<void>.empty())
         .map<BaseAuthUser>(
       (user) {
-        currentUser = FindMyFourthFirebaseUser(user);
-        return currentUser!;
+        final authUser = FindMyFourthFirebaseUser(user);
+        currentUser = authUser;
+        return authUser;
       },
     );

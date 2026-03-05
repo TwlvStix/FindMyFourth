@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:cloud_functions/cloud_functions.dart';
+import '/backend/schema/users_record.dart';
 import '/core/exceptions/app_exceptions.dart';
 import '/core/utils/app_log.dart';
 
@@ -232,6 +233,37 @@ class FriendService {
 
   // ── Query Methods ───────────────────────────────────────────────────────────
 
+  /// Fetches mutual friends between two users.
+  ///
+  /// Takes two lists of friend DocumentReferences (one for each user),
+  /// computes the intersection by UID, and fetches the resulting user records.
+  ///
+  /// Returns an empty list if there are no mutual friends or on error.
+  Future<List<UsersRecord>> getMutualFriends({
+    required List<DocumentReference> myFriends,
+    required List<DocumentReference> theirFriends,
+  }) async {
+    final myUids = myFriends.map((r) => r.id).toSet();
+    final theirUids = theirFriends.map((r) => r.id).toSet();
+    final mutualUids = myUids.intersection(theirUids);
+
+    if (mutualUids.isEmpty) {
+      return <UsersRecord>[];
+    }
+
+    try {
+      final futures = mutualUids.map(
+        (uid) => UsersRecord.getDocumentOnce(
+            _firestore.collection('users').doc(uid)),
+      );
+      final results = await Future.wait(futures);
+      return results;
+    } on FirebaseException catch (e) {
+      AppLog.d('❌ FriendService.getMutualFriends error: ${e.code} - ${e.message}');
+      return <UsersRecord>[];
+    }
+  }
+
   /// Check if two users are friends
   ///
   /// Returns true if userId2 appears in userId1's friends array.
@@ -258,6 +290,47 @@ class FriendService {
       });
     } on FirebaseException catch (e) {
       AppLog.d('❌ FriendService.areFriends error: ${e.code} - ${e.message}');
+      rethrow;
+    }
+  }
+
+  // ── Initialization Methods ─────────────────────────────────────────────────
+
+  /// Initializes friend_requests and friends fields for a user if they don't exist.
+  ///
+  /// This is a one-time operation typically called during app bootstrap
+  /// for existing users who may not have these fields initialized.
+  Future<void> initializeFriendFields(String userId) async {
+    try {
+      final userRef = _firestore.collection('users').doc(userId);
+      final snapshot = await userRef.get();
+
+      if (!snapshot.exists) {
+        AppLog.d('📖 FriendService: User document does not exist');
+        return;
+      }
+
+      final data = snapshot.data();
+      final updates = <String, dynamic>{};
+
+      if (data != null && !data.containsKey('friend_requests')) {
+        updates['friend_requests'] = [];
+        AppLog.d('📖 FriendService: Will initialize friend_requests');
+      }
+
+      if (data != null && !data.containsKey('friends')) {
+        updates['friends'] = [];
+        AppLog.d('📖 FriendService: Will initialize friends');
+      }
+
+      if (updates.isNotEmpty) {
+        await userRef.update(updates);
+        AppLog.d('✅ FriendService: Initialized fields: ${updates.keys.join(", ")}');
+      } else {
+        AppLog.d('📖 FriendService: All fields already initialized');
+      }
+    } on FirebaseException catch (e) {
+      AppLog.d('❌ FriendService.initializeFriendFields error: ${e.code} - ${e.message}');
       rethrow;
     }
   }

@@ -6,7 +6,7 @@ import '/core/utils/app_log.dart';
 /// This service follows the established pattern from ChatService and GameService:
 /// - Static methods only (no instance state)
 /// - Pure functions without UI dependencies
-/// - Firestore error handling with try-catch, debugPrint, and rethrow
+/// - Firestore error handling with try-catch, AppLog.d(), and rethrow
 /// - No business logic (vibe matching, filtering) - that stays in providers
 ///
 /// Usage:
