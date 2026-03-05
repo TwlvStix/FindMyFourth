@@ -436,10 +436,11 @@ class UserProvider extends ChangeNotifier {
 
   /// Update user profile data
   Future<void> updateProfile(Map<String, dynamic> data) async {
-    if (!isLoggedIn) return;
+    final userRef = currentUserReference;
+    if (userRef == null) return;
 
     try {
-      await currentUserReference!.update(data);
+      await userRef.update(data);
       // User data will automatically update via authenticatedUserStream
     } catch (e) {
       AppLog.d('❌ UserProvider.updateProfile error: $e');
@@ -449,17 +450,18 @@ class UserProvider extends ChangeNotifier {
 
   /// Add a friend (bidirectional - adds both users to each other's friends list)
   Future<void> addFriend(DocumentReference friendRef) async {
-    if (!isLoggedIn) return;
+    final userRef = currentUserReference;
+    if (userRef == null) return;
 
     try {
       // Add friend to current user's friends list
-      await currentUserReference!.update({
+      await userRef.update({
         'friends': FieldValue.arrayUnion([friendRef]),
       });
 
       // Add current user to friend's friends list (bidirectional)
       await friendRef.update({
-        'friends': FieldValue.arrayUnion([currentUserReference]),
+        'friends': FieldValue.arrayUnion([userRef]),
       });
 
       refreshFriends();

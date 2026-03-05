@@ -110,13 +110,14 @@ class _EditProfileWidgetState extends State<EditProfileWidget>
       return;
     }
 
-    if (currentUserReference == null) return;
+    final userRef = currentUserReference;
+    if (userRef == null) return;
 
     setState(() => _isSaving = true);
 
     try {
       final result = await _controller.saveProfile(
-        userRef: currentUserReference!,
+        userRef: userRef,
         userData: createUsersRecordData(
           photoUrl: currentUserPhoto,
           handicap: _handicapValue,
@@ -136,7 +137,7 @@ class _EditProfileWidgetState extends State<EditProfileWidget>
       switch (result) {
         case EditProfileSaveSuccess():
           currentUserDocument =
-              await UsersRecord.getDocumentOnce(currentUserReference!);
+              await UsersRecord.getDocumentOnce(userRef);
           if (!mounted) return;
           _showSnackbar('Profile updated successfully.');
           context.goMainProfile(transition: TransitionStandards.modalTransition);

@@ -107,10 +107,11 @@ class GamesListContent extends StatelessWidget {
           return true;
         }());
 
+        final userRef = currentUserReference;
         return StreamBuilder<UsersRecord?>(
-          stream: currentUserReference == null
+          stream: userRef == null
               ? null
-              : UsersRecord.getDocument(currentUserReference!),
+              : UsersRecord.getDocument(userRef),
           builder: (context, userSnapshot) {
             final friendIds = friendIdsFromRecord(userSnapshot.data);
             final userGender = userSnapshot.data?.gender;
@@ -118,14 +119,14 @@ class GamesListContent extends StatelessWidget {
             // Filter out gender-restricted games
             final eligibleGames = filterEligibleGames(
               visibleGames,
-              currentUserReference: currentUserReference,
+              currentUserReference: userRef,
               userGender: userGender,
             );
 
             // Partition into joinable and locked
             final partitioned = partitionJoinableAndLockedGames(
               eligibleGames,
-              currentUserReference: currentUserReference,
+              currentUserReference: userRef,
               friendIds: friendIds,
             );
 

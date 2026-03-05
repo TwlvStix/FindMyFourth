@@ -28,13 +28,14 @@ class AppNotificationBadgeButton extends StatelessWidget {
   Widget build(BuildContext context) {
     return AuthUserStreamWidget(
       builder: (context) {
-        if (currentUserReference == null) {
+        final userRef = currentUserReference;
+        if (userRef == null) {
           return const SizedBox.shrink();
         }
 
         return StreamBuilder<int>(
           stream: context.read<NotificationListProvider>().unreadCountStream(
-            currentUserReference!,
+            userRef,
           ),
           builder: (context, snapshot) {
             final unreadCount = snapshot.data ?? 0;

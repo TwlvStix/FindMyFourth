@@ -244,8 +244,9 @@ class _ChangePhotoWidgetState extends State<ChangePhotoWidget> {
                                     );
                                     return;
                                   }
-                                  await currentUserReference!
-                                      .update(createUsersRecordData(
+                                  final userRef = currentUserReference;
+                                  if (userRef == null) return;
+                                  await userRef.update(createUsersRecordData(
                                     photoUrl:
                                         uploadedFileUrlUploadDataJ3j,
                                   ));
