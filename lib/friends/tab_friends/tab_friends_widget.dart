@@ -36,52 +36,51 @@ class _TabFriendsWidgetState extends State<TabFriendsWidget> {
   void initState() {
     super.initState();
     _controller = TabFriendsController(initialSegment: widget.initialSegment);
-    _controller.addListener(_onControllerChanged);
-  }
-
-  void _onControllerChanged() {
-    if (mounted) setState(() {});
   }
 
   @override
   void dispose() {
-    _controller.removeListener(_onControllerChanged);
     _controller.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: () {
-        FocusScope.of(context).unfocus();
-        FocusManager.instance.primaryFocus?.unfocus();
-      },
-      child: Scaffold(
-        key: _scaffoldKey,
-        backgroundColor: AppColors.transparent,
-        body: FairwayBackgroundDark(
-          child: SafeArea(
-            top: true,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                _buildHeader(),
-                SizedBox(height: AppSpacing.md),
-                _buildSearchBar(),
-                SizedBox(height: AppSpacing.md),
-                _buildSegmentedControl(),
-                SizedBox(height: AppSpacing.md),
-                if (_controller.currentSegment != GolferSegment.discover) ...[
-                  _buildSectionLabel(),
-                  SizedBox(height: AppSpacing.sm),
-                ],
-                Expanded(child: _buildContent()),
-              ],
+    return ListenableBuilder(
+      listenable: _controller,
+      builder: (context, _) {
+        return GestureDetector(
+          onTap: () {
+            FocusScope.of(context).unfocus();
+            FocusManager.instance.primaryFocus?.unfocus();
+          },
+          child: Scaffold(
+            key: _scaffoldKey,
+            backgroundColor: AppColors.transparent,
+            body: FairwayBackgroundDark(
+              child: SafeArea(
+                top: true,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _buildHeader(),
+                    SizedBox(height: AppSpacing.md),
+                    _buildSearchBar(),
+                    SizedBox(height: AppSpacing.md),
+                    _buildSegmentedControl(),
+                    SizedBox(height: AppSpacing.md),
+                    if (_controller.currentSegment != GolferSegment.discover) ...[
+                      _buildSectionLabel(),
+                      SizedBox(height: AppSpacing.sm),
+                    ],
+                    Expanded(child: _buildContent()),
+                  ],
+                ),
+              ),
             ),
           ),
-        ),
-      ),
+        );
+      },
     );
   }
 
