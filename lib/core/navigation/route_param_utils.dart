@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 
 import '/utils/serialization_util.dart';
 import '/core/navigation/transition_standards.dart' show kTransitionInfoKey, TransitionInfo;
+import '/vibe/premium_vibe_page/premium_vibe_page_data.dart';
 
 /// Collects all parameters from path, query, and extra into a single map.
 Map<String, dynamic> allRouteParams(GoRouterState state) {
@@ -125,4 +126,16 @@ bool isEditModeFromState(GoRouterState state) {
     return extra['isEditMode'] as bool;
   }
   return false;
+}
+
+/// Extracts PremiumVibePageData from route state.
+///
+/// Returns null if extra is not of the expected type (e.g., deep links
+/// or malformed navigation).
+PremiumVibePageData? premiumVibeDataFromState(GoRouterState state) {
+  final extra = state.extra;
+  if (extra is PremiumVibePageData) {
+    return extra;
+  }
+  return null;
 }

@@ -25,7 +25,6 @@ import '/utils/app_util.dart';
 import '/utils/vibe_archetypes.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:provider/provider.dart';
 
 class EditVibesWidget extends StatefulWidget {
   const EditVibesWidget({super.key});
@@ -248,8 +247,6 @@ class _EditVibesWidgetState extends State<EditVibesWidget> {
 
   @override
   Widget build(BuildContext context) {
-    context.watch<AppState>();
-
     return Scaffold(
       key: scaffoldKey,
       extendBodyBehindAppBar: true,

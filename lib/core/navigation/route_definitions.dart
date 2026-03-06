@@ -35,7 +35,6 @@ import '/user_onboarding/cinematic_onboarding_widget.dart';
 import '/user_onboarding/progressive_onboarding_widget.dart';
 import '/user_onboarding/vibe_onboarding_widget.dart';
 import '/user_onboarding/vibe_archetype_reveal_widget.dart';
-import '/vibe/premium_vibe_page/premium_vibe_page_data.dart';
 import '/vibe/premium_vibe_page/premium_vibe_page_widget.dart';
 import '/debug/notification_routing_test_screen.dart';
 import '/debug/streak_debug_screen.dart';
@@ -401,15 +400,24 @@ List<GoRoute> buildRoutes(AppStateNotifier appStateNotifier) => [
         name: 'PremiumVibePage',
         path: '/premium-vibe/:userId',
         redirect: buildRedirect(appStateNotifier, requireAuth: true),
-        pageBuilder: (context, state) => buildPageWithTransition(
-          context,
-          state,
-          appStateNotifier,
-          PremiumVibePageWidget(
-            userId: state.pathParameters['userId']!,
-            data: state.extra as PremiumVibePageData,
-          ),
-        ),
+        pageBuilder: (context, state) {
+          final data = premiumVibeDataFromState(state);
+          return buildPageWithTransition(
+            context,
+            state,
+            appStateNotifier,
+            data == null
+                ? Scaffold(
+                    body: Center(
+                      child: Text('Unable to load vibe match data.'),
+                    ),
+                  )
+                : PremiumVibePageWidget(
+                    userId: state.pathParameters['userId']!,
+                    data: data,
+                  ),
+          );
+        },
       ),
       GoRoute(
         name: PlayerListWidget.routeName,
