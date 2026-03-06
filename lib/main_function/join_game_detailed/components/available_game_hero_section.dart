@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import '/backend/backend.dart';
 import '/core/design_tokens/colors.dart';
 import '/core/design_tokens/elevation.dart';
 import '/core/design_tokens/spacing.dart';
@@ -18,31 +17,27 @@ import '/utils/availability_text_helper.dart';
 import '/providers/profile_provider.dart';
 import 'package:provider/provider.dart';
 
-/// Premium hero section displaying unified game info: status, course, date/time, and Message Group
-class PremiumHeroSection extends StatefulWidget {
-  const PremiumHeroSection({
+/// Hero section for available games (join_game_detailed screen)
+/// Similar to PremiumHeroSection but without status badge and Message Group button.
+/// Host name is tappable to navigate to their profile.
+class AvailableGameHeroSection extends StatefulWidget {
+  const AvailableGameHeroSection({
     super.key,
     required this.game,
-    required this.currentUserRef,
-    required this.isOwner,
-    this.onEditPressed,
   });
 
   final Game game;
-  final DocumentReference? currentUserRef;
-  final bool isOwner;
-  final VoidCallback? onEditPressed;
 
   @override
-  State<PremiumHeroSection> createState() => _PremiumHeroSectionState();
+  State<AvailableGameHeroSection> createState() =>
+      _AvailableGameHeroSectionState();
 }
 
-class _PremiumHeroSectionState extends State<PremiumHeroSection> {
+class _AvailableGameHeroSectionState extends State<AvailableGameHeroSection> {
   bool _isDateExpanded = false;
 
   Game get game => widget.game;
   bool get isFlexible => game.isFlexible;
-  bool get isCancelled => game.isCancelledStatus;
   bool get hasCourse => game.coursePlay.isNotEmpty;
 
   int get spotsLeft =>
@@ -82,11 +77,6 @@ class _PremiumHeroSectionState extends State<PremiumHeroSection> {
           SizedBox(height: AppSpacing.md),
           // Date/time row
           _buildDateTimeRow(),
-          // Message Group button
-          if (game.chatRef != null) ...[
-            SizedBox(height: AppSpacing.md),
-            _buildMessageGroupButton(),
-          ],
         ],
       ),
     );
@@ -244,7 +234,7 @@ class _PremiumHeroSectionState extends State<PremiumHeroSection> {
                     ),
                   ),
                 ),
-                // FULL badge
+                // SPOTS badge
                 _buildSpotsBadge(),
                 SizedBox(width: AppSpacing.xs),
                 // Chevron
@@ -428,30 +418,8 @@ class _PremiumHeroSectionState extends State<PremiumHeroSection> {
               ),
             ),
           ),
-          // FULL badge
+          // SPOTS badge
           _buildSpotsBadge(),
-          // Edit button for owner
-          if (widget.isOwner && widget.onEditPressed != null) ...[
-            SizedBox(width: AppSpacing.xs),
-            GestureDetector(
-              onTap: widget.onEditPressed,
-              child: Container(
-                width: 32,
-                height: 32,
-                decoration: BoxDecoration(
-                  color: AppColors.navy.withValues(alpha: 0.5),
-                  borderRadius: BorderRadius.circular(AppBorderRadius.sm),
-                ),
-                child: Center(
-                  child: AppIcon(
-                    icon: AppPhosphorIcons.edit,
-                    color: AppColors.textSecondary,
-                    size: AppIconSize.button,
-                  ),
-                ),
-              ),
-            ),
-          ],
         ],
       ),
     );
@@ -483,67 +451,5 @@ class _PremiumHeroSectionState extends State<PremiumHeroSection> {
         ),
       ),
     );
-  }
-
-  Widget _buildMessageGroupButton() {
-    return GestureDetector(
-      onTap: _handleMessageGroupTap,
-      child: Container(
-        padding: EdgeInsets.symmetric(
-          horizontal: AppSpacing.lg,
-          vertical: AppSpacing.md,
-        ),
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            colors: [AppColors.green, AppColors.greenLight],
-          ),
-          borderRadius: BorderRadius.circular(AppBorderRadius.lg),
-          boxShadow: [AppElevation.glowGreen],
-        ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            AppIcon(
-              icon: AppPhosphorIcons.chat,
-              color: AppColors.pure,
-              size: AppIconSize.md,
-            ),
-            SizedBox(width: AppSpacing.sm),
-            Text(
-              'Message Group',
-              style: AppTypography.titleSmall.copyWith(
-                color: AppColors.textPrimary,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  void _handleMessageGroupTap() {
-    HapticFeedback.lightImpact();
-    final chatRef = game.chatRef;
-    if (chatRef == null) return;
-
-    if (widget.currentUserRef == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please sign in to open the chat.')),
-      );
-      return;
-    }
-
-    final isMember =
-        game.joinedPlayers.any((p) => p.id == widget.currentUserRef!.id);
-    if (!isMember) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Join the game to access the group chat.')),
-      );
-      return;
-    }
-
-    if (!mounted) return;
-    context.pushChatDetails(chatId: chatRef.id);
   }
 }

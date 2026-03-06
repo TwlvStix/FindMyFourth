@@ -91,8 +91,8 @@ void main() {
       ),
     );
 
-    expect(find.text('View Detailed Breakdown'), findsOneWidget);
-    await tester.tap(find.text('View Detailed Breakdown'));
+    expect(find.text('DETAILS'), findsOneWidget);
+    await tester.tap(find.text('DETAILS'));
     await tester.pump();
     expect(tapped, isTrue);
   });

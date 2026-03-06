@@ -389,7 +389,25 @@ class NotificationListProvider extends ChangeNotifier {
     _firstPageSubscription?.cancel();
     _firstPageSubscription = _service
         .streamNotifications(userRef: userRef, limit: _pageSize)
-        .listen(
+        .handleError(
+      (error, stackTrace) {
+        // Catch platform-level errors (EventChannel/MethodChannel) that may
+        // bypass the stream's onError callback. This prevents crashes like
+        // FlutterError in EventChannelExtension.receiveGuardedBroadcastStream.
+        if (_disposed || _activeUid != uid) return;
+
+        final errorType = error.runtimeType.toString();
+        ProductionLog.log(
+          '❌ NotificationListProvider: handleError caught $errorType: $error',
+        );
+
+        _initialLoadTimer?.cancel();
+        _initialLoadTimer = null;
+        _isInitialLoadInProgress = false;
+        _hasStreamError = true;
+        _scheduleNotify();
+      },
+    ).listen(
       (snapshot) {
         if (_disposed || _activeUid != uid) return;
 
@@ -410,7 +428,7 @@ class NotificationListProvider extends ChangeNotifier {
         final errorCode = e is FirebaseException ? e.code : 'unknown';
         final errorMsg = e is FirebaseException ? e.message : e.toString();
         ProductionLog.log(
-          '❌ NotificationListProvider: stream error code=$errorCode msg=$errorMsg',
+          '❌ NotificationListProvider: stream onError code=$errorCode msg=$errorMsg',
         );
 
         // Cancel timeout timer on error
@@ -421,6 +439,7 @@ class NotificationListProvider extends ChangeNotifier {
         _hasStreamError = true;
         _scheduleNotify();
       },
+      cancelOnError: false, // Keep stream alive for retry capability
     );
   }
 

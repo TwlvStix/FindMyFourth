@@ -214,7 +214,9 @@ class CreateProfileController {
             firstName: formData.firstName,
             lastName: formData.lastName,
             displayName: desiredUsername,
-            onboardingCompleted: true,
+            // onboardingCompleted is set at the END of vibe onboarding flow
+            // (in VibeArchetypeRevealWidget) to prevent onboarding bypass
+            onboardingCompleted: false,
             gender: formData.gender,
             dateOfBirth: formData.dateOfBirth,
             hometown: formData.hometownRef,

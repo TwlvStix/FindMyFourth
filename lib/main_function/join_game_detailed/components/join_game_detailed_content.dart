@@ -21,8 +21,7 @@ import '/models/join_request.dart';
 import '/providers/trust_provider.dart';
 import '/providers/user_provider.dart';
 import '/utils/app_util.dart';
-import 'available_game_stats_row.dart';
-import 'host_hero_card.dart';
+import 'available_game_hero_section.dart';
 import 'join_game_action_section.dart';
 
 /// Content for the join game detailed screen.
@@ -66,7 +65,7 @@ class JoinGameDetailedContent extends StatelessWidget {
           // Top padding for AppBar
           SizedBox(height: MediaQuery.of(context).padding.top + 22),
 
-          // Hero Section with host info
+          // Hero Section with host info, course, and date/time
           Padding(
             padding: EdgeInsets.fromLTRB(
               AppSpacing.md,
@@ -74,10 +73,7 @@ class JoinGameDetailedContent extends StatelessWidget {
               AppSpacing.md,
               AppSpacing.md,
             ),
-            child: HostHeroCard(
-              game: game,
-              hasAnimated: hasAnimated,
-            ),
+            child: AvailableGameHeroSection(game: game),
           )
               .animate(target: hasAnimated ? 1 : 0)
               .fadeIn(
@@ -100,21 +96,11 @@ class JoinGameDetailedContent extends StatelessWidget {
                 curve: MotionTokens.curveEnter,
               ),
 
-          // Quick Stats Row
-          buildAnimatedSection(
-            sectionIndex: 0,
-            hasAnimated: hasAnimated,
-            child: Padding(
-              padding: EdgeInsets.symmetric(horizontal: AppSpacing.md),
-              child: AvailableGameStatsRow(game: game),
-            ),
-          ),
-
           SizedBox(height: AppSpacing.md),
 
           // Group Vibe Summary
           buildAnimatedSection(
-            sectionIndex: 1,
+            sectionIndex: 0,
             hasAnimated: hasAnimated,
             child: Padding(
               padding: EdgeInsets.symmetric(horizontal: AppSpacing.md),
@@ -132,7 +118,7 @@ class JoinGameDetailedContent extends StatelessWidget {
 
           // Game Details Section
           buildAnimatedSection(
-            sectionIndex: 2,
+            sectionIndex: 1,
             hasAnimated: hasAnimated,
             child: Padding(
               padding: EdgeInsets.symmetric(horizontal: AppSpacing.md),

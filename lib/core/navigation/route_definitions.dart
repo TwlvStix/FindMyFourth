@@ -44,6 +44,7 @@ import '/core/navigation/app_router.dart'
     show AppStateNotifier, buildRedirect, buildPageWithTransition;
 import '/core/navigation/nav_bar_page.dart';
 import '/core/navigation/route_param_utils.dart';
+import '/providers/user_provider.dart';
 
 /// Builds the complete list of routes for the app router.
 ///
@@ -53,7 +54,24 @@ List<GoRoute> buildRoutes(AppStateNotifier appStateNotifier) => [
       GoRoute(
         name: '_initialize',
         path: '/',
-        redirect: buildRedirect(appStateNotifier),
+        redirect: (context, state) {
+          // Standard auth redirect
+          final baseRedirect = buildRedirect(appStateNotifier);
+          final authResult = baseRedirect(context, state);
+          if (authResult != null) return authResult;
+
+          // Onboarding guard: only check if logged in and user data is ready
+          if (appStateNotifier.loggedIn) {
+            final userProvider = context.read<UserProvider>();
+            // Only redirect if we KNOW onboarding is incomplete
+            // (isAuthReady means user doc has loaded)
+            if (userProvider.isAuthReady && !userProvider.onboardingCompleted) {
+              return ProgressiveOnboardingWidget.routePath;
+            }
+          }
+
+          return null;
+        },
         pageBuilder: (context, state) => buildPageWithTransition(
           context,
           state,
@@ -64,7 +82,20 @@ List<GoRoute> buildRoutes(AppStateNotifier appStateNotifier) => [
       GoRoute(
         name: GamesListWidget.routeName,
         path: GamesListWidget.routePath,
-        redirect: buildRedirect(appStateNotifier, requireAuth: true),
+        redirect: (context, state) {
+          // Standard auth redirect
+          final baseRedirect = buildRedirect(appStateNotifier, requireAuth: true);
+          final authResult = baseRedirect(context, state);
+          if (authResult != null) return authResult;
+
+          // Onboarding guard
+          final userProvider = context.read<UserProvider>();
+          if (userProvider.isAuthReady && !userProvider.onboardingCompleted) {
+            return ProgressiveOnboardingWidget.routePath;
+          }
+
+          return null;
+        },
         pageBuilder: (context, state) => buildPageWithTransition(
           context,
           state,

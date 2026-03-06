@@ -1,3 +1,4 @@
+import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import '/core/design_tokens/colors.dart';
 import '/core/design_tokens/spacing.dart';
@@ -8,7 +9,7 @@ import '/core/design_tokens/app_phosphor_icons.dart';
 import '/core/widgets/app_icon.dart';
 import '/services/vibe_group_matcher.dart';
 
-/// Group vibe match visualization displaying overall group compatibility score
+/// Group vibe match visualization with ring progress indicator
 class GroupVibeSummary extends StatelessWidget {
   const GroupVibeSummary({
     super.key,
@@ -44,16 +45,32 @@ class GroupVibeSummary extends StatelessWidget {
         children: [
           Row(
             children: [
-              AppIcon(
-                icon: AppPhosphorIcons.brain,
-                color: AppColors.textSecondary,
-                size: AppIconSize.section,
-              ),
-              SizedBox(width: AppSpacing.sm),
+              // Vibe ring with brain icon
+              _buildVibeRing(groupScore, hasResult),
+              SizedBox(width: AppSpacing.md),
+              // Score and labels
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
+                    // Large percentage
+                    hasResult
+                        ? Text(
+                            '$groupScore%',
+                            style: AppTypography.headlineMedium.copyWith(
+                              color: _getScoreColor(groupScore),
+                              fontWeight: FontWeight.w700,
+                            ),
+                          )
+                        : SizedBox(
+                            width: 24,
+                            height: 24,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              color: AppColors.textSecondary,
+                            ),
+                          ),
+                    SizedBox(height: AppSpacing.xxs),
                     Text(
                       'Group Vibe Match',
                       style: AppTypography.titleSmall.copyWith(
@@ -70,117 +87,190 @@ class GroupVibeSummary extends StatelessWidget {
                   ],
                 ),
               ),
-              // Score badge - analytical, not emotional
-              Container(
-                padding: EdgeInsets.symmetric(
-                  horizontal: AppSpacing.md,
-                  vertical: AppSpacing.xs,
-                ),
-                decoration: BoxDecoration(
-                  color: hasResult
-                      ? (groupScore >= 80
-                          ? AppColors.green.withValues(alpha: 0.15)
-                          : AppColors.navyLight.withValues(alpha: 0.3))
-                      : AppColors.glassSurface,
-                  borderRadius: BorderRadius.circular(AppBorderRadius.xl),
-                ),
-                child: hasResult
-                    ? Text(
-                        '$groupScore%',
-                        style: AppTypography.titleSmall.copyWith(
-                          color: groupScore >= 80
-                              ? AppColors.green
-                              : groupScore >= 40
-                                  ? AppColors.textPrimary
-                                  : AppColors.textSecondary,
-                          fontWeight: FontWeight.w700,
+              // DETAILS button
+              if (hasResult)
+                GestureDetector(
+                  onTap: onViewBreakdown,
+                  child: Container(
+                    padding: EdgeInsets.symmetric(
+                      horizontal: AppSpacing.md,
+                      vertical: AppSpacing.sm,
+                    ),
+                    decoration: BoxDecoration(
+                      color: AppColors.navyLight.withValues(alpha: 0.3),
+                      borderRadius: BorderRadius.circular(AppBorderRadius.md),
+                      border: Border.all(color: AppColors.glassBorder),
+                    ),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        AppIcon(
+                          icon: AppPhosphorIcons.insights,
+                          color: AppColors.gold,
+                          size: AppIconSize.md,
                         ),
-                      )
-                    : SizedBox(
-                        width: 16,
-                        height: 16,
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2,
-                          color: AppColors.textSecondary,
+                        SizedBox(height: AppSpacing.xxs),
+                        Text(
+                          'DETAILS',
+                          style: AppTypography.labelMicro.copyWith(
+                            color: AppColors.gold,
+                            fontWeight: FontWeight.w600,
+                            letterSpacing: 0.5,
+                          ),
                         ),
-                      ),
-              ),
-            ],
-          ),
-          if (hasResult) ...[
-            // Cohesion warning banner
-            if (result.hasCohesionIssue && result.cohesionWarning != null) ...[
-              SizedBox(height: AppSpacing.sm),
-              Container(
-                padding: EdgeInsets.all(AppSpacing.sm),
-                decoration: BoxDecoration(
-                  color: AppColors.error.withValues(alpha: 0.2),
-                  borderRadius: BorderRadius.circular(AppBorderRadius.md),
-                  border: Border.all(
-                    color: AppColors.error.withValues(alpha: 0.4),
+                      ],
+                    ),
                   ),
                 ),
-                child: Row(
-                  children: [
-                    AppIcon(
-                      icon: AppPhosphorIcons.info,
-                      color: AppColors.pure,
-                      size: AppIconSize.button,
-                    ),
-                    SizedBox(width: AppSpacing.xs),
-                    Expanded(
-                      child: Text(
-                        result.cohesionWarning!,
-                        style: AppTypography.bodySmall.copyWith(
-                          color: AppColors.textPrimary,
-                        ),
-                      ),
-                    ),
-                  ],
+            ],
+          ),
+          // Cohesion warning banner
+          if (hasResult &&
+              result.hasCohesionIssue &&
+              result.cohesionWarning != null) ...[
+            SizedBox(height: AppSpacing.sm),
+            Container(
+              padding: EdgeInsets.all(AppSpacing.sm),
+              decoration: BoxDecoration(
+                color: AppColors.error.withValues(alpha: 0.2),
+                borderRadius: BorderRadius.circular(AppBorderRadius.md),
+                border: Border.all(
+                  color: AppColors.error.withValues(alpha: 0.4),
                 ),
               ),
-            ],
-            SizedBox(height: AppSpacing.md),
-            GestureDetector(
-              onTap: onViewBreakdown,
-              child: Container(
-                padding: EdgeInsets.symmetric(
-                  horizontal: AppSpacing.md,
-                  vertical: AppSpacing.sm,
-                ),
-                decoration: BoxDecoration(
-                  color: AppColors.glassSurface,
-                  borderRadius: BorderRadius.circular(AppBorderRadius.md),
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    AppIcon(
-                      icon: AppPhosphorIcons.insights,
-                      color: AppColors.textSecondary,
-                      size: AppIconSize.button,
-                    ),
-                    SizedBox(width: AppSpacing.xs),
-                    Text(
-                      'View Detailed Breakdown',
-                      style: AppTypography.labelMedium.copyWith(
+              child: Row(
+                children: [
+                  AppIcon(
+                    icon: AppPhosphorIcons.info,
+                    color: AppColors.pure,
+                    size: AppIconSize.button,
+                  ),
+                  SizedBox(width: AppSpacing.xs),
+                  Expanded(
+                    child: Text(
+                      result.cohesionWarning!,
+                      style: AppTypography.bodySmall.copyWith(
                         color: AppColors.textPrimary,
-                        fontWeight: FontWeight.w500,
                       ),
                     ),
-                    SizedBox(width: AppSpacing.xs),
-                    AppIcon(
-                      icon: AppPhosphorIcons.chevronRight,
-                      color: AppColors.textSecondary,
-                      size: AppIconSize.button,
-                    ),
-                  ],
-                ),
+                  ),
+                ],
               ),
             ),
           ],
         ],
       ),
     );
+  }
+
+  Widget _buildVibeRing(int score, bool hasResult) {
+    const ringSize = 72.0;
+    const strokeWidth = 6.0;
+
+    return SizedBox(
+      width: ringSize,
+      height: ringSize,
+      child: Stack(
+        alignment: Alignment.center,
+        children: [
+          // Background ring
+          CustomPaint(
+            size: const Size(ringSize, ringSize),
+            painter: _VibeRingPainter(
+              progress: 1.0,
+              color: AppColors.navyLight.withValues(alpha: 0.3),
+              strokeWidth: strokeWidth,
+            ),
+          ),
+          // Progress ring
+          if (hasResult)
+            CustomPaint(
+              size: const Size(ringSize, ringSize),
+              painter: _VibeRingPainter(
+                progress: score / 100,
+                color: _getScoreColor(score),
+                strokeWidth: strokeWidth,
+              ),
+            ),
+          // Brain icon in center
+          Container(
+            width: ringSize - strokeWidth * 2 - 8,
+            height: ringSize - strokeWidth * 2 - 8,
+            decoration: BoxDecoration(
+              color: AppColors.navy.withValues(alpha: 0.5),
+              shape: BoxShape.circle,
+            ),
+            child: Center(
+              child: hasResult
+                  ? Image.asset(
+                      'assets/images/brain_icon.png',
+                      width: 28,
+                      height: 28,
+                      errorBuilder: (context, error, stackTrace) => AppIcon(
+                        icon: AppPhosphorIcons.brain,
+                        color: AppColors.textSecondary,
+                        size: AppIconSize.md,
+                      ),
+                    )
+                  : SizedBox(
+                      width: 20,
+                      height: 20,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        color: AppColors.textMuted,
+                      ),
+                    ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Color _getScoreColor(int score) {
+    if (score >= 80) return AppColors.green;
+    if (score >= 40) return AppColors.textPrimary;
+    return AppColors.textSecondary;
+  }
+}
+
+class _VibeRingPainter extends CustomPainter {
+  _VibeRingPainter({
+    required this.progress,
+    required this.color,
+    required this.strokeWidth,
+  });
+
+  final double progress;
+  final Color color;
+  final double strokeWidth;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final center = Offset(size.width / 2, size.height / 2);
+    final radius = (size.width - strokeWidth) / 2;
+
+    final paint = Paint()
+      ..color = color
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = strokeWidth
+      ..strokeCap = StrokeCap.round;
+
+    // Draw arc starting from top (-90 degrees)
+    const startAngle = -math.pi / 2;
+    final sweepAngle = 2 * math.pi * progress;
+
+    canvas.drawArc(
+      Rect.fromCircle(center: center, radius: radius),
+      startAngle,
+      sweepAngle,
+      false,
+      paint,
+    );
+  }
+
+  @override
+  bool shouldRepaint(covariant _VibeRingPainter oldDelegate) {
+    return oldDelegate.progress != progress || oldDelegate.color != color;
   }
 }

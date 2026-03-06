@@ -8,6 +8,7 @@ import 'package:go_router/go_router.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
 
+import '/auth/firebase_auth/auth_util.dart' show currentUserReference;
 import '/core/design_tokens/colors.dart';
 import '/core/design_tokens/spacing.dart';
 import '/core/design_tokens/typography.dart';
@@ -178,7 +179,21 @@ class _VibeArchetypeRevealWidgetState extends State<VibeArchetypeRevealWidget>
     return VibeArchetypes.everyman.withScore(100);
   }
 
-  void _handleContinue() {
+  Future<void> _handleContinue() async {
+    // Mark onboarding as complete before navigating
+    // This is the final step of the onboarding flow - user has completed
+    // profile creation AND vibe selection
+    try {
+      await currentUserReference?.update({'onboarding_completed': true});
+      AppLog.d('✅ VibeArchetypeReveal: onboarding_completed set to true');
+    } catch (e) {
+      AppLog.d('❌ VibeArchetypeReveal: Failed to set onboarding_completed: $e');
+      // Continue anyway - the user shouldn't be stuck if this fails
+      // They'll just get redirected back to onboarding on next app launch
+    }
+
+    if (!mounted) return;
+
     final state = GoRouterState.of(context);
     final nextRoute = state.uri.queryParameters['next'];
 

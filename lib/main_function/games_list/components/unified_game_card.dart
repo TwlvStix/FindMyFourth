@@ -3,11 +3,13 @@ import 'package:flutter/material.dart';
 import '/core/design_tokens/border_radius.dart';
 import '/core/design_tokens/colors.dart';
 import '/core/design_tokens/elevation.dart';
+import '/core/design_tokens/icon_size.dart';
 import '/core/design_tokens/spacing.dart';
 import '/core/design_tokens/typography.dart';
 import '/core/motion/motion_tokens.dart';
 import '/core/widgets/app_icon.dart';
 import '/core/design_tokens/app_phosphor_icons.dart';
+import '/auth/firebase_auth/auth_util.dart';
 import '/main_function/games_list/components/game_card_avatar_stack.dart';
 import '/main_function/games_list/components/game_card_detail_pills.dart';
 import '/main_function/games_list/components/game_card_spots_badge.dart';
@@ -27,6 +29,7 @@ class UnifiedGameCard extends StatefulWidget {
     required this.currentUserReference,
     this.vibeScore,
     this.isLocked = false,
+    this.showStatusBadge = false,
     this.animationIndex = 0,
     this.onTap,
   });
@@ -39,6 +42,10 @@ class UnifiedGameCard extends StatefulWidget {
 
   /// Whether this is a friends-only locked game
   final bool isLocked;
+
+  /// Whether to show status badge (Owner/Joined/Cancelled/Played).
+  /// Used on My Games page to indicate user's relationship to the game.
+  final bool showStatusBadge;
 
   /// Index for staggered entrance animation
   final int animationIndex;
@@ -112,6 +119,11 @@ class _UnifiedGameCardState extends State<UnifiedGameCard>
     final currentUserReference = widget.currentUserReference;
     final isFlexible = game.isFlexible;
     final isCancelled = game.status == 'cancelled';
+    final isExpired = game.date != null &&
+        game.date!.isBefore(getCurrentTimestamp) &&
+        !isCancelled;
+    final isOwner =
+        currentUserUid.isNotEmpty && game.userRef?.id == currentUserUid;
     final spotsLeft = game.maxPlayers - game.playerCount;
     final isUserGame = currentUserReference != null &&
         (game.userRef == currentUserReference ||
@@ -173,8 +185,13 @@ class _UnifiedGameCardState extends State<UnifiedGameCard>
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      // Header row with vibe ring
-                      _buildHeaderRow(isFlexible: isFlexible),
+                      // Header row with vibe ring and optional status badge
+                      _buildHeaderRow(
+                        isFlexible: isFlexible,
+                        isCancelled: isCancelled,
+                        isExpired: isExpired,
+                        isOwner: isOwner,
+                      ),
                       SizedBox(height: AppSpacing.sm),
                       // Detail pills
                       GameCardDetailPills(game: game),
@@ -192,7 +209,12 @@ class _UnifiedGameCardState extends State<UnifiedGameCard>
     );
   }
 
-  Widget _buildHeaderRow({required bool isFlexible}) {
+  Widget _buildHeaderRow({
+    required bool isFlexible,
+    required bool isCancelled,
+    required bool isExpired,
+    required bool isOwner,
+  }) {
     final game = widget.game;
 
     return Row(
@@ -231,23 +253,34 @@ class _UnifiedGameCardState extends State<UnifiedGameCard>
                     ),
                   ),
                 ),
-              // Course name
-              Text(
-                game.coursePlay,
-                style: AppTypography.titleSmall.copyWith(
-                  color: AppColors.pure,
-                  fontWeight: FontWeight.w700,
+              // Course name (only if set)
+              if (game.coursePlay.isNotEmpty) ...[
+                Text(
+                  game.coursePlay,
+                  style: AppTypography.titleSmall.copyWith(
+                    color: AppColors.pure,
+                    fontWeight: FontWeight.w700,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                 ),
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-              ),
-              SizedBox(height: 4),
+                SizedBox(height: 4),
+              ],
               // Date/time/distance row
               _buildDateTimeRow(),
             ],
           ),
         ),
-        // Right side: vibe ring
+        // Right side: status badge and/or vibe ring
+        if (widget.showStatusBadge)
+          Padding(
+            padding: EdgeInsets.only(left: AppSpacing.sm),
+            child: _buildStatusBadge(
+              isCancelled: isCancelled,
+              isExpired: isExpired,
+              isOwner: isOwner,
+            ),
+          ),
         if (widget.vibeScore != null)
           Padding(
             padding: EdgeInsets.only(left: AppSpacing.sm),
@@ -257,6 +290,116 @@ class _UnifiedGameCardState extends State<UnifiedGameCard>
             ),
           ),
       ],
+    );
+  }
+
+  Widget _buildStatusBadge({
+    required bool isCancelled,
+    required bool isExpired,
+    required bool isOwner,
+  }) {
+    if (isCancelled) {
+      return Container(
+        padding: EdgeInsets.symmetric(
+          horizontal: AppSpacing.sm,
+          vertical: AppSpacing.xxs,
+        ),
+        decoration: BoxDecoration(
+          color: AppColors.error.withValues(alpha: 0.2),
+          borderRadius: BorderRadius.circular(AppBorderRadius.md),
+          border: Border.all(
+            color: AppColors.error.withValues(alpha: 0.3),
+          ),
+        ),
+        child: Text(
+          'Cancelled',
+          style: AppTypography.labelSmall.copyWith(
+            color: AppColors.error,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+      );
+    }
+
+    if (isExpired) {
+      return Container(
+        padding: EdgeInsets.symmetric(
+          horizontal: AppSpacing.sm,
+          vertical: AppSpacing.xxs,
+        ),
+        decoration: BoxDecoration(
+          color: AppColors.warning.withValues(alpha: 0.2),
+          borderRadius: BorderRadius.circular(AppBorderRadius.md),
+        ),
+        child: Text(
+          'Played',
+          style: AppTypography.labelSmall.copyWith(
+            color: AppColors.warning,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+      );
+    }
+
+    if (isOwner) {
+      return Container(
+        padding: EdgeInsets.symmetric(
+          horizontal: AppSpacing.sm,
+          vertical: AppSpacing.xxs,
+        ),
+        decoration: BoxDecoration(
+          color: AppColors.green.withValues(alpha: 0.9),
+          borderRadius: BorderRadius.circular(AppBorderRadius.md),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            AppIcon(
+              icon: AppPhosphorIcons.owner,
+              color: AppColors.pure,
+              size: AppIconSize.xs,
+            ),
+            SizedBox(width: 4),
+            Text(
+              'Owner',
+              style: AppTypography.labelSmall.copyWith(
+                color: AppColors.pure,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
+    // Default: Joined
+    return Container(
+      padding: EdgeInsets.symmetric(
+        horizontal: AppSpacing.sm,
+        vertical: AppSpacing.xxs,
+      ),
+      decoration: BoxDecoration(
+        color: AppColors.stone.withValues(alpha: 0.85),
+        borderRadius: BorderRadius.circular(AppBorderRadius.md),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          AppIcon(
+            icon: AppPhosphorIcons.joined,
+            color: AppColors.pure,
+            size: AppIconSize.xs,
+          ),
+          SizedBox(width: 4),
+          Text(
+            'Joined',
+            style: AppTypography.labelSmall.copyWith(
+              color: AppColors.textPrimary,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ],
+      ),
     );
   }
 
