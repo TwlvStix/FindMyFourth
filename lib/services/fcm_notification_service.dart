@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
@@ -8,7 +9,9 @@ import 'package:flutter/widgets.dart';
 import '/backend/push_notifications/push_notifications_handler.dart';
 import '/core/navigation/app_router.dart';
 import '/core/utils/app_log.dart';
+import '/models/notification_receipt_event.dart';
 import '/services/local_notifications_service.dart';
+import '/services/notification_audit_service.dart';
 import '/services/notification_service.dart';
 
 /// FCM notification service for handling foreground push notifications.
@@ -98,6 +101,19 @@ class FcmNotificationService implements NotificationService {
     AppLog.d('🔔 [DIAG-FG] data keys: ${message.data.keys.toList()}');
     AppLog.d(
         '🔔 FcmNotificationService: Received foreground message id=${message.messageId}');
+
+    // Audit: Record foreground push received
+    final uid = FirebaseAuth.instance.currentUser?.uid;
+    if (uid != null) {
+      NotificationAuditService.instance.record(
+        NotificationReceiptEvent.foregroundReceived(
+          uid: uid,
+          messageId: message.messageId,
+          notificationType: message.data['type'] as String?,
+          payloadSummary: summarizePayload(message.data),
+        ),
+      );
+    }
 
     final notification = message.notification;
     if (notification == null) {
@@ -190,6 +206,18 @@ class FcmNotificationService implements NotificationService {
       final data = jsonDecode(payload) as Map<String, dynamic>;
       final normalizedData = normalizeNotificationPayload(data);
       final messageId = normalizedData['_messageId'] as String?;
+
+      // Audit: Record local notification tap
+      final uid = FirebaseAuth.instance.currentUser?.uid;
+      if (uid != null) {
+        NotificationAuditService.instance.record(
+          NotificationReceiptEvent.foregroundLocalTap(
+            uid: uid,
+            messageId: messageId,
+            notificationType: normalizedData['type'] as String?,
+          ),
+        );
+      }
 
       // Create testable notification for tapped stream
       final testableNotification = TestableNotification(

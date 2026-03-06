@@ -10,6 +10,9 @@ import 'package:flutter/scheduler.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import '/core/widgets/app_premium_dialog.dart';
+import '/models/notification_receipt_event.dart';
+import '/notifications/components/player_added_bottom_sheet.dart';
+import '/services/notification_audit_service.dart';
 
 /// TTL-based deduplication cache with 5-minute expiry.
 /// Prevents duplicate navigation while allowing legitimate taps to same destination.
@@ -92,6 +95,45 @@ Future<void> handleNotificationNavigation(
 
   // Normalize keys BEFORE routing
   final data = normalizeNotificationPayload(rawData);
+
+  // Intercept player_added_by_host to show bottom sheet
+  final type = data['type'];
+  if (type == 'player_added_by_host') {
+    final gameId = data['game_id'] ?? data['gameId'];
+    final hostName = data['host_name'] ?? data['hostName'] ?? 'A host';
+    final courseName = data['course_name'] ?? data['courseName'] ?? 'a course';
+    final gameDate = data['game_date'] ?? data['gameDate'] ?? 'an upcoming game';
+
+    if (gameId is String && gameId.isNotEmpty && context.mounted) {
+      await showPlayerAddedBottomSheet(
+        context: context,
+        gameId: gameId,
+        hostName: hostName.toString(),
+        courseName: courseName.toString(),
+        gameDate: gameDate.toString(),
+        onGotIt: () {
+          // Navigate to game details after acknowledging
+          final navContext = appNavigatorKey.currentContext;
+          if (navContext != null && navContext.mounted) {
+            navContext.pushNamed(
+              'GameJoinedDetailed',
+              extra: {
+                'gameRef': FirebaseFirestore.instance.doc('games/$gameId'),
+              },
+            );
+          }
+        },
+        onDeclined: () {
+          // Navigate to games list after declining
+          final navContext = appNavigatorKey.currentContext;
+          if (navContext != null && navContext.mounted) {
+            navContext.pushNamed('GamesList');
+          }
+        },
+      );
+      return; // Exit after handling bottom sheet
+    }
+  }
 
   final resolvedRoute = _resolveRouteFromType(data);
   final rawPageName = data['initialPageName'];
@@ -253,6 +295,27 @@ _PushRoute? _resolveRouteFromType(Map<String, dynamic> data) {
       parameterData: {},
     );
   }
+  // Host-added player notification - route to game details
+  // The bottom sheet is shown via handleNotificationNavigation intercept
+  if (type == 'player_added_by_host') {
+    final gameId = data['game_id'] ?? data['gameId'];
+    if (gameId is String && gameId.isNotEmpty) {
+      return _PushRoute(
+        pageName: 'GameJoinedDetailed',
+        parameterData: {'gameRef': 'games/$gameId'},
+      );
+    }
+  }
+  // Host notification when player declines - route to their game
+  if (type == 'player_declined_spot') {
+    final gameId = data['game_id'] ?? data['gameId'];
+    if (gameId is String && gameId.isNotEmpty) {
+      return _PushRoute(
+        pageName: 'GameJoinedDetailed',
+        parameterData: {'gameRef': 'games/$gameId'},
+      );
+    }
+  }
   return null;
 }
 
@@ -370,6 +433,19 @@ class _PushNotificationsHandlerState extends State<PushNotificationsHandler> {
 
     final notification = await FirebaseMessaging.instance.getInitialMessage();
     if (notification != null) {
+      // Audit: Record cold start push opened
+      final uid = FirebaseAuth.instance.currentUser?.uid;
+      if (uid != null) {
+        NotificationAuditService.instance.record(
+          NotificationReceiptEvent.coldOpened(
+            uid: uid,
+            messageId: notification.messageId,
+            notificationType: notification.data['type'] as String?,
+            payloadSummary: summarizePayload(notification.data),
+          ),
+        );
+      }
+
       // Use global context for cold start - widget context may not be ready
       final navContext = appNavigatorKey.currentContext;
       if (navContext != null && navContext.mounted) {
@@ -396,6 +472,19 @@ class _PushNotificationsHandlerState extends State<PushNotificationsHandler> {
   Future<void> _handlePushNotification(RemoteMessage message) async {
     AppLog.d('🔔 [DIAG-BG] _handlePushNotification - messageId=${message.messageId}');
     AppLog.d('🔔 [DIAG-BG] data: ${message.data}');
+
+    // Audit: Record background push opened
+    final uid = FirebaseAuth.instance.currentUser?.uid;
+    if (uid != null) {
+      NotificationAuditService.instance.record(
+        NotificationReceiptEvent.backgroundOpened(
+          uid: uid,
+          messageId: message.messageId,
+          notificationType: message.data['type'] as String?,
+          payloadSummary: summarizePayload(message.data),
+        ),
+      );
+    }
 
     // Use global navigator context instead of potentially stale widget context.
     // This widget is wrapped around every route page, so the original instance

@@ -48,7 +48,7 @@ class GameJoinedDashboardOverviewSection extends StatelessWidget {
       children: [
         // Premium Hero Section (now includes date/time and Message Group)
         Padding(
-          padding: EdgeInsets.all(AppSpacing.md),
+          padding: EdgeInsets.fromLTRB(AppSpacing.md, 0, AppSpacing.md, AppSpacing.md),
           child: PremiumHeroSection(
             game: game,
             currentUserRef: currentUserRef,

@@ -1,4 +1,3 @@
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
@@ -14,6 +13,7 @@ import '/core/design_tokens/icon_size.dart';
 import '/core/design_tokens/app_phosphor_icons.dart';
 import '/core/widgets/app_empty_state_premium.dart';
 import '/core/widgets/app_icon.dart';
+import '/core/widgets/chat_group_avatar.dart';
 import '/core/widgets/fairway_background.dart';
 import '/utils/app_util.dart';
 import '/backend/backend.dart';
@@ -56,7 +56,7 @@ class _ChatWidgetState extends State<ChatWidget> {
   Widget _buildChatRow({
     required String chatId,
     required String displayName,
-    required String photoUrl,
+    required List<ChatMemberInfo> members,
     required String lastMessage,
     required DateTime? lastMessageAt,
     required int unreadCount,
@@ -84,48 +84,15 @@ class _ChatWidgetState extends State<ChatWidget> {
         padding: EdgeInsets.all(AppSpacing.md),
         child: Row(
           children: [
-            // Avatar with CachedNetworkImage
-            Container(
-              width: 50,
-              height: 50,
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [
-                    AppColors.navyLight,
-                    AppColors.navy,
-                  ],
-                ),
-                borderRadius: BorderRadius.circular(AppBorderRadius.lg),
-                border: Border.all(
-                  color: AppColors.glassBorder,
-                  width: 2,
-                ),
-              ),
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(AppBorderRadius.md),
-                child: photoUrl.isNotEmpty
-                    ? CachedNetworkImage(
-                        imageUrl: photoUrl,
-                        width: 50,
-                        height: 50,
-                        fit: BoxFit.cover,
-                        placeholder: (context, url) => AppIcon(
-                          icon: AppPhosphorIcons.profile,
-                          color: AppColors.textPrimary,
-                          size: AppIconSize.md,
-                        ),
-                        errorWidget: (context, url, error) => AppIcon(
-                          icon: AppPhosphorIcons.profile,
-                          color: AppColors.textPrimary,
-                          size: AppIconSize.md,
-                        ),
-                      )
-                    : AppIcon(
-                        icon: AppPhosphorIcons.profile,
-                        color: AppColors.textPrimary,
-                        size: AppIconSize.md,
-                      ),
-              ),
+            // Group avatar with member initials
+            ChatGroupAvatar(
+              members: members
+                  .map((m) => GroupAvatarMember(
+                        name: m.name,
+                        photoUrl: m.photoUrl,
+                      ))
+                  .toList(),
+              size: 50,
             ),
             SizedBox(width: AppSpacing.sm),
             // Content
@@ -443,7 +410,7 @@ class _ChatWidgetState extends State<ChatWidget> {
               child: _buildChatRow(
                 chatId: row.chatId,
                 displayName: row.displayName,
-                photoUrl: row.photoUrl,
+                members: row.members,
                 lastMessage: row.lastMessage,
                 lastMessageAt: row.lastMessageAt,
                 unreadCount: row.unreadCount,

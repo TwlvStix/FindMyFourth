@@ -84,7 +84,7 @@ class GameJoinedDashboardContent extends StatelessWidget {
           mainAxisSize: MainAxisSize.max,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            SizedBox(height: MediaQuery.of(context).padding.top + 56),
+            SizedBox(height: MediaQuery.of(context).padding.top + 22),
             GameJoinedDashboardOverviewSection(
               game: game,
               currentUserRef: currentUserRef,

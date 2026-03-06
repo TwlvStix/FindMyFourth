@@ -32,6 +32,7 @@ import '/providers/notification_provider.dart';
 import '/providers/notification_list_provider.dart';
 import '/providers/streak_provider.dart';
 import '/providers/trust_provider.dart';
+import '/services/notification_audit_service.dart';
 import '/services/notification_orchestration_service.dart';
 import '/services/remote_config_service.dart';
 
@@ -218,7 +219,7 @@ class MyAppScrollBehavior extends MaterialScrollBehavior {
       };
 }
 
-class MyAppState extends State<MyApp> {
+class MyAppState extends State<MyApp> with WidgetsBindingObserver {
   ThemeMode _themeMode = ThemeMode.system;
   final NotificationOrchestrationService _notificationOrchestrationService =
       NotificationOrchestrationService();
@@ -293,6 +294,9 @@ class MyAppState extends State<MyApp> {
   void initState() {
     super.initState();
 
+    // Register lifecycle observer for notification audit flush
+    WidgetsBinding.instance.addObserver(this);
+
     AppLog.d('🚀 APP: Initializing app state');
     _appStateNotifier = AppStateNotifier.instance;
     _router = createRouter(_appStateNotifier);
@@ -319,12 +323,21 @@ class MyAppState extends State<MyApp> {
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
     authUserSub.cancel();
     privateDataSub.cancel();
     _bootstrapCoordinator.dispose();
     _notificationOrchestrationService.dispose();
     _removeNativeSplashIfNeeded();
     super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    // Flush notification audit events when app goes to background
+    if (state == AppLifecycleState.paused) {
+      NotificationAuditService.instance.flush();
+    }
   }
 
   void setThemeMode(ThemeMode mode) {

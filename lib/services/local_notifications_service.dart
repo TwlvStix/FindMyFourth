@@ -1,10 +1,14 @@
 import 'dart:async';
+import 'dart:convert';
 import 'dart:io';
 
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 
 import '/core/utils/app_log.dart';
+import '/models/notification_receipt_event.dart';
+import '/services/notification_audit_service.dart';
 
 /// Service for displaying local notifications.
 ///
@@ -159,6 +163,28 @@ class LocalNotificationsService {
     );
     AppLog.d('🔔 [DIAG-LOCAL] show() SUCCESS - id=$id');
     AppLog.d('🔔 LocalNotificationsService: Displayed notification id=$id title="$title"');
+
+    // Audit: Record local notification shown
+    final uid = FirebaseAuth.instance.currentUser?.uid;
+    if (uid != null) {
+      // Extract messageId and type from payload if available
+      String? messageId;
+      String? notificationType;
+      try {
+        final payloadData = jsonDecode(payload) as Map<String, dynamic>;
+        messageId = payloadData['_messageId'] as String?;
+        notificationType = payloadData['type'] as String?;
+      } catch (_) {
+        // Payload parse failed, continue with nulls
+      }
+      NotificationAuditService.instance.record(
+        NotificationReceiptEvent.foregroundLocalShown(
+          uid: uid,
+          messageId: messageId,
+          notificationType: notificationType,
+        ),
+      );
+    }
   }
 
   /// Dispose the service.

@@ -43,6 +43,9 @@ const TrustEventType = Object.freeze({
   STREAK_FREEZE_PROMPT:     'streak_freeze_prompt',
   STREAK_MILESTONE_REACHED: 'streak_milestone_reached',
   STREAK_BROKEN:            'streak_broken',
+  // Host-add-player events
+  PLAYER_ADDED_BY_HOST:     'player_added_by_host',
+  PLAYER_DECLINED_SPOT:     'player_declined_spot',
 });
 
 const NotificationPriority = Object.freeze({
@@ -367,6 +370,36 @@ const EVENT_REGISTRY = Object.freeze({
     },
     deepLink:         'findmyfourth://game/{gameId}',
     threadId:         'game_alerts',
+    androidChannelId: 'default',
+    icon:             'sports_golf',
+  },
+
+  [TrustEventType.PLAYER_ADDED_BY_HOST]: {
+    priority:        NotificationPriority.DEFAULT,
+    category:        TrustCategory.GAMES,
+    maxDeliveries:   1,
+    timing:          'immediate',
+    template: {
+      title: "You've been added to a game",
+      body:  '{host_name} added you to {course_name} on {game_date}.',
+    },
+    deepLink:         'findmyfourth://game/{game_id}',
+    threadId:         'game_{game_id}',
+    androidChannelId: 'default',
+    icon:             'person_add',
+  },
+
+  [TrustEventType.PLAYER_DECLINED_SPOT]: {
+    priority:        NotificationPriority.DEFAULT,
+    category:        TrustCategory.GAMES,
+    maxDeliveries:   1,
+    timing:          'immediate',
+    template: {
+      title: 'Spot back open',
+      body:  "{player_name} can't make it to your game at {course_name}.",
+    },
+    deepLink:         'findmyfourth://game/{game_id}',
+    threadId:         'game_{game_id}',
     androidChannelId: 'default',
     icon:             'sports_golf',
   },

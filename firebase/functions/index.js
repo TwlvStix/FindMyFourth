@@ -22,6 +22,10 @@ const {
   scheduleFlexibleNudges,
   cancelFlexibleNudges,
 } = require("./notifications/flexible_nudge");
+const {
+  onPlayerAddedByHost,
+  onPlayerDeclinedSpot,
+} = require("./host_add_notifications");
 
 // Behavioral Dataset modules
 const { createRound, addParticipant, finalizeGroup } = require("./src/booking");
@@ -1188,6 +1192,232 @@ exports.syncGameChatMembers = functions
   .onUpdate((change, context) => _syncGameChatMembersHandler(change, context));
 
 /**
+ * Handler logic for onHostAddsPlayer.
+ * Extracted for testability - accepts optional db parameter for mock injection.
+ *
+ * Detects when a host adds a player to a game by tracking the host_added_players
+ * field, which is written alongside joined_players when the host manually adds
+ * someone. This distinguishes host-initiated adds from self-joins.
+ *
+ * @param {Object} change - Firestore change object with before/after snapshots
+ * @param {Object} context - Cloud Functions context with params
+ * @param {Object} db - Firestore instance (defaults to firestore for production)
+ */
+async function _onHostAddsPlayerHandler(change, context, db = firestore) {
+  const before = change.before.data() || {};
+  const after = change.after.data() || {};
+
+  // Track host_added_players changes (UIDs added by host, not self-joined)
+  const beforeHostAdded = new Set(before.host_added_players || []);
+  const afterHostAdded = new Set(after.host_added_players || []);
+  const newlyHostAdded = [...afterHostAdded].filter(
+    (uid) => !beforeHostAdded.has(uid)
+  );
+
+  if (newlyHostAdded.length === 0) {
+    return;
+  }
+
+  // Get host info
+  const hostUid = after.uid;
+  if (!hostUid) {
+    console.log(
+      `onHostAddsPlayer: missing host uid for game ${context.params.gameId}`
+    );
+    return;
+  }
+
+  // Fetch host profile
+  const hostDoc = await db.collection("users").doc(hostUid).get();
+  const hostData = hostDoc.exists ? hostDoc.data() : {};
+  const hostName = hostData.display_name || "A host";
+  const hostAvatarUrl = hostData.photo_url || null;
+
+  // Get game info
+  const courseName = after.course_play || "a course";
+  const gameDate = _formatGameDateWithTime(after.date);
+
+  // Send notification to each newly host-added player
+  for (const addedUid of newlyHostAdded) {
+    try {
+      await onPlayerAddedByHost(
+        addedUid,
+        hostUid,
+        hostName,
+        context.params.gameId,
+        courseName,
+        gameDate,
+        hostAvatarUrl,
+        db
+      );
+      console.log(
+        `onHostAddsPlayer: notified ${addedUid} for game ${context.params.gameId}`
+      );
+    } catch (err) {
+      // Non-fatal: log and continue to other players
+      console.error(
+        `onHostAddsPlayer: failed to notify ${addedUid} for game ${context.params.gameId}:`,
+        err
+      );
+    }
+  }
+}
+
+/**
+ * Formats a Firestore Timestamp to a human-readable date with day of week and time.
+ * e.g., Timestamp for 2026-03-15 10:00 → "Saturday, Mar 15 at 10:00 AM"
+ *
+ * @param {admin.firestore.Timestamp|null} teeTimeTs - Firestore timestamp
+ * @returns {string} Formatted date string
+ */
+function _formatGameDateWithTime(teeTimeTs) {
+  if (!teeTimeTs || typeof teeTimeTs.toDate !== "function") return "an upcoming game";
+  const d = teeTimeTs.toDate();
+
+  const dayOfWeek = d.toLocaleDateString("en-US", {
+    weekday: "long",
+    timeZone: "UTC",
+  });
+  const monthDay = d.toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+    timeZone: "UTC",
+  });
+  const time = d.toLocaleTimeString("en-US", {
+    hour: "numeric",
+    minute: "2-digit",
+    timeZone: "UTC",
+  });
+
+  return `${dayOfWeek}, ${monthDay} at ${time}`;
+}
+
+// Export handler for testing
+exports._onHostAddsPlayerHandler = _onHostAddsPlayerHandler;
+exports._formatGameDateWithTime = _formatGameDateWithTime;
+
+/**
+ * Sends a notification when a host manually adds a player to their game.
+ *
+ * Triggers on games/{gameId} onUpdate, detects when host_added_players array
+ * has new entries, and notifies each added player via the Trust System router.
+ *
+ * This is separate from syncGameChatMembers which handles all player changes -
+ * this function only fires for host-initiated adds (not self-joins).
+ */
+exports.onHostAddsPlayer = functions
+  .region("us-west2")
+  .firestore.document("games/{gameId}")
+  .onUpdate((change, context) => _onHostAddsPlayerHandler(change, context));
+
+/**
+ * Handler logic for declineAddedSpot.
+ * Extracted for testability - accepts optional db parameter for mock injection.
+ *
+ * Called when a player declines a spot they were added to by the host.
+ * Removes the player from the game and notifies the host.
+ *
+ * @param {Object} data - Request data with gameId
+ * @param {Object} context - Cloud Functions context with auth
+ * @param {Object} db - Firestore instance (defaults to firestore for production)
+ */
+async function _declineAddedSpotHandler(data, context, db = firestore) {
+  // Require authentication
+  if (!context.auth) {
+    throw new functions.https.HttpsError(
+      "unauthenticated",
+      "Authentication required"
+    );
+  }
+
+  const { gameId } = data;
+  const playerUid = context.auth.uid;
+
+  if (!gameId) {
+    throw new functions.https.HttpsError(
+      "invalid-argument",
+      "gameId is required"
+    );
+  }
+
+  // Get game document
+  const gameRef = db.collection("games").doc(gameId);
+  const gameDoc = await gameRef.get();
+
+  if (!gameDoc.exists) {
+    throw new functions.https.HttpsError("not-found", "Game not found");
+  }
+
+  const gameData = gameDoc.data();
+  const hostUid = gameData.uid;
+
+  // Verify the player was actually host-added
+  const hostAddedPlayers = gameData.host_added_players || [];
+  if (!hostAddedPlayers.includes(playerUid)) {
+    throw new functions.https.HttpsError(
+      "failed-precondition",
+      "Player was not added by host"
+    );
+  }
+
+  // Get player info for notification
+  const playerDoc = await db.collection("users").doc(playerUid).get();
+  const playerData = playerDoc.exists ? playerDoc.data() : {};
+  const playerName = playerData.display_name || "A player";
+  const playerAvatarUrl = playerData.photo_url || null;
+
+  // Get game info for notification
+  const courseName = gameData.course_play || "your game";
+
+  // Remove player from game
+  const playerRef = db.collection("users").doc(playerUid);
+  await gameRef.update({
+    joined_players: admin.firestore.FieldValue.arrayRemove(playerRef),
+    host_added_players: admin.firestore.FieldValue.arrayRemove(playerUid),
+  });
+
+  // Notify host that spot is back open
+  try {
+    await onPlayerDeclinedSpot(
+      hostUid,
+      playerUid,
+      playerName,
+      gameId,
+      courseName,
+      playerAvatarUrl,
+      db
+    );
+    console.log(
+      `declineAddedSpot: notified host ${hostUid} that ${playerUid} declined game ${gameId}`
+    );
+  } catch (err) {
+    // Non-fatal: player was already removed, just log notification failure
+    console.error(
+      `declineAddedSpot: failed to notify host for game ${gameId}:`,
+      err
+    );
+  }
+
+  return { success: true, gameId, playerUid };
+}
+
+// Export handler for testing
+exports._declineAddedSpotHandler = _declineAddedSpotHandler;
+
+/**
+ * Callable function for a player to decline a spot they were added to by the host.
+ *
+ * Removes the player from the game and notifies the host that the spot is back open.
+ * The player must have been added via host_added_players (not self-joined).
+ *
+ * @param {Object} data - { gameId: string }
+ * @returns {{ success: boolean, gameId: string, playerUid: string }}
+ */
+exports.declineAddedSpot = functions
+  .region("us-west2")
+  .https.onCall((data, context) => _declineAddedSpotHandler(data, context));
+
+/**
  * Handler logic for reconcileChatMembership.
  * Extracted for testability - accepts optional db parameter for mock injection.
  *
@@ -1546,6 +1776,109 @@ exports.backfillAlertSubs = functions
 const sgMail = require("@sendgrid/mail");
 
 /**
+ * Sends the signup confirmation email for a single Firebase Auth user.
+ * This is the canonical implementation used by callable entrypoints.
+ */
+async function sendSignupConfirmationEmailForUid(uid, source = "callable") {
+  // 1. Resolve email (Auth -> private/info fallback)
+  let email;
+  try {
+    const authUser = await admin.auth().getUser(uid);
+    email = authUser.email;
+  } catch (authError) {
+    console.error(
+      `sendSignupConfirmationEmailForUid: Failed to get auth user ${uid}:`,
+      authError,
+    );
+    throw new functions.https.HttpsError(
+      "internal",
+      "Failed to resolve user email",
+    );
+  }
+
+  if (!email) {
+    const privateDoc = await firestore.doc(`users/${uid}/private/info`).get();
+    email = privateDoc.data()?.email;
+  }
+
+  if (!email) {
+    console.log(
+      `sendSignupConfirmationEmailForUid: No email found for user ${uid}`,
+    );
+    return { status: "skipped_no_email" };
+  }
+
+  // 2. Transactional idempotency check
+  const userRef = firestore.doc(`users/${uid}`);
+  let shouldSend = false;
+
+  await firestore.runTransaction(async (tx) => {
+    const userDoc = await tx.get(userRef);
+    if (userDoc.data()?.signup_email_sent_at) {
+      shouldSend = false;
+      return;
+    }
+    // Set marker atomically before sending.
+    tx.set(
+      userRef,
+      {
+        signup_email_sent_at: admin.firestore.FieldValue.serverTimestamp(),
+        signup_email_sent_source: source,
+      },
+      { merge: true },
+    );
+    shouldSend = true;
+  });
+
+  if (!shouldSend) {
+    console.log(
+      `sendSignupConfirmationEmailForUid: Already sent for user ${uid}`,
+    );
+    return { status: "skipped_already_sent" };
+  }
+
+  // 3. Send email (outside transaction)
+  sgMail.setApiKey(process.env.SENDGRID_API_KEY);
+
+  const msg = {
+    to: email,
+    from: "findmyfourth@gmail.com",
+    subject: "Welcome to Find My Fourth!",
+    text: [
+      "Welcome to Find My Fourth!",
+      "",
+      "Your account has been successfully created. We're excited to have you on the course!",
+      "",
+      "Head back to the app to complete your profile and start finding your next round.",
+      "",
+      "See you on the fairway,",
+      "The Find My Fourth Team",
+    ].join("\n"),
+    html: [
+      "<p>Welcome to <strong>Find My Fourth</strong>!</p>",
+      "<p>Your account has been successfully created. We're excited to have you on the course!</p>",
+      "<p>Head back to the app to complete your profile and start finding your next round.</p>",
+      "<p>See you on the fairway,<br/>The Find My Fourth Team</p>",
+    ].join(""),
+  };
+
+  try {
+    await sgMail.send(msg);
+    console.log(
+      `sendSignupConfirmationEmailForUid: Welcome email sent to ${email} (uid: ${uid}, source: ${source})`,
+    );
+    return { status: "sent" };
+  } catch (error) {
+    console.error(
+      `sendSignupConfirmationEmailForUid: Error sending to ${uid}:`,
+      error,
+    );
+    // Email failed but marker is set - prevents retry spam.
+    return { status: "send_failed" };
+  }
+}
+
+/**
  * Sends a signup confirmation email to a newly created user.
  * Uses transactional idempotency to guarantee exactly-once delivery.
  *
@@ -1559,6 +1892,9 @@ exports.sendSignupConfirmationEmail = functions
   .region("us-west2")
   .runWith({ secrets: ["SENDGRID_API_KEY"] })
   .https.onCall(async (data, context) => {
+    // NOTE: Legacy deployed-only onUserCreated should be deleted after verifying
+    // this callable path in production.
+
     // 1. Require authentication
     if (!context.auth) {
       throw new functions.https.HttpsError(
@@ -1567,86 +1903,7 @@ exports.sendSignupConfirmationEmail = functions
       );
     }
     const uid = context.auth.uid;
-
-    // 2. Resolve email (Auth → private/info fallback)
-    let email;
-    try {
-      const authUser = await admin.auth().getUser(uid);
-      email = authUser.email;
-    } catch (authError) {
-      console.error(`sendSignupConfirmationEmail: Failed to get auth user ${uid}:`, authError);
-      throw new functions.https.HttpsError("internal", "Failed to resolve user email");
-    }
-
-    if (!email) {
-      // Fallback to private profile email
-      const privateDoc = await db.doc(`users/${uid}/private/info`).get();
-      email = privateDoc.data()?.email;
-    }
-
-    if (!email) {
-      console.log(`sendSignupConfirmationEmail: No email found for user ${uid}`);
-      return { status: "skipped_no_email" };
-    }
-
-    // 3. Transactional idempotency check
-    const userRef = db.doc(`users/${uid}`);
-    let shouldSend = false;
-
-    await db.runTransaction(async (tx) => {
-      const userDoc = await tx.get(userRef);
-      if (userDoc.data()?.signup_email_sent_at) {
-        shouldSend = false;
-        return;
-      }
-      // Set marker atomically before sending
-      tx.set(
-        userRef,
-        { signup_email_sent_at: admin.firestore.FieldValue.serverTimestamp() },
-        { merge: true },
-      );
-      shouldSend = true;
-    });
-
-    if (!shouldSend) {
-      console.log(`sendSignupConfirmationEmail: Already sent for user ${uid}`);
-      return { status: "skipped_already_sent" };
-    }
-
-    // 4. Send email (outside transaction)
-    sgMail.setApiKey(process.env.SENDGRID_API_KEY);
-
-    const msg = {
-      to: email,
-      from: "findmyfourth@gmail.com",
-      subject: "Welcome to Find My Fourth!",
-      text: [
-        "Welcome to Find My Fourth!",
-        "",
-        "Your account has been successfully created. We're excited to have you on the course!",
-        "",
-        "Head back to the app to complete your profile and start finding your next round.",
-        "",
-        "See you on the fairway,",
-        "The Find My Fourth Team",
-      ].join("\n"),
-      html: [
-        "<p>Welcome to <strong>Find My Fourth</strong>!</p>",
-        "<p>Your account has been successfully created. We're excited to have you on the course!</p>",
-        "<p>Head back to the app to complete your profile and start finding your next round.</p>",
-        "<p>See you on the fairway,<br/>The Find My Fourth Team</p>",
-      ].join(""),
-    };
-
-    try {
-      await sgMail.send(msg);
-      console.log(`sendSignupConfirmationEmail: Welcome email sent to ${email} (uid: ${uid})`);
-      return { status: "sent" };
-    } catch (error) {
-      console.error(`sendSignupConfirmationEmail: Error sending to ${uid}:`, error);
-      // Email failed but marker is set - prevents retry spam
-      return { status: "send_failed" };
-    }
+    return sendSignupConfirmationEmailForUid(uid, "callable");
   });
 
 exports.deleteChat = functions

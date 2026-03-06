@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:phosphor_flutter/phosphor_flutter.dart';
 
 import '/core/design_tokens/border_radius.dart';
 import '/core/design_tokens/colors.dart';
@@ -15,6 +16,7 @@ import '/main_function/games_list/components/game_card_detail_pills.dart';
 import '/main_function/games_list/components/game_card_spots_badge.dart';
 import '/main_function/games_list/components/game_card_vibe_ring.dart';
 import '/models/game.dart';
+import '/models/player_eligibility.dart';
 import '/utils/app_util.dart';
 
 /// Unified game card with vibe ring, detail pills, avatar stack, and spots badge.
@@ -422,6 +424,9 @@ class _UnifiedGameCardState extends State<UnifiedGameCard>
       }
     }
 
+    // Determine trailing icon (Member Rate takes priority, then Gender)
+    final trailingIcon = _getTrailingIcon();
+
     return Row(
       children: [
         AppIcon(
@@ -430,7 +435,7 @@ class _UnifiedGameCardState extends State<UnifiedGameCard>
           color: AppColors.textMuted,
         ),
         SizedBox(width: 4),
-        Flexible(
+        Expanded(
           child: Text(
             dateTimeStr,
             style: AppTypography.bodySmall.copyWith(
@@ -440,8 +445,37 @@ class _UnifiedGameCardState extends State<UnifiedGameCard>
             overflow: TextOverflow.ellipsis,
           ),
         ),
+        if (trailingIcon != null) ...[
+          SizedBox(width: AppSpacing.xs),
+          AppIcon(
+            icon: trailingIcon,
+            size: AppIconSize.sm,
+            color: AppColors.textSecondary,
+          ),
+        ],
       ],
     );
+  }
+
+  /// Returns icon for Member Rate or Gender restriction (icon only, no text).
+  /// Member Rate takes priority over Gender.
+  PhosphorIconData? _getTrailingIcon() {
+    final game = widget.game;
+
+    // 1. Member Rate (priority)
+    if (game.memberDiscount == 'Yes') {
+      return AppPhosphorIcons.memberDiscount;
+    }
+
+    // 2. Gender restriction
+    if (game.playerEligibility == PlayerEligibility.womenOnly) {
+      return AppPhosphorIcons.womenOnly;
+    }
+    if (game.playerEligibility == PlayerEligibility.menOnly) {
+      return AppPhosphorIcons.menOnly;
+    }
+
+    return null;
   }
 
   Widget _buildFooterRow({required int spotsLeft}) {

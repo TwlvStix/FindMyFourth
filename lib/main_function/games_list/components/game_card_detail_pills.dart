@@ -1,17 +1,18 @@
 import 'package:flutter/material.dart';
+import 'package:phosphor_flutter/phosphor_flutter.dart';
 
+import '/core/design_tokens/app_phosphor_icons.dart';
 import '/core/design_tokens/border_radius.dart';
 import '/core/design_tokens/colors.dart';
+import '/core/design_tokens/icon_size.dart';
 import '/core/design_tokens/spacing.dart';
 import '/core/design_tokens/typography.dart';
 import '/models/game.dart';
 
-/// Detail pills showing game format, pace, and stakes.
+/// Detail pills showing game attributes with icons.
 ///
-/// Displays up to 3 pills with game metadata:
-/// - Format: game type (e.g., "18 Holes", "Stroke Play")
-/// - Pace: style of play (Fast, Relaxed, etc.)
-/// - Stakes: money game indicator or "Fun only"
+/// Fun games: Show only "Fun only" pill.
+/// Regular games: Up to 2 pills - Primary Format, Stakes.
 class GameCardDetailPills extends StatelessWidget {
   const GameCardDetailPills({
     super.key,
@@ -28,71 +29,61 @@ class GameCardDetailPills extends StatelessWidget {
     return Wrap(
       spacing: AppSpacing.xs,
       runSpacing: AppSpacing.xs,
-      children: pills.map((pill) => _DetailPill(label: pill)).toList(),
+      children: pills
+          .map((pill) => _DetailPill(icon: pill.icon, label: pill.label))
+          .toList(),
     );
   }
 
-  List<String> _buildPills() {
-    final pills = <String>[];
+  List<_PillData> _buildPills() {
+    // Fun game = only show "Fun only" pill
+    if (game.isFunGame) {
+      return [_PillData(AppPhosphorIcons.funGame, 'Fun only')];
+    }
 
-    // Format pill (game type)
+    // Regular game = up to 2 pills
+    final pills = <_PillData>[];
+
+    // 1. Primary Format
     if (game.gameType.isNotEmpty) {
-      pills.add(game.gameType);
+      final icon = _getFormatIcon(game.gameType);
+      pills.add(_PillData(icon, game.gameType));
     }
 
-    // Pace pill (style of game) - skip if it's "Just for Fun" as that's handled by stakes
-    if (game.styleGame.isNotEmpty && game.styleGame != 'Just for Fun') {
-      // Simplify pace labels
-      final pace = _simplifyPace(game.styleGame);
-      if (pace != null) {
-        pills.add(pace);
-      }
+    // 2. Stakes
+    if (game.styleGame.isNotEmpty && game.styleGame != 'No Money') {
+      final icon = game.styleGame == 'High Stakes'
+          ? AppPhosphorIcons.highStakes
+          : AppPhosphorIcons.lowStakes;
+      pills.add(_PillData(icon, game.styleGame));
     }
-
-    // Stakes pill
-    pills.add(_getStakesLabel());
 
     return pills;
   }
 
-  String? _simplifyPace(String styleGame) {
-    switch (styleGame) {
-      case 'Money Game':
-        return null; // Handled by stakes
-      case 'Casual':
-        return '\u{1F407} Relaxed'; // rabbit emoji
-      case 'Competitive':
-        return '\u{1F407} Fast'; // rabbit emoji
+  PhosphorIconData _getFormatIcon(String gameType) {
+    switch (gameType) {
+      case 'Match Play':
+        return AppPhosphorIcons.matchPlay;
+      case 'Stableford':
+        return AppPhosphorIcons.stableford;
       default:
-        return styleGame;
+        return AppPhosphorIcons.strokePlay;
     }
-  }
-
-  String _getStakesLabel() {
-    if (game.isFunGame) {
-      return '\u{1F91D} Fun only'; // handshake emoji
-    }
-
-    if (game.styleGame == 'Money Game') {
-      // Show stakes level based on rules setting
-      final rules = game.rulesSetting.toLowerCase();
-      if (rules.contains('skins')) {
-        return '\u{1F4B0} Skins'; // money bag
-      } else if (rules.contains('nassau')) {
-        return '\u{1F4B0} Nassau'; // money bag
-      } else if (rules.isNotEmpty && rules != 'none') {
-        return '\u{1F4B0} ${game.rulesSetting}'; // money bag
-      }
-      return '\u{1F4B0} Stakes'; // money bag
-    }
-
-    return '\u{1F91D} Fun only'; // handshake emoji
   }
 }
 
-class _DetailPill extends StatelessWidget {
-  const _DetailPill({required this.label});
+/// Data class holding icon and label for a pill.
+class _PillData {
+  final PhosphorIconData icon;
+  final String label;
+  const _PillData(this.icon, this.label);
+}
 
+class _DetailPill extends StatelessWidget {
+  const _DetailPill({required this.icon, required this.label});
+
+  final PhosphorIconData icon;
   final String label;
 
   @override
@@ -110,11 +101,22 @@ class _DetailPill extends StatelessWidget {
           width: 1,
         ),
       ),
-      child: Text(
-        label,
-        style: AppTypography.labelSmall.copyWith(
-          color: AppColors.textSecondary,
-        ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          PhosphorIcon(
+            icon,
+            size: AppIconSize.xs,
+            color: AppColors.textSecondary,
+          ),
+          SizedBox(width: AppSpacing.xxs),
+          Text(
+            label,
+            style: AppTypography.labelSmall.copyWith(
+              color: AppColors.textSecondary,
+            ),
+          ),
+        ],
       ),
     );
   }

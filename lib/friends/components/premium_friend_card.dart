@@ -286,8 +286,17 @@ class _PremiumFriendCardState extends State<PremiumFriendCard>
     final hometown = widget.user.hometownName;
     final vibePercent = _vibeMatch?.myFitPercent.round();
 
+    // Get gender letter: M for Male, F for Female
+    String? genderLetter;
+    final gender = widget.user.gender;
+    if (gender == 'Male') {
+      genderLetter = 'M';
+    } else if (gender == 'Female') {
+      genderLetter = 'F';
+    }
+
     final locationParts = <String>[
-      if (age != null) '$age',
+      if (age != null) '$age${genderLetter ?? ''}',
       if (hometown.isNotEmpty) hometown
     ];
 

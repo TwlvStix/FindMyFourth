@@ -657,35 +657,34 @@ class ChatProvider extends ChangeNotifier {
         return <ChatRowViewModel>[];
       }
 
-      // Collect direct chat user IDs (exclude game chats)
-      final directUserIds = <String>{};
+      // Collect ALL member IDs from all chats for group avatar display
+      final allMemberIds = <String>{};
       for (final chat in chats) {
-        if (chat.type == 'game') continue;
-        final otherUserId = chat.memberIds.firstWhere(
-          (id) => id != currentUserId,
-          orElse: () => currentUserId,
-        );
-        if (otherUserId.isNotEmpty) {
-          directUserIds.add(otherUserId);
+        // For direct chats: include other user (not current user)
+        // For game chats: include up to 4 members (excluding current user)
+        for (final memberId in chat.memberIds) {
+          if (memberId != currentUserId && memberId.isNotEmpty) {
+            allMemberIds.add(memberId);
+          }
         }
       }
 
       if (kDebugMode) {
         AppLog.d(
-            '💬 ChatProvider: Chat rows VM emit - ${chats.length} chats, ${directUserIds.length} direct chat profiles needed');
+            '💬 ChatProvider: Chat rows VM emit - ${chats.length} chats, ${allMemberIds.length} member profiles needed');
       }
 
       // Fetch profiles using ProfileProvider's memoized cache
       // This will only trigger network fetches for new user IDs not already cached
       Map<String, UsersRecord> profileMap = {};
-      if (directUserIds.isNotEmpty) {
+      if (allMemberIds.isNotEmpty) {
         try {
           profileMap =
-              await profileProvider.batchGetProfiles(directUserIds.toList());
+              await profileProvider.batchGetProfiles(allMemberIds.toList());
 
           // Log which profiles were fetched vs cached
           if (kDebugMode) {
-            final newUserIds = directUserIds
+            final newUserIds = allMemberIds
                 .where((id) => !profileProvider.isProfileCacheValid(id))
                 .toList();
             if (newUserIds.isNotEmpty) {
@@ -707,6 +706,24 @@ class ChatProvider extends ChangeNotifier {
 
         String displayName;
         String photoUrl = '';
+
+        // Build members list for group avatar (up to 4 members, excluding current user)
+        final members = <ChatMemberInfo>[];
+        final otherMemberIds = chat.memberIds
+            .where((id) => id != currentUserId && id.isNotEmpty)
+            .take(4)
+            .toList();
+
+        for (final memberId in otherMemberIds) {
+          final profile = profileMap[memberId];
+          final name = (profile?.displayName ?? '').trim().isNotEmpty
+              ? profile!.displayName
+              : 'Golfer';
+          members.add(ChatMemberInfo(
+            name: name,
+            photoUrl: profile?.photoUrl,
+          ));
+        }
 
         if (chat.type == 'game') {
           displayName = (chat.gameName ?? '').trim().isNotEmpty
@@ -731,6 +748,7 @@ class ChatProvider extends ChangeNotifier {
           lastMessage: chat.lastMessage,
           lastMessageAt: chat.lastMessageAt,
           unreadCount: unreadCount,
+          members: members,
         );
       }).toList();
     });
@@ -768,6 +786,17 @@ class ChatProvider extends ChangeNotifier {
 // CHAT ROW VIEW MODEL (AUDIT #6 FIX)
 // ========================================
 
+/// Member info for group avatar display.
+class ChatMemberInfo {
+  const ChatMemberInfo({
+    required this.name,
+    this.photoUrl,
+  });
+
+  final String name;
+  final String? photoUrl;
+}
+
 /// View model for chat list rows with resolved profile data
 ///
 /// This class combines Chat with resolved user profile data,
@@ -781,6 +810,7 @@ class ChatRowViewModel {
     required this.lastMessage,
     required this.lastMessageAt,
     required this.unreadCount,
+    required this.members,
   });
 
   final String chatId;
@@ -789,4 +819,7 @@ class ChatRowViewModel {
   final String lastMessage;
   final DateTime? lastMessageAt;
   final int unreadCount;
+
+  /// Members for group avatar display (1-4 members).
+  final List<ChatMemberInfo> members;
 }

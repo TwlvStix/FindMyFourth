@@ -75,6 +75,9 @@ class PlayerSearchService {
     await gameRef.update(<String, dynamic>{
       if (joinedRefs.isNotEmpty)
         'joined_players': FieldValue.arrayUnion(joinedRefs),
+      if (joinedPlayerUids.isNotEmpty)
+        // Track host-added players for notification trigger (UIDs, not refs)
+        'host_added_players': FieldValue.arrayUnion(joinedPlayerUids),
       if (guestPlayers.isNotEmpty)
         'guest_players': FieldValue.arrayUnion(guestPlayers),
     });
