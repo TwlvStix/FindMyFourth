@@ -212,6 +212,50 @@ class AppColors {
   static const Color whiteStrong = Color(0xF2FFFFFF);
 
   // ==========================================================================
+  // MUTUAL FRIEND CARD TOKENS (Amber-tinted for friends-only via mutual)
+  // Used for games visible through mutual friend connections
+  // ==========================================================================
+
+  /// Header gradient start - dark amber
+  static const Color mutualHeaderStart = Color(0xFF3D3010);
+
+  /// Header gradient end - lighter amber
+  static const Color mutualHeaderEnd = Color(0xFF4A3A12);
+
+  /// Card background gradient start
+  static const Color mutualCardStart = Color(0xFF1E1C16);
+
+  /// Card background gradient end
+  static const Color mutualCardEnd = Color(0xFF181610);
+
+  /// Primary amber accent
+  static const Color mutualAccent = Color(0xFFDCB450);
+
+  /// Muted amber accent
+  static const Color mutualAccentMuted = Color(0xFFB4963C);
+
+  /// Amber border (20% opacity)
+  static const Color mutualBorder = Color(0x33B4963C);
+
+  /// Callout background (7% amber)
+  static const Color mutualCalloutBg = Color(0x12B4963C);
+
+  /// Callout border (18% amber)
+  static const Color mutualCalloutBorder = Color(0x2EB4963C);
+
+  /// Button background (unselected - 4% white)
+  static const Color mutualButtonBg = Color(0x0AFFFFFF);
+
+  /// Button border (unselected - 8% white)
+  static const Color mutualButtonBorder = Color(0x14FFFFFF);
+
+  /// Button background (selected - 14% amber)
+  static const Color mutualButtonSelectedBg = Color(0x24B4963C);
+
+  /// Button border (selected - amber tint)
+  static const Color mutualButtonSelectedBorder = Color(0x4DB4963C);
+
+  // ==========================================================================
   // UI COMPONENT COLORS
   // ==========================================================================
 
@@ -261,6 +305,20 @@ class AppColors {
     end: Alignment.bottomCenter,
     colors: [navyDark, navy, Color(0xFF0B1920)],
     stops: [0.0, 0.65, 1.0],
+  );
+
+  /// Mutual friend card header gradient - amber tint
+  static const LinearGradient mutualHeaderGradient = LinearGradient(
+    begin: Alignment.centerLeft,
+    end: Alignment.centerRight,
+    colors: [mutualHeaderStart, mutualHeaderEnd],
+  );
+
+  /// Mutual friend card background gradient - amber-tinted dark
+  static const LinearGradient mutualCardGradient = LinearGradient(
+    begin: Alignment.topCenter,
+    end: Alignment.bottomCenter,
+    colors: [mutualCardStart, mutualCardEnd],
   );
 }
 

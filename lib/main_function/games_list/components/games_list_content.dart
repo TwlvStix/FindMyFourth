@@ -1,25 +1,31 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
 
 import '/backend/schema/users_record.dart';
+import '/core/design_tokens/colors.dart';
+import '/core/design_tokens/spacing.dart';
 import '/core/utils/app_log.dart';
 import '/core/widgets/app_stream_builder.dart';
-import '/main_function/games_list/components/fixed_games_section.dart';
 import '/main_function/games_list/components/game_list_filter_bottom_sheet.dart';
-import '/main_function/games_list/components/flexible_games_shelf.dart';
-import '/main_function/games_list/components/friends_only_games_section.dart';
 import '/main_function/games_list/components/games_list_empty_state.dart';
+import '/main_function/games_list/components/games_sort_bar.dart';
+import '/main_function/games_list/components/mutual_card_actions.dart';
+import '/main_function/games_list/components/mutual_game_card.dart';
+import '/main_function/games_list/components/quick_filter_chips.dart';
 import '/main_function/games_list/components/restriction_banner_selector.dart';
+import '/main_function/games_list/components/unified_game_card.dart';
+import '/main_function/games_list/models/quick_filter.dart';
 import '/main_function/games_list/utils/cancelled_game_handler.dart';
 import '/main_function/games_list/utils/game_canonicalization.dart';
 import '/main_function/games_list/utils/game_filter_meta.dart';
 import '/main_function/games_list/utils/game_filtering.dart';
 import '/main_function/games_list/utils/games_list_pipeline.dart';
 import '/models/game.dart';
-import '/utils/app_util.dart';
 
 /// Content widget for the games list that handles stream composition,
 /// game processing pipeline, and sliver layout.
+///
+/// Displays a unified list of games with filter chips and sort bar.
 class GamesListContent extends StatelessWidget {
   const GamesListContent({
     super.key,
@@ -27,6 +33,9 @@ class GamesListContent extends StatelessWidget {
     required this.initialGames,
     required this.currentUserReference,
     required this.filters,
+    required this.quickFilter,
+    required this.sortOption,
+    required this.vibeScores,
     required this.shouldHideCancelledGame,
     required this.getCancelledHandling,
     required this.onFilterMetaChanged,
@@ -34,18 +43,30 @@ class GamesListContent extends StatelessWidget {
     required this.onCancelledGameTap,
     required this.onFriendsOnlyTap,
     required this.onSendFriendRequest,
-    required this.onToggleVisibility,
-    required this.onSeeAllFlexible,
+    required this.onQuickFilterChanged,
+    required this.onSortChanged,
     required this.onCreateGame,
     required this.onRefresh,
     required this.onRetry,
     required this.onNavigateToStanding,
+    // Mutual friend data
+    this.mutualFriendHostIds = const {},
+    this.firstMutualFriendName = const {},
+    this.mutualFriendsMap = const {},
+    this.chatActionStates = const {},
+    this.friendActionStates = const {},
+    this.onMutualHostsReady,
+    this.onAskToChat,
+    this.onAddFriendFromMutual,
   });
 
   final Stream<List<Game>> gamesStream;
   final List<Game> initialGames;
   final DocumentReference? currentUserReference;
   final GameListFilters filters;
+  final QuickFilter quickFilter;
+  final GameSortOption sortOption;
+  final Map<String, double> vibeScores;
   final bool Function(Game) shouldHideCancelledGame;
   final CancelledGameHandling? Function(Game) getCancelledHandling;
   final ValueChanged<GameFilterMeta> onFilterMetaChanged;
@@ -53,12 +74,22 @@ class GamesListContent extends StatelessWidget {
   final Future<void> Function(Game) onCancelledGameTap;
   final Future<void> Function() onFriendsOnlyTap;
   final Future<void> Function(BuildContext, DocumentReference) onSendFriendRequest;
-  final VoidCallback onToggleVisibility;
-  final void Function(List<Game>, DocumentReference?) onSeeAllFlexible;
+  final ValueChanged<QuickFilter> onQuickFilterChanged;
+  final ValueChanged<GameSortOption> onSortChanged;
   final VoidCallback onCreateGame;
   final Future<void> Function() onRefresh;
   final VoidCallback onRetry;
   final VoidCallback onNavigateToStanding;
+
+  // Mutual friend data for amber cards
+  final Set<String> mutualFriendHostIds;
+  final Map<String, String> firstMutualFriendName;
+  final Map<String, List<String>> mutualFriendsMap;
+  final Map<String, MutualActionState> chatActionStates;
+  final Map<String, MutualActionState> friendActionStates;
+  final ValueChanged<Set<String>>? onMutualHostsReady;
+  final Future<void> Function(DocumentReference)? onAskToChat;
+  final Future<void> Function(DocumentReference)? onAddFriendFromMutual;
 
   @override
   Widget build(BuildContext context) {
@@ -98,12 +129,15 @@ class GamesListContent extends StatelessWidget {
         // Notify parent of filter meta update (no setState, just field update)
         onFilterMetaChanged(filterMeta);
 
-        // Apply user-selected filters to get visible games
+        // Apply user-selected filters from bottom sheet
         final visibleGames = applyGameListFilters(activeGames, filters);
+
+        // Apply quick filter
+        final quickFilteredGames = quickFilter.apply(visibleGames);
 
         assert(() {
           AppLog.d(
-              '✅ GAME LIST: Final visible games: ${visibleGames.length}');
+              '✅ GAME LIST: After quick filter: ${quickFilteredGames.length}');
           return true;
         }());
 
@@ -118,26 +152,33 @@ class GamesListContent extends StatelessWidget {
 
             // Filter out gender-restricted games
             final eligibleGames = filterEligibleGames(
-              visibleGames,
+              quickFilteredGames,
               currentUserReference: userRef,
               userGender: userGender,
             );
 
-            // Partition into joinable and locked
+            // Partition into joinable, mutual, and locked
             final partitioned = partitionJoinableAndLockedGames(
               eligibleGames,
               currentUserReference: userRef,
               friendIds: friendIds,
+              mutualFriendHostIds: mutualFriendHostIds,
             );
 
-            // Split and sort
-            final splitGames = splitAndSortGames(partitioned.joinable);
-            final flexibleGames = splitGames.flexible;
-            final scheduledGames = splitGames.scheduled;
-            final lockedGames = partitioned.locked;
+            // Sort joinable games
+            final sortedJoinableGames = sortOption.sort(
+              partitioned.joinable,
+              vibeScores: vibeScores,
+            );
 
-            // Schedule profile warming for locked game owners
-            final ownerUids = lockedGames
+            // Sort mutual games by date (they always come last)
+            final sortedMutualGames = sortOption.sort(
+              partitioned.mutual,
+              vibeScores: vibeScores,
+            );
+
+            // Schedule profile warming for all game owners
+            final ownerUids = [...sortedJoinableGames, ...sortedMutualGames]
                 .map((game) => game.userRef?.id)
                 .whereType<String>()
                 .toSet();
@@ -145,10 +186,18 @@ class GamesListContent extends StatelessWidget {
               onOwnerUidsReady(ownerUids);
             }
 
-            // Watch AppState for friends-only visibility toggle
-            final hideFriendsOnly = context.select<AppState, bool>(
-              (s) => s.hideFriendsOnlyGames,
-            );
+            // Schedule mutual friend fetching for hosts of locked friends-only games
+            // (These are potential mutual games we haven't fetched data for yet)
+            final lockedHostIds = partitioned.locked
+                .map((g) => g.userRef?.id ?? g.uid)
+                .whereType<String>()
+                .toSet();
+            if (lockedHostIds.isNotEmpty && onMutualHostsReady != null) {
+              onMutualHostsReady!(lockedHostIds);
+            }
+
+            // Combined game count for sort bar
+            final totalGameCount = sortedJoinableGames.length + sortedMutualGames.length;
 
             return RefreshIndicator(
               onRefresh: onRefresh,
@@ -161,48 +210,113 @@ class GamesListContent extends StatelessWidget {
                       onNavigateToStanding: onNavigateToStanding,
                     ),
                   ),
-                  // Flexible Games Shelf
-                  if (flexibleGames.isNotEmpty)
-                    SliverToBoxAdapter(
-                      child: FlexibleGamesShelf(
-                        games: flexibleGames,
-                        currentUserReference: currentUserReference,
-                        onSeeAll: () => onSeeAllFlexible(
-                          flexibleGames,
-                          currentUserReference,
-                        ),
-                      ),
+                  // Quick Filter Chips
+                  SliverToBoxAdapter(
+                    child: QuickFilterChips(
+                      selectedFilter: quickFilter,
+                      onFilterChanged: onQuickFilterChanged,
                     ),
+                  ),
+                  // Divider
+                  SliverToBoxAdapter(
+                    child: Container(
+                      height: 1,
+                      color: AppColors.navyLight.withValues(alpha: 0.3),
+                    ),
+                  ),
+                  // Sort Bar
+                  SliverToBoxAdapter(
+                    child: GamesSortBar(
+                      gameCount: totalGameCount,
+                      sortOption: sortOption,
+                      onSortChanged: onSortChanged,
+                    ),
+                  ),
                   // Global Empty State
-                  if (flexibleGames.isEmpty &&
-                      scheduledGames.isEmpty &&
-                      lockedGames.isEmpty)
+                  if (sortedJoinableGames.isEmpty && sortedMutualGames.isEmpty)
                     SliverToBoxAdapter(
                       child: GamesListEmptyState(
                         onCreateGame: onCreateGame,
                       ),
                     ),
-                  // Fixed Games Section
-                  ...FixedGamesSectionBuilder(
-                    scheduledGames: scheduledGames,
-                    hasFlexibleGames: flexibleGames.isNotEmpty,
-                    hasLockedGames: lockedGames.isNotEmpty,
-                    currentUserReference: currentUserReference,
-                    getCancelledHandling: getCancelledHandling,
-                    onCancelledGameTap: onCancelledGameTap,
-                    onFriendsOnlyTap: onFriendsOnlyTap,
-                  ).build(context),
-                  // Friends-Only Games Section
-                  ...FriendsOnlyGamesSectionBuilder(
-                    lockedGames: lockedGames,
-                    currentUserReference: currentUserReference,
-                    getCancelledHandling: getCancelledHandling,
-                    onCancelledGameTap: onCancelledGameTap,
-                    onFriendsOnlyTap: onFriendsOnlyTap,
-                    onSendFriendRequest: onSendFriendRequest,
-                    hideFriendsOnlyGames: hideFriendsOnly,
-                    onToggleVisibility: onToggleVisibility,
-                  ).build(context),
+                  // Joinable Games List
+                  if (sortedJoinableGames.isNotEmpty)
+                    SliverPadding(
+                      padding: EdgeInsets.symmetric(
+                        horizontal: AppSpacing.screenPadding,
+                      ),
+                      sliver: SliverList(
+                        delegate: SliverChildBuilderDelegate(
+                          (context, index) {
+                            final game = sortedJoinableGames[index];
+                            final isLastJoinable = index == sortedJoinableGames.length - 1;
+                            final hasMoreMutual = sortedMutualGames.isNotEmpty;
+                            return Padding(
+                              padding: EdgeInsets.only(
+                                bottom: isLastJoinable && !hasMoreMutual
+                                    ? AppSpacing.md
+                                    : AppSpacing.sm,
+                              ),
+                              child: UnifiedGameCard(
+                                game: game,
+                                currentUserReference: currentUserReference,
+                                vibeScore: vibeScores[game.reference.id],
+                                animationIndex: index,
+                              ),
+                            );
+                          },
+                          childCount: sortedJoinableGames.length,
+                        ),
+                      ),
+                    ),
+                  // Mutual Games List (amber cards, rendered inline after joinable)
+                  if (sortedMutualGames.isNotEmpty)
+                    SliverPadding(
+                      padding: EdgeInsets.symmetric(
+                        horizontal: AppSpacing.screenPadding,
+                      ),
+                      sliver: SliverList(
+                        delegate: SliverChildBuilderDelegate(
+                          (context, index) {
+                            final game = sortedMutualGames[index];
+                            final hostId = game.userRef?.id ?? game.uid;
+                            final mutualName = firstMutualFriendName[hostId] ?? 'a friend';
+                            final mutualCount = (mutualFriendsMap[hostId]?.length ?? 1) - 1;
+                            final animationIndex = sortedJoinableGames.length + index;
+                            return Padding(
+                              padding: EdgeInsets.only(
+                                bottom: index < sortedMutualGames.length - 1
+                                    ? AppSpacing.sm
+                                    : AppSpacing.md,
+                              ),
+                              child: MutualGameCard(
+                                game: game,
+                                mutualFriendName: mutualName,
+                                additionalMutualCount: mutualCount,
+                                chatState: chatActionStates[hostId] ?? MutualActionState.idle,
+                                friendState: friendActionStates[hostId] ?? MutualActionState.idle,
+                                animationIndex: animationIndex,
+                                onAskToChat: () {
+                                  if (onAskToChat != null && game.userRef != null) {
+                                    onAskToChat!(game.userRef!);
+                                  }
+                                },
+                                onAddFriend: () {
+                                  if (onAddFriendFromMutual != null && game.userRef != null) {
+                                    onAddFriendFromMutual!(game.userRef!);
+                                  }
+                                },
+                              ),
+                            );
+                          },
+                          childCount: sortedMutualGames.length,
+                        ),
+                      ),
+                    ),
+                  // Bottom padding for FAB
+                  SliverToBoxAdapter(
+                    child: SizedBox(height: 100),
+                  ),
                 ],
               ),
             );

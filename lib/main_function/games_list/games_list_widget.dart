@@ -11,9 +11,12 @@ import '/main_function/games_list/components/game_list_filter_bottom_sheet.dart'
 import '/main_function/games_list/components/games_list_app_bar.dart';
 import '/main_function/games_list/components/games_list_content.dart';
 import '/main_function/games_list/components/games_list_dialogs.dart';
+import '/main_function/games_list/components/mutual_card_actions.dart';
+import '/main_function/games_list/models/quick_filter.dart';
 import '/main_function/games_list/utils/cancelled_game_handler.dart';
 import '/main_function/games_list/utils/game_filter_meta.dart';
 import '/models/game.dart';
+import '/providers/chat_provider.dart';
 import '/providers/game_provider.dart';
 import '/providers/profile_provider.dart';
 import '/providers/user_provider.dart';
@@ -37,6 +40,13 @@ class _GamesListWidgetState extends State<GamesListWidget> {
   List<Game>? _cachedGames;
   GameListFilters _filters = GameListFilters();
 
+  // Quick filter and sort state
+  QuickFilter _quickFilter = QuickFilter.all;
+  GameSortOption _sortOption = GameSortOption.soonest;
+
+  // Vibe scores cache (game reference ID -> score 0-100)
+  final Map<String, double> _vibeScores = {};
+
   // Cache for the last computed filter metadata (not state - updated during build)
   GameFilterMeta _lastFilterMeta = const GameFilterMeta.empty();
 
@@ -48,6 +58,22 @@ class _GamesListWidgetState extends State<GamesListWidget> {
 
   // Gate to prevent scheduling multiple callbacks before prior one runs
   bool _warmScheduled = false;
+
+  // Mutual friend caches: hostId -> list of mutual friend UIDs
+  final Map<String, List<String>> _mutualFriendsMap = {};
+
+  // First mutual friend display name cache: hostId -> name
+  final Map<String, String> _firstMutualFriendName = {};
+
+  // Hosts that need mutual friend computation (persists until computed)
+  final Set<String> _hostsNeedingMutualComputation = {};
+
+  // Gate to prevent scheduling multiple callbacks
+  bool _mutualFetchScheduled = false;
+
+  // Track action states for mutual cards: hostId -> state
+  final Map<String, MutualActionState> _chatActionStates = {};
+  final Map<String, MutualActionState> _friendActionStates = {};
 
   final scaffoldKey = GlobalKey<ScaffoldState>();
 
@@ -74,7 +100,7 @@ class _GamesListWidgetState extends State<GamesListWidget> {
     }
   }
 
-  void _processPendingProfileWarm() {
+  Future<void> _processPendingProfileWarm() async {
     _warmScheduled = false;
     if (!mounted) return;
 
@@ -83,7 +109,14 @@ class _GamesListWidgetState extends State<GamesListWidget> {
 
     _pendingWarmUids = null;
     _lastWarmedProfileUids = uids;
-    context.read<ProfileProvider>().warmProfiles(uids);
+
+    // Warm profiles and wait for completion
+    await context.read<ProfileProvider>().warmProfiles(uids);
+
+    // After profiles are warmed, recompute mutual friends if we have pending hosts
+    if (mounted && _hostsNeedingMutualComputation.isNotEmpty) {
+      _processPendingMutualFetch();
+    }
   }
 
   @override
@@ -192,22 +225,215 @@ class _GamesListWidgetState extends State<GamesListWidget> {
     }
   }
 
-  void _handleSeeAllFlexible(
-    List<Game> games,
-    DocumentReference? currentUserReference,
-  ) {
-    showFlexibleGamesSheet(
-      context: context,
-      games: games,
-      currentUserReference: currentUserReference,
-    );
+  void _handleQuickFilterChanged(QuickFilter filter) {
+    updateState(this, () {
+      _quickFilter = filter;
+      // If selecting Top VIBE, also change sort
+      if (filter == QuickFilter.topVibe) {
+        _sortOption = GameSortOption.topVibe;
+      }
+    });
+  }
+
+  void _handleSortChanged(GameSortOption option) {
+    updateState(this, () {
+      _sortOption = option;
+    });
   }
 
   Future<void> _handleRefresh() async {
     context.read<GameProvider>().invalidateAllGameCache();
+    // Clear mutual friend caches on refresh
+    _mutualFriendsMap.clear();
+    _firstMutualFriendName.clear();
+    _hostsNeedingMutualComputation.clear();
     await Future.delayed(Duration(milliseconds: 500));
     if (mounted) {
       updateState(this, () {});
+    }
+  }
+
+  /// Schedules mutual friend computation to run after the current build completes.
+  void _scheduleMutualFriendFetch(Set<String> hostIds) {
+    if (hostIds.isEmpty) return;
+
+    // Add hosts that we haven't computed yet
+    final newHostIds = hostIds.where((id) => !_mutualFriendsMap.containsKey(id));
+    _hostsNeedingMutualComputation.addAll(newHostIds);
+
+    if (_hostsNeedingMutualComputation.isEmpty) return;
+
+    if (!_mutualFetchScheduled) {
+      _mutualFetchScheduled = true;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _processPendingMutualFetch();
+      });
+    }
+  }
+
+  /// Computes mutual friends from cached ProfileProvider data.
+  ///
+  /// Uses the already-warmed profiles to get host friends lists and compute
+  /// mutual friends locally, avoiding additional Firestore reads.
+  void _processPendingMutualFetch() {
+    _mutualFetchScheduled = false;
+    if (!mounted) return;
+
+    if (_hostsNeedingMutualComputation.isEmpty) return;
+
+    final userProvider = context.read<UserProvider>();
+    final profileProvider = context.read<ProfileProvider>();
+    final myFriends = userProvider.currentUser?.friends ?? [];
+    if (myFriends.isEmpty) return;
+
+    // Build set of my friend UIDs for intersection
+    final myFriendIds = myFriends.map((ref) => ref.id).toSet();
+
+    // Collect UIDs of mutual friends we find (to warm their profiles for names)
+    final mutualFriendUidsToWarm = <String>{};
+    final hostsToRemove = <String>[];
+    var hasUpdates = false;
+
+    for (final hostId in _hostsNeedingMutualComputation) {
+      // Skip if already computed
+      if (_mutualFriendsMap.containsKey(hostId)) {
+        hostsToRemove.add(hostId);
+        continue;
+      }
+
+      // Get host's profile from cache (already warmed by onOwnerUidsReady)
+      final hostProfile = profileProvider.getCachedProfile(hostId);
+      if (hostProfile == null) {
+        // Profile not cached yet - will be recomputed after profile warm completes
+        continue;
+      }
+
+      // Get host's friend UIDs
+      final hostFriendIds = hostProfile.friends.map((ref) => ref.id).toSet();
+
+      // Compute intersection locally (no Firestore call!)
+      final mutualIds = myFriendIds.intersection(hostFriendIds);
+
+      if (mutualIds.isNotEmpty) {
+        // Get first mutual friend's name from cache (if available)
+        final firstMutualId = mutualIds.first;
+        final firstMutualProfile = profileProvider.getCachedProfile(firstMutualId);
+        final firstName = firstMutualProfile?.displayName ?? '';
+
+        _mutualFriendsMap[hostId] = mutualIds.toList();
+        _firstMutualFriendName[hostId] = firstName.isNotEmpty ? firstName : 'a friend';
+        hasUpdates = true;
+
+        // Schedule warming of mutual friend profiles for display names
+        mutualFriendUidsToWarm.addAll(mutualIds);
+      }
+
+      // Mark this host as processed (whether or not it had mutual friends)
+      hostsToRemove.add(hostId);
+    }
+
+    // Remove processed hosts
+    _hostsNeedingMutualComputation.removeAll(hostsToRemove);
+
+    // Warm mutual friend profiles to get their display names
+    if (mutualFriendUidsToWarm.isNotEmpty) {
+      profileProvider.warmProfiles(mutualFriendUidsToWarm);
+    }
+
+    // Trigger rebuild if we found any mutual friends
+    if (hasUpdates && mounted) {
+      updateState(this, () {});
+    }
+  }
+
+  /// Returns the set of host IDs that have mutual friends with the current user.
+  Set<String> get _mutualFriendHostIds => _mutualFriendsMap.keys.toSet();
+
+  /// Handle "Ask to Chat" action for a mutual friend game.
+  Future<void> _handleAskToChat(DocumentReference hostRef) async {
+    final hostId = hostRef.id;
+    if (_chatActionStates[hostId] == MutualActionState.completed) return;
+
+    updateState(this, () {
+      _chatActionStates[hostId] = MutualActionState.loading;
+    });
+
+    try {
+      final currentUserId = context.read<UserProvider>().currentUser?.uid;
+      if (currentUserId == null) {
+        throw Exception('User not logged in');
+      }
+
+      // Create or get existing DM chat
+      final chatProvider = context.read<ChatProvider>();
+      final chatRef = await chatProvider.createOrGetDirectChat(
+        currentUid: currentUserId,
+        otherUid: hostId,
+      );
+
+      if (!mounted) return;
+
+      updateState(this, () {
+        _chatActionStates[hostId] = MutualActionState.completed;
+      });
+
+      // Navigate to chat
+      context.pushChatDetails(chatId: chatRef.id);
+    } catch (e) {
+      AppLog.d('❌ GamesListWidget._handleAskToChat error: $e');
+      if (!mounted) return;
+
+      updateState(this, () {
+        _chatActionStates[hostId] = MutualActionState.idle;
+      });
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Could not open chat. Please try again.'),
+          backgroundColor: AppColors.error,
+        ),
+      );
+    }
+  }
+
+  /// Handle "Add Friend" action for a mutual friend game.
+  Future<void> _handleAddFriendFromMutual(DocumentReference hostRef) async {
+    final hostId = hostRef.id;
+    if (_friendActionStates[hostId] == MutualActionState.completed) return;
+
+    updateState(this, () {
+      _friendActionStates[hostId] = MutualActionState.loading;
+    });
+
+    try {
+      await context.read<UserProvider>().sendFriendRequest(hostRef);
+
+      if (!mounted) return;
+
+      updateState(this, () {
+        _friendActionStates[hostId] = MutualActionState.completed;
+      });
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Friend request sent'),
+          backgroundColor: AppColors.success,
+        ),
+      );
+    } catch (e) {
+      AppLog.d('❌ GamesListWidget._handleAddFriendFromMutual error: $e');
+      if (!mounted) return;
+
+      updateState(this, () {
+        _friendActionStates[hostId] = MutualActionState.idle;
+      });
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Failed to send friend request. Please try again.'),
+          backgroundColor: AppColors.error,
+        ),
+      );
     }
   }
 
@@ -247,6 +473,9 @@ class _GamesListWidgetState extends State<GamesListWidget> {
                 initialGames: _cachedGames ?? const <Game>[],
                 currentUserReference: currentUserReference,
                 filters: _filters,
+                quickFilter: _quickFilter,
+                sortOption: _sortOption,
+                vibeScores: _vibeScores,
                 shouldHideCancelledGame: _shouldHideCancelledGame,
                 getCancelledHandling: _getCancelledHandling,
                 onFilterMetaChanged: (meta) => _lastFilterMeta = meta,
@@ -254,17 +483,23 @@ class _GamesListWidgetState extends State<GamesListWidget> {
                 onCancelledGameTap: _handleCancelledGameTap,
                 onFriendsOnlyTap: _handleFriendsOnlyTap,
                 onSendFriendRequest: _sendFriendRequest,
-                onToggleVisibility: () {
-                  final appState = context.read<AppState>();
-                  appState.hideFriendsOnlyGames = !appState.hideFriendsOnlyGames;
-                },
-                onSeeAllFlexible: _handleSeeAllFlexible,
+                onQuickFilterChanged: _handleQuickFilterChanged,
+                onSortChanged: _handleSortChanged,
                 onCreateGame: () => context.pushCreateGame(
                   transition: TransitionStandards.detailTransition,
                 ),
                 onRefresh: _handleRefresh,
                 onRetry: _retryGamesStream,
                 onNavigateToStanding: () => context.pushYourStanding(),
+                // Mutual friend data
+                mutualFriendHostIds: _mutualFriendHostIds,
+                firstMutualFriendName: _firstMutualFriendName,
+                mutualFriendsMap: _mutualFriendsMap,
+                chatActionStates: _chatActionStates,
+                friendActionStates: _friendActionStates,
+                onMutualHostsReady: _scheduleMutualFriendFetch,
+                onAskToChat: _handleAskToChat,
+                onAddFriendFromMutual: _handleAddFriendFromMutual,
               ),
             ),
           ),

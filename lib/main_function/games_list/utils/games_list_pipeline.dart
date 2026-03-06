@@ -101,39 +101,61 @@ List<Game> filterEligibleGames(
   }).toList();
 }
 
-/// Result of partitioning games into joinable and locked lists.
+/// Result of partitioning games into joinable, mutual, and locked lists.
+///
+/// - [joinable]: Games the user can join directly (public or friends with host)
+/// - [mutual]: Friends-only games where user has mutual friend with host
+/// - [locked]: Friends-only games with no connection (hidden from feed)
 class PartitionedGames {
   final List<Game> joinable;
+  final List<Game> mutual;
   final List<Game> locked;
 
-  const PartitionedGames({required this.joinable, required this.locked});
+  const PartitionedGames({
+    required this.joinable,
+    required this.mutual,
+    required this.locked,
+  });
 }
 
-/// Partitions games into joinable and locked (friends-only) lists.
+/// Partitions games into joinable, mutual, and locked lists.
 ///
-/// A game is joinable if:
-/// - User is already a participant
-/// - Game is public
-/// - Game is friends-only AND user is friends with owner
+/// A game is:
+/// - [joinable]: User is a participant, game is public, or user is friends with host
+/// - [mutual]: Friends-only AND user has mutual friend with host (not direct friend)
+/// - [locked]: Friends-only with no connection (hidden from feed)
+///
+/// [mutualFriendHostIds] is the set of host UIDs that the user has mutual friends with.
 PartitionedGames partitionJoinableAndLockedGames(
   List<Game> games, {
   required DocumentReference? currentUserReference,
   required Set<String> friendIds,
+  Set<String> mutualFriendHostIds = const {},
 }) {
   final joinable = <Game>[];
+  final mutual = <Game>[];
   final locked = <Game>[];
 
   for (final game in games) {
     if (isJoinableGame(game, currentUserReference, friendIds)) {
+      // User can join: participant, public, or friend of host
       joinable.add(game);
     } else if (isFriendsOnlyGame(game)) {
-      locked.add(game);
+      // Friends-only game where user is NOT a direct friend
+      final hostId = game.userRef?.id ?? game.uid;
+      if (mutualFriendHostIds.contains(hostId)) {
+        // Has mutual friend - show amber card
+        mutual.add(game);
+      } else {
+        // No connection - hidden from feed
+        locked.add(game);
+      }
     } else {
       joinable.add(game);
     }
   }
 
-  return PartitionedGames(joinable: joinable, locked: locked);
+  return PartitionedGames(joinable: joinable, mutual: mutual, locked: locked);
 }
 
 /// Result of splitting games into flexible and scheduled lists.

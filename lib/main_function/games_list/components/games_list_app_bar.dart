@@ -33,7 +33,7 @@ class GamesListAppBar extends StatelessWidget implements PreferredSizeWidget {
       backgroundColor: AppColors.transparent,
       automaticallyImplyLeading: false,
       title: Text(
-        'Game List',
+        'Find a Game',
         style: AppTypography.headlineMediumSans.copyWith(
           color: AppColors.textPrimary,
           fontWeight: FontWeight.w600,
