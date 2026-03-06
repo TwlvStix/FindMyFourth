@@ -10,7 +10,11 @@ Utility files provide shared helper functions used across the app. They must NOT
 - If a utility needs Firestore data, accept it as a parameter — let the calling service fetch it
 - Utilities transform, format, or compute — they do not read or write to backends
 
-**Known debt**: `initialize_friend_fields.dart` and `app_util.dart` have direct Firebase calls. Refactor to accept data as parameters when next modified.
+**Known debt** (all have optional DI, acceptable as pure reference builders or utilities):
+- `initialize_friend_fields.dart` — One-time migration utility, uses `FirebaseAuth.instance` as fallback
+- `app_util.dart` — `toDocRef()` extension, pure reference builder with DI
+- `custom_functions.dart` — `returnDocRefFromUID()`, pure reference builder with DI
+- `serialization_util.dart` — Calls `.get()` for document fetching; should be refactored to a service when next modified
 
 ## Pure Functions Preferred
 - Utility methods should be pure functions where possible (same input → same output, no side effects)

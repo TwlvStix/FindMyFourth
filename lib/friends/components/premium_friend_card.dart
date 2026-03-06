@@ -8,26 +8,26 @@ import '/core/design_tokens/spacing.dart';
 import '/core/design_tokens/colors.dart';
 import '/core/design_tokens/typography.dart';
 import '/core/design_tokens/app_phosphor_icons.dart';
-import '/core/design_tokens/border_radius.dart';
 import '/services/vibe_matcher.dart';
 import '/models/vibe_profile.dart';
+import '/utils/vibe_archetypes.dart';
 import 'friend_card_action_button.dart';
-import 'friend_card_avatar.dart';
-import 'friend_card_badges.dart';
+import 'premium_friend_card/friend_card_background.dart';
+import 'premium_friend_card/vibe_ring_avatar.dart';
+import 'premium_friend_card/friend_card_footer.dart';
 
 // Re-export for backwards compatibility
 export 'friend_card_action_button.dart' show ActionButtonVariant;
 
-/// Redesigned premium friend card matching LuxuryPlayerCard design language:
-/// - Dark fairway surface (AppColors.navy @ 30% alpha)
-/// - Rounded-square avatars (52x52, radius 14)
-/// - Manrope typography with cream/gold color tokens
-/// - 20px border radius, consistent padding (20h x 18v)
+/// Redesigned premium friend card with:
+/// - Animated vibe ring around avatar
+/// - Large gold HCP display
+/// - Archetype label above name
+/// - Stats strip with vibe match percentage
+/// - Footer with Message + Action buttons
 class PremiumFriendCard extends StatefulWidget {
-  // LuxuryPlayerCard design tokens — using AppColors
   static final Color textPrimary = AppColors.sand;
   static final Color textMuted = AppColors.glassTextTertiary;
-  static final Color goldAccent = AppColors.goldLight;
 
   final UsersRecord user;
   final VoidCallback? onViewProfile;
@@ -50,13 +50,16 @@ class PremiumFriendCard extends StatefulWidget {
   final String? lastActive;
   final UsersRecord? currentUser;
 
+  /// Card index in list for stagger animation (0-based)
+  final int cardIndex;
+
   const PremiumFriendCard({
     super.key,
     required this.user,
     this.onViewProfile,
     this.onMessage,
     this.onAction,
-    this.messageLabel = 'Chat',
+    this.messageLabel = 'Message',
     this.messageIcon = AppPhosphorIcons.chat,
     this.messageIsPrimary = false,
     this.actionLabel = 'Add',
@@ -72,6 +75,7 @@ class PremiumFriendCard extends StatefulWidget {
     this.isOnline = false,
     this.lastActive,
     this.currentUser,
+    this.cardIndex = 0,
   });
 
   @override
@@ -84,6 +88,12 @@ class _PremiumFriendCardState extends State<PremiumFriendCard>
   late Animation<double> _scaleAnimation;
   bool _isPressed = false;
   VibeMatchResult? _vibeMatch;
+
+  // Stagger animation delay per card (24ms base, capped at 8 cards)
+  Duration get _staggerDelay {
+    final index = widget.cardIndex.clamp(0, 7);
+    return Duration(milliseconds: index * 24);
+  }
 
   @override
   void initState() {
@@ -135,13 +145,46 @@ class _PremiumFriendCardState extends State<PremiumFriendCard>
     if (dob == null) return null;
     final now = DateTime.now();
     int age = now.year - dob.year;
-    if (now.month < dob.month || (now.month == dob.month && now.day < dob.day)) age--;
+    if (now.month < dob.month ||
+        (now.month == dob.month && now.day < dob.day)) {
+      age--;
+    }
     return age;
   }
 
-  void _onTapDown(TapDownDetails _) { setState(() => _isPressed = true); _scaleController.forward(); HapticFeedback.lightImpact(); }
-  void _onTapUp(TapUpDetails _) { setState(() => _isPressed = false); _scaleController.reverse(); }
-  void _onTapCancel() { setState(() => _isPressed = false); _scaleController.reverse(); }
+  String? _getArchetypeName() {
+    // 1. Check denormalized field first (fast)
+    if (widget.user.archetype.isNotEmpty) {
+      return widget.user.archetype.replaceFirst('The ', '');
+    }
+    // 2. Compute from vibe profile (fallback)
+    if (widget.user.vibeProfile.isNotEmpty) {
+      try {
+        final profile = VibeProfile.fromFirestore(widget.user.vibeProfile);
+        final match = VibeArchetypes.classifyProfile(profile);
+        return match.name.replaceFirst('The ', '');
+      } catch (_) {
+        return null;
+      }
+    }
+    return null;
+  }
+
+  void _onTapDown(TapDownDetails _) {
+    setState(() => _isPressed = true);
+    _scaleController.forward();
+    HapticFeedback.lightImpact();
+  }
+
+  void _onTapUp(TapUpDetails _) {
+    setState(() => _isPressed = false);
+    _scaleController.reverse();
+  }
+
+  void _onTapCancel() {
+    setState(() => _isPressed = false);
+    _scaleController.reverse();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -157,35 +200,44 @@ class _PremiumFriendCardState extends State<PremiumFriendCard>
             horizontal: AppSpacing.md,
             vertical: AppSpacing.xs,
           ),
-          decoration: BoxDecoration(
-            color: _isPressed
-                ? AppColors.navy.withValues(alpha: 0.4)
-                : AppColors.navy.withValues(alpha: 0.3),
-            borderRadius: BorderRadius.circular(AppBorderRadius.card),
-          ),
-          child: Padding(
-            padding: EdgeInsets.symmetric(
-              horizontal: AppSpacing.lg,
-              vertical: AppSpacing.md,
-            ),
-            child: LayoutBuilder(
-              builder: (context, constraints) {
-                return Row(
-                  children: [
-                    FriendCardAvatar(
-                      photoUrl: widget.user.photoUrl,
-                      displayName: widget.user.displayName,
-                    ),
-                    SizedBox(width: AppSpacing.md),
-                    Expanded(child: _buildUserInfo()),
-                    SizedBox(width: AppSpacing.sm),
-                    _buildActions(),
-                  ],
-                );
-              },
+          child: FriendCardBackground(
+            isPressed: _isPressed,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                _buildMainContent(),
+                _buildFooter(),
+              ],
             ),
           ),
         ),
+      ),
+    );
+  }
+
+  Widget _buildMainContent() {
+    return Padding(
+      padding: EdgeInsets.symmetric(
+        horizontal: AppSpacing.md,
+        vertical: AppSpacing.sm + 2,
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Avatar with vibe ring
+          VibeRingAvatar(
+            photoUrl: widget.user.photoUrl,
+            displayName: widget.user.displayName,
+            vibeScore: _vibeMatch?.myFitPercent,
+            size: 56,
+            animationDelay: _staggerDelay,
+          ),
+          SizedBox(width: AppSpacing.md),
+          // User info
+          Expanded(child: _buildUserInfo()),
+          // HCP display
+          if (widget.user.hasHandicap()) _buildHandicapDisplay(),
+        ],
       ),
     );
   }
@@ -194,33 +246,37 @@ class _PremiumFriendCardState extends State<PremiumFriendCard>
     final displayName = widget.user.displayName.isNotEmpty
         ? widget.user.displayName
         : 'Golfer';
+    final archetype = _getArchetypeName();
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       mainAxisSize: MainAxisSize.min,
       children: [
+        // Archetype label
+        if (archetype != null) ...[
+          Text(
+            archetype.toUpperCase(),
+            style: AppTypography.labelMicro.copyWith(
+              color: AppColors.textMuted,
+              letterSpacing: 1.2,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+          SizedBox(height: 2),
+        ],
+        // Name
         Text(
           displayName,
-          style: AppTypography.labelMedium.copyWith(
-            fontSize: 15,
+          style: AppTypography.titleMedium.copyWith(
             color: PremiumFriendCard.textPrimary,
-            letterSpacing: 0.2,
+            fontWeight: FontWeight.w600,
+            fontSize: 18,
           ),
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
         ),
+        // Age + Hometown
         _buildSecondaryInfo(),
-        AppSpacing.verticalXxs,
-        Wrap(
-          spacing: 6,
-          runSpacing: 4,
-          children: [
-            if (_vibeMatch != null)
-              FriendCardVibeBadge(vibeMatch: _vibeMatch!),
-            if (widget.user.handicap != 0)
-              FriendCardHandicapBadge(handicap: widget.user.handicap),
-          ],
-        ),
       ],
     );
   }
@@ -228,50 +284,119 @@ class _PremiumFriendCardState extends State<PremiumFriendCard>
   Widget _buildSecondaryInfo() {
     final age = _calculateAge(widget.user.dateOfBirth);
     final hometown = widget.user.hometownName;
-    final parts = <String>[if (age != null) '$age', if (hometown.isNotEmpty) hometown];
-    if (parts.isEmpty) return const SizedBox.shrink();
+    final vibePercent = _vibeMatch?.myFitPercent.round();
+
+    final locationParts = <String>[
+      if (age != null) '$age',
+      if (hometown.isNotEmpty) hometown
+    ];
+
+    if (locationParts.isEmpty && vibePercent == null) {
+      return const SizedBox.shrink();
+    }
+
     return Padding(
       padding: EdgeInsets.only(top: AppSpacing.xxs),
-      child: Text(
-        parts.join(' • '),
-        style: AppTypography.labelSmall.copyWith(color: AppColors.textMuted, fontSize: 12),
-        maxLines: 1,
-        overflow: TextOverflow.ellipsis,
+      child: Row(
+        children: [
+          // Age · Town
+          if (locationParts.isNotEmpty)
+            Text(
+              locationParts.join(' · '),
+              style: AppTypography.labelSmall.copyWith(
+                color: AppColors.textMuted,
+                fontSize: 12,
+                fontWeight: FontWeight.w400,
+              ),
+            ),
+          // Vibe match chip
+          if (vibePercent != null) ...[
+            if (locationParts.isNotEmpty)
+              Padding(
+                padding: EdgeInsets.symmetric(horizontal: AppSpacing.xs),
+                child: Text(
+                  '·',
+                  style: AppTypography.labelSmall.copyWith(
+                    color: AppColors.textMuted,
+                    fontSize: 12,
+                  ),
+                ),
+              ),
+            Icon(
+              AppPhosphorIcons.heartFill,
+              size: 12,
+              color: AppColors.green,
+            ),
+            SizedBox(width: 4),
+            Text(
+              '$vibePercent% match',
+              style: AppTypography.labelSmall.copyWith(
+                color: AppColors.green,
+                fontSize: 12,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ],
+        ],
       ),
     );
   }
 
-  Widget _buildActions() {
-    final actions = <Widget>[];
-    if (widget.onMessage != null) {
-      actions.add(FriendCardActionButton(
-        icon: widget.messageIcon,
-        onPressed: widget.onMessage!,
-        variant: widget.messageIsPrimary ? ActionButtonVariant.primary : ActionButtonVariant.secondary,
-        tooltip: widget.messageLabel,
-      ));
+  Widget _buildHandicapDisplay() {
+    final handicap = widget.user.handicap;
+    final handicapText = handicap < 0 ? '+${handicap.abs()}' : '$handicap';
+
+    return Padding(
+      padding: EdgeInsets.only(left: AppSpacing.sm),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.end,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          // HCP label
+          Text(
+            'HCP',
+            style: AppTypography.monoSmall.copyWith(
+              color: AppColors.textSecondary,
+              fontSize: 9,
+              fontWeight: FontWeight.w500,
+              letterSpacing: 0.5,
+            ),
+          ),
+          // Handicap value
+          Text(
+            handicapText,
+            style: AppTypography.monoMedium.copyWith(
+              color: AppColors.textPrimary,
+              fontSize: 32,
+              fontWeight: FontWeight.w700,
+              height: 1.0,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildFooter() {
+    // Determine button visibility based on callbacks
+    final showMessage = widget.onMessage != null;
+    final showAction = widget.showActionButton;
+
+    if (!showMessage && !showAction && !widget.showOverflowMenu) {
+      return const SizedBox.shrink();
     }
-    if (widget.showActionButton) {
-      actions.add(FriendCardActionButton(
-        icon: widget.actionIcon,
-        onPressed: widget.onAction,
-        variant: widget.actionVariant,
-        isLoading: widget.isLoading,
-        tooltip: widget.actionLabel,
-      ));
-    }
-    if (widget.showOverflowMenu && widget.onOverflowAction != null) {
-      actions.add(FriendCardActionButton(
-        icon: AppPhosphorIcons.more,
-        onPressed: widget.onOverflowAction!,
-        variant: ActionButtonVariant.muted,
-        tooltip: 'More options',
-      ));
-    }
-    if (actions.isEmpty) return const SizedBox.shrink();
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: actions.expand((w) => [w, AppSpacing.horizontalXsBox]).toList()..removeLast(),
+
+    return FriendCardFooter(
+      onMessage: widget.onMessage,
+      onAction: widget.onAction,
+      messageLabel: widget.messageLabel,
+      messageIcon: widget.messageIcon,
+      actionLabel: widget.actionLabel,
+      actionIcon: widget.actionIcon,
+      actionIsPrimary: widget.actionVariant == ActionButtonVariant.primary,
+      isLoading: widget.isLoading,
+      showMessageButton: showMessage,
+      showActionButton: showAction,
     );
   }
 }

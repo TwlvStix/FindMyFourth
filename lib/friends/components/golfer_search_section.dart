@@ -20,6 +20,7 @@ import '/friends/components/default_explore_content.dart';
 typedef GolferSearchItemBuilder = Widget Function(
   BuildContext context,
   UsersRecord user,
+  int index,
 );
 
 typedef GolferSearchEmptyBuilder = Widget Function(VoidCallback clearSearch);
@@ -214,7 +215,7 @@ class _GolferSearchSectionState extends State<GolferSearchSection> {
       separatorBuilder: (_, __) => SizedBox(height: 0),
       itemBuilder: (context, index) {
         final user = results[index];
-        return widget.itemBuilder(context, user);
+        return widget.itemBuilder(context, user, index);
       },
     );
   }

@@ -177,12 +177,14 @@ class _GroupedFriendsListState extends State<GroupedFriendsList> {
                   ),
                 ),
                 if (!favoritesCollapsed)
-                  ...favorites.map((friend) => _buildFriendCard(friend, true)),
+                  ...favorites.asMap().entries.map(
+                      (entry) => _buildFriendCard(entry.value, true, entry.key)),
               ],
 
               // Other friends (no section header since it's redundant on Friends tab)
               if (otherFriends.isNotEmpty) ...[
-                ...otherFriends.map((friend) => _buildFriendCard(friend, false)),
+                ...otherFriends.asMap().entries.map((entry) => _buildFriendCard(
+                    entry.value, false, favorites.length + entry.key)),
               ],
 
               SizedBox(height: AppSpacing.md),
@@ -193,7 +195,7 @@ class _GroupedFriendsListState extends State<GroupedFriendsList> {
     );
   }
 
-  Widget _buildFriendCard(UsersRecord friend, bool isFavorite) {
+  Widget _buildFriendCard(UsersRecord friend, bool isFavorite, int cardIndex) {
     return SwipeableFriendCard(
       key: ValueKey(friend.reference.id),
       friendId: friend.reference.id,
@@ -208,6 +210,7 @@ class _GroupedFriendsListState extends State<GroupedFriendsList> {
       child: PremiumFriendCard(
         user: friend,
         currentUser: widget.currentUser,
+        cardIndex: cardIndex,
         onViewProfile: () => widget.onViewProfile(friend),
         messageIsPrimary: true,
         onMessage: () => widget.onMessage(friend),

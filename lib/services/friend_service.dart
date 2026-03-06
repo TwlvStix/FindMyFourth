@@ -66,6 +66,37 @@ class FriendService {
     }
   }
 
+  /// Add a friend (bidirectional, atomic)
+  ///
+  /// Uses a Firestore transaction to ensure both users are added to each other's
+  /// friends list atomically. This prevents partial updates where only one side
+  /// gets updated.
+  Future<void> addFriend({
+    required DocumentReference currentUserRef,
+    required DocumentReference friendRef,
+  }) async {
+    try {
+      await _firestore.runTransaction((transaction) async {
+        // Add friend to current user's friends list
+        transaction.update(currentUserRef, {
+          'friends': FieldValue.arrayUnion([friendRef]),
+        });
+
+        // Add current user to friend's friends list (bidirectional)
+        transaction.update(friendRef, {
+          'friends': FieldValue.arrayUnion([currentUserRef]),
+        });
+      });
+
+      AppLog.d(
+          '✅ FriendService: Friend added between ${currentUserRef.id} and ${friendRef.id}');
+    } on FirebaseException catch (e, stackTrace) {
+      AppLog.d('❌ FriendService.addFriend error: ${e.code} - ${e.message}');
+      AppLog.d('❌ FriendService.addFriend stackTrace: $stackTrace');
+      rethrow;
+    }
+  }
+
   /// Send a friend request by adding current user's ID to target's friend_requests array
   ///
   /// Returns true if the request was sent, false if the target user doesn't exist.

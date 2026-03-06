@@ -16,6 +16,7 @@ import '/vibe/vibe_recommendation_rank.dart';
 typedef DefaultExploreItemBuilder = Widget Function(
   BuildContext context,
   UsersRecord user,
+  int index,
 );
 
 class DefaultExploreContent extends StatefulWidget {
@@ -182,7 +183,7 @@ class _DefaultExploreContentState extends State<DefaultExploreContent> {
             separatorBuilder: (_, __) => SizedBox(height: 0),
             itemBuilder: (context, index) {
               final user = recommendations[index];
-              return widget.itemBuilder(context, user);
+              return widget.itemBuilder(context, user, index);
             },
           ),
       ],
@@ -266,7 +267,7 @@ class _DefaultExploreContentState extends State<DefaultExploreContent> {
                 separatorBuilder: (_, __) => SizedBox(height: 0),
                 itemBuilder: (context, index) {
                   final user = recentlyJoined[index];
-                  return widget.itemBuilder(context, user);
+                  return widget.itemBuilder(context, user, index);
                 },
               ),
           ],
@@ -303,7 +304,7 @@ class _DefaultExploreContentState extends State<DefaultExploreContent> {
             separatorBuilder: (_, __) => SizedBox(height: 0),
             itemBuilder: (context, index) {
               final user = recentlyJoined[index];
-              return widget.itemBuilder(context, user);
+              return widget.itemBuilder(context, user, index);
             },
           ),
       ],
@@ -337,7 +338,7 @@ class _DefaultExploreContentState extends State<DefaultExploreContent> {
             separatorBuilder: (_, __) => SizedBox(height: 0),
             itemBuilder: (context, index) {
               final user = allGolfers[index];
-              return widget.itemBuilder(context, user);
+              return widget.itemBuilder(context, user, index);
             },
           ),
       ],

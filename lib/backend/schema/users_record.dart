@@ -309,6 +309,11 @@ class UsersRecord extends FirestoreRecord {
   int get streakMilestoneLevel => _streakMilestoneLevel ?? 0;
   bool hasStreakMilestoneLevel() => _streakMilestoneLevel != null;
 
+  // "archetype" field. E.g., "The Shark", "The Grinder".
+  String? _archetype;
+  String get archetype => _archetype ?? '';
+  bool hasArchetype() => _archetype != null;
+
   void _initializeFields() {
     _photoUrl = snapshotData['photo_url'] as String?;
     _createdTime = snapshotData['created_time'] as DateTime?;
@@ -414,6 +419,7 @@ class UsersRecord extends FirestoreRecord {
         snapshotData['streak_freeze_used_week_key'] as String?;
     _streakMilestoneLevel =
         castToType<int>(snapshotData['streak_milestone_level']);
+    _archetype = snapshotData['archetype'] as String?;
   }
 
   static CollectionReference get collection =>
@@ -497,6 +503,7 @@ Map<String, dynamic> createUsersRecordData({
   String? hometownName,
   int? vibeEditCount,
   DateTime? lastVibeEditAt,
+  String? archetype,
 }) {
   final displayNameLower = displayName?.toLowerCase();
   final firestoreData = mapToFirestore(
@@ -550,6 +557,7 @@ Map<String, dynamic> createUsersRecordData({
       'hometown_name': hometownName,
       'vibe_edit_count': vibeEditCount,
       'last_vibe_edit_at': lastVibeEditAt,
+      'archetype': archetype,
     }.withoutNulls,
   );
 
@@ -609,7 +617,8 @@ class UsersRecordDocumentEquality implements Equality<UsersRecord> {
         e1?.hometown == e2?.hometown &&
         e1?.hometownName == e2?.hometownName &&
         e1?.vibeEditCount == e2?.vibeEditCount &&
-        e1?.lastVibeEditAt == e2?.lastVibeEditAt;
+        e1?.lastVibeEditAt == e2?.lastVibeEditAt &&
+        e1?.archetype == e2?.archetype;
   }
 
   @override
@@ -660,6 +669,7 @@ class UsersRecordDocumentEquality implements Equality<UsersRecord> {
         e?.hometownName,
         e?.vibeEditCount,
         e?.lastVibeEditAt,
+        e?.archetype,
       ]);
 
   @override

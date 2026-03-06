@@ -20,8 +20,12 @@ class CancellationRecord {
   });
 
   final DocumentReference reference;
-  final DocumentReference playerRef;
-  final DocumentReference gameRef;
+
+  /// Reference to the player who cancelled. Null if data is missing.
+  final DocumentReference? playerRef;
+
+  /// Reference to the game that was cancelled. Null if data is missing.
+  final DocumentReference? gameRef;
   final DateTime cancelledAt;
   final DateTime teeTime;
 
@@ -65,13 +69,9 @@ class CancellationRecord {
 
   /// Creates a CancellationRecord from a Firestore document.
   ///
-  /// Accepts optional [firestore] parameter for testability and to avoid
-  /// direct FirebaseFirestore.instance calls in the model layer.
-  static CancellationRecord fromDoc(
-    DocumentSnapshot doc, {
-    FirebaseFirestore? firestore,
-  }) {
-    final fs = firestore ?? FirebaseFirestore.instance;
+  /// Note: playerRef and gameRef are nullable — if the data is missing,
+  /// they will be null rather than using a fake "unknown" reference.
+  static CancellationRecord fromDoc(DocumentSnapshot doc) {
     final data = (doc.data() as Map<String, dynamic>?) ?? <String, dynamic>{};
 
     final cancelledAt =
@@ -92,10 +92,8 @@ class CancellationRecord {
 
     return CancellationRecord(
       reference: doc.reference,
-      playerRef: data['player_ref'] as DocumentReference? ??
-          fs.collection('users').doc('unknown'),
-      gameRef: data['game_ref'] as DocumentReference? ??
-          fs.collection('games').doc('unknown'),
+      playerRef: data['player_ref'] as DocumentReference?,
+      gameRef: data['game_ref'] as DocumentReference?,
       cancelledAt: cancelledAt,
       teeTime: teeTime,
       hoursBeforeTeeTime: hours,

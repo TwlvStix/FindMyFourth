@@ -7,6 +7,7 @@ import '/backend/backend.dart';
 import '/core/request_manager.dart';
 import '/core/utils/app_log.dart';
 import '/services/friend_service.dart';
+import '/services/profile_service.dart';
 
 /// UserProvider manages global user state and provides cached access to user data
 ///
@@ -22,13 +23,16 @@ import '/services/friend_service.dart';
 class UserProvider extends ChangeNotifier {
   UserProvider({
     FriendService? friendService,
+    ProfileService? profileService,
     FirebaseAuth? auth,
   })  : _friendService = friendService ?? FriendService(),
+        _profileService = profileService ?? ProfileService(),
         _auth = auth {
     _init();
   }
 
   final FriendService _friendService;
+  final ProfileService _profileService;
   final FirebaseAuth? _auth;
 
   FirebaseAuth get _resolvedAuth => _auth ?? FirebaseAuth.instance;
@@ -130,20 +134,12 @@ class UserProvider extends ChangeNotifier {
   }
 
   /// Ensure friend_requests field exists for the current user
+  ///
+  /// Delegates to FriendService.initializeFriendFields() which handles
+  /// both friend_requests and friends field initialization.
   Future<void> _ensureFriendRequestsFieldExists(UsersRecord user) async {
     try {
-      final userRef = user.reference;
-      final snapshot = await userRef.get();
-      final data = snapshot.data() as Map<String, dynamic>?;
-
-      // If friend_requests field doesn't exist, initialize it
-      if (data != null && !data.containsKey('friend_requests')) {
-        AppLog.d('📖 UserProvider: Initializing friend_requests field for user ${user.uid}');
-        await userRef.update({
-          'friend_requests': [],
-        });
-        AppLog.d('✅ UserProvider: friend_requests field initialized');
-      }
+      await _friendService.initializeFriendFields(user.uid);
     } catch (e) {
       AppLog.d('❌ UserProvider._ensureFriendRequestsFieldExists error: $e');
       // Don't rethrow - this is a non-critical operation
@@ -455,12 +451,14 @@ class UserProvider extends ChangeNotifier {
   // ========================================
 
   /// Update user profile data
+  ///
+  /// Delegates to ProfileService.updateProfile() which adds updated_at timestamp.
   Future<void> updateProfile(Map<String, dynamic> data) async {
-    final userRef = currentUserReference;
-    if (userRef == null) return;
+    final userId = userIdOrNull;
+    if (userId == null) return;
 
     try {
-      await userRef.update(data);
+      await _profileService.updateProfile(userId, data);
       // User data will automatically update via authenticatedUserStream
     } catch (e) {
       AppLog.d('❌ UserProvider.updateProfile error: $e');
@@ -469,21 +467,17 @@ class UserProvider extends ChangeNotifier {
   }
 
   /// Add a friend (bidirectional - adds both users to each other's friends list)
+  ///
+  /// Delegates to FriendService.addFriend() which uses a transaction for atomicity.
   Future<void> addFriend(DocumentReference friendRef) async {
     final userRef = currentUserReference;
     if (userRef == null) return;
 
     try {
-      // Add friend to current user's friends list
-      await userRef.update({
-        'friends': FieldValue.arrayUnion([friendRef]),
-      });
-
-      // Add current user to friend's friends list (bidirectional)
-      await friendRef.update({
-        'friends': FieldValue.arrayUnion([userRef]),
-      });
-
+      await _friendService.addFriend(
+        currentUserRef: userRef,
+        friendRef: friendRef,
+      );
       refreshFriends();
     } catch (e) {
       AppLog.d('❌ UserProvider.addFriend error: $e');
