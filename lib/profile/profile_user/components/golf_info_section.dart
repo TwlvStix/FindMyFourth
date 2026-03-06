@@ -13,11 +13,13 @@ class GolfInfoSection extends StatelessWidget {
     required this.golfCanadaNumber,
     this.email,
     this.phone,
+    this.hometown,
   });
 
   final String golfCanadaNumber;
   final String? email;
   final String? phone;
+  final String? hometown;
 
   @override
   Widget build(BuildContext context) {
@@ -39,6 +41,14 @@ class GolfInfoSection extends StatelessWidget {
             ),
           ),
           SizedBox(height: AppSpacing.md),
+          if (hometown != null && hometown!.isNotEmpty) ...[
+            _InfoRow(
+              icon: AppPhosphorIcons.course,
+              label: 'Hometown',
+              value: hometown!,
+            ),
+            SizedBox(height: AppSpacing.lg),
+          ],
           _InfoRow(
             icon: AppPhosphorIcons.verified,
             label: 'Golf Canada #',

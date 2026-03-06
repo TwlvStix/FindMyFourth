@@ -376,6 +376,9 @@ class _ProfileUserFirebaseWidgetState extends State<ProfileUserFirebaseWidget>
             golfCanadaNumber: golfCanadaNumber,
             email: email,
             phone: phoneNumber,
+            hometown: userRecord.hometownName.isNotEmpty
+                ? userRecord.hometownName
+                : null,
             onOpenVibe: _openVibePage,
             onMessageTap: () => _openChatWithUser(widget.userRef),
             onMutualFriendsTap: () => _showMutualFriendsSheet(context),

@@ -1,12 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
+import '/backend/schema/hometown_record.dart';
 import '/core/design_tokens/app_phosphor_icons.dart';
 import '/core/design_tokens/border_radius.dart';
 import '/core/design_tokens/colors.dart';
 import '/core/design_tokens/icon_size.dart';
 import '/core/design_tokens/spacing.dart';
 import '/core/design_tokens/typography.dart';
+import '/core/form_field_controller.dart';
+import '/core/widgets/app_drop_down.dart';
+import 'package:flutter_spinkit/flutter_spinkit.dart';
 import '/core/widgets/app_text_field.dart';
 
 /// Personal information section of the Edit Profile screen.
@@ -26,6 +30,9 @@ class EditProfilePersonalInfoSection extends StatelessWidget {
     this.firstNameValidator,
     this.lastNameValidator,
     this.phoneValidator,
+    this.hometownValue,
+    this.hometownValueController,
+    this.onHometownChanged,
   });
 
   /// Controller for first name field
@@ -57,6 +64,15 @@ class EditProfilePersonalInfoSection extends StatelessWidget {
 
   /// Validator for phone number
   final String? Function(String?)? phoneValidator;
+
+  /// Selected hometown value (city name)
+  final String? hometownValue;
+
+  /// Controller for hometown dropdown
+  final FormFieldController<String>? hometownValueController;
+
+  /// Callback when hometown changes
+  final ValueChanged<String?>? onHometownChanged;
 
   String get _genderDisplay =>
       gender?.isNotEmpty == true ? gender! : 'Gender';
@@ -166,8 +182,70 @@ class EditProfilePersonalInfoSection extends StatelessWidget {
               )),
             ],
           ),
+          SizedBox(height: AppSpacing.md),
+
+          // Hometown Dropdown
+          _buildHometownDropdown(),
         ],
       ),
+    );
+  }
+
+  Widget _buildHometownDropdown() {
+    return StreamBuilder<List<HometownRecord>>(
+      stream: HometownRecord.streamAll(),
+      builder: (context, snapshot) {
+        if (!snapshot.hasData) {
+          return Container(
+            height: 56,
+            decoration: BoxDecoration(
+              color: AppColors.inputBackground,
+              borderRadius: BorderRadius.circular(AppBorderRadius.md),
+              border: Border.all(color: AppColors.inputBorderIdle),
+            ),
+            child: Center(
+              child: SpinKitFadingCircle(
+                color: AppColors.textMuted,
+                size: 24.0,
+              ),
+            ),
+          );
+        }
+
+        final hometowns = snapshot.data!..sort((a, b) => a.name.compareTo(b.name));
+        final options = hometowns.map((h) => h.name).toList();
+
+        return Container(
+          decoration: BoxDecoration(
+            color: AppColors.inputBackground,
+            borderRadius: BorderRadius.circular(AppBorderRadius.md),
+            border: Border.all(color: AppColors.inputBorderIdle),
+          ),
+          child: AppDropDown<String>(
+            controller:
+                hometownValueController ?? FormFieldController<String>(null),
+            options: options,
+            onChanged: onHometownChanged,
+            width: double.infinity,
+            height: 56,
+            textStyle: AppTypography.bodyMedium.copyWith(
+              color: AppColors.textPrimary,
+            ),
+            hintText: 'Hometown',
+            icon: Icon(
+              AppPhosphorIcons.course,
+              color: AppColors.textMuted,
+              size: AppIconSize.md,
+            ),
+            fillColor: AppColors.inputBackground,
+            elevation: 0,
+            borderColor: AppColors.transparent,
+            borderWidth: 0,
+            borderRadius: AppBorderRadius.card,
+            margin: EdgeInsetsDirectional.only(start: AppSpacing.md),
+          ),
+        );
+      },
     );
   }
 

@@ -5,35 +5,30 @@ import '/core/motion/motion_tokens.dart';
 import '/core/motion/reduced_motion.dart';
 import '/backend/backend.dart';
 import '/core/design_tokens/spacing.dart';
-import '/core/design_tokens/icon_size.dart';
 import '/core/design_tokens/colors.dart';
 import '/core/design_tokens/typography.dart';
 import '/core/design_tokens/app_phosphor_icons.dart';
 import '/core/design_tokens/border_radius.dart';
-import '/core/widgets/app_icon.dart';
 import '/services/vibe_matcher.dart';
 import '/models/vibe_profile.dart';
+import 'friend_card_action_button.dart';
+import 'friend_card_avatar.dart';
+import 'friend_card_badges.dart';
 
-/// Button styling variants for friend card actions
-enum ActionButtonVariant {
-  /// Green filled, white icon - for primary positive actions
-  primary,
-  /// Transparent, navyLight border, textSecondary icon - for neutral secondary actions
-  secondary,
-  /// Transparent, stone border, textMuted icon - for de-emphasized/destructive actions
-  muted,
-}
+// Re-export for backwards compatibility
+export 'friend_card_action_button.dart' show ActionButtonVariant;
 
 /// Redesigned premium friend card matching LuxuryPlayerCard design language:
 /// - Dark fairway surface (AppColors.navy @ 30% alpha)
-/// - Rounded-square avatars (52×52, radius 14)
+/// - Rounded-square avatars (52x52, radius 14)
 /// - Manrope typography with cream/gold color tokens
-/// - 20px border radius, consistent padding (20h × 18v)
+/// - 20px border radius, consistent padding (20h x 18v)
 class PremiumFriendCard extends StatefulWidget {
   // LuxuryPlayerCard design tokens — using AppColors
   static final Color textPrimary = AppColors.sand;
   static final Color textMuted = AppColors.glassTextTertiary;
   static final Color goldAccent = AppColors.goldLight;
+
   final UsersRecord user;
   final VoidCallback? onViewProfile;
   final VoidCallback? onMessage;
@@ -53,7 +48,7 @@ class PremiumFriendCard extends StatefulWidget {
   final int? gamesPlayedTogether;
   final bool isOnline;
   final String? lastActive;
-  final UsersRecord? currentUser; // For vibe matching
+  final UsersRecord? currentUser;
 
   const PremiumFriendCard({
     super.key,
@@ -93,7 +88,6 @@ class _PremiumFriendCardState extends State<PremiumFriendCard>
   @override
   void initState() {
     super.initState();
-
     _scaleController = AnimationController(
       vsync: this,
       duration: ReducedMotionService.adjust(MotionTokens.microInteraction),
@@ -101,14 +95,12 @@ class _PremiumFriendCardState extends State<PremiumFriendCard>
     _scaleAnimation = Tween<double>(begin: 1.0, end: 0.98).animate(
       CurvedAnimation(parent: _scaleController, curve: MotionTokens.curveEnter),
     );
-
     _calculateVibeMatch();
   }
 
   @override
   void didUpdateWidget(PremiumFriendCard oldWidget) {
     super.didUpdateWidget(oldWidget);
-    // Recalculate vibe match if user data changed
     if (oldWidget.user.reference.id != widget.user.reference.id ||
         oldWidget.user.vibeProfile != widget.user.vibeProfile ||
         oldWidget.currentUser?.vibeProfile != widget.currentUser?.vibeProfile) {
@@ -139,21 +131,17 @@ class _PremiumFriendCardState extends State<PremiumFriendCard>
     }
   }
 
-  void _onTapDown(TapDownDetails details) {
-    setState(() => _isPressed = true);
-    _scaleController.forward();
-    HapticFeedback.lightImpact();
+  int? _calculateAge(DateTime? dob) {
+    if (dob == null) return null;
+    final now = DateTime.now();
+    int age = now.year - dob.year;
+    if (now.month < dob.month || (now.month == dob.month && now.day < dob.day)) age--;
+    return age;
   }
 
-  void _onTapUp(TapUpDetails details) {
-    setState(() => _isPressed = false);
-    _scaleController.reverse();
-  }
-
-  void _onTapCancel() {
-    setState(() => _isPressed = false);
-    _scaleController.reverse();
-  }
+  void _onTapDown(TapDownDetails _) { setState(() => _isPressed = true); _scaleController.forward(); HapticFeedback.lightImpact(); }
+  void _onTapUp(TapUpDetails _) { setState(() => _isPressed = false); _scaleController.reverse(); }
+  void _onTapCancel() { setState(() => _isPressed = false); _scaleController.reverse(); }
 
   @override
   Widget build(BuildContext context) {
@@ -175,108 +163,34 @@ class _PremiumFriendCardState extends State<PremiumFriendCard>
                 : AppColors.navy.withValues(alpha: 0.3),
             borderRadius: BorderRadius.circular(AppBorderRadius.card),
           ),
-          child: Column(
-            children: [
-
-              // Main content with responsive layout
-              Padding(
-                padding: EdgeInsets.symmetric(horizontal: AppSpacing.lg, vertical: AppSpacing.md),
-                child: LayoutBuilder(
-                  builder: (context, constraints) {
-                    return Row(
-                      children: [
-                        // Avatar
-                        _buildAvatar(),
-
-                        SizedBox(width: AppSpacing.md),
-
-                        // User info - gets priority with Expanded
-                        Expanded(
-                          child: _buildUserInfo(constraints.maxWidth),
-                        ),
-
-                        SizedBox(width: AppSpacing.sm),
-
-                        // Actions (responsive - adapts to available space)
-                        _buildResponsiveActions(constraints.maxWidth),
-                      ],
-                    );
-                  },
-                ),
-              ),
-            ],
+          child: Padding(
+            padding: EdgeInsets.symmetric(
+              horizontal: AppSpacing.lg,
+              vertical: AppSpacing.md,
+            ),
+            child: LayoutBuilder(
+              builder: (context, constraints) {
+                return Row(
+                  children: [
+                    FriendCardAvatar(
+                      photoUrl: widget.user.photoUrl,
+                      displayName: widget.user.displayName,
+                    ),
+                    SizedBox(width: AppSpacing.md),
+                    Expanded(child: _buildUserInfo()),
+                    SizedBox(width: AppSpacing.sm),
+                    _buildActions(),
+                  ],
+                );
+              },
+            ),
           ),
         ),
       ),
     );
   }
 
-  Widget _buildAvatar() {
-    return Container(
-      width: 52,
-      height: 52,
-      decoration: BoxDecoration(
-        color: AppColors.navyLight.withValues(alpha: 0.3),
-        borderRadius: BorderRadius.circular(AppBorderRadius.lg),
-        border: Border.all(
-          color: AppColors.glassBorder,
-          width: 1,
-        ),
-      ),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(AppBorderRadius.lg - 1),
-        child: widget.user.photoUrl.isNotEmpty
-            ? Image.network(
-                widget.user.photoUrl,
-                width: 52,
-                height: 52,
-                cacheWidth: 156,
-                cacheHeight: 156,
-                fit: BoxFit.cover,
-                errorBuilder: (_, __, ___) => _buildAvatarFallback(),
-              )
-            : _buildAvatarFallback(),
-      ),
-    );
-  }
-
-  Widget _buildAvatarFallback() {
-    final initials = _getInitials(widget.user.displayName);
-
-    return Container(
-      color: AppColors.navy,
-      child: Center(
-        child: initials.isNotEmpty
-            ? Text(
-                initials,
-                style: AppTypography.labelMedium.copyWith(
-                  color: AppColors.textMuted,
-                  fontWeight: FontWeight.w600,
-                  fontSize: 16,
-                ),
-              )
-            : AppIcon(
-                icon: AppPhosphorIcons.profile,
-                color: AppColors.textMuted,
-                size: AppIconSize.md,
-              ),
-      ),
-    );
-  }
-
-  /// Extracts up to 2 initials from a display name
-  String _getInitials(String name) {
-    if (name.isEmpty) return '';
-    final parts = name.trim().split(RegExp(r'\s+'));
-    if (parts.length >= 2) {
-      return '${parts[0][0]}${parts[1][0]}'.toUpperCase();
-    } else if (parts.isNotEmpty && parts[0].isNotEmpty) {
-      return parts[0][0].toUpperCase();
-    }
-    return '';
-  }
-
-  Widget _buildUserInfo(double availableWidth) {
+  Widget _buildUserInfo() {
     final displayName = widget.user.displayName.isNotEmpty
         ? widget.user.displayName
         : 'Golfer';
@@ -285,7 +199,6 @@ class _PremiumFriendCardState extends State<PremiumFriendCard>
       crossAxisAlignment: CrossAxisAlignment.start,
       mainAxisSize: MainAxisSize.min,
       children: [
-        // NAME - Hero element with cream color
         Text(
           displayName,
           style: AppTypography.labelMedium.copyWith(
@@ -296,212 +209,69 @@ class _PremiumFriendCardState extends State<PremiumFriendCard>
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
         ),
-
+        _buildSecondaryInfo(),
         AppSpacing.verticalXxs,
-
-        // Secondary badges row: vibe % + handicap
         Wrap(
           spacing: 6,
           runSpacing: 4,
           children: [
-            if (_vibeMatch != null) _buildVibeBadge(),
+            if (_vibeMatch != null)
+              FriendCardVibeBadge(vibeMatch: _vibeMatch!),
             if (widget.user.handicap != 0)
-              _buildHandicapBadge(widget.user.handicap),
+              FriendCardHandicapBadge(handicap: widget.user.handicap),
           ],
         ),
       ],
     );
   }
 
-  Widget _buildVibeBadge() {
-    if (_vibeMatch == null) return SizedBox.shrink();
-
-    final score = _vibeMatch!.myFitPercent.round();
-
-    return Container(
-      padding: EdgeInsets.symmetric(horizontal: AppSpacing.xs, vertical: AppSpacing.xxs),
-      decoration: BoxDecoration(
-        color: AppColors.navyLight.withValues(alpha: 0.3),
-        borderRadius: BorderRadius.circular(AppBorderRadius.xs),
-        border: Border.all(
-          color: AppColors.navyLight.withValues(alpha: 0.5),
-          width: 1,
-        ),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          AppIcon(
-            icon: AppPhosphorIcons.heartFill,
-            size: 10,
-            color: AppColors.textMuted,
-          ),
-          AppSpacing.horizontalXxs,
-          Text(
-            '$score%',
-            style: AppTypography.labelSmall.copyWith(
-              fontSize: 11,
-              color: AppColors.textSecondary,
-              letterSpacing: 0.2,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildHandicapBadge(int handicap) {
-    final handicapText = handicap < 0 ? '+${handicap.abs()}' : '$handicap';
-    return Container(
-      padding: EdgeInsets.symmetric(horizontal: AppSpacing.xs, vertical: AppSpacing.xxs),
-      decoration: BoxDecoration(
-        color: AppColors.navyLight.withValues(alpha: 0.4),
-        borderRadius: BorderRadius.circular(AppBorderRadius.xs),
-        border: Border.all(
-          color: AppColors.navyLight,
-          width: 1,
-        ),
-      ),
+  Widget _buildSecondaryInfo() {
+    final age = _calculateAge(widget.user.dateOfBirth);
+    final hometown = widget.user.hometownName;
+    final parts = <String>[if (age != null) '$age', if (hometown.isNotEmpty) hometown];
+    if (parts.isEmpty) return const SizedBox.shrink();
+    return Padding(
+      padding: EdgeInsets.only(top: AppSpacing.xxs),
       child: Text(
-        'HCP $handicapText',
-        style: AppTypography.labelSmall.copyWith(
-          fontSize: 11,
-          fontWeight: FontWeight.w600,
-          color: AppColors.textSecondary,
-          letterSpacing: 0.2,
-        ),
+        parts.join(' • '),
+        style: AppTypography.labelSmall.copyWith(color: AppColors.textMuted, fontSize: 12),
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
       ),
     );
   }
 
-  Widget _buildResponsiveActions(double availableWidth) {
-    // Always use icon-only buttons for compact design
+  Widget _buildActions() {
     final actions = <Widget>[];
-
-    // Message button (primary or secondary based on messageIsPrimary)
     if (widget.onMessage != null) {
-      actions.add(
-        _buildIconOnlyButton(
-          icon: widget.messageIcon,
-          onPressed: widget.onMessage!,
-          variant: widget.messageIsPrimary
-              ? ActionButtonVariant.primary
-              : ActionButtonVariant.secondary,
-          tooltip: widget.messageLabel,
-        ),
-      );
+      actions.add(FriendCardActionButton(
+        icon: widget.messageIcon,
+        onPressed: widget.onMessage!,
+        variant: widget.messageIsPrimary ? ActionButtonVariant.primary : ActionButtonVariant.secondary,
+        tooltip: widget.messageLabel,
+      ));
     }
-
-    // Action button (uses actionVariant for styling)
     if (widget.showActionButton) {
-      actions.add(
-        _buildIconOnlyButton(
-          icon: widget.actionIcon,
-          onPressed: widget.onAction,
-          variant: widget.actionVariant,
-          isLoading: widget.isLoading,
-          tooltip: widget.actionLabel,
-        ),
-      );
+      actions.add(FriendCardActionButton(
+        icon: widget.actionIcon,
+        onPressed: widget.onAction,
+        variant: widget.actionVariant,
+        isLoading: widget.isLoading,
+        tooltip: widget.actionLabel,
+      ));
     }
-
-    // Overflow menu button (⋯)
     if (widget.showOverflowMenu && widget.onOverflowAction != null) {
-      actions.add(
-        _buildIconOnlyButton(
-          icon: AppPhosphorIcons.more,
-          onPressed: widget.onOverflowAction!,
-          variant: ActionButtonVariant.muted,
-          tooltip: 'More options',
-        ),
-      );
+      actions.add(FriendCardActionButton(
+        icon: AppPhosphorIcons.more,
+        onPressed: widget.onOverflowAction!,
+        variant: ActionButtonVariant.muted,
+        tooltip: 'More options',
+      ));
     }
-
-    if (actions.isEmpty) {
-      return const SizedBox.shrink();
-    }
-
+    if (actions.isEmpty) return const SizedBox.shrink();
     return Row(
       mainAxisSize: MainAxisSize.min,
-      children: actions
-          .expand((widget) => [widget, AppSpacing.horizontalXsBox])
-          .toList()
-        ..removeLast(), // Remove last spacer
+      children: actions.expand((w) => [w, AppSpacing.horizontalXsBox]).toList()..removeLast(),
     );
-  }
-
-  Widget _buildIconOnlyButton({
-    PhosphorIconData? icon,
-    required VoidCallback? onPressed,
-    required ActionButtonVariant variant,
-    bool isLoading = false,
-    String? tooltip,
-  }) {
-    // Determine colors based on variant
-    final Color backgroundColor;
-    final Color? borderColor;
-    final Color iconColor;
-
-    switch (variant) {
-      case ActionButtonVariant.primary:
-        // Green filled, white icon - primary positive actions
-        backgroundColor = AppColors.green;
-        borderColor = null;
-        iconColor = AppColors.textPrimary;
-      case ActionButtonVariant.secondary:
-        // Transparent, navyLight border - neutral secondary actions
-        backgroundColor = AppColors.transparent;
-        borderColor = AppColors.navyLight;
-        iconColor = AppColors.textSecondary;
-      case ActionButtonVariant.muted:
-        // Transparent, stone border - de-emphasized/destructive actions
-        backgroundColor = AppColors.transparent;
-        borderColor = AppColors.stone;
-        iconColor = AppColors.textMuted;
-    }
-
-    final button = Container(
-      width: 44,
-      height: 44,
-      decoration: BoxDecoration(
-        color: backgroundColor,
-        borderRadius: BorderRadius.circular(AppBorderRadius.md),
-        border: borderColor != null
-            ? Border.all(color: borderColor, width: 1)
-            : null,
-      ),
-      child: Material(
-        color: AppColors.transparent,
-        child: InkWell(
-          onTap: isLoading ? null : onPressed,
-          borderRadius: BorderRadius.circular(AppBorderRadius.md),
-          child: Center(
-            child: isLoading
-                ? SizedBox(
-                    width: 18,
-                    height: 18,
-                    child: CircularProgressIndicator(
-                      strokeWidth: 2,
-                      valueColor: AlwaysStoppedAnimation<Color>(iconColor),
-                    ),
-                  )
-                : icon != null
-                    ? AppIcon(
-                        icon: icon,
-                        size: AppIconSize.button,
-                        color: iconColor,
-                      )
-                    : SizedBox.shrink(),
-          ),
-        ),
-      ),
-    );
-
-    return tooltip != null
-        ? Tooltip(
-            message: tooltip,
-            child: button,
-          )
-        : button;
   }
 }

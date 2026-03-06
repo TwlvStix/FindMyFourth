@@ -39,6 +39,7 @@ class ProfileUserContent extends StatelessWidget {
     required this.golfCanadaNumber,
     required this.email,
     required this.phone,
+    required this.hometown,
     required this.onOpenVibe,
     required this.onMessageTap,
     required this.onMutualFriendsTap,
@@ -64,6 +65,7 @@ class ProfileUserContent extends StatelessWidget {
   final String golfCanadaNumber;
   final String? email;
   final String? phone;
+  final String? hometown;
   final VoidCallback onOpenVibe;
   final VoidCallback onMessageTap;
   final VoidCallback onMutualFriendsTap;
@@ -185,6 +187,7 @@ class ProfileUserContent extends StatelessWidget {
                         golfCanadaNumber: golfCanadaNumber,
                         email: email,
                         phone: phone,
+                        hometown: hometown,
                       ),
                       SizedBox(height: AppSpacing.xxxl),
                     ],

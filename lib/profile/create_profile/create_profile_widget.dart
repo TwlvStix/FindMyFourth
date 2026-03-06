@@ -1,5 +1,6 @@
 import '/auth/firebase_auth/auth_util.dart';
 import '/backend/backend.dart';
+import '/backend/schema/hometown_record.dart';
 import '/core/motion/motion_helpers.dart';
 import '/core/motion/motion_tokens.dart';
 import '/core/motion/reduced_motion.dart';
@@ -52,6 +53,8 @@ class _CreateProfileWidgetState extends State<CreateProfileWidget>
   String? _genderValue;
   FormFieldController<String>? _genderValueController;
   DateTime? _dateOfBirth;
+  String? _hometownValue;
+  FormFieldController<String>? _hometownValueController;
 
   // Animation
   late AnimationController _fadeController;
@@ -139,6 +142,14 @@ class _CreateProfileWidgetState extends State<CreateProfileWidget>
   }
 
   Future<void> _handleSaveProfile() async {
+    // Resolve hometown reference if selected
+    DocumentReference? hometownRef;
+    if (_hometownValue != null && _hometownValue!.isNotEmpty) {
+      final hometowns = await HometownRecord.fetchAll();
+      final match = hometowns.where((h) => h.name == _hometownValue).firstOrNull;
+      hometownRef = match?.reference;
+    }
+
     final formData = CreateProfileFormData(
       firstName: _firstNameController.text,
       lastName: _lastNameController.text,
@@ -151,6 +162,8 @@ class _CreateProfileWidgetState extends State<CreateProfileWidget>
       handicap: _handicapValue,
       homeCourse: _coursesValue,
       golfCanadaNumber: _golfCanadaController.text,
+      hometownName: _hometownValue,
+      hometownRef: hometownRef,
     );
 
     final result = await _controller.submitProfile(
@@ -287,6 +300,10 @@ class _CreateProfileWidgetState extends State<CreateProfileWidget>
                                 _controller.validateUsername(val),
                             validateEmail: (context, val) =>
                                 _controller.validateEmail(val),
+                            hometownValue: _hometownValue,
+                            hometownValueController: _hometownValueController ??=
+                                FormFieldController<String>(null),
+                            onHometownChanged: (val) => setState(() => _hometownValue = val),
                           ),
                         ),
 

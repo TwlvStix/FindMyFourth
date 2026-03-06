@@ -614,6 +614,12 @@ service cloud.firestore {
       allow delete: if false;
     }
 
+    match /hometown/{document} {
+      allow read: if true;
+      allow write: if false;
+      allow delete: if false;
+    }
+
     match /chats/{chatId} {
       // Allow create if user is authenticated and is in memberIds
       allow create: if isSignedIn() &&

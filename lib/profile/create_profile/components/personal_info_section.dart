@@ -10,6 +10,7 @@ import '/core/form_field_controller.dart';
 import '/core/widgets/app_drop_down.dart';
 import '/core/widgets/app_text_field.dart';
 import 'profile_date_picker_field.dart';
+import 'profile_hometown_dropdown.dart';
 
 /// The personal information section of the create profile form.
 ///
@@ -31,6 +32,9 @@ class PersonalInfoSection extends StatelessWidget {
     required this.onDateOfBirthChanged,
     required this.validateUsername,
     required this.validateEmail,
+    this.hometownValue,
+    this.hometownValueController,
+    this.onHometownChanged,
   });
 
   final TextEditingController firstNameController;
@@ -46,6 +50,9 @@ class PersonalInfoSection extends StatelessWidget {
   final ValueChanged<DateTime> onDateOfBirthChanged;
   final String? Function(BuildContext, String?) validateUsername;
   final String? Function(BuildContext, String?) validateEmail;
+  final String? hometownValue;
+  final FormFieldController<String>? hometownValueController;
+  final ValueChanged<String?>? onHometownChanged;
 
   @override
   Widget build(BuildContext context) {
@@ -145,6 +152,14 @@ class PersonalInfoSection extends StatelessWidget {
                 ),
               ),
             ],
+          ),
+          SizedBox(height: AppSpacing.md),
+
+          // Hometown Dropdown
+          ProfileHometownDropdown(
+            hometownValue: hometownValue,
+            hometownValueController: hometownValueController,
+            onHometownChanged: onHometownChanged,
           ),
         ],
       ),

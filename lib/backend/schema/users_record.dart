@@ -232,6 +232,16 @@ class UsersRecord extends FirestoreRecord {
   DateTime? get dateOfBirth => _dateOfBirth;
   bool hasDateOfBirth() => _dateOfBirth != null;
 
+  // "hometown" field. Reference to hometowns collection document.
+  DocumentReference? _hometown;
+  DocumentReference? get hometown => _hometown;
+  bool hasHometown() => _hometown != null;
+
+  // "hometown_name" field. Denormalized for display without extra reads.
+  String? _hometownName;
+  String get hometownName => _hometownName ?? '';
+  bool hasHometownName() => _hometownName != null;
+
   // "vibe_edit_count" field. Number of times user has confirmed vibe profile edits.
   int? _vibeEditCount;
   int get vibeEditCount => _vibeEditCount ?? 0;
@@ -381,6 +391,8 @@ class UsersRecord extends FirestoreRecord {
         castToType<int>(snapshotData['show_up_rate_denominator']);
     _gender = snapshotData['gender'] as String?;
     _dateOfBirth = snapshotData['date_of_birth'] as DateTime?;
+    _hometown = snapshotData['hometown'] as DocumentReference?;
+    _hometownName = snapshotData['hometown_name'] as String?;
     _vibeEditCount = castToType<int>(snapshotData['vibe_edit_count']);
     _lastVibeEditAt = snapshotData['last_vibe_edit_at'] as DateTime?;
 
@@ -481,6 +493,8 @@ Map<String, dynamic> createUsersRecordData({
   int? showUpRateDenominator,
   String? gender,
   DateTime? dateOfBirth,
+  DocumentReference? hometown,
+  String? hometownName,
   int? vibeEditCount,
   DateTime? lastVibeEditAt,
 }) {
@@ -532,6 +546,8 @@ Map<String, dynamic> createUsersRecordData({
       'show_up_rate_denominator': showUpRateDenominator,
       'gender': gender,
       'date_of_birth': dateOfBirth,
+      'hometown': hometown,
+      'hometown_name': hometownName,
       'vibe_edit_count': vibeEditCount,
       'last_vibe_edit_at': lastVibeEditAt,
     }.withoutNulls,
@@ -590,6 +606,8 @@ class UsersRecordDocumentEquality implements Equality<UsersRecord> {
         e1?.showUpRateDenominator == e2?.showUpRateDenominator &&
         e1?.gender == e2?.gender &&
         e1?.dateOfBirth == e2?.dateOfBirth &&
+        e1?.hometown == e2?.hometown &&
+        e1?.hometownName == e2?.hometownName &&
         e1?.vibeEditCount == e2?.vibeEditCount &&
         e1?.lastVibeEditAt == e2?.lastVibeEditAt;
   }
@@ -638,6 +656,8 @@ class UsersRecordDocumentEquality implements Equality<UsersRecord> {
         e?.showUpRateDenominator,
         e?.gender,
         e?.dateOfBirth,
+        e?.hometown,
+        e?.hometownName,
         e?.vibeEditCount,
         e?.lastVibeEditAt,
       ]);

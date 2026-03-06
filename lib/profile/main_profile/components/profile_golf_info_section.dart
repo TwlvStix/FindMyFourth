@@ -35,6 +35,19 @@ class ProfileGolfInfoSection extends StatelessWidget {
           ),
           SizedBox(height: AppSpacing.md),
 
+          // Hometown
+          AuthUserStreamWidget(
+            builder: (context) => _buildInfoRow(
+              phosphorIcon: AppPhosphorIcons.course,
+              label: 'Hometown',
+              value: currentUserDocument?.hometownName.isNotEmpty == true
+                  ? currentUserDocument!.hometownName
+                  : 'Not set',
+            ),
+          ),
+
+          SizedBox(height: AppSpacing.md),
+
           // Golf Canada Number
           AuthUserStreamWidget(
             builder: (context) => _buildInfoRow(

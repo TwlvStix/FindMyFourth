@@ -19,6 +19,8 @@ class CreateProfileFormData {
     this.handicap,
     this.homeCourse,
     this.golfCanadaNumber,
+    this.hometownName,
+    this.hometownRef,
   });
 
   final String firstName;
@@ -32,6 +34,8 @@ class CreateProfileFormData {
   final int? handicap;
   final String? homeCourse;
   final String? golfCanadaNumber;
+  final String? hometownName;
+  final DocumentReference? hometownRef;
 
   /// Creates the username using the username creator function.
   String get processedUsername => functions.usernameCreator(username);
@@ -213,6 +217,8 @@ class CreateProfileController {
             onboardingCompleted: true,
             gender: formData.gender,
             dateOfBirth: formData.dateOfBirth,
+            hometown: formData.hometownRef,
+            hometownName: formData.hometownName,
             friends: [],
             friendRequests: [],
           ),

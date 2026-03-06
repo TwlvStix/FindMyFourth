@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 
 import '/auth/firebase_auth/auth_util.dart';
 import '/backend/backend.dart';
+import '/backend/schema/hometown_record.dart';
 import '/core/design_tokens/border_radius.dart';
 import '/core/design_tokens/colors.dart';
 import '/core/design_tokens/spacing.dart';
@@ -50,6 +51,8 @@ class _EditProfileWidgetState extends State<EditProfileWidget>
   String? _coursesValue;
   FormFieldController<String>? _coursesValueController;
   int? _handicapValue;
+  String? _hometownValue;
+  FormFieldController<String>? _hometownValueController;
 
   // Animation
   late AnimationController _ringController;
@@ -82,6 +85,7 @@ class _EditProfileWidgetState extends State<EditProfileWidget>
 
     _handicapValue = currentUserDocument?.handicap;
     _coursesValue = currentUserDocument?.homeCourse;
+    _hometownValue = currentUserDocument?.hometownName;
   }
 
   @override
@@ -116,6 +120,16 @@ class _EditProfileWidgetState extends State<EditProfileWidget>
     setState(() => _isSaving = true);
 
     try {
+      // Resolve hometown reference if selected
+      DocumentReference? hometownRef;
+      if (_hometownValue != null && _hometownValue!.isNotEmpty) {
+        final hometowns = await HometownRecord.fetchAll();
+        final match = hometowns.where((h) => h.name == _hometownValue).firstOrNull;
+        hometownRef = match?.reference;
+      }
+
+      if (!mounted) return;
+
       final result = await _controller.saveProfile(
         userRef: userRef,
         userData: createUsersRecordData(
@@ -128,6 +142,8 @@ class _EditProfileWidgetState extends State<EditProfileWidget>
           firstName: _firstNameController.text.trim(),
           lastName: _lastNameController.text.trim(),
           homeCourse: _coursesValue,
+          hometown: hometownRef,
+          hometownName: _hometownValue,
         ),
         phoneNumber: _phoneController.text.trim(),
       );
@@ -303,6 +319,11 @@ class _EditProfileWidgetState extends State<EditProfileWidget>
                             firstNameValidator: _controller.validateFirstName,
                             lastNameValidator: _controller.validateLastName,
                             phoneValidator: _controller.validatePhone,
+                            hometownValue: _hometownValue,
+                            hometownValueController: _hometownValueController ??=
+                                FormFieldController<String>(_hometownValue),
+                            onHometownChanged: (val) =>
+                                setState(() => _hometownValue = val),
                           ),
                         ),
 
