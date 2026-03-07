@@ -44,13 +44,16 @@ String _computeContentHash(Map<String, dynamic> data) {
 ///
 /// This function ensures routing works regardless of which key format the
 /// backend sends. Original keys are preserved, then normalized versions override.
+///
+/// Bridges Trust system payloads (event_type) with legacy payloads (type).
 Map<String, dynamic> normalizeNotificationPayload(Map<String, dynamic> data) {
   return {
     // Pass through all original keys FIRST
     ...data,
 
     // Then override with normalized versions (these take precedence)
-    'type': data['type'],
+    // Bridge event_type (Trust system) → type (legacy/routing)
+    'type': data['type'] ?? data['event_type'],
     'initialPageName': data['initialPageName'] ?? data['initial_page_name'],
     'parameterData': data['parameterData'] ?? data['parameter_data'],
 
@@ -61,6 +64,9 @@ Map<String, dynamic> normalizeNotificationPayload(Map<String, dynamic> data) {
     // Chat keys
     'chatId': data['chatId'] ?? data['chat_id'],
     'threadId': data['threadId'] ?? data['thread_id'],
+
+    // Trust system keys preserved for reference
+    'eventId': data['eventId'] ?? data['event_id'],
 
     // Internal tracking
     '_messageId': data['_messageId'],
@@ -316,6 +322,106 @@ _PushRoute? _resolveRouteFromType(Map<String, dynamic> data) {
       );
     }
   }
+
+  // ===== Trust System Type Aliases =====
+  // Map Trust event names to their routing destinations
+
+  // Post-round Trust types (aliases for legacy routes)
+  if (type == 'host_checkin_due') {
+    final gameRef = data['gameRef'] ?? data['game_ref'];
+    final gameId = data['gameId'] ?? data['game_id'];
+    final ref = gameRef ?? (gameId != null ? 'games/$gameId' : null);
+    if (ref is String && ref.isNotEmpty) {
+      return _PushRoute(
+        pageName: 'HostCheckin',
+        parameterData: {'gameRef': ref},
+      );
+    }
+  }
+  if (type == 'host_checkin_fallback') {
+    final gameRef = data['gameRef'] ?? data['game_ref'];
+    final gameId = data['gameId'] ?? data['game_id'];
+    final ref = gameRef ?? (gameId != null ? 'games/$gameId' : null);
+    if (ref is String && ref.isNotEmpty) {
+      return _PushRoute(
+        pageName: 'FallbackConfirmation',
+        parameterData: {'gameRef': ref},
+      );
+    }
+  }
+  if (type == 'player_rate_due') {
+    final gameRef = data['gameRef'] ?? data['game_ref'];
+    final gameId = data['gameId'] ?? data['game_id'];
+    final ref = gameRef ?? (gameId != null ? 'games/$gameId' : null);
+    if (ref is String && ref.isNotEmpty) {
+      return _PushRoute(
+        pageName: 'PeerRating',
+        parameterData: {'gameRef': ref},
+      );
+    }
+  }
+  if (type == 'player_fallback_confirm') {
+    final gameRef = data['gameRef'] ?? data['game_ref'];
+    final gameId = data['gameId'] ?? data['game_id'];
+    final ref = gameRef ?? (gameId != null ? 'games/$gameId' : null);
+    if (ref is String && ref.isNotEmpty) {
+      return _PushRoute(
+        pageName: 'FallbackConfirmation',
+        parameterData: {'gameRef': ref},
+      );
+    }
+  }
+
+  // Game Trust types
+  if (type == 'game_spot_opened' || type == 'game_cancelled') {
+    final gameId = data['gameId'] ?? data['game_id'];
+    if (gameId is String && gameId.isNotEmpty) {
+      return _PushRoute(
+        pageName: 'JoinGameDetailed',
+        parameterData: {'gameRef': 'games/$gameId'},
+      );
+    }
+  }
+  if (type == 'game_alert_deferred') {
+    final gameId = data['gameId'] ?? data['game_id'];
+    if (gameId is String && gameId.isNotEmpty) {
+      return _PushRoute(
+        pageName: 'JoinGameDetailed',
+        parameterData: {'gameRef': 'games/$gameId'},
+      );
+    }
+  }
+
+  // Join request expired
+  if (type == 'join_request_expired') {
+    return const _PushRoute(
+      pageName: 'GamesList',
+      parameterData: {},
+    );
+  }
+
+  // Trust account notifications → YourStanding
+  if (type == 'no_show_flagged' ||
+      type == 'dispute_resolved' ||
+      type == 'strike_issued' ||
+      type == 'cooldown_started' ||
+      type == 'restriction_started' ||
+      type == 'suspension_started' ||
+      type == 'restriction_ended') {
+    return const _PushRoute(
+      pageName: 'YourStanding',
+      parameterData: {},
+    );
+  }
+
+  // Badge notifications → MainProfile
+  if (type == 'badge_earned' || type == 'badge_progress') {
+    return const _PushRoute(
+      pageName: 'MainProfile',
+      parameterData: {},
+    );
+  }
+
   return null;
 }
 

@@ -577,6 +577,9 @@ class ChatProvider extends ChangeNotifier {
     return messagesSnapshotStream(
             chatId: chatId, limit: limit, visibleAfter: visibleAfter)
         .asyncMap((snapshot) async {
+      // Skip processing if provider is disposed
+      if (_disposed) return <ChatMessageViewModel>[];
+
       final docs = snapshot.docs;
 
       if (docs.isEmpty) {
@@ -653,6 +656,9 @@ class ChatProvider extends ChangeNotifier {
 
     return chatListStream(uid: currentUserId, limit: limit)
         .asyncMap((chats) async {
+      // Skip processing if provider is disposed
+      if (_disposed) return <ChatRowViewModel>[];
+
       if (chats.isEmpty) {
         return <ChatRowViewModel>[];
       }

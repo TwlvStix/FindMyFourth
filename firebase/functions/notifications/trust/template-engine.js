@@ -70,6 +70,8 @@ function buildPushPayload(eventType, eventData, eventId, isReminder = false) {
     androidChannelId: config.androidChannelId,
     // Include actor avatar URL for rich notification images (pre-validated by caller)
     ...(eventData.actor_avatar_url && { imageUrl: eventData.actor_avatar_url }),
+    // Pass through game_id for FCM sender to include as compatibility key
+    ...(eventData.game_id != null && { gameId: String(eventData.game_id) }),
   };
 }
 

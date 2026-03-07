@@ -71,6 +71,9 @@ const EVENT_DATA = {
   [TrustEventType.STREAK_FREEZE_PROMPT]: { current_weeks: 7 },
   [TrustEventType.STREAK_MILESTONE_REACHED]: { milestone: 8, current_weeks: 8 },
   [TrustEventType.STREAK_BROKEN]: { previous_weeks: 6 },
+  // Host-add-player events
+  [TrustEventType.PLAYER_ADDED_BY_HOST]: { host_name: 'Alice', course_name: 'Pebble Beach', game_date: 'Saturday', game_id: GAME_ID },
+  [TrustEventType.PLAYER_DECLINED_SPOT]: { player_name: 'Bob', course_name: 'Torrey Pines', game_id: GAME_ID },
 };
 
 /** Interpolates {game_id} in a string, mirroring the engine's logic. */

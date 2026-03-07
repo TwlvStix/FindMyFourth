@@ -118,10 +118,14 @@ class ProfileProvider extends ChangeNotifier {
     return _profileStreamManagers[queryKey]!.performRequest(
       uniqueQueryKey: queryKey,
       requestFn: () => _service.watchUserProfile(userId).map((profile) {
+        // Skip cache updates if provider is disposed
+        if (_disposed) return profile;
         if (profile != null) {
           // Cache the profile when it comes through the stream
           _profileCache[userId] = profile;
           _profileCacheTimestamps[userId] = DateTime.now();
+          // Note: Stream subscribers receive data directly, so notifying
+          // is optional. We keep it for UI that watches the provider.
           _scheduleNotify();
         }
         return profile;

@@ -25,6 +25,7 @@
  *   priority         {string}  - NotificationPriority value
  *   threadId         {string}  - iOS notification group identifier
  *   androidChannelId {string}  - Android notification channel ID
+ *   gameId           {string}  - (optional) game ID for routing compatibility
  *
  * SendResult shape:
  *   success       {boolean}
@@ -140,9 +141,16 @@ async function send(fcmToken, deviceId, payload, baseDelayMs = 1000) {
       ...(payload.imageUrl && { imageUrl: payload.imageUrl }),
     },
     data: {
+      // Trust System keys (canonical)
       deep_link:  payload.deepLink,
       event_type: payload.eventType,
       event_id:   payload.eventId,
+      // Compatibility keys for legacy Flutter client routing
+      // The Flutter client normalizes event_type → type, but having both
+      // reduces reliance on client-side normalization and aids debugging.
+      type: payload.eventType,
+      // Game ID for direct routing (when available)
+      ...(payload.gameId && { game_id: payload.gameId }),
     },
     android: {
       priority: androidPriority,

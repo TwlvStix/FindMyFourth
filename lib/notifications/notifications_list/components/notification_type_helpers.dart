@@ -50,6 +50,41 @@ class NotificationTypeHelpers {
         .contains(type);
   }
 
+  /// Returns true for join request notification types.
+  static bool isJoinRequestNotification(String type) {
+    return const {
+      'join_request_new',
+      'join_request_approved',
+      'join_request_declined',
+      'join_request_round_filled',
+      'join_request_expired',
+    }.contains(type);
+  }
+
+  /// Returns true for host-add-player notification types.
+  static bool isHostAddNotification(String type) {
+    return const {
+      'player_added_by_host',
+      'player_declined_spot',
+    }.contains(type);
+  }
+
+  /// Returns true for streak notification types.
+  static bool isStreakNotification(String type) {
+    return const {
+      'streak_weekend_nudge',
+      'streak_freeze_unlocked',
+      'streak_freeze_prompt',
+      'streak_milestone_reached',
+      'streak_broken',
+    }.contains(type);
+  }
+
+  /// Returns true for game alert notification types (deferred alerts).
+  static bool isGameAlertNotification(String type) {
+    return type == 'game_alert_deferred';
+  }
+
   /// Returns the appropriate Phosphor icon for the notification type.
   static PhosphorIconData iconForType(String type) {
     if (type == 'chat_message') return AppPhosphorIcons.chat;
@@ -67,6 +102,7 @@ class NotificationTypeHelpers {
     if (type == 'game_spot_opened' || type == 'game_cancelled') {
       return AppPhosphorIcons.games;
     }
+    if (isGameAlertNotification(type)) return AppPhosphorIcons.games;
     if (isTrustAccountNotification(type)) {
       return type == 'dispute_resolved' || type == 'restriction_ended'
           ? AppPhosphorIcons.trust
@@ -75,6 +111,19 @@ class NotificationTypeHelpers {
     if (isBadgeNotification(type)) return AppPhosphorIcons.badge;
     if (type == 'friend_request_received') return AppPhosphorIcons.addPlayer;
     if (type == 'friend_request_accepted') return AppPhosphorIcons.golfers;
+    // Join request types
+    if (type == 'join_request_new') return AppPhosphorIcons.addPlayer;
+    if (type == 'join_request_approved') return AppPhosphorIcons.success;
+    if (type == 'join_request_declined' ||
+        type == 'join_request_round_filled' ||
+        type == 'join_request_expired') {
+      return AppPhosphorIcons.info;
+    }
+    // Host-add-player types
+    if (type == 'player_added_by_host') return AppPhosphorIcons.games;
+    if (type == 'player_declined_spot') return AppPhosphorIcons.info;
+    // Streak types
+    if (isStreakNotification(type)) return AppPhosphorIcons.flame;
     return AppPhosphorIcons.notifications;
   }
 
@@ -86,6 +135,21 @@ class NotificationTypeHelpers {
     if (isTrustAccountNotification(type)) return AppColors.error;
     if (isBadgeNotification(type)) return AppColors.gold;
     if (isSocialNotification(type)) return AppColors.green;
+    // Join request types
+    if (type == 'join_request_new') return AppColors.green;
+    if (type == 'join_request_approved') return AppColors.success;
+    if (type == 'join_request_declined' ||
+        type == 'join_request_round_filled' ||
+        type == 'join_request_expired') {
+      return AppColors.info;
+    }
+    // Host-add-player types
+    if (type == 'player_added_by_host') return AppColors.green;
+    if (type == 'player_declined_spot') return AppColors.info;
+    // Streak types
+    if (isStreakNotification(type)) return AppColors.gold;
+    // Game alert deferred
+    if (isGameAlertNotification(type)) return AppColors.navyDark;
     return AppColors.navyDark;
   }
 

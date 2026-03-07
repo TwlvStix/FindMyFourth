@@ -88,6 +88,71 @@ class NotificationTapRouter {
       context.pushTabFriends(initialSegment: 'friends');
       return;
     }
+
+    // Join request types
+    if (type == 'join_request_new' || type == 'join_request_approved') {
+      // Host receiving new request or player approved - show game details
+      await _handleGameNotification(
+        context: context,
+        provider: provider,
+        payload: payload,
+        currentUserRef: currentUserRef,
+      );
+      return;
+    }
+
+    if (type == 'join_request_declined' ||
+        type == 'join_request_round_filled' ||
+        type == 'join_request_expired') {
+      // Player's request was declined/expired or round filled - show games list
+      context.pushGamesList();
+      return;
+    }
+
+    // Host-add-player types
+    if (type == 'player_added_by_host') {
+      // Player was added to game - show game details
+      await _handleGameNotification(
+        context: context,
+        provider: provider,
+        payload: payload,
+        currentUserRef: currentUserRef,
+      );
+      return;
+    }
+
+    if (type == 'player_declined_spot') {
+      // Host notified player declined - show game details
+      await _handleGameNotification(
+        context: context,
+        provider: provider,
+        payload: payload,
+        currentUserRef: currentUserRef,
+      );
+      return;
+    }
+
+    // Streak notifications
+    if (NotificationTypeHelpers.isStreakNotification(type)) {
+      if (type == 'streak_weekend_nudge') {
+        context.pushGamesList();
+      } else {
+        // Other streak types go to profile
+        context.pushMainProfile();
+      }
+      return;
+    }
+
+    // Deferred game alerts
+    if (NotificationTypeHelpers.isGameAlertNotification(type)) {
+      await _handleGameNotification(
+        context: context,
+        provider: provider,
+        payload: payload,
+        currentUserRef: currentUserRef,
+      );
+      return;
+    }
   }
 
   static Future<void> _handleGameNotification({

@@ -29,7 +29,7 @@ import '/models/game.dart';
 /// game processing pipeline, and sliver layout.
 ///
 /// Displays a unified list of games with filter chips and sort bar.
-class GamesListContent extends StatelessWidget {
+class GamesListContent extends StatefulWidget {
   const GamesListContent({
     super.key,
     required this.gamesStream,
@@ -95,11 +95,43 @@ class GamesListContent extends StatelessWidget {
   final Future<void> Function(DocumentReference)? onAddFriendFromMutual;
 
   @override
+  State<GamesListContent> createState() => _GamesListContentState();
+}
+
+class _GamesListContentState extends State<GamesListContent> {
+  /// Cached user stream to prevent re-subscriptions on every build.
+  Stream<UsersRecord?>? _userStream;
+  DocumentReference? _cachedUserRef;
+
+  @override
+  void initState() {
+    super.initState();
+    _updateUserStream();
+  }
+
+  @override
+  void didUpdateWidget(GamesListContent oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    // Only recreate stream if user reference changed
+    if (widget.currentUserReference != oldWidget.currentUserReference) {
+      _updateUserStream();
+    }
+  }
+
+  void _updateUserStream() {
+    final userRef = widget.currentUserReference;
+    if (userRef != _cachedUserRef) {
+      _cachedUserRef = userRef;
+      _userStream = userRef == null ? null : UsersRecord.getDocument(userRef);
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
     return AppStreamBuilder<List<Game>>(
-      stream: gamesStream,
-      initialData: initialGames,
-      onRetry: onRetry,
+      stream: widget.gamesStream,
+      initialData: widget.initialGames,
+      onRetry: widget.onRetry,
       builder: (context, gamesList) {
         // Debug logging wrapped in assertions (only runs in debug mode)
         assert(() {
@@ -111,7 +143,7 @@ class GamesListContent extends StatelessWidget {
         // Filter games by status
         final activeGames = filterActiveGames(
           gamesList,
-          shouldHideCancelledGame: shouldHideCancelledGame,
+          shouldHideCancelledGame: widget.shouldHideCancelledGame,
         );
 
         assert(() {
@@ -130,10 +162,10 @@ class GamesListContent extends StatelessWidget {
         );
 
         // Notify parent of filter meta update (no setState, just field update)
-        onFilterMetaChanged(filterMeta);
+        widget.onFilterMetaChanged(filterMeta);
 
         // Apply user-selected filters from bottom sheet
-        var visibleGames = applyGameListFilters(activeGames, filters);
+        var visibleGames = applyGameListFilters(activeGames, widget.filters);
 
         // Apply geo filter if enabled and has location
         final geoFilter = context.watch<GeoFilterProvider>();
@@ -147,7 +179,7 @@ class GamesListContent extends StatelessWidget {
         }
 
         // Apply quick filter
-        final quickFilteredGames = quickFilter.apply(visibleGames);
+        final quickFilteredGames = widget.quickFilter.apply(visibleGames);
 
         assert(() {
           AppLog.d(
@@ -155,11 +187,9 @@ class GamesListContent extends StatelessWidget {
           return true;
         }());
 
-        final userRef = currentUserReference;
+        final userRef = widget.currentUserReference;
         return StreamBuilder<UsersRecord?>(
-          stream: userRef == null
-              ? null
-              : UsersRecord.getDocument(userRef),
+          stream: _userStream,
           builder: (context, userSnapshot) {
             final friendIds = friendIdsFromRecord(userSnapshot.data);
             final userGender = userSnapshot.data?.gender;
@@ -176,19 +206,19 @@ class GamesListContent extends StatelessWidget {
               eligibleGames,
               currentUserReference: userRef,
               friendIds: friendIds,
-              mutualFriendHostIds: mutualFriendHostIds,
+              mutualFriendHostIds: widget.mutualFriendHostIds,
             );
 
             // Sort joinable games
-            final sortedJoinableGames = sortOption.sort(
+            final sortedJoinableGames = widget.sortOption.sort(
               partitioned.joinable,
-              vibeScores: vibeScores,
+              vibeScores: widget.vibeScores,
             );
 
             // Sort mutual games by date (they always come last)
-            final sortedMutualGames = sortOption.sort(
+            final sortedMutualGames = widget.sortOption.sort(
               partitioned.mutual,
-              vibeScores: vibeScores,
+              vibeScores: widget.vibeScores,
             );
 
             // Schedule profile warming for all game owners
@@ -197,7 +227,7 @@ class GamesListContent extends StatelessWidget {
                 .whereType<String>()
                 .toSet();
             if (ownerUids.isNotEmpty) {
-              onOwnerUidsReady(ownerUids);
+              widget.onOwnerUidsReady(ownerUids);
             }
 
             // Schedule mutual friend fetching for hosts of locked friends-only games
@@ -206,22 +236,22 @@ class GamesListContent extends StatelessWidget {
                 .map((g) => g.userRef?.id ?? g.uid)
                 .whereType<String>()
                 .toSet();
-            if (lockedHostIds.isNotEmpty && onMutualHostsReady != null) {
-              onMutualHostsReady!(lockedHostIds);
+            if (lockedHostIds.isNotEmpty && widget.onMutualHostsReady != null) {
+              widget.onMutualHostsReady!(lockedHostIds);
             }
 
             // Combined game count for sort bar
             final totalGameCount = sortedJoinableGames.length + sortedMutualGames.length;
 
             return RefreshIndicator(
-              onRefresh: onRefresh,
+              onRefresh: widget.onRefresh,
               child: CustomScrollView(
                 physics: const AlwaysScrollableScrollPhysics(),
                 slivers: [
                   // RestrictionBanner (uses selector for fine-grained rebuilds)
                   SliverToBoxAdapter(
                     child: RestrictionBannerSelector(
-                      onNavigateToStanding: onNavigateToStanding,
+                      onNavigateToStanding: widget.onNavigateToStanding,
                     ),
                   ),
                   // Quick Filter Chips with Near Me toggle
@@ -234,8 +264,8 @@ class GamesListContent extends StatelessWidget {
                         children: [
                           Expanded(
                             child: QuickFilterChips(
-                              selectedFilter: quickFilter,
-                              onFilterChanged: onQuickFilterChanged,
+                              selectedFilter: widget.quickFilter,
+                              onFilterChanged: widget.onQuickFilterChanged,
                               padding: EdgeInsets.only(
                                 left: AppSpacing.screenPadding,
                               ),
@@ -262,15 +292,15 @@ class GamesListContent extends StatelessWidget {
                   SliverToBoxAdapter(
                     child: GamesSortBar(
                       gameCount: totalGameCount,
-                      sortOption: sortOption,
-                      onSortChanged: onSortChanged,
+                      sortOption: widget.sortOption,
+                      onSortChanged: widget.onSortChanged,
                     ),
                   ),
                   // Global Empty State
                   if (sortedJoinableGames.isEmpty && sortedMutualGames.isEmpty)
                     SliverToBoxAdapter(
                       child: GamesListEmptyState(
-                        onCreateGame: onCreateGame,
+                        onCreateGame: widget.onCreateGame,
                       ),
                     ),
                   // Joinable Games List
@@ -293,8 +323,8 @@ class GamesListContent extends StatelessWidget {
                               ),
                               child: UnifiedGameCard(
                                 game: game,
-                                currentUserReference: currentUserReference,
-                                vibeScore: vibeScores[game.reference.id],
+                                currentUserReference: widget.currentUserReference,
+                                vibeScore: widget.vibeScores[game.reference.id],
                                 animationIndex: index,
                               ),
                             );
@@ -314,8 +344,8 @@ class GamesListContent extends StatelessWidget {
                           (context, index) {
                             final game = sortedMutualGames[index];
                             final hostId = game.userRef?.id ?? game.uid;
-                            final mutualName = firstMutualFriendName[hostId] ?? 'a friend';
-                            final mutualCount = (mutualFriendsMap[hostId]?.length ?? 1) - 1;
+                            final mutualName = widget.firstMutualFriendName[hostId] ?? 'a friend';
+                            final mutualCount = (widget.mutualFriendsMap[hostId]?.length ?? 1) - 1;
                             final animationIndex = sortedJoinableGames.length + index;
                             return Padding(
                               padding: EdgeInsets.only(
@@ -327,17 +357,17 @@ class GamesListContent extends StatelessWidget {
                                 game: game,
                                 mutualFriendName: mutualName,
                                 additionalMutualCount: mutualCount,
-                                chatState: chatActionStates[hostId] ?? MutualActionState.idle,
-                                friendState: friendActionStates[hostId] ?? MutualActionState.idle,
+                                chatState: widget.chatActionStates[hostId] ?? MutualActionState.idle,
+                                friendState: widget.friendActionStates[hostId] ?? MutualActionState.idle,
                                 animationIndex: animationIndex,
                                 onAskToChat: () {
-                                  if (onAskToChat != null && game.userRef != null) {
-                                    onAskToChat!(game.userRef!);
+                                  if (widget.onAskToChat != null && game.userRef != null) {
+                                    widget.onAskToChat!(game.userRef!);
                                   }
                                 },
                                 onAddFriend: () {
-                                  if (onAddFriendFromMutual != null && game.userRef != null) {
-                                    onAddFriendFromMutual!(game.userRef!);
+                                  if (widget.onAddFriendFromMutual != null && game.userRef != null) {
+                                    widget.onAddFriendFromMutual!(game.userRef!);
                                   }
                                 },
                               ),
