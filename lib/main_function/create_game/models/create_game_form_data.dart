@@ -286,6 +286,11 @@ class CreateGameFormData {
       'chatRef': chatRef,
       'userRef': userRef,
       'courseRef': selectedCourse?.reference,
+      // Stamp course coordinates for geo filtering
+      if (selectedCourse?.latLng != null) ...{
+        'course_lat': selectedCourse!.latLng!.latitude,
+        'course_lng': selectedCourse!.latLng!.longitude,
+      },
       'isCancelled': false,
       'status': 'active',
       'joined_players': [userRef],

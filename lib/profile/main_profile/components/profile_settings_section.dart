@@ -19,6 +19,7 @@ class ProfileSettingsSection extends StatelessWidget {
     super.key,
     required this.onNotifications,
     required this.onYourStanding,
+    required this.onLocation,
     required this.onLogout,
     this.showDebugOptions = false,
     this.onDebugNotificationRouting,
@@ -30,6 +31,9 @@ class ProfileSettingsSection extends StatelessWidget {
 
   /// Called when the user taps "Your Standing".
   final VoidCallback onYourStanding;
+
+  /// Called when the user taps "Location".
+  final VoidCallback onLocation;
 
   /// Called when the user taps "Log Out".
   /// This should handle the confirmation dialog and logout flow.
@@ -83,6 +87,15 @@ class ProfileSettingsSection extends StatelessWidget {
                   onTap: () {
                     HapticFeedback.lightImpact();
                     onYourStanding();
+                  },
+                ),
+                Divider(height: 1, color: AppColors.navyLight, indent: 56),
+                _buildSettingsRow(
+                  phosphorIcon: AppPhosphorIcons.homeCourse,
+                  label: 'Location',
+                  onTap: () {
+                    HapticFeedback.lightImpact();
+                    onLocation();
                   },
                 ),
                 // Debug options (only in debug mode)

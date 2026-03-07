@@ -1,7 +1,9 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 import '/backend/schema/users_record.dart';
+import '/providers/geo_filter_provider.dart';
 import '/core/design_tokens/colors.dart';
 import '/core/design_tokens/spacing.dart';
 import '/core/utils/app_log.dart';
@@ -11,6 +13,7 @@ import '/main_function/games_list/components/games_list_empty_state.dart';
 import '/main_function/games_list/components/games_sort_bar.dart';
 import '/main_function/games_list/components/mutual_card_actions.dart';
 import '/main_function/games_list/components/mutual_game_card.dart';
+import '/main_function/games_list/components/near_me_chip.dart';
 import '/main_function/games_list/components/quick_filter_chips.dart';
 import '/main_function/games_list/components/restriction_banner_selector.dart';
 import '/main_function/games_list/components/unified_game_card.dart';
@@ -130,7 +133,18 @@ class GamesListContent extends StatelessWidget {
         onFilterMetaChanged(filterMeta);
 
         // Apply user-selected filters from bottom sheet
-        final visibleGames = applyGameListFilters(activeGames, filters);
+        var visibleGames = applyGameListFilters(activeGames, filters);
+
+        // Apply geo filter if enabled and has location
+        final geoFilter = context.watch<GeoFilterProvider>();
+        if (geoFilter.isEnabled && geoFilter.hasLocation) {
+          visibleGames = applyGeoFilter(
+            visibleGames,
+            centerLat: geoFilter.lat!,
+            centerLng: geoFilter.lng!,
+            radiusKm: geoFilter.radiusKm,
+          );
+        }
 
         // Apply quick filter
         final quickFilteredGames = quickFilter.apply(visibleGames);
@@ -210,11 +224,31 @@ class GamesListContent extends StatelessWidget {
                       onNavigateToStanding: onNavigateToStanding,
                     ),
                   ),
-                  // Quick Filter Chips
+                  // Quick Filter Chips with Near Me toggle
                   SliverToBoxAdapter(
-                    child: QuickFilterChips(
-                      selectedFilter: quickFilter,
-                      onFilterChanged: onQuickFilterChanged,
+                    child: Padding(
+                      padding: EdgeInsets.symmetric(
+                        vertical: AppSpacing.sm,
+                      ),
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: QuickFilterChips(
+                              selectedFilter: quickFilter,
+                              onFilterChanged: onQuickFilterChanged,
+                              padding: EdgeInsets.only(
+                                left: AppSpacing.screenPadding,
+                              ),
+                            ),
+                          ),
+                          Padding(
+                            padding: EdgeInsets.only(
+                              right: AppSpacing.screenPadding,
+                            ),
+                            child: const NearMeChip(),
+                          ),
+                        ],
+                      ),
                     ),
                   ),
                   // Divider

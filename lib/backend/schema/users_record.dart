@@ -242,6 +242,41 @@ class UsersRecord extends FirestoreRecord {
   String get hometownName => _hometownName ?? '';
   bool hasHometownName() => _hometownName != null;
 
+  // "home_course_lat" field.
+  double? _homeCourseLat;
+  double? get homeCourseLat => _homeCourseLat;
+  bool hasHomeCourseLat() => _homeCourseLat != null;
+
+  // "home_course_lng" field.
+  double? _homeCourseLng;
+  double? get homeCourseLng => _homeCourseLng;
+  bool hasHomeCourseLng() => _homeCourseLng != null;
+
+  // "hometown_lat" field (denormalized from HometownRecord.location).
+  double? _hometownLat;
+  double? get hometownLat => _hometownLat;
+  bool hasHometownLat() => _hometownLat != null;
+
+  // "hometown_lng" field (denormalized from HometownRecord.location).
+  double? _hometownLng;
+  double? get hometownLng => _hometownLng;
+  bool hasHometownLng() => _hometownLng != null;
+
+  // "search_radius_km" field.
+  double? _searchRadiusKm;
+  double get searchRadiusKm => _searchRadiusKm ?? 40.0;
+  bool hasSearchRadiusKm() => _searchRadiusKm != null;
+
+  // "near_me_enabled" field.
+  bool? _nearMeEnabled;
+  bool get nearMeEnabled => _nearMeEnabled ?? false;
+  bool hasNearMeEnabled() => _nearMeEnabled != null;
+
+  // "location_source" field. Values: 'home_course', 'hometown', 'phone_gps'
+  String? _locationSource;
+  String get locationSource => _locationSource ?? 'home_course';
+  bool hasLocationSource() => _locationSource != null;
+
   // "vibe_edit_count" field. Number of times user has confirmed vibe profile edits.
   int? _vibeEditCount;
   int get vibeEditCount => _vibeEditCount ?? 0;
@@ -398,6 +433,13 @@ class UsersRecord extends FirestoreRecord {
     _dateOfBirth = snapshotData['date_of_birth'] as DateTime?;
     _hometown = snapshotData['hometown'] as DocumentReference?;
     _hometownName = snapshotData['hometown_name'] as String?;
+    _homeCourseLat = castToType<double>(snapshotData['home_course_lat']);
+    _homeCourseLng = castToType<double>(snapshotData['home_course_lng']);
+    _hometownLat = castToType<double>(snapshotData['hometown_lat']);
+    _hometownLng = castToType<double>(snapshotData['hometown_lng']);
+    _searchRadiusKm = castToType<double>(snapshotData['search_radius_km']);
+    _nearMeEnabled = snapshotData['near_me_enabled'] as bool?;
+    _locationSource = snapshotData['location_source'] as String?;
     _vibeEditCount = castToType<int>(snapshotData['vibe_edit_count']);
     _lastVibeEditAt = snapshotData['last_vibe_edit_at'] as DateTime?;
 
@@ -501,6 +543,13 @@ Map<String, dynamic> createUsersRecordData({
   DateTime? dateOfBirth,
   DocumentReference? hometown,
   String? hometownName,
+  double? homeCourseLat,
+  double? homeCourseLng,
+  double? hometownLat,
+  double? hometownLng,
+  double? searchRadiusKm,
+  bool? nearMeEnabled,
+  String? locationSource,
   int? vibeEditCount,
   DateTime? lastVibeEditAt,
   String? archetype,
@@ -555,6 +604,13 @@ Map<String, dynamic> createUsersRecordData({
       'date_of_birth': dateOfBirth,
       'hometown': hometown,
       'hometown_name': hometownName,
+      'home_course_lat': homeCourseLat,
+      'home_course_lng': homeCourseLng,
+      'hometown_lat': hometownLat,
+      'hometown_lng': hometownLng,
+      'search_radius_km': searchRadiusKm,
+      'near_me_enabled': nearMeEnabled,
+      'location_source': locationSource,
       'vibe_edit_count': vibeEditCount,
       'last_vibe_edit_at': lastVibeEditAt,
       'archetype': archetype,
@@ -616,6 +672,13 @@ class UsersRecordDocumentEquality implements Equality<UsersRecord> {
         e1?.dateOfBirth == e2?.dateOfBirth &&
         e1?.hometown == e2?.hometown &&
         e1?.hometownName == e2?.hometownName &&
+        e1?.homeCourseLat == e2?.homeCourseLat &&
+        e1?.homeCourseLng == e2?.homeCourseLng &&
+        e1?.hometownLat == e2?.hometownLat &&
+        e1?.hometownLng == e2?.hometownLng &&
+        e1?.searchRadiusKm == e2?.searchRadiusKm &&
+        e1?.nearMeEnabled == e2?.nearMeEnabled &&
+        e1?.locationSource == e2?.locationSource &&
         e1?.vibeEditCount == e2?.vibeEditCount &&
         e1?.lastVibeEditAt == e2?.lastVibeEditAt &&
         e1?.archetype == e2?.archetype;
@@ -667,6 +730,13 @@ class UsersRecordDocumentEquality implements Equality<UsersRecord> {
         e?.dateOfBirth,
         e?.hometown,
         e?.hometownName,
+        e?.homeCourseLat,
+        e?.homeCourseLng,
+        e?.hometownLat,
+        e?.hometownLng,
+        e?.searchRadiusKm,
+        e?.nearMeEnabled,
+        e?.locationSource,
         e?.vibeEditCount,
         e?.lastVibeEditAt,
         e?.archetype,

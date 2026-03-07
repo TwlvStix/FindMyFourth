@@ -18,6 +18,7 @@ class AppRouteNames {
   static const String premiumVibePage = 'PremiumVibePage';
   static const String notificationsList = 'NotificationsList';
   static const String notificationSettings = 'NotificationSettings';
+  static const String locationSettings = 'LocationSettings';
   static const String yourStanding = 'YourStanding';
   static const String mainProfile = 'MainProfile';
   static const String editProfile = 'EditProfile';
@@ -51,6 +52,15 @@ extension AppNavigationExtensions on BuildContext {
   }) {
     pushWithTransition(
       AppRouteNames.notificationSettings,
+      transition: transition,
+    );
+  }
+
+  void pushLocationSettings({
+    TransitionInfo transition = TransitionStandards.detailTransition,
+  }) {
+    pushWithTransition(
+      AppRouteNames.locationSettings,
       transition: transition,
     );
   }

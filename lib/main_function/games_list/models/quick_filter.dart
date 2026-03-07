@@ -8,10 +8,8 @@ import '/models/game.dart';
 enum QuickFilter {
   all('All Games'),
   flexible('Flexible'),
-  thisWeekend('This Weekend'),
-  morning('Morning'),
   nearMe('Near Me'),
-  topVibe('Top VIBE');
+  thisWeekend('This Weekend');
 
   const QuickFilter(this.label);
 
@@ -23,8 +21,6 @@ enum QuickFilter {
     switch (this) {
       case QuickFilter.flexible:
         return '\u26A1'; // lightning bolt
-      case QuickFilter.topVibe:
-        return '\u{1F525}'; // fire
       default:
         return null;
     }
@@ -41,9 +37,8 @@ enum QuickFilter {
 extension QuickFilterExtension on QuickFilter {
   /// Applies this filter to a list of games.
   ///
-  /// Returns the filtered list. Note that [nearMe] and [topVibe] don't
-  /// filter games but affect sorting - they return the full list and
-  /// sorting should be handled separately via [QuickFilterSorting].
+  /// Returns the filtered list. Note that [nearMe] does not filter games
+  /// and instead relies on separate sort handling via [GameSortOption].
   List<Game> apply(List<Game> games) {
     switch (this) {
       case QuickFilter.all:
@@ -55,22 +50,15 @@ extension QuickFilterExtension on QuickFilter {
       case QuickFilter.thisWeekend:
         return games.where((game) => _isThisWeekend(game)).toList();
 
-      case QuickFilter.morning:
-        return games.where((game) => _isMorning(game)).toList();
-
       case QuickFilter.nearMe:
         // Near Me is a sort filter, not a predicate filter
-        return games;
-
-      case QuickFilter.topVibe:
-        // Top VIBE is a sort filter, not a predicate filter
         return games;
     }
   }
 
   /// Whether this filter modifies sort order rather than filtering games.
   bool get isSortFilter {
-    return this == QuickFilter.nearMe || this == QuickFilter.topVibe;
+    return this == QuickFilter.nearMe;
   }
 }
 
@@ -96,19 +84,6 @@ bool _isThisWeekend(Game game) {
     final sunday = saturday.add(const Duration(days: 1));
 
     return _isSameDay(date, saturday) || _isSameDay(date, sunday);
-  }
-}
-
-/// Checks if a game is a morning game.
-bool _isMorning(Game game) {
-  if (game.isFlexible) {
-    // For flexible games, check flexibleTimeOfDay
-    return game.flexibleTimeOfDay == 'morning';
-  } else {
-    // For confirmed games, check if tee time is before noon
-    final date = game.date;
-    if (date == null) return false;
-    return date.hour < 12;
   }
 }
 

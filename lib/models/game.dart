@@ -28,6 +28,8 @@ class Game {
     required this.createdTime,
     required this.chatRef,
     required this.courseRef,
+    this.courseLat,
+    this.courseLng,
     required this.userRef,
     required this.uid,
     required this.scheduleType,
@@ -62,6 +64,8 @@ class Game {
   final DateTime? createdTime;
   final DocumentReference? chatRef;
   final DocumentReference? courseRef;
+  final double? courseLat;
+  final double? courseLng;
   final DocumentReference? userRef;
   final String uid;
   final String scheduleType;
@@ -184,6 +188,8 @@ class Game {
       createdTime: (data['created_time'] as Timestamp?)?.toDate(),
       chatRef: data['chatRef'] as DocumentReference?,
       courseRef: data['courseRef'] as DocumentReference?,
+      courseLat: (data['course_lat'] as num?)?.toDouble(),
+      courseLng: (data['course_lng'] as num?)?.toDouble(),
       userRef: data['userRef'] as DocumentReference?,
       uid: (data['uid'] as String?) ?? doc.id,
       scheduleType: scheduleType,
@@ -237,6 +243,8 @@ class Game {
       createdTime: record.createdTime,
       chatRef: record.chatRef,
       courseRef: record.courseRef,
+      courseLat: record.courseLat,
+      courseLng: record.courseLng,
       userRef: record.userRef,
       uid: record.uid,
       scheduleType: record.scheduleType,

@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
+import '/core/utils/geo_utils.dart';
 import '/main_function/games_list/components/game_list_filter_bottom_sheet.dart';
 import '/main_function/games_list/utils/game_canonicalization.dart';
 import '/main_function/games_list/utils/game_filtering.dart';
@@ -75,6 +76,24 @@ List<Game> applyGameListFilters(List<Game> games, GameListFilters filters) {
       return false;
     }
     return true;
+  }).toList();
+}
+
+/// Filters games to those within [radiusKm] of the given center.
+/// Games without coordinates are KEPT (don't penalize legacy data).
+List<Game> applyGeoFilter(
+  List<Game> games, {
+  required double centerLat,
+  required double centerLng,
+  required double radiusKm,
+}) {
+  return games.where((game) {
+    final lat = game.courseLat;
+    final lng = game.courseLng;
+    // Keep games without coordinates (legacy docs)
+    if (lat == null || lng == null) return true;
+    final distance = distanceKm(centerLat, centerLng, lat, lng);
+    return distance <= radiusKm;
   }).toList();
 }
 

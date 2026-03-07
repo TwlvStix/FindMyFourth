@@ -71,6 +71,16 @@ class GamesRecord extends FirestoreRecord {
   DocumentReference? get courseRef => _courseRef;
   bool hasCourseRef() => _courseRef != null;
 
+  // "course_lat" field.
+  double? _courseLat;
+  double? get courseLat => _courseLat;
+  bool hasCourseLat() => _courseLat != null;
+
+  // "course_lng" field.
+  double? _courseLng;
+  double? get courseLng => _courseLng;
+  bool hasCourseLng() => _courseLng != null;
+
   // "friend_game" field.
   String? _friendGame;
   String get friendGame => _friendGame ?? '';
@@ -209,6 +219,8 @@ class GamesRecord extends FirestoreRecord {
     _scoring = snapshotData['scoring'] as String?;
     _maxPlayers = castToType<int>(snapshotData['max_players']);
     _courseRef = snapshotData['courseRef'] as DocumentReference?;
+    _courseLat = castToType<double>(snapshotData['course_lat']);
+    _courseLng = castToType<double>(snapshotData['course_lng']);
     _friendGame = snapshotData['friend_game'] as String?;
     _hasSideGames = snapshotData['has_side_games'] as bool?;
     _is2v2 = snapshotData['is_2v2'] as bool?;
@@ -281,6 +293,8 @@ Map<String, dynamic> createGamesRecordData({
   String? scoring,
   int? maxPlayers,
   DocumentReference? courseRef,
+  double? courseLat,
+  double? courseLng,
   String? friendGame,
   bool? hasSideGames,
   bool? is2v2,
@@ -319,6 +333,8 @@ Map<String, dynamic> createGamesRecordData({
       'scoring': scoring,
       'max_players': maxPlayers,
       'courseRef': courseRef,
+      'course_lat': courseLat,
+      'course_lng': courseLng,
       'friend_game': friendGame,
       'has_side_games': hasSideGames,
       'is_2v2': is2v2,
@@ -366,6 +382,8 @@ class GamesRecordDocumentEquality implements Equality<GamesRecord> {
         e1?.scoring == e2?.scoring &&
         e1?.maxPlayers == e2?.maxPlayers &&
         e1?.courseRef == e2?.courseRef &&
+        e1?.courseLat == e2?.courseLat &&
+        e1?.courseLng == e2?.courseLng &&
         e1?.friendGame == e2?.friendGame &&
         e1?.hasSideGames == e2?.hasSideGames &&
         e1?.is2v2 == e2?.is2v2 &&
@@ -401,6 +419,8 @@ class GamesRecordDocumentEquality implements Equality<GamesRecord> {
         e?.scoring,
         e?.maxPlayers,
         e?.courseRef,
+        e?.courseLat,
+        e?.courseLng,
         e?.friendGame,
         e?.hasSideGames,
         e?.is2v2,

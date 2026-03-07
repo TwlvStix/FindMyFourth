@@ -616,6 +616,22 @@ class AppPhosphorIcons {
   static const piggyBank = PhosphorIconsRegular.piggyBank;
 
   // ══════════════════════════════════════════════════════════════════════════
+  // LOCATION
+  // ══════════════════════════════════════════════════════════════════════════
+
+  /// Hometown — house simple
+  static const hometown = PhosphorIconsRegular.houseSimple;
+
+  /// Current location / GPS — navigation arrow
+  static const gpsLocation = PhosphorIconsRegular.navigationArrow;
+
+  /// Location / position — crosshair
+  static const location = PhosphorIconsRegular.crosshair;
+
+  /// Check circle — alias for confirm/success in selection contexts
+  static const checkCircle = PhosphorIconsRegular.checkCircle;
+
+  // ══════════════════════════════════════════════════════════════════════════
   // DEBUG
   // ══════════════════════════════════════════════════════════════════════════
 

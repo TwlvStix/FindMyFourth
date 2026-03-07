@@ -49,6 +49,7 @@ class _EditProfileWidgetState extends State<EditProfileWidget>
 
   // Form Values
   String? _coursesValue;
+  CourseRecord? _selectedCourseRecord;
   FormFieldController<String>? _coursesValueController;
   int? _handicapValue;
   String? _hometownValue;
@@ -120,12 +121,14 @@ class _EditProfileWidgetState extends State<EditProfileWidget>
     setState(() => _isSaving = true);
 
     try {
-      // Resolve hometown reference if selected
+      // Resolve hometown reference and location if selected
       DocumentReference? hometownRef;
+      LatLng? hometownLocation;
       if (_hometownValue != null && _hometownValue!.isNotEmpty) {
         final hometowns = await HometownRecord.fetchAll();
         final match = hometowns.where((h) => h.name == _hometownValue).firstOrNull;
         hometownRef = match?.reference;
+        hometownLocation = match?.location;
       }
 
       if (!mounted) return;
@@ -142,8 +145,12 @@ class _EditProfileWidgetState extends State<EditProfileWidget>
           firstName: _firstNameController.text.trim(),
           lastName: _lastNameController.text.trim(),
           homeCourse: _coursesValue,
+          homeCourseLat: _selectedCourseRecord?.location?.latitude,
+          homeCourseLng: _selectedCourseRecord?.location?.longitude,
           hometown: hometownRef,
           hometownName: _hometownValue,
+          hometownLat: hometownLocation?.latitude,
+          hometownLng: hometownLocation?.longitude,
         ),
         phoneNumber: _phoneController.text.trim(),
       );
@@ -345,8 +352,12 @@ class _EditProfileWidgetState extends State<EditProfileWidget>
                                 courses: courses,
                                 isLoadingCourses: isLoading,
                                 selectedCourse: _coursesValue,
-                                onCourseChanged: (val) =>
-                                    setState(() => _coursesValue = val),
+                                onCourseChanged: (name, record) {
+                                  setState(() {
+                                    _coursesValue = name;
+                                    _selectedCourseRecord = record;
+                                  });
+                                },
                                 handicapValue: _handicapValue ??
                                     valueOrDefault(
                                         currentUserDocument?.handicap, 0),

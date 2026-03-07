@@ -206,6 +206,30 @@ class UserProvider extends ChangeNotifier {
   int get paceOfPlay => _currentUser?.paceOfPlay ?? 0;
   bool get onboardingCompleted => _currentUser?.onboardingCompleted ?? false;
 
+  // ========================================
+  // LOCATION ACCESSORS (for GeoFilterProvider)
+  // ========================================
+
+  // Home course location (primary)
+  double? get homeCourseLat => _currentUser?.homeCourseLat;
+  double? get homeCourseLng => _currentUser?.homeCourseLng;
+  bool get hasHomeCourseLocation =>
+      homeCourseLat != null && homeCourseLng != null;
+
+  // Hometown location (fallback)
+  double? get hometownLat => _currentUser?.hometownLat;
+  double? get hometownLng => _currentUser?.hometownLng;
+  bool get hasHometownLocation => hometownLat != null && hometownLng != null;
+
+  // Resolved default location (home course → hometown)
+  double? get defaultLocationLat => homeCourseLat ?? hometownLat;
+  double? get defaultLocationLng => homeCourseLng ?? hometownLng;
+  bool get hasDefaultLocation =>
+      defaultLocationLat != null && defaultLocationLng != null;
+
+  // Radius preference
+  double get searchRadiusKm => _currentUser?.searchRadiusKm ?? 40.0;
+
   List<DocumentReference> get friends => _currentUser?.friends ?? [];
   List<DocumentReference> get friendRequests => _currentUser?.friendRequests ?? [];
 

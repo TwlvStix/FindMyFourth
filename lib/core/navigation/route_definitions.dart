@@ -38,6 +38,7 @@ import '/user_onboarding/vibe_archetype_reveal_widget.dart';
 import '/vibe/premium_vibe_page/premium_vibe_page_widget.dart';
 import '/debug/notification_routing_test_screen.dart';
 import '/debug/streak_debug_screen.dart';
+import '/settings/location_settings/location_settings_widget.dart';
 
 import '/core/navigation/app_router.dart'
     show AppStateNotifier, buildRedirect, buildPageWithTransition;
@@ -337,6 +338,17 @@ List<GoRoute> buildRoutes(AppStateNotifier appStateNotifier) => [
           state,
           appStateNotifier,
           const NotificationSettingsWidget(),
+        ),
+      ),
+      GoRoute(
+        name: LocationSettingsWidget.routeName,
+        path: LocationSettingsWidget.routePath,
+        redirect: buildRedirect(appStateNotifier, requireAuth: true),
+        pageBuilder: (context, state) => buildPageWithTransition(
+          context,
+          state,
+          appStateNotifier,
+          const LocationSettingsWidget(),
         ),
       ),
       GoRoute(

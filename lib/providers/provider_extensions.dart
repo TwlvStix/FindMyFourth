@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'chat_provider.dart';
+import 'geo_filter_provider.dart';
 import 'group_vibe_provider.dart';
 import 'game_provider.dart';
 import 'join_request_provider.dart';
@@ -27,6 +28,12 @@ extension ProviderExtensions on BuildContext {
 
   /// Access GameProvider and listen for changes
   GameProvider get watchGameProvider => watch<GameProvider>();
+
+  /// Access GeoFilterProvider without listening for changes
+  GeoFilterProvider get geoFilterProvider => read<GeoFilterProvider>();
+
+  /// Access GeoFilterProvider and listen for changes
+  GeoFilterProvider get watchGeoFilterProvider => watch<GeoFilterProvider>();
 
   /// Access NotificationProvider without listening for changes
   NotificationProvider get notificationProvider => read<NotificationProvider>();
@@ -90,6 +97,11 @@ extension ProviderExtensions on BuildContext {
   /// Select specific data from TrustProvider
   T selectTrust<T>(T Function(TrustProvider provider) selector) {
     return select<TrustProvider, T>(selector);
+  }
+
+  /// Select specific data from GeoFilterProvider
+  T selectGeoFilter<T>(T Function(GeoFilterProvider provider) selector) {
+    return select<GeoFilterProvider, T>(selector);
   }
 
   /// Select specific data from ProfileProvider

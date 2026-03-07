@@ -25,6 +25,7 @@ import '/core/utils/app_log.dart';
 import '/providers/user_provider.dart';
 import '/providers/chat_provider.dart';
 import '/providers/game_provider.dart';
+import '/providers/geo_filter_provider.dart';
 import '/providers/group_vibe_provider.dart';
 import '/providers/join_request_provider.dart';
 import '/providers/profile_provider.dart';
@@ -82,6 +83,8 @@ Future<void> main() async {
           ChangeNotifierProvider<UserProvider>(create: (_) => UserProvider()),
           ChangeNotifierProvider<ChatProvider>(create: (_) => ChatProvider()),
           ChangeNotifierProvider<GameProvider>(create: (_) => GameProvider()),
+          ChangeNotifierProvider<GeoFilterProvider>(
+              create: (_) => GeoFilterProvider()),
           ChangeNotifierProvider<ProfileProvider>(
               create: (_) => ProfileProvider()),
           ChangeNotifierProvider<NotificationProvider>(

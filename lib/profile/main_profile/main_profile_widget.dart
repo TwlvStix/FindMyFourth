@@ -235,6 +235,7 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                           onYourStanding: () => context.pushYourStanding(
                             transition: TransitionStandards.flatFadeTransition,
                           ),
+                          onLocation: () => context.pushLocationSettings(),
                           onLogout: _handleLogout,
                           showDebugOptions: kDebugMode,
                           onDebugNotificationRouting: () =>

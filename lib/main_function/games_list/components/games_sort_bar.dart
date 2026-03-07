@@ -80,26 +80,38 @@ class _SortDropdown extends StatelessWidget {
         final isSelected = option == sortOption;
         return PopupMenuItem<GameSortOption>(
           value: option,
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              if (isSelected)
-                Padding(
-                  padding: EdgeInsets.only(right: AppSpacing.xs),
-                  child: AppIcon(
-                    icon: AppPhosphorIcons.check,
-                    size: 16,
-                    color: AppColors.green,
+          padding: EdgeInsets.zero,
+          child: Container(
+            width: double.infinity,
+            padding: EdgeInsets.symmetric(
+              horizontal: AppSpacing.md,
+              vertical: AppSpacing.sm,
+            ),
+            decoration: BoxDecoration(
+              color: isSelected ? AppColors.navyLight : AppColors.transparent,
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                if (isSelected)
+                  Padding(
+                    padding: EdgeInsets.only(right: AppSpacing.xs),
+                    child: AppIcon(
+                      icon: AppPhosphorIcons.check,
+                      size: 16,
+                      color: AppColors.whiteStrong,
+                    ),
+                  ),
+                Text(
+                  option.label,
+                  style: AppTypography.bodySmall.copyWith(
+                    color:
+                        isSelected ? AppColors.whiteStrong : AppColors.textPrimary,
+                    fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
                   ),
                 ),
-              Text(
-                option.label,
-                style: AppTypography.bodySmall.copyWith(
-                  color: isSelected ? AppColors.green : AppColors.textPrimary,
-                  fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
-                ),
-              ),
-            ],
+              ],
+            ),
           ),
         );
       }).toList(),

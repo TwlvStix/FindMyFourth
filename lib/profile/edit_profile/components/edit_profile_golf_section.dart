@@ -1,3 +1,4 @@
+import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -41,8 +42,9 @@ class EditProfileGolfSection extends StatelessWidget {
   /// Currently selected course name
   final String? selectedCourse;
 
-  /// Callback when course selection changes
-  final ValueChanged<String?> onCourseChanged;
+  /// Callback when course selection changes.
+  /// Returns both the course name and the full CourseRecord for geo data.
+  final void Function(String? name, CourseRecord? record)? onCourseChanged;
 
   /// Current handicap value
   final int handicapValue;
@@ -134,7 +136,10 @@ class EditProfileGolfSection extends StatelessWidget {
         controller: coursesValueController ??
             FormFieldController<String>(selectedCourse),
         options: courses.map((c) => c.name).toList(),
-        onChanged: onCourseChanged,
+        onChanged: (name) {
+          final record = courses.firstWhereOrNull((c) => c.name == name);
+          onCourseChanged?.call(name, record);
+        },
         width: double.infinity,
         height: 56,
         textStyle: AppTypography.bodyMedium.copyWith(
