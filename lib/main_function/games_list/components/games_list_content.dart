@@ -326,6 +326,7 @@ class _GamesListContentState extends State<GamesListContent> {
                                 currentUserReference: widget.currentUserReference,
                                 vibeScore: widget.vibeScores[game.reference.id],
                                 animationIndex: index,
+                                showStatusBadge: true,
                               ),
                             );
                           },

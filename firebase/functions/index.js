@@ -2033,6 +2033,7 @@ exports.onGameParticipantJoin = confirmationFlow.onGameParticipantJoin;
 exports.onGameStatusToFilled = confirmationFlow.onGameStatusToFilled;
 exports.onGameCreated = confirmationFlow.onGameCreated;
 exports.onGameStatusToPlayed = confirmationFlow.onGameStatusToPlayed;
+exports.onGameStatusToCancelled = confirmationFlow.onGameStatusToCancelled;
 exports.submitHostCheckin = confirmationFlow.submitHostCheckin;
 exports.submitPeerRatings = confirmationFlow.submitPeerRatings;
 exports.submitFallbackConfirmation = confirmationFlow.submitFallbackConfirmation;

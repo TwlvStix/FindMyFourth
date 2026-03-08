@@ -430,8 +430,8 @@ class _PremiumHeroSectionState extends State<PremiumHeroSection> {
           ),
           // FULL badge
           _buildSpotsBadge(),
-          // Edit button for owner
-          if (widget.isOwner && widget.onEditPressed != null) ...[
+          // Edit button for owner (hidden when game is played)
+          if (widget.isOwner && widget.onEditPressed != null && !game.isPlayed) ...[
             SizedBox(width: AppSpacing.xs),
             GestureDetector(
               onTap: widget.onEditPressed,

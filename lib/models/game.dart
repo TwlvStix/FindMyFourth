@@ -265,8 +265,13 @@ class Game {
   bool get isCancelledStatus => status == 'cancelled';
   bool get isExpired => status == 'expired';
   bool get isCompleted => status == 'completed';
+  bool get isPlayed => status == 'played';
   bool get isFlexible => scheduleType == 'flexible';
   bool get isConfirmed => scheduleType == 'confirmed';
+
+  /// Returns true if the game is in a locked state where editing is disabled.
+  /// This includes played, expired, cancelled, and completed states.
+  bool get isLocked => isPlayed || isExpired || isCancelledStatus || isCompleted;
 
   /// Total player count including joined players, guests, and owner.
   int get playerCount {

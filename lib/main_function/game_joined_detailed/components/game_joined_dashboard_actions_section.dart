@@ -31,6 +31,7 @@ class GameJoinedDashboardActionsSection extends StatelessWidget {
   Widget build(BuildContext context) {
     final isCancelled = game.isCancelledStatus;
     final isOwner = game.userRef == currentUserRef;
+    final isLocked = game.isLocked;
 
     if (isCancelled) {
       return const SizedBox.shrink();
@@ -39,7 +40,8 @@ class GameJoinedDashboardActionsSection extends StatelessWidget {
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        if (!isOwner)
+        // Non-owners can leave, but only if game is not yet locked
+        if (!isOwner && !isLocked)
           Padding(
             padding: EdgeInsets.symmetric(horizontal: AppSpacing.md),
             child: AppButtonEnhanced(
@@ -50,15 +52,21 @@ class GameJoinedDashboardActionsSection extends StatelessWidget {
               onPressed: () => _handleLeaveGame(context),
             ),
           ),
+        // Owner can always cancel, but with different styling when played
         if (isOwner)
           Padding(
             padding: EdgeInsets.symmetric(horizontal: AppSpacing.md),
             child: AppButtonEnhanced(
-              text: 'Cancel game',
-              variant: AppButtonVariant.destructiveOutlined,
+              text: game.isPlayed ? 'Cancel Round' : 'Cancel game',
+              // Use filled destructive (more serious) when game is played
+              variant: game.isPlayed
+                  ? AppButtonVariant.destructive
+                  : AppButtonVariant.destructiveOutlined,
               size: AppButtonSize.large,
               fullWidth: true,
-              onPressed: () => _handleCancelGame(context),
+              onPressed: () => game.isPlayed
+                  ? _handleCancelPlayedGame(context)
+                  : _handleCancelGame(context),
             ),
           ),
       ],
@@ -128,6 +136,126 @@ class GameJoinedDashboardActionsSection extends StatelessWidget {
           backgroundColor: AppColors.error,
         ),
       );
+    }
+  }
+
+  /// Handle cancellation when the game is in 'played' status.
+  /// Uses more serious dialog copy since the round is already in progress.
+  Future<void> _handleCancelPlayedGame(BuildContext context) async {
+    final userRef = currentUserRef;
+    final gameRef = screenGameRef;
+    if (userRef == null || gameRef == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Signing you in... Please try again in a moment.'),
+          backgroundColor: AppColors.warning,
+        ),
+      );
+      return;
+    }
+    final userId = userRef.id;
+    final gameId = gameRef.id;
+    final gamePath = gameRef.path;
+
+    final gameProvider = context.gameProvider;
+    final chatProvider = context.read<ChatProvider>();
+
+    // First dialog - more serious warning for in-progress game
+    final confirmDialogResponse = await showPremiumDialog(
+          context: context,
+          variant: PremiumDialogVariant.destructive,
+          icon: PhosphorIconsRegular.warning,
+          title: 'Cancel this round?',
+          body:
+              'This game is already in progress. Cancelling will notify all players and remove the game from post-round processing.',
+          actionLabel: 'Cancel Round',
+          cancelLabel: 'Keep Playing',
+        ) ??
+        false;
+    if (!confirmDialogResponse) {
+      return;
+    }
+
+    if (!context.mounted) {
+      return;
+    }
+
+    // Second dialog - final confirmation
+    final shouldRemove = await showPremiumDialog(
+      context: context,
+      variant: PremiumDialogVariant.destructive,
+      icon: PhosphorIconsRegular.trashSimple,
+      title: 'Confirm cancellation',
+      body: 'This action cannot be undone. All players will be notified.',
+      actionLabel: 'Yes, Cancel',
+      cancelLabel: 'Go Back',
+    );
+    if (shouldRemove != true) {
+      return;
+    }
+
+    if (!context.mounted) {
+      return;
+    }
+    context.read<AppState>().setCancelledGameHandling(
+      gamePath,
+      'removeNow',
+    );
+
+    try {
+      await gameProvider.cancelGame(gameId);
+      final chatRef = game.chatRef;
+      if (chatRef != null) {
+        final gameName = game.nameGame;
+        final cancelMessage = gameName.trim().isNotEmpty
+            ? 'Round "$gameName" has been cancelled.'
+            : 'This round has been cancelled.';
+        try {
+          await chatProvider.sendMessage(
+            chatId: chatRef.id,
+            senderId: userId,
+            text: cancelMessage,
+          );
+          await chatRef.update({
+            'isReadOnly': true,
+            'pinnedMessage': cancelMessage,
+            'pinnedAt': FieldValue.serverTimestamp(),
+            'deletesAt': Timestamp.fromDate(
+              getCurrentTimestamp.add(
+                Duration(days: _cancelledChatArchiveDays),
+              ),
+            ),
+          });
+        } catch (chatError, stackTrace) {
+          AppLog.d('CancelPlayedGame: chat update failed $chatError');
+          AppLog.d('CancelPlayedGame stackTrace: $stackTrace');
+        }
+      }
+
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Round cancelled'),
+            backgroundColor: AppColors.success,
+            duration: Duration(seconds: 2),
+          ),
+        );
+        gameProvider.invalidateUserGamesCache(userId);
+        context.goGamesList();
+      }
+    } catch (error, stackTrace) {
+      AppLog.d('CancelPlayedGame failed: $error');
+      AppLog.d('CancelPlayedGame stackTrace: $stackTrace');
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              'Unable to cancel the round. Please try again.',
+            ),
+            backgroundColor: AppColors.error,
+          ),
+        );
+      }
     }
   }
 

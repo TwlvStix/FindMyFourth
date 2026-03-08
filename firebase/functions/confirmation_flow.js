@@ -369,9 +369,9 @@ async function _processScheduledGameStatusChangeHandler(req, res, db = null) {
 
     const gameData = gameSnap.data();
 
-    // Only flip if still 'open' or 'filled' (not already 'played' or 'cancelled')
-    if (gameData.status !== 'filled' && gameData.status !== 'open') {
-      console.log(`processScheduledGameStatusChange: game ${gameId} is ${gameData.status}, not open/filled — skipping`);
+    // Only flip if still 'active', 'open', or 'filled' (not already 'played' or 'cancelled')
+    if (gameData.status !== 'filled' && gameData.status !== 'open' && gameData.status !== 'active') {
+      console.log(`processScheduledGameStatusChange: game ${gameId} is ${gameData.status}, not active/open/filled — skipping`);
       return res.status(200).send('SKIPPED');
     }
 
@@ -872,6 +872,88 @@ const onGameStatusToPlayed = functions
   .firestore.document("games/{gameId}")
   .onUpdate(async (change, context) => {
     return _onGameStatusToPlayedHandler(change, context, admin.firestore());
+  });
+
+// ─────────────────────────────────────────────────────────────────────────────
+// GAME STATUS TRANSITION — onGameStatusToCancelled
+// ─────────────────────────────────────────────────────────────────────────────
+
+/**
+ * Raw handler for onGameStatusToCancelled.
+ *
+ * This trigger fires when a game's status transitions TO 'cancelled'.
+ * It cancels all pending Cloud Tasks for the game and notifies players.
+ *
+ * This is important when hosts cancel a game from 'played' status via the UI,
+ * ensuring the Trust System notification pipeline is halted.
+ */
+async function _onGameStatusToCancelledHandler(change, context, db) {
+  const before = change.before.data();
+  const after = change.after.data();
+
+  // Only fire on transition TO 'cancelled'
+  if (after.status !== 'cancelled' || before.status === 'cancelled') {
+    return;
+  }
+
+  // Also guard against isCancelled being true before
+  if (before.isCancelled === true) {
+    return;
+  }
+
+  const gameId = context.params.gameId;
+
+  console.log(`onGameStatusToCancelled: game ${gameId} was cancelled`);
+
+  try {
+    // Get all joined players from game_participants subcollection
+    const participantsSnap = await change.after.ref
+      .collection('game_participants')
+      .get();
+
+    // Extract user IDs (excluding the host)
+    const hostRef = after.userRef || after.host_ref || null;
+    const hostId = hostRef ? hostRef.id : null;
+
+    const playerUserIds = participantsSnap.docs
+      .map(doc => {
+        const userRef = doc.data().user_ref;
+        return userRef && typeof userRef.id === 'string' ? userRef.id : null;
+      })
+      .filter(uid => uid && uid !== hostId);
+
+    // Extract course name and format game date
+    const courseName = typeof after.course_play === 'string'
+      ? after.course_play
+      : 'Unknown course';
+
+    const teeTimeTs = after.date;
+    let gameDate = '';
+    if (teeTimeTs && typeof teeTimeTs.toDate === 'function') {
+      const date = teeTimeTs.toDate();
+      const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+                      'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+      gameDate = `${months[date.getMonth()]} ${date.getDate()}`;
+    }
+
+    // Cancel scheduled tasks and notify players via the hook
+    const result = await onGameCancelled(gameId, playerUserIds, courseName, gameDate, db);
+
+    console.log(
+      `onGameStatusToCancelled: game ${gameId} — cancelled ${result.cancelledCount} tasks, ` +
+      `notified ${result.notifyResults.length} players`
+    );
+  } catch (error) {
+    console.error(`onGameStatusToCancelled: error processing game ${gameId}:`, error);
+    // Don't rethrow - this is a best-effort notification
+  }
+}
+
+const onGameStatusToCancelled = functions
+  .region("us-west2")
+  .firestore.document("games/{gameId}")
+  .onUpdate(async (change, context) => {
+    return _onGameStatusToCancelledHandler(change, context, admin.firestore());
   });
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -2274,6 +2356,7 @@ module.exports = {
   onGameStatusToFilled,
   onGameCreated,
   onGameStatusToPlayed,
+  onGameStatusToCancelled,
   submitHostCheckin,
   submitPeerRatings,
   submitFallbackConfirmation,
@@ -2284,6 +2367,7 @@ module.exports = {
   _onGameParticipantJoinHandler,
   _onGameStatusToFilledHandler,
   _onGameCreatedHandler,
+  _onGameStatusToCancelledHandler,
   _processScheduledGameStatusChangeHandler,
   _processScheduledWindowCloseHandler,
   _processScheduledPreGameCheckHandler,

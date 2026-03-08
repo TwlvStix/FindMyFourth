@@ -11,8 +11,8 @@ void main() {
         equals([
           QuickFilter.all,
           QuickFilter.flexible,
-          QuickFilter.thisWeekend,
           QuickFilter.nearMe,
+          QuickFilter.thisWeekend,
         ]),
       );
     });

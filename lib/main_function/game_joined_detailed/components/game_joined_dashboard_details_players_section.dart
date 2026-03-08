@@ -99,9 +99,11 @@ class GameJoinedDashboardDetailsPlayersSection extends StatelessWidget {
                 SizedBox(height: AppSpacing.sm),
                 GameDetailsSection(game: game),
                 SizedBox(height: AppSpacing.lg),
+                // Hide pending requests when game is locked (played/expired/cancelled/completed)
                 if (isOwner &&
                     pendingRequests.isNotEmpty &&
-                    ownerVibeProfile != null)
+                    ownerVibeProfile != null &&
+                    !game.isLocked)
                   PendingRequestsSection(
                     pendingRequests: pendingRequests,
                     ownerVibeProfile: ownerVibeProfile!,
@@ -141,20 +143,23 @@ class GameJoinedDashboardDetailsPlayersSection extends StatelessWidget {
           groupVibeCacheKey: groupVibeCacheKey,
           hasAnimated: hasAnimated,
           isOwner: isOwner,
-          onRemovePlayer: ({
-            required String playerName,
-            required DocumentReference? playerRef,
-            required bool isGuest,
-            String? guestName,
-          }) =>
-              onShowRemovePlayerDialog(
-            context: context,
-            playerName: playerName,
-            playerRef: playerRef,
-            isGuest: isGuest,
-            guestName: guestName,
-            gameRecord: game,
-          ),
+          // Hide remove buttons when game is locked (played/expired/cancelled/completed)
+          onRemovePlayer: game.isLocked
+              ? null
+              : ({
+                  required String playerName,
+                  required DocumentReference? playerRef,
+                  required bool isGuest,
+                  String? guestName,
+                }) =>
+                    onShowRemovePlayerDialog(
+                  context: context,
+                  playerName: playerName,
+                  playerRef: playerRef,
+                  isGuest: isGuest,
+                  guestName: guestName,
+                  gameRecord: game,
+                ),
           onPlayerTap: (userRef) => context.pushProfileUser(
             userRef: userRef,
           ),
@@ -178,7 +183,8 @@ class GameJoinedDashboardDetailsPlayersSection extends StatelessWidget {
             ),
             child: const CancelledGameBanner(),
           ),
-        if (isOwner && playerCount < 4 && !isCancelled)
+        // Hide Add Players button when game is locked (played/expired/cancelled/completed)
+        if (isOwner && playerCount < 4 && !isCancelled && !game.isLocked)
           Padding(
             padding: EdgeInsets.symmetric(horizontal: AppSpacing.md),
             child: AppButtonEnhanced(
@@ -204,7 +210,7 @@ class GameJoinedDashboardDetailsPlayersSection extends StatelessWidget {
               },
             ),
           ),
-        if (isOwner && playerCount < 4 && !isCancelled)
+        if (isOwner && playerCount < 4 && !isCancelled && !game.isLocked)
           SizedBox(height: AppSpacing.md),
       ],
     );

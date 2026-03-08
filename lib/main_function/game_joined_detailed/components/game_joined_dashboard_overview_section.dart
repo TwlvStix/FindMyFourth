@@ -14,6 +14,7 @@ import 'package:flutter_animate/flutter_animate.dart';
 
 import 'firm_it_up_banner.dart';
 import 'firm_it_up_bottom_sheet.dart';
+import 'game_in_progress_banner.dart';
 import 'group_vibe_summary_selector.dart';
 import 'premium_hero_section.dart';
 
@@ -73,8 +74,15 @@ class GameJoinedDashboardOverviewSection extends StatelessWidget {
               duration: ReducedMotionService.adjust(MotionTokens.routeEnter),
               curve: MotionTokens.curveEnter,
             ),
-        // Firm It Up Banner (only for flexible game owners)
-        if (game.scheduleType == 'flexible' && isOwner)
+        // Game In Progress Banner (shown to host when game is played)
+        if (game.isPlayed && isOwner)
+          buildAnimatedSection(
+            sectionIndex: 0,
+            hasAnimated: hasAnimated,
+            child: const GameInProgressBanner(),
+          ),
+        // Firm It Up Banner (only for flexible game owners, hidden when locked)
+        if (game.scheduleType == 'flexible' && isOwner && !game.isLocked)
           buildAnimatedSection(
             sectionIndex: 0,
             hasAnimated: hasAnimated,

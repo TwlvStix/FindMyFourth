@@ -88,11 +88,16 @@ class ChatDetailsSideEffects {
   ///
   /// Checks if the user is the last member and shows appropriate warning.
   /// If confirmed, leaves the chat (or deletes it if last member).
+  ///
+  /// [onLeaveStarted] is called just before the leave operation begins.
+  /// [onLeaveFailed] is called if the leave operation fails.
   static Future<void> showLeaveConfirmation({
     required BuildContext context,
     required String chatId,
     required String uid,
     required ChatProvider chatProvider,
+    VoidCallback? onLeaveStarted,
+    VoidCallback? onLeaveFailed,
   }) async {
     // Check if user is the last member
     final isLast = await chatProvider.isLastMember(chatId: chatId, uid: uid);
@@ -132,6 +137,8 @@ class ChatDetailsSideEffects {
         uid: uid,
         chatProvider: chatProvider,
         wasLastMember: isLast,
+        onLeaveStarted: onLeaveStarted,
+        onLeaveFailed: onLeaveFailed,
       );
     }
   }
@@ -142,6 +149,8 @@ class ChatDetailsSideEffects {
     required String uid,
     required ChatProvider chatProvider,
     required bool wasLastMember,
+    VoidCallback? onLeaveStarted,
+    VoidCallback? onLeaveFailed,
   }) async {
     AppLog.d('🔵 UI: Leave chat button pressed');
     AppLog.d('🔵 UI: chatId=$chatId, userId=$uid, wasLastMember=$wasLastMember');
@@ -158,6 +167,9 @@ class ChatDetailsSideEffects {
         );
       },
     );
+
+    // Set guard flag before leave operation
+    onLeaveStarted?.call();
 
     try {
       await chatProvider.leaveChat(chatId: chatId, uid: uid);
@@ -176,6 +188,9 @@ class ChatDetailsSideEffects {
         ),
       );
     } catch (error, stackTrace) {
+      // Reset guard flag on failure
+      onLeaveFailed?.call();
+
       AppLog.d('❌ UI: Failed to leave chat: $error');
       chatProvider.logError('leaveChat failed', error, stackTrace);
 

@@ -1,38 +1,33 @@
 import 'dart:async';
-import '/core/utils/state_update.dart';
-import 'dart:ui' as ui;
 
-import 'package:firebase_storage/firebase_storage.dart';
-import 'package:image_picker/image_picker.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 
-import '/core/utils/app_log.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
-
 import '/auth/firebase_auth/auth_util.dart';
+import '/core/design_tokens/colors.dart';
+import '/core/motion/motion_helpers.dart';
+import '/core/utils/app_log.dart';
+import '/core/utils/state_update.dart';
+import '/core/widgets/app_text.dart';
+import '/core/widgets/fairway_background.dart';
+import '/core/widgets/premium_back_button.dart';
 import '/models/chat.dart';
 import '/models/chat_message.dart';
 import '/models/chat_message_view_model.dart';
 import '/providers/chat_provider.dart';
 import '/providers/profile_provider.dart';
-import '/core/motion/motion_helpers.dart';
-import '/core/design_tokens/colors.dart';
-import '/core/design_tokens/border_radius.dart';
-import '/core/widgets/app_text.dart';
-import '/core/widgets/fairway_background.dart';
-import '/core/widgets/premium_back_button.dart';
 import 'components/chat_details_actions.dart';
 import 'components/chat_details_body.dart';
 import 'components/chat_header_title.dart';
-import 'components/chat_image_source_sheet.dart';
 import 'components/chat_image_viewer.dart';
-import 'components/chat_pending_upload_bubble.dart';
 import 'components/chat_reaction_picker.dart';
 import 'controllers/chat_details_controller.dart';
 import 'controllers/chat_details_side_effects.dart';
+import 'controllers/chat_image_upload_controller.dart';
+import 'helpers/chat_typing_helper.dart';
 
 class GameChatDetailsWidget extends StatefulWidget {
   const GameChatDetailsWidget({
@@ -48,27 +43,31 @@ class GameChatDetailsWidget extends StatefulWidget {
 
 class _GameChatDetailsWidgetState extends State<GameChatDetailsWidget>
     with TickerProviderStateMixin {
+  // Input controllers
   final TextEditingController _messageController = TextEditingController();
   final FocusNode _messageFocusNode = FocusNode();
   final ScrollController _scrollController = ScrollController();
+
+  // Stream state
   late final Stream<Chat?> _chatStream;
   late final Stream<Chat?> _chatUiStream;
   Stream<QuerySnapshot>? _messagesStream;
   Stream<List<ChatMessageViewModel>>? _messageViewModelsStream;
   StreamSubscription<Chat?>? _chatUiSubscription;
   StreamSubscription<QuerySnapshot>? _messagesSnapshotSubscription;
-  // Visibility cutoff from memberJoinedAt — set when the first chat event arrives.
   DateTime? _visibleAfter;
   bool _streamsInitialized = false;
+
+  // Pagination
   static const int _initialPageSize = 40;
   static const int _pageSize = 30;
   final List<ChatMessageViewModel> _latestMessageVMs = [];
   DocumentSnapshot? _lastStreamDoc;
   final ChatDetailsController<DocumentSnapshot> _detailsController =
       ChatDetailsController<DocumentSnapshot>();
+
+  // UI state
   bool _showScrollToBottom = false;
-  bool _isTyping = false;
-  Timer? _typingTimer;
   ChatMessage? _replyToMessage;
   Chat? _chatUi;
   bool _chatLoaded = false;
@@ -77,7 +76,11 @@ class _GameChatDetailsWidgetState extends State<GameChatDetailsWidget>
   bool _isArchived = false;
   String _bannerText = '';
   bool _didMarkSeen = false;
-  final List<PendingUploadItem> _pendingUploads = [];
+  bool _isLeavingChat = false;
+
+  // Extracted controllers/helpers
+  late ChatTypingHelper _typingHelper;
+  late ChatImageUploadController _imageUploadController;
 
   String? get _currentUserId {
     final uid = currentUserUid;
@@ -89,7 +92,23 @@ class _GameChatDetailsWidgetState extends State<GameChatDetailsWidget>
     super.initState();
     AppLog.d('📨 UI: Chat page loaded for chatId: ${widget.chatId}');
     AppLog.d('📨 UI: Current user ID: $_currentUserId');
+
     final chatProvider = context.read<ChatProvider>();
+
+    // Initialize extracted helpers
+    _typingHelper = ChatTypingHelper(
+      chatId: widget.chatId,
+      chatProvider: chatProvider,
+      getCurrentUserId: () => _currentUserId,
+    );
+    _imageUploadController = ChatImageUploadController(
+      chatId: widget.chatId,
+      chatProvider: chatProvider,
+      onStateChanged: () => updateState(this, () {}),
+      isMounted: () => mounted,
+      getCurrentUserId: () => _currentUserId,
+    );
+
     _chatStream = chatProvider.chatStream(widget.chatId);
     _chatUiStream = _chatStream.distinct(_chatUiEquals);
     // Message streams are initialized lazily in _updateChatUiState on the first
@@ -101,6 +120,13 @@ class _GameChatDetailsWidgetState extends State<GameChatDetailsWidget>
       },
       onError: (error) {
         if (!mounted) return;
+
+        // Suppress errors during intentional leave operation
+        if (_isLeavingChat) {
+          AppLog.d('📱 UI: Ignoring chat stream error during leave operation');
+          return;
+        }
+
         if (kDebugMode) {
           AppLog.d(
               '❌ UI: Chat stream error for chatId=${widget.chatId}: $error');
@@ -124,7 +150,7 @@ class _GameChatDetailsWidgetState extends State<GameChatDetailsWidget>
     if (kDebugMode) {
       AppLog.d('📨 UI: Disposing ChatDetails for chatId=${widget.chatId}');
     }
-    _typingTimer?.cancel();
+    _typingHelper.dispose();
     _chatUiSubscription?.cancel();
     _messagesSnapshotSubscription?.cancel();
     _detailsController.reset();
@@ -135,75 +161,11 @@ class _GameChatDetailsWidgetState extends State<GameChatDetailsWidget>
   }
 
   void _onTextChanged() {
-    final currentUserId = _currentUserId;
-    if (currentUserId == null) return;
-
-    final hasText = _messageController.text.trim().isNotEmpty;
-    if (kDebugMode) {
-      AppLog.d(
-        '✍️ UI: onTextChanged chatId=${widget.chatId} hasText=$hasText '
-        'textLen=${_messageController.text.length} isTyping=$_isTyping',
-      );
-    }
-
-    // Handle typing indicator
-    if (hasText && !_isTyping) {
-      _isTyping = true;
-      context.read<ChatProvider>().setTypingStatus(
-            chatId: widget.chatId,
-            uid: currentUserId,
-            isTyping: true,
-          );
-    }
-
-    // Reset timer
-    _typingTimer?.cancel();
-    _typingTimer = Timer(Duration(seconds: 2), () {
-      if (_isTyping) {
-        _isTyping = false;
-        context.read<ChatProvider>().setTypingStatus(
-              chatId: widget.chatId,
-              uid: currentUserId,
-              isTyping: false,
-            );
-      }
-    });
-  }
-
-  List<String> _getTypingUserNames(Chat chat) {
-    final currentUserId = _currentUserId;
-    if (currentUserId == null) return [];
-
-    final now = DateTime.now();
-    final typingUserIds = chat.typingUsers.entries
-        .where((entry) =>
-            entry.key != currentUserId &&
-            now.difference(entry.value).inSeconds < 3)
-        .map((entry) => entry.key)
-        .toList();
-
-    return typingUserIds;
+    _typingHelper.onTextChanged(_messageController.text);
   }
 
   String? _typingTextForChat(Chat chat) {
-    final typingUserIds = _getTypingUserNames(chat);
-    if (typingUserIds.isEmpty) {
-      return null;
-    }
-
-    final profileProvider = context.read<ProfileProvider>();
-    final names = typingUserIds.map((uid) {
-      final profile = profileProvider.getCachedProfile(uid);
-      return profile?.displayName ?? 'Someone';
-    }).toList();
-
-    if (names.length == 1) {
-      return '${names[0]} is typing...';
-    }
-    if (names.length == 2) {
-      return '${names[0]} and ${names[1]} are typing...';
-    }
-    return 'Several people are typing...';
+    return _typingHelper.getTypingText(chat, context.read<ProfileProvider>());
   }
 
   void _showImageFullscreen(String imageUrl) {
@@ -294,57 +256,72 @@ class _GameChatDetailsWidgetState extends State<GameChatDetailsWidget>
 
   void _updateChatUiState(Chat? chat) {
     if (chat == null) {
-      _messagesSnapshotSubscription?.cancel();
-      _messagesSnapshotSubscription = null;
-      _detailsController.reset();
-      _lastStreamDoc = null;
-      _streamsInitialized = false;
-      updateState(this, () {
-        _chatLoaded = true;
-        _chatError = null;
-        _chatUi = null;
-        _canSend = false;
-        _bannerText = '';
-        _isArchived = false;
-      });
+      _resetChatState();
       return;
     }
 
-    // Initialize message streams on the first valid chat event so we can apply
-    // the memberJoinedAt visibility cutoff for fresh-start-on-rejoin.
-    if (!_streamsInitialized) {
-      _streamsInitialized = true;
-      final currentUserId = _currentUserId;
-      _visibleAfter =
-          currentUserId != null ? chat.memberJoinedAt[currentUserId] : null;
-      _detailsController.initializeSession(
-        chatId: widget.chatId,
-        pageSize: _pageSize,
-        visibleAfterCutoff: _visibleAfter,
-      );
-      final chatProvider = context.read<ChatProvider>();
-      final profileProvider = context.read<ProfileProvider>();
-      _messagesStream = chatProvider.messagesSnapshotStream(
-        chatId: widget.chatId,
-        limit: _initialPageSize,
-        visibleAfter: _visibleAfter,
-      );
-      _messagesSnapshotSubscription?.cancel();
-      _messagesSnapshotSubscription = _messagesStream!.listen(
-        (snapshot) {
-          _lastStreamDoc = snapshot.docs.isNotEmpty ? snapshot.docs.last : null;
-        },
-      );
-      _messageViewModelsStream = chatProvider.gameChatMessageViewModelsStream(
-        chatId: widget.chatId,
-        limit: _initialPageSize,
-        profileProvider: profileProvider,
-        visibleAfter: _visibleAfter,
-      );
-    }
+    _initializeMessageStreamsIfNeeded(chat);
+    _applyChatUiState(chat);
+    _markSeenIfNeeded(chat);
+  }
 
-    // isReadOnly is now the sole indicator of read-only state
-    // (deletesAt is only for scheduling deletion, not for send permissions)
+  /// Resets all chat state when chat becomes null.
+  void _resetChatState() {
+    _messagesSnapshotSubscription?.cancel();
+    _messagesSnapshotSubscription = null;
+    _detailsController.reset();
+    _lastStreamDoc = null;
+    _streamsInitialized = false;
+    updateState(this, () {
+      _chatLoaded = true;
+      _chatError = null;
+      _chatUi = null;
+      _canSend = false;
+      _bannerText = '';
+      _isArchived = false;
+    });
+  }
+
+  /// Initializes message streams on the first valid chat event.
+  /// Uses memberJoinedAt visibility cutoff for fresh-start-on-rejoin.
+  void _initializeMessageStreamsIfNeeded(Chat chat) {
+    if (_streamsInitialized) return;
+
+    _streamsInitialized = true;
+    final currentUserId = _currentUserId;
+    _visibleAfter =
+        currentUserId != null ? chat.memberJoinedAt[currentUserId] : null;
+
+    _detailsController.initializeSession(
+      chatId: widget.chatId,
+      pageSize: _pageSize,
+      visibleAfterCutoff: _visibleAfter,
+    );
+
+    final chatProvider = context.read<ChatProvider>();
+    final profileProvider = context.read<ProfileProvider>();
+
+    _messagesStream = chatProvider.messagesSnapshotStream(
+      chatId: widget.chatId,
+      limit: _initialPageSize,
+      visibleAfter: _visibleAfter,
+    );
+    _messagesSnapshotSubscription?.cancel();
+    _messagesSnapshotSubscription = _messagesStream!.listen(
+      (snapshot) {
+        _lastStreamDoc = snapshot.docs.isNotEmpty ? snapshot.docs.last : null;
+      },
+    );
+    _messageViewModelsStream = chatProvider.gameChatMessageViewModelsStream(
+      chatId: widget.chatId,
+      limit: _initialPageSize,
+      profileProvider: profileProvider,
+      visibleAfter: _visibleAfter,
+    );
+  }
+
+  /// Derives UI state from chat and updates widget state.
+  void _applyChatUiState(Chat chat) {
     final isArchived = chat.isReadOnly;
     final bannerText = chat.pinnedMessage.isNotEmpty
         ? chat.pinnedMessage
@@ -361,7 +338,10 @@ class _GameChatDetailsWidgetState extends State<GameChatDetailsWidget>
       _bannerText = bannerText;
       _canSend = canSend;
     });
+  }
 
+  /// Marks chat as seen once when user is a member.
+  void _markSeenIfNeeded(Chat chat) {
     final currentUserId = _currentUserId;
     if (!_didMarkSeen &&
         currentUserId != null &&
@@ -391,120 +371,13 @@ class _GameChatDetailsWidgetState extends State<GameChatDetailsWidget>
       chatId: widget.chatId,
       uid: currentUserId,
       chatProvider: context.read<ChatProvider>(),
+      onLeaveStarted: () => _isLeavingChat = true,
+      onLeaveFailed: () => _isLeavingChat = false,
     );
   }
 
   void _showImageSourceSheet() {
-    showModalBottomSheet<void>(
-      context: context,
-      backgroundColor: AppColors.navyDark,
-      shape: RoundedRectangleBorder(
-        borderRadius:
-            BorderRadius.vertical(top: Radius.circular(AppBorderRadius.lg)),
-      ),
-      builder: (sheetCtx) => ChatImageSourceSheet(
-        onGallerySelected: () {
-          Navigator.of(sheetCtx).pop();
-          _pickAndSendImage(ImageSource.gallery);
-        },
-        onCameraSelected: () {
-          Navigator.of(sheetCtx).pop();
-          _pickAndSendImage(ImageSource.camera);
-        },
-      ),
-    );
-  }
-
-  Future<void> _pickAndSendImage(ImageSource source) async {
-    final currentUserId = _currentUserId;
-    if (currentUserId == null) return;
-
-    final picker = ImagePicker();
-    final xFile = await picker.pickImage(
-      source: source,
-      maxWidth: 1200,
-      maxHeight: 1200,
-      imageQuality: 70,
-    );
-    if (xFile == null || !mounted) return;
-
-    final bytes = await xFile.readAsBytes();
-
-    // Decode dimensions for aspect-ratio skeleton
-    double? imgWidth, imgHeight;
-    try {
-      final codec = await ui.instantiateImageCodec(bytes);
-      final frame = await codec.getNextFrame();
-      imgWidth = frame.image.width.toDouble();
-      imgHeight = frame.image.height.toDouble();
-      frame.image.dispose();
-    } catch (_) {}
-
-    final uploadId = DateTime.now().millisecondsSinceEpoch.toString();
-    if (!mounted) return;
-    updateState(this, () {
-      _pendingUploads.add(PendingUploadItem(id: uploadId, previewBytes: bytes));
-    });
-
-    try {
-      final path =
-          'chat_images/${widget.chatId}/${uploadId}_$currentUserId.jpg';
-      final ref = FirebaseStorage.instance.ref().child(path);
-      final metadata = SettableMetadata(contentType: 'image/jpeg');
-      final uploadTask = ref.putData(bytes, metadata);
-
-      uploadTask.snapshotEvents.listen(
-        (snapshot) {
-          if (!mounted) return;
-          final total = snapshot.totalBytes;
-          final progress = total > 0 ? snapshot.bytesTransferred / total : 0.0;
-          updateState(this, () {
-            final idx = _pendingUploads.indexWhere((u) => u.id == uploadId);
-            if (idx != -1) {
-              _pendingUploads[idx] =
-                  _pendingUploads[idx].copyWith(progress: progress);
-            }
-          });
-        },
-        onError: (_) {}, // errors are handled via await uploadTask below
-        cancelOnError: true,
-      );
-
-      await uploadTask;
-      final downloadUrl = await ref.getDownloadURL();
-
-      if (!mounted) return;
-      await context.read<ChatProvider>().sendImageMessage(
-            chatId: widget.chatId,
-            senderId: currentUserId,
-            imageUrl: downloadUrl,
-            thumbnailUrl: downloadUrl,
-            imageWidth: imgWidth,
-            imageHeight: imgHeight,
-          );
-
-      if (!mounted) return;
-      updateState(
-          this, () => _pendingUploads.removeWhere((u) => u.id == uploadId));
-    } catch (error, stackTrace) {
-      AppLog.d('📷 Image upload error: $error\n$stackTrace');
-      if (!mounted) return;
-      updateState(
-          this, () => _pendingUploads.removeWhere((u) => u.id == uploadId));
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            kDebugMode
-                ? 'Upload error: $error'
-                : 'Failed to send image. Please try again.',
-          ),
-          action: SnackBarAction(
-            label: 'Retry',
-            onPressed: () => _pickAndSendImage(source),
-          ),
-        ),
-      );
-    }
+    _imageUploadController.showImageSourceSheet(context);
   }
 
   Future<void> _sendMessage() async {
@@ -677,7 +550,7 @@ class _GameChatDetailsWidgetState extends State<GameChatDetailsWidget>
               messageViewModelsStream: _messageViewModelsStream,
               cachedLatestMessageVMs: _latestMessageVMs,
               detailsController: _detailsController,
-              pendingUploads: _pendingUploads,
+              pendingUploads: _imageUploadController.pendingUploads,
               canSend: _canSend,
               replyToMessage: _replyToMessage,
               showScrollToBottom: _showScrollToBottom,
