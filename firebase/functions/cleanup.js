@@ -63,24 +63,61 @@ async function cleanupCancelledGamesHandler() {
       `(${scheduledGames.size} scheduled, ${flexibleGames.size} flexible)`
     );
 
-    for (const gameDoc of allGames) {
-      try {
-        // Delete subcollection (game_participants) first
-        const participants = await gameDoc.ref.collection("game_participants").get();
+    // Phase 1: Parallel reads — fetch all participant subcollections concurrently
+    const participantResults = await Promise.all(
+      allGames.map(async (gameDoc) => {
+        try {
+          const participants = await gameDoc.ref.collection("game_participants").get();
+          return { gameDoc, participants, error: null };
+        } catch (error) {
+          return { gameDoc, participants: null, error };
+        }
+      })
+    );
 
-        const batch = db.batch();
-        participants.docs.forEach((doc) => batch.delete(doc.ref));
-        batch.delete(gameDoc.ref);
+    // Phase 2: Accumulate deletes into shared batches, flush at 450-op threshold
+    const FLUSH_THRESHOLD = 450;
+    let batch = db.batch();
+    let opsInBatch = 0;
+    let gamesInBatch = 0;
 
-        await batch.commit();
-        deleted++;
-
-        console.log(
-          `[cleanupCancelledGames] Deleted game ${gameDoc.id} (${participants.size} participants)`
-        );
-      } catch (error) {
+    for (const { gameDoc, participants, error: readError } of participantResults) {
+      if (readError) {
         errors++;
-        console.error(`[cleanupCancelledGames] Failed to delete game ${gameDoc.id}:`, error);
+        console.error(`[cleanupCancelledGames] Failed to read participants for game ${gameDoc.id}:`, readError);
+        continue;
+      }
+
+      const opsForThisGame = participants.size + 1; // participants + game doc
+
+      // Flush if adding this game would exceed threshold
+      if (opsInBatch > 0 && opsInBatch + opsForThisGame > FLUSH_THRESHOLD) {
+        try {
+          await batch.commit();
+          deleted += gamesInBatch;
+        } catch (commitError) {
+          errors += gamesInBatch;
+          console.error(`[cleanupCancelledGames] Batch commit failed (${gamesInBatch} games):`, commitError);
+        }
+        batch = db.batch();
+        opsInBatch = 0;
+        gamesInBatch = 0;
+      }
+
+      participants.docs.forEach((doc) => batch.delete(doc.ref));
+      batch.delete(gameDoc.ref);
+      opsInBatch += opsForThisGame;
+      gamesInBatch++;
+    }
+
+    // Flush remaining
+    if (opsInBatch > 0) {
+      try {
+        await batch.commit();
+        deleted += gamesInBatch;
+      } catch (commitError) {
+        errors += gamesInBatch;
+        console.error(`[cleanupCancelledGames] Final batch commit failed (${gamesInBatch} games):`, commitError);
       }
     }
 

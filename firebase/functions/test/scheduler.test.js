@@ -302,10 +302,10 @@ describe('scheduleJob', () => {
     });
   });
 
-  test('returns the Firestore auto-generated jobId', async () => {
+  test('returns the eventId as the jobId (deterministic doc ID)', async () => {
     mockDb = makeMockDb({});
     const jobId = await scheduleJob(makeEvent(), mockDb);
-    expect(jobId).toBe('auto_job_id_001');
+    expect(jobId).toBe('evt_sched_001');
   });
 
 });

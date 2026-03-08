@@ -65,10 +65,11 @@ async function scheduleJob(event, db) {
   if (!db) db = admin.firestore();
   const client = getTasksClient();
 
-  // Firestore auto-ID doubles as the jobId — included in the task payload so
-  // the receiver can look up the tracking doc without a query.
-  const docRef = db.collection(SCHEDULED_NOTIFICATIONS).doc();
-  const jobId  = docRef.id;
+  // Use eventId as the doc ID for deterministic idempotency.
+  // If the same eventId is scheduled twice (crash-retry), the Firestore doc
+  // and Cloud Task name will collide, preventing duplicates.
+  const jobId  = event.eventId;
+  const docRef = db.collection(SCHEDULED_NOTIFICATIONS).doc(jobId);
 
   const queuePath         = client.queuePath(PROJECT, LOCATION, QUEUE_NAME);
   const scheduleTimeMs    = new Date(event.scheduleTime).getTime();
@@ -85,16 +86,29 @@ async function scheduleJob(event, db) {
       },
     },
     scheduleTime: { seconds: scheduleTimeSeconds },
+    // Deterministic task name prevents duplicate Cloud Tasks on retry
+    name: `${queuePath}/tasks/${jobId}`,
   };
 
-  const [createdTask] = await client.createTask({ parent: queuePath, task });
+  let taskName;
+  try {
+    const [createdTask] = await client.createTask({ parent: queuePath, task });
+    taskName = createdTask.name;
+  } catch (err) {
+    // gRPC ALREADY_EXISTS (code 6) — task was already created; treat as success
+    if (err.code === 6) {
+      console.log(`[Scheduler] Task ${jobId} already exists, treating as success`);
+      taskName = `${queuePath}/tasks/${jobId}`;
+    } else {
+      throw err;
+    }
+  }
 
-  // Write tracking doc. The event object is stored verbatim so the receiver
-  // can call routeNotification without re-fetching. All event fields are short
-  // strings, so doc size is well within Firestore's 1 MB limit.
+  // Write tracking doc. Uses set() which is idempotent — if the doc already
+  // exists from a previous attempt, it gets overwritten with the same data.
   await docRef.set({
     jobId,
-    taskName:        createdTask.name,
+    taskName,
     eventType:       event.eventType,
     recipientUserId: event.recipientUserId,
     sourceId:        event.sourceId,

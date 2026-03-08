@@ -137,12 +137,18 @@ async function _onGameParticipantJoinHandler(snapshot, context, db) {
     const vibeScoresWithOthers = {};
 
     // Fetch all other user profiles in parallel
+    let fetchSuccessCount = 0;
+    let fetchFailureCount = 0;
     const otherUserFetches = otherParticipantDocs.map(async (doc) => {
       const otherData = doc.data();
       const otherUserRef = otherData.user_ref;
       try {
         const otherUserSnap = await otherUserRef.get();
-        if (!otherUserSnap.exists) return null;
+        if (!otherUserSnap.exists) {
+          fetchFailureCount++;
+          return null;
+        }
+        fetchSuccessCount++;
         return {
           participantDoc: doc,
           otherUserId: otherUserRef.id,
@@ -150,14 +156,28 @@ async function _onGameParticipantJoinHandler(snapshot, context, db) {
           otherParticipantRef: doc.ref,
         };
       } catch (err) {
-        console.warn(
+        fetchFailureCount++;
+        console.error(
           `onGameParticipantJoin: could not fetch user ${otherUserRef.id}: ${err.message}`
         );
         return null;
       }
     });
 
-    const otherUsers = (await Promise.all(otherUserFetches)).filter(Boolean);
+    const otherUserResults = await Promise.all(otherUserFetches);
+    const otherUsers = otherUserResults.filter(Boolean);
+
+    // Log fetch outcome summary
+    const totalAttempted = otherParticipantDocs.length;
+    if (totalAttempted > 0 && fetchSuccessCount === 0) {
+      console.error(
+        `onGameParticipantJoin: ALL user fetches failed (0/${totalAttempted}) for game ${gameRef.id}`
+      );
+    } else if (fetchFailureCount > 0) {
+      console.warn(
+        `onGameParticipantJoin: partial user fetch failure (${fetchSuccessCount}/${totalAttempted} succeeded) for game ${gameRef.id}`
+      );
+    }
 
     // Score each pair and collect updates for the other participants
     const otherParticipantUpdates = [];
@@ -178,9 +198,25 @@ async function _onGameParticipantJoinHandler(snapshot, context, db) {
     }
 
     // ── 5. Write snapshot + vibe scores onto this participant doc ─────────
+    // Determine vibe score status for observability
+    const totalAttemptedPeers = otherParticipantDocs.length;
+    let vibeScoreStatus;
+    if (totalAttemptedPeers === 0) {
+      vibeScoreStatus = 'no_peers';
+    } else if (fetchFailureCount === 0) {
+      vibeScoreStatus = 'complete';
+    } else if (fetchSuccessCount > 0) {
+      vibeScoreStatus = 'partial';
+    } else {
+      vibeScoreStatus = 'failed';
+    }
+
     await snapshot.ref.update({
       profile_snapshot: profileSnapshot,
       vibe_scores_with_others: vibeScoresWithOthers,
+      vibe_score_status: vibeScoreStatus,
+      vibe_score_peer_count: fetchSuccessCount,
+      vibe_score_attempted_count: totalAttemptedPeers,
     });
 
     // ── 6. Update each other participant's vibe_scores_with_others ────────
@@ -199,11 +235,25 @@ async function _onGameParticipantJoinHandler(snapshot, context, db) {
         `in game ${gameRef.id} (${otherParticipantUpdates.length} peer(s) updated)`
     );
   } catch (error) {
-    // Never block the join flow — log and continue
+    // Never block the join flow — log with structured data and write status
     console.error(
-      `onGameParticipantJoin: non-fatal error for participant ${context.params.participantId}:`,
-      error
+      `onGameParticipantJoin: non-fatal error for participant ${context.params.participantId}`,
+      {
+        gameId: data.game_ref ? data.game_ref.id : 'unknown',
+        userId: userRef ? userRef.id : 'unknown',
+        error: error.message,
+        stack: error.stack,
+      }
     );
+
+    // Best-effort: write error status to participant doc for observability
+    try {
+      await snapshot.ref.update({
+        vibe_score_status: 'error',
+      });
+    } catch (_) {
+      // Ignore — we're already in the error handler
+    }
   }
 }
 
@@ -770,6 +820,14 @@ async function _onGameStatusToPlayedHandler(change, context, db) {
         app_user_refs: appUserRefs,
         course_name: courseName,
 
+        // Step tracking for crash-resume idempotency
+        steps_completed: {
+          streaks_pending: false,
+          trust_notifications_scheduled: false,
+          window_close_scheduled: false,
+          join_requests_expired: false,
+        },
+
         // Milestone timestamps
         scheduled_host_notify_at: admin.firestore.Timestamp.fromMillis(
           teeTimeMs + HOST_NOTIFY_OFFSET_MS
@@ -834,41 +892,67 @@ async function _onGameStatusToPlayedHandler(change, context, db) {
       jobRef = existingJobRef;
     }
 
+    // In resume mode, read which steps already completed
+    let stepsCompleted = {
+      streaks_pending: false,
+      trust_notifications_scheduled: false,
+      window_close_scheduled: false,
+      join_requests_expired: false,
+    };
+    if (resumeMode) {
+      const existingJobData = (await jobRef.get()).data();
+      stepsCompleted = existingJobData.steps_completed || stepsCompleted;
+    }
+
     // ── 3. Mark round as pending for streak tracking (non-fatal) ────────
-    try {
-      const streakPlayerIds = appUserRefs.map(ref => ref.id);
-      await streaks.onRoundPending(db, gameId, teeTimeTs, streakPlayerIds, after);
-    } catch (err) {
-      // Non-fatal: streak tracking shouldn't block confirmation flow
-      console.warn(`onGameStatusToPlayed: streak pending failed for game ${gameId}:`, err);
+    if (!stepsCompleted.streaks_pending) {
+      try {
+        const streakPlayerIds = appUserRefs.map(ref => ref.id);
+        await streaks.onRoundPending(db, gameId, teeTimeTs, streakPlayerIds, after);
+      } catch (err) {
+        // Non-fatal: streak tracking shouldn't block confirmation flow
+        console.warn(`onGameStatusToPlayed: streak pending failed for game ${gameId}:`, err);
+      }
+      // Mark complete even on failure to avoid re-runs of non-fatal step
+      await jobRef.update({ 'steps_completed.streaks_pending': true });
     }
 
     // ── 4. Schedule Trust System notification tasks (critical) ───────────
-    const playerUserIds = appUserRefs.map(ref => ref.id);
-    const gameDate = _formatGameDate(teeTimeTs);
+    if (!stepsCompleted.trust_notifications_scheduled) {
+      const playerUserIds = appUserRefs.map(ref => ref.id);
+      const gameDate = _formatGameDate(teeTimeTs);
 
-    await onGameConfirmed(
-      gameId,
-      new Date(teeTimeMs),   // teeTime as Date
-      hostRef.id,            // hostUserId
-      playerUserIds,         // all player user IDs including host
-      courseName,            // course name string
-      gameDate,              // formatted date string
-      db
-    );
-    console.log(`onGameStatusToPlayed: scheduled Trust System notifications for game ${gameId}`);
+      await onGameConfirmed(
+        gameId,
+        new Date(teeTimeMs),   // teeTime as Date
+        hostRef.id,            // hostUserId
+        playerUserIds,         // all player user IDs including host
+        courseName,            // course name string
+        gameDate,              // formatted date string
+        db
+      );
+      await jobRef.update({ 'steps_completed.trust_notifications_scheduled': true });
+      console.log(`onGameStatusToPlayed: scheduled Trust System notifications for game ${gameId}`);
+    }
 
     // ── 5. Schedule T+48h window close (critical) ────────────────────────
-    const closeAt = new Date(teeTimeMs + CLOSE_OFFSET_MS);
-    await _scheduleCloudTask(
-      'processScheduledWindowClose',
-      { jobId: jobRef.id, gameId },
-      closeAt
-    );
-    console.log(`onGameStatusToPlayed: scheduled window close for game ${gameId} at T+48h`);
+    if (!stepsCompleted.window_close_scheduled) {
+      const closeAt = new Date(teeTimeMs + CLOSE_OFFSET_MS);
+      await _scheduleCloudTask(
+        'processScheduledWindowClose',
+        { jobId: jobRef.id, gameId },
+        closeAt,
+        `window-close-${gameId}`
+      );
+      await jobRef.update({ 'steps_completed.window_close_scheduled': true });
+      console.log(`onGameStatusToPlayed: scheduled window close for game ${gameId} at T+48h`);
+    }
 
     // ── 6. Expire any pending join requests ─────────────────────────────
-    await _expirePendingJoinRequests(db, gameId, gameRef, courseName);
+    if (!stepsCompleted.join_requests_expired) {
+      await _expirePendingJoinRequests(db, gameId, gameRef, courseName);
+      await jobRef.update({ 'steps_completed.join_requests_expired': true });
+    }
 
     // ── 7. Mark processing complete ─────────────────────────────────────
     await jobRef.update({ processing_state: "ready" });
@@ -1225,6 +1309,7 @@ async function _submitHostCheckinHandler(data, context, db) {
  */
 const submitHostCheckin = functions
   .region("us-west2")
+  .runWith({ minInstances: 1 })
   .https.onCall(async (data, context) => {
     const db = admin.firestore();
     try {
@@ -1436,6 +1521,7 @@ async function _submitPeerRatingsHandler(data, context, db) {
  */
 const submitPeerRatings = functions
   .region("us-west2")
+  .runWith({ minInstances: 1 })
   .https.onCall(async (data, context) => {
     const db = admin.firestore();
     try {
@@ -2344,7 +2430,7 @@ function _getTasksClient() {
 // Exported for test teardown
 function _resetTasksClient() { _tasksClient = null; }
 
-async function _scheduleCloudTask(functionName, payload, scheduleTime) {
+async function _scheduleCloudTask(functionName, payload, scheduleTime, taskId) {
   const client = _getTasksClient();
   const queuePath = client.queuePath(PROJECT, LOCATION, QUEUE_NAME);
   const url = `https://${LOCATION}-${PROJECT}.cloudfunctions.net/${functionName}`;
@@ -2366,8 +2452,22 @@ async function _scheduleCloudTask(functionName, payload, scheduleTime) {
     },
   };
 
-  const [createdTask] = await client.createTask({ parent: queuePath, task });
-  return createdTask.name;
+  // Use deterministic task name if provided (enables idempotent retries)
+  if (taskId) {
+    task.name = `${queuePath}/tasks/${taskId}`;
+  }
+
+  try {
+    const [createdTask] = await client.createTask({ parent: queuePath, task });
+    return createdTask.name;
+  } catch (err) {
+    // gRPC ALREADY_EXISTS (code 6) — task was already created; treat as success
+    if (err.code === 6) {
+      console.log(`_scheduleCloudTask: task ${taskId} already exists, treating as success`);
+      return `${queuePath}/tasks/${taskId}`;
+    }
+    throw err;
+  }
 }
 
 // ─────────────────────────────────────────────────────────────────────────────

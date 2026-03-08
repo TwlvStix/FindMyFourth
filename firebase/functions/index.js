@@ -16,43 +16,10 @@ const confirmationFlow = require("./confirmation_flow");
 const trustProfileModule = require("./trust_profile");
 const gameAlerts = require("./game_alerts");
 const streaks = require("./streaks");
-const { generateInitialsAvatar } = require("./avatar-generator");
-const { getAvatarUrl } = require("./utils/avatar-utils");
-const {
-  scheduleDebouncedChatNotification,
-  deliverChatNotificationHandler,
-} = require("./notifications/chat_debounce");
-const {
-  scheduleFlexibleNudges,
-  cancelFlexibleNudges,
-} = require("./notifications/flexible_nudge");
-const {
-  onPlayerAddedByHost,
-  onPlayerDeclinedSpot,
-} = require("./host_add_notifications");
+// Remaining modules are lazy-required inside their handlers to reduce cold start.
+// Node.js caches require() results, so repeated calls are free after the first load.
 
-// Behavioral Dataset modules
-const { createRound, addParticipant, finalizeGroup } = require("./src/booking");
-const { generatePairwiseMatches } = require("./src/matching");
-const {
-  confirmParticipant,
-  declineParticipant,
-  cancelParticipant,
-  checkInParticipant,
-  completeRound,
-  detectNoShows,
-} = require("./src/lifecycle");
-const { submitFeedback, runBehavioralBackfill } = require("./src/feedback");
-const {
-  syncPlayerRound,
-  syncAllPlayerRounds,
-  exportEventsToBigQuery,
-} = require("./src/sync");
-
-const kPushNotificationRuntimeOpts = {
-  timeoutSeconds: 540,
-  memory: "2GB",
-};
+// Runtime options are set inline per function — see each trigger definition.
 
 function extractUidFromJoinedEntry(entry) {
   if (!entry) {
@@ -167,6 +134,7 @@ function getUserDisplayName(userData) {
 
 exports.addFcmToken = functions
   .region("us-west2")
+  .runWith({ minInstances: 1 })
   .https.onCall(async (data, context) => {
     if (!context.auth) {
       throw new functions.https.HttpsError(
@@ -252,7 +220,7 @@ exports.addFcmToken = functions
 
 exports.sendPushNotificationsTrigger = functions
   .region("us-west2")
-  .runWith(kPushNotificationRuntimeOpts)
+  .runWith({ timeoutSeconds: 120, memory: "512MB" })
   .firestore.document(`${kPushNotificationsCollection}/{id}`)
   .onCreate(async (snapshot, _) => {
     try {
@@ -271,7 +239,7 @@ exports.sendPushNotificationsTrigger = functions
 
 exports.sendUserPushNotificationsTrigger = functions
   .region("us-west2")
-  .runWith(kPushNotificationRuntimeOpts)
+  .runWith({ timeoutSeconds: 60, memory: "256MB" })
   .firestore.document(`${kUserPushNotificationsCollection}/{id}`)
   .onCreate(async (snapshot, _) => {
     try {
@@ -297,7 +265,7 @@ exports.sendGameCreatedNotifications = gameAlerts.sendGameCreatedNotifications;
 
 exports.sendChatMessageNotifications = functions
   .region("us-west2")
-  .runWith(kPushNotificationRuntimeOpts)
+  .runWith({ timeoutSeconds: 60, memory: "256MB" })
   .firestore.document("chats/{chatId}/messages/{messageId}")
   .onCreate(async (snapshot, context) => {
     const messageData = snapshot.data() || {};
@@ -357,6 +325,7 @@ exports.sendChatMessageNotifications = functions
       // Schedule debounced notification — cancels any pending task for this
       // chat+recipient pair and schedules a new one 8 seconds out
       try {
+        const { scheduleDebouncedChatNotification } = require("./notifications/chat_debounce");
         await scheduleDebouncedChatNotification(
           chatId,
           uid,
@@ -522,6 +491,7 @@ async function resolveCallableUid(context, data, functionName) {
 
 exports.completeOnboarding = functions
   .region("us-west2")
+  .runWith({ minInstances: 1 })
   .https.onCall(async (data, context) => {
     const uid = await resolveCallableUid(context, data, "completeOnboarding");
     const userDocPath = data?.userDocPath;
@@ -555,6 +525,7 @@ exports.completeOnboarding = functions
 
 exports.checkOnboardingComplete = functions
   .region("us-west2")
+  .runWith({ minInstances: 1 })
   .https.onCall(async (data, context) => {
     const uid = await resolveCallableUid(
       context,
@@ -1109,6 +1080,7 @@ async function _onHostAddsPlayerHandler(change, context, db = firestore) {
   // Send notification to each newly host-added player
   for (const addedUid of newlyHostAdded) {
     try {
+      const { onPlayerAddedByHost } = require("./host_add_notifications");
       await onPlayerAddedByHost(
         addedUid,
         hostUid,
@@ -1247,6 +1219,7 @@ async function _declineAddedSpotHandler(data, context, db = firestore) {
 
   // Notify host that spot is back open
   try {
+    const { onPlayerDeclinedSpot } = require("./host_add_notifications");
     await onPlayerDeclinedSpot(
       hostUid,
       playerUid,
@@ -1945,7 +1918,10 @@ exports.processScheduledTrustNotification = functions
 exports.deliverChatNotification = functions
   .region('us-west2')
   .runWith({ timeoutSeconds: 60, memory: '256MB' })
-  .https.onRequest(deliverChatNotificationHandler);
+  .https.onRequest((req, res) => {
+    const { deliverChatNotificationHandler } = require("./notifications/chat_debounce");
+    return deliverChatNotificationHandler(req, res);
+  });
 
 // Flexible Game Nudge System
 // Schedules nudges when 2+ players join a flexible game, cancels when time confirmed
@@ -1964,6 +1940,7 @@ exports.onFlexibleGameUpdate = functions
       // Cancel any pending nudges
       if (before.schedule_type === 'flexible') {
         console.log(`[FlexibleNudge] Game ${gameId} confirmed — cancelling nudges`);
+        const { cancelFlexibleNudges } = require("./notifications/flexible_nudge");
         await cancelFlexibleNudges(gameId);
       }
       return null;
@@ -1978,6 +1955,7 @@ exports.onFlexibleGameUpdate = functions
       // Check that no confirmed date exists
       if (!after.date) {
         console.log(`[FlexibleNudge] Game ${gameId} reached 2+ players — scheduling nudges`);
+        const { scheduleFlexibleNudges } = require("./notifications/flexible_nudge");
         await scheduleFlexibleNudges(gameId, after);
       }
     }
@@ -2037,6 +2015,7 @@ exports.notifyFriendRequestSent = functions
     try {
       // Fetch sender's avatar URL (photo or initials fallback)
       const senderDoc = await firestore.collection('users').doc(context.auth.uid).get();
+      const { getAvatarUrl } = require("./utils/avatar-utils");
       const senderAvatarUrl = getAvatarUrl(senderDoc.data());
 
       const result = await onFriendRequestReceived(
@@ -2071,6 +2050,7 @@ exports.notifyFriendRequestAccepted = functions
     try {
       // Fetch acceptor's avatar URL (photo or initials fallback)
       const acceptorDoc = await firestore.collection('users').doc(context.auth.uid).get();
+      const { getAvatarUrl } = require("./utils/avatar-utils");
       const acceptorAvatarUrl = getAvatarUrl(acceptorDoc.data());
 
       const result = await onFriendRequestAccepted(
@@ -2107,6 +2087,7 @@ exports.notifyNewJoinRequest = functions
     try {
       // Fetch requester's avatar URL (photo or initials fallback)
       const requesterDoc = await firestore.collection('users').doc(context.auth.uid).get();
+      const { getAvatarUrl } = require("./utils/avatar-utils");
       const requesterAvatarUrl = getAvatarUrl(requesterDoc.data());
 
       const result = await onJoinRequestReceived(
@@ -2157,6 +2138,7 @@ exports.notifyJoinRequestApproved = functions
         if (ownerDoc.exists) {
           const ownerData = ownerDoc.data() || {};
           ownerName = ownerData.first_name || ownerData.display_name || 'The host';
+          const { getAvatarUrl } = require("./utils/avatar-utils");
           ownerAvatarUrl = getAvatarUrl(ownerData);
         }
       }
@@ -2264,6 +2246,7 @@ exports.onUserProfileCreated = functions
     // Only generate if no photo_url and we have a name
     if (!data.photo_url && data.first_name) {
       try {
+        const { generateInitialsAvatar } = require("./avatar-generator");
         const avatarUrl = await generateInitialsAvatar(
           userId,
           data.first_name || "",
@@ -2299,6 +2282,7 @@ exports.onUserProfileUpdated = functions
     // Regenerate if name changed and we have a first name
     if (nameChanged && after.first_name) {
       try {
+        const { generateInitialsAvatar } = require("./avatar-generator");
         const avatarUrl = await generateInitialsAvatar(
           context.params.userId,
           after.first_name || "",
@@ -2328,6 +2312,7 @@ exports.onUserProfileUpdated = functions
  */
 exports.createNewRound = functions
   .region("us-west2")
+  .runWith({ minInstances: 1 })
   .https.onCall(async (data, context) => {
   // Verify authentication
   if (!context.auth) {
@@ -2335,6 +2320,7 @@ exports.createNewRound = functions
   }
 
   try {
+    const { createRound } = require("./src/booking");
     const roundId = await createRound({
       game_type: data.game_type,
       game_settings: data.game_settings || {},
@@ -2357,12 +2343,14 @@ exports.createNewRound = functions
  */
 exports.joinRound = functions
   .region("us-west2")
+  .runWith({ minInstances: 1 })
   .https.onCall(async (data, context) => {
   if (!context.auth) {
     throw new functions.https.HttpsError("unauthenticated", "Must be logged in");
   }
 
   try {
+    const { addParticipant } = require("./src/booking");
     await addParticipant({
       round_id: data.round_id,
       player_id: context.auth.uid,
@@ -2387,6 +2375,8 @@ exports.finalizeAndScore = functions
   }
 
   try {
+    const { finalizeGroup } = require("./src/booking");
+    const { generatePairwiseMatches } = require("./src/matching");
     const playerIds = await finalizeGroup(data.round_id);
     const pairCount = await generatePairwiseMatches(data.round_id);
 
@@ -2405,12 +2395,14 @@ exports.finalizeAndScore = functions
  */
 exports.confirmJoin = functions
   .region("us-west2")
+  .runWith({ minInstances: 1 })
   .https.onCall(async (data, context) => {
   if (!context.auth) {
     throw new functions.https.HttpsError("unauthenticated", "Must be logged in");
   }
 
   try {
+    const { confirmParticipant } = require("./src/lifecycle");
     const result = await confirmParticipant(data.round_id, context.auth.uid);
     return { success: true, ...result };
   } catch (error) {
@@ -2429,6 +2421,7 @@ exports.declineInvitation = functions
   }
 
   try {
+    const { declineParticipant } = require("./src/lifecycle");
     const result = await declineParticipant(data.round_id, context.auth.uid);
     return { success: true, ...result };
   } catch (error) {
@@ -2448,6 +2441,7 @@ exports.cancelJoin = functions
   }
 
   try {
+    const { cancelParticipant } = require("./src/lifecycle");
     const result = await cancelParticipant(
       data.round_id,
       context.auth.uid,
@@ -2464,12 +2458,14 @@ exports.cancelJoin = functions
  */
 exports.checkIn = functions
   .region("us-west2")
+  .runWith({ minInstances: 1 })
   .https.onCall(async (data, context) => {
   if (!context.auth) {
     throw new functions.https.HttpsError("unauthenticated", "Must be logged in");
   }
 
   try {
+    const { checkInParticipant } = require("./src/lifecycle");
     const result = await checkInParticipant(data.round_id, context.auth.uid);
     return { success: true, ...result };
   } catch (error) {
@@ -2491,6 +2487,8 @@ exports.endRound = functions
   }
 
   try {
+    const { completeRound } = require("./src/lifecycle");
+    const { syncAllPlayerRounds } = require("./src/sync");
     const result = await completeRound(data.round_id);
 
     // Sync all player_rounds for this round
@@ -2513,6 +2511,7 @@ exports.submitRoundFeedback = functions
   }
 
   try {
+    const { submitFeedback } = require("./src/feedback");
     await submitFeedback({
       round_id: data.round_id,
       player_id: context.auth.uid,
@@ -2524,6 +2523,7 @@ exports.submitRoundFeedback = functions
     });
 
     // Re-sync this player's player_round with feedback data
+    const { syncPlayerRound } = require("./src/sync");
     await syncPlayerRound(data.round_id, context.auth.uid);
 
     return { success: true };
@@ -2550,6 +2550,7 @@ exports.onParticipantWrite = functions
     if (!change.after.exists) return;
 
     try {
+      const { syncPlayerRound } = require("./src/sync");
       await syncPlayerRound(roundId, playerId);
     } catch (error) {
       console.error(`Failed to sync player_round for ${playerId} in ${roundId}:`, error);
@@ -2569,6 +2570,7 @@ exports.onFeedbackWrite = functions
     if (!change.after.exists) return;
 
     try {
+      const { syncPlayerRound } = require("./src/sync");
       await syncPlayerRound(roundId, playerId);
     } catch (error) {
       console.error(`Failed to sync player_round after feedback for ${playerId} in ${roundId}:`, error);
@@ -2592,6 +2594,7 @@ exports.scheduledBehavioralBackfill = functions
   .timeZone("America/Vancouver") // Adjust to your timezone
   .onRun(async () => {
     try {
+      const { runBehavioralBackfill } = require("./src/feedback");
       const results = await runBehavioralBackfill();
       console.log("Behavioral backfill results:", results);
     } catch (error) {
@@ -2609,6 +2612,7 @@ exports.scheduledNoShowDetection = functions
   .timeZone("America/Vancouver")
   .onRun(async () => {
     try {
+      const { detectNoShows } = require("./src/lifecycle");
       const noShows = await detectNoShows(60);
       if (noShows.length > 0) {
         console.log(`Detected ${noShows.length} no-shows:`, noShows);
@@ -2628,6 +2632,7 @@ exports.scheduledBigQueryExport = functions
   .timeZone("America/Vancouver")
   .onRun(async () => {
     try {
+      const { exportEventsToBigQuery } = require("./src/sync");
       const results = await exportEventsToBigQuery(500);
       console.log("BigQuery export results:", results);
     } catch (error) {

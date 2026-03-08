@@ -472,6 +472,7 @@ async function checkLateCancelPattern(db, { playerRef, gameRef, cancellationReco
  */
 const checkPlayerRestriction = functions
   .region("us-west2")
+  .runWith({ minInstances: 1 })
   .https.onCall(async (data, context) => {
     if (!context.auth) {
       throw new functions.https.HttpsError(

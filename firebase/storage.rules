@@ -12,7 +12,12 @@ service firebase.storage {
                        request.resource.size < 5 * 1024 * 1024 &&
                        request.resource.contentType.matches('image/.*');
 
-      allow delete: if request.auth != null;
+      // Only the original uploader may delete their image.
+      // Pre-existing images without uploadedBy metadata become undeletable
+      // client-side (safer than the previous any-auth rule; admin SDK can
+      // clean up orphaned files if needed).
+      allow delete: if request.auth != null &&
+                       resource.metadata['uploadedBy'] == request.auth.uid;
     }
 
     // Profile photos — owner only

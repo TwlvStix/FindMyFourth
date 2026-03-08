@@ -607,17 +607,21 @@ service cloud.firestore {
       }
     }
 
+    // ── Public reference data ──────────────────────────────────────────
+    // Courses and hometowns are intentionally readable without auth:
+    //   • They contain no PII — only names, locations, and IDs.
+    //   • They are consumed pre-auth during onboarding (course/hometown
+    //     pickers render before the user has signed in).
+    //   • Write access is admin-only (Cloud Functions / Admin SDK).
+    // ─────────────────────────────────────────────────────────────────────
     match /course/{document} {
-      allow create: if true;
       allow read: if true;
-      allow write: if false;
-      allow delete: if false;
+      allow create, update, delete: if false;
     }
 
     match /hometown/{document} {
       allow read: if true;
-      allow write: if false;
-      allow delete: if false;
+      allow create, update, delete: if false;
     }
 
     match /chats/{chatId} {
@@ -665,7 +669,7 @@ service cloud.firestore {
             request.resource.data.type in ['text', 'image'] &&
             (request.resource.data.type != 'image' ||
               (request.resource.data.imageUrl is string &&
-               request.resource.data.imageUrl.matches('https://firebasestorage\\.googleapis\\.com.*')))) ||
+               request.resource.data.imageUrl.matches('https://firebasestorage\\.googleapis\\.com/v0/b/find-my-fourth\\.appspot\\.com/o/chat_images%2F' + chatId + '%2F.*')))) ||
           // System messages (game owners only, for game chats)
           (request.resource.data.type == 'system' &&
             request.resource.data.senderId == '' &&

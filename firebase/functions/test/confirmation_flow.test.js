@@ -2760,3 +2760,339 @@ describe("processScheduledGameStatusChange - pre-game cancellation", () => {
     expect(game.status).toBe("played");
   });
 });
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Issue 16: Crash-Resume Idempotency
+// ─────────────────────────────────────────────────────────────────────────────
+
+describe("Issue 16 — crash-resume idempotency", () => {
+  test("resume with processing_state 'initializing' skips already-completed steps", async () => {
+    const teeTimeMs = Date.now() - 2 * HOUR_MS;
+    const gameData = {
+      date: MockTimestamp.fromMillis(teeTimeMs),
+      status: "played",
+      userRef: playerRef("host_user"),
+      course_play: "Augusta",
+      joined_players: [playerRef("host_user"), playerRef("player_a")],
+      guest_players: [],
+      game_type: "Stroke Play",
+    };
+
+    // Pre-seed a round_jobs doc with processing_state "initializing"
+    // and steps_completed showing trust_notifications already done
+    const jobId = "existing_job_1";
+    const roundId = "existing_round_1";
+    mockDb.seedDoc("round_jobs", jobId, {
+      game_ref: gameRef("g1"),
+      round_ref: roundRef(roundId),
+      tee_time: MockTimestamp.fromMillis(teeTimeMs),
+      status: "pending",
+      processing_state: "initializing",
+      host_ref: playerRef("host_user"),
+      app_user_refs: [playerRef("host_user"), playerRef("player_a")],
+      course_name: "Augusta",
+      steps_completed: {
+        streaks_pending: true,
+        trust_notifications_scheduled: true,
+        window_close_scheduled: false,
+        join_requests_expired: false,
+      },
+      created_at: MockTimestamp.fromMillis(teeTimeMs),
+    });
+    mockDb.seedDoc("round_records", roundId, {});
+
+    const change = {
+      before: { data: () => ({ status: "filled" }) },
+      after: {
+        data: () => gameData,
+        ref: new MockDocRef(mockDb, "games", "g1"),
+      },
+    };
+    const context = { params: { gameId: "g1" } };
+
+    await confirmationFlow._onGameStatusToPlayedHandler(change, context, mockDb);
+
+    // onGameConfirmed should NOT have been called (already completed)
+    expect(mockOnGameConfirmed).not.toHaveBeenCalled();
+
+    // Cloud Task for window close SHOULD have been scheduled
+    expect(mockCreateTask).toHaveBeenCalled();
+
+    // Processing state should now be "ready"
+    const updatedJob = mockDb.getDoc("round_jobs", jobId);
+    expect(updatedJob.processing_state).toBe("ready");
+    expect(updatedJob.steps_completed.window_close_scheduled).toBe(true);
+    expect(updatedJob.steps_completed.join_requests_expired).toBe(true);
+  });
+
+  test("duplicate call does not create duplicate notifications", async () => {
+    const teeTimeMs = Date.now() - 2 * HOUR_MS;
+    const gameData = {
+      date: MockTimestamp.fromMillis(teeTimeMs),
+      status: "played",
+      userRef: playerRef("host_user"),
+      course_play: "Augusta",
+      joined_players: [playerRef("host_user"), playerRef("player_a")],
+      guest_players: [],
+      game_type: "Stroke Play",
+    };
+
+    // Pre-seed a fully completed round_jobs doc
+    const jobId = "existing_job_2";
+    mockDb.seedDoc("round_jobs", jobId, {
+      game_ref: gameRef("g1"),
+      round_ref: roundRef("round_2"),
+      tee_time: MockTimestamp.fromMillis(teeTimeMs),
+      status: "pending",
+      processing_state: "ready",
+      host_ref: playerRef("host_user"),
+      app_user_refs: [playerRef("host_user"), playerRef("player_a")],
+      course_name: "Augusta",
+      steps_completed: {
+        streaks_pending: true,
+        trust_notifications_scheduled: true,
+        window_close_scheduled: true,
+        join_requests_expired: true,
+      },
+      created_at: MockTimestamp.fromMillis(teeTimeMs),
+    });
+
+    const change = {
+      before: { data: () => ({ status: "filled" }) },
+      after: {
+        data: () => gameData,
+        ref: new MockDocRef(mockDb, "games", "g1"),
+      },
+    };
+    const context = { params: { gameId: "g1" } };
+
+    await confirmationFlow._onGameStatusToPlayedHandler(change, context, mockDb);
+
+    // Should bail out immediately because processing_state is "ready"
+    expect(mockOnGameConfirmed).not.toHaveBeenCalled();
+    expect(mockCreateTask).not.toHaveBeenCalled();
+  });
+
+  test("steps_completed field is written to new round_jobs docs", async () => {
+    const teeTimeMs = Date.now() - 2 * HOUR_MS;
+    const gameData = {
+      date: MockTimestamp.fromMillis(teeTimeMs),
+      status: "played",
+      userRef: playerRef("host_user"),
+      course_play: "Augusta",
+      joined_players: [playerRef("host_user")],
+      guest_players: [],
+      game_type: "Stroke Play",
+    };
+    const change = {
+      before: { data: () => ({ status: "filled" }) },
+      after: {
+        data: () => gameData,
+        ref: new MockDocRef(mockDb, "games", "g1"),
+      },
+    };
+    const context = { params: { gameId: "g1" } };
+
+    await confirmationFlow._onGameStatusToPlayedHandler(change, context, mockDb);
+
+    const jobs = mockDb.getDocs("round_jobs");
+    const job = Object.values(jobs)[0];
+    expect(job.steps_completed).toBeDefined();
+    // All steps should be marked complete after successful run
+    expect(job.steps_completed.streaks_pending).toBe(true);
+    expect(job.steps_completed.trust_notifications_scheduled).toBe(true);
+    expect(job.steps_completed.window_close_scheduled).toBe(true);
+    expect(job.steps_completed.join_requests_expired).toBe(true);
+    expect(job.processing_state).toBe("ready");
+  });
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Issue 17: Vibe Score Status Observability
+// ─────────────────────────────────────────────────────────────────────────────
+
+describe("Issue 17 — vibe score status observability", () => {
+  test("partial fetch failure writes vibe_score_status 'partial'", async () => {
+    // Set up two peers: one fetchable, one that throws
+    mockDb.seedDoc("users", "player_a", { display_name: "Alice", vibe_profile: {} });
+    mockDb.seedDoc("users", "player_b", { display_name: "Bob", vibe_profile: {} });
+    mockDb.seedDoc("games", "g1", {});
+
+    // player_b's participant doc has a user_ref that will throw on .get()
+    const failingRef = {
+      id: "player_c",
+      get: jest.fn().mockRejectedValue(new Error("Firestore unavailable")),
+    };
+    mockDb.seedDoc("game_participants", "part_b", {
+      game_ref: gameRef("g1"),
+      user_ref: new MockDocRef(mockDb, "users", "player_b"),
+      status: "joined",
+    });
+    mockDb.seedDoc("game_participants", "part_c", {
+      game_ref: gameRef("g1"),
+      user_ref: failingRef,
+      status: "joined",
+    });
+
+    const updates = {};
+    const snapshot = {
+      data: () => ({
+        game_ref: gameRef("g1"),
+        user_ref: new MockDocRef(mockDb, "users", "player_a"),
+        role: "player",
+        status: "joined",
+      }),
+      ref: { update: jest.fn(async (fields) => Object.assign(updates, fields)) },
+    };
+    const context = { params: { participantId: "part_a" } };
+
+    await confirmationFlow._onGameParticipantJoinHandler(snapshot, context, mockDb);
+
+    expect(updates.vibe_score_status).toBe("partial");
+    expect(updates.vibe_score_peer_count).toBe(1);
+    expect(updates.vibe_score_attempted_count).toBe(2);
+  });
+
+  test("total fetch failure writes vibe_score_status 'failed'", async () => {
+    mockDb.seedDoc("users", "player_a", { display_name: "Alice", vibe_profile: {} });
+    mockDb.seedDoc("games", "g1", {});
+
+    // Only peer, and it will fail
+    const failingRef = {
+      id: "player_b",
+      get: jest.fn().mockRejectedValue(new Error("Firestore unavailable")),
+    };
+    mockDb.seedDoc("game_participants", "part_b", {
+      game_ref: gameRef("g1"),
+      user_ref: failingRef,
+      status: "joined",
+    });
+
+    const updates = {};
+    const snapshot = {
+      data: () => ({
+        game_ref: gameRef("g1"),
+        user_ref: new MockDocRef(mockDb, "users", "player_a"),
+        role: "player",
+        status: "joined",
+      }),
+      ref: { update: jest.fn(async (fields) => Object.assign(updates, fields)) },
+    };
+    const context = { params: { participantId: "part_a" } };
+
+    await confirmationFlow._onGameParticipantJoinHandler(snapshot, context, mockDb);
+
+    expect(updates.vibe_score_status).toBe("failed");
+    expect(updates.vibe_score_peer_count).toBe(0);
+    expect(updates.vibe_score_attempted_count).toBe(1);
+  });
+
+  test("no peers writes vibe_score_status 'no_peers'", async () => {
+    mockDb.seedDoc("users", "player_a", { display_name: "Alice", vibe_profile: {} });
+    mockDb.seedDoc("games", "g1", {});
+
+    const updates = {};
+    const snapshot = {
+      data: () => ({
+        game_ref: gameRef("g1"),
+        user_ref: new MockDocRef(mockDb, "users", "player_a"),
+        role: "player",
+        status: "joined",
+      }),
+      ref: { update: jest.fn(async (fields) => Object.assign(updates, fields)) },
+    };
+    const context = { params: { participantId: "part_a" } };
+
+    await confirmationFlow._onGameParticipantJoinHandler(snapshot, context, mockDb);
+
+    expect(updates.vibe_score_status).toBe("no_peers");
+    expect(updates.vibe_score_peer_count).toBe(0);
+    expect(updates.vibe_score_attempted_count).toBe(0);
+  });
+
+  test("successful fetch writes vibe_score_status 'complete'", async () => {
+    mockDb.seedDoc("users", "player_a", {
+      display_name: "Alice",
+      vibe_profile: { prefs: {} },
+    });
+    mockDb.seedDoc("users", "player_b", {
+      display_name: "Bob",
+      vibe_profile: { prefs: {} },
+    });
+    mockDb.seedDoc("games", "g1", {});
+    mockDb.seedDoc("game_participants", "part_b", {
+      game_ref: gameRef("g1"),
+      user_ref: new MockDocRef(mockDb, "users", "player_b"),
+      status: "joined",
+    });
+
+    const updates = {};
+    const snapshot = {
+      data: () => ({
+        game_ref: gameRef("g1"),
+        user_ref: new MockDocRef(mockDb, "users", "player_a"),
+        role: "player",
+        status: "joined",
+      }),
+      ref: { update: jest.fn(async (fields) => Object.assign(updates, fields)) },
+    };
+    const context = { params: { participantId: "part_a" } };
+
+    await confirmationFlow._onGameParticipantJoinHandler(snapshot, context, mockDb);
+
+    expect(updates.vibe_score_status).toBe("complete");
+    expect(updates.vibe_score_peer_count).toBe(1);
+    expect(updates.vibe_score_attempted_count).toBe(1);
+  });
+
+  test("outer catch writes vibe_score_status 'error'", async () => {
+    // user_ref exists but game_ref query will fail (we don't seed game_participants
+    // and we force an error by not seeding the user doc properly)
+    mockDb.seedDoc("users", "player_a", { display_name: "Alice" });
+
+    // Create a snapshot with a user_ref that works but we'll cause a crash
+    // by making the game_ref's game_participants query throw
+    const badGameRef = {
+      id: "g1",
+      // This will be used to query game_participants, and our mock DB
+      // won't throw, so we need to force an error differently.
+    };
+
+    // We'll use a user_ref whose .get() works, but we'll make the snapshot.ref.update
+    // call in the FIRST update throw. The profile_snapshot section succeeds internally,
+    // but the outer try-catch should catch when otherParticipantsSnap fails.
+    // Actually, the simplest way is to pass a db whose collection().where().get() throws.
+    const failingDb = {
+      collection: (name) => {
+        if (name === "game_participants") {
+          return {
+            where: () => ({
+              where: () => ({
+                get: () => { throw new Error("Firestore unavailable"); },
+              }),
+            }),
+          };
+        }
+        return mockDb.collection(name);
+      },
+    };
+
+    const updateMock = jest.fn();
+    const snapshot = {
+      data: () => ({
+        game_ref: gameRef("g1"),
+        user_ref: new MockDocRef(mockDb, "users", "player_a"),
+        role: "player",
+        status: "joined",
+      }),
+      ref: { update: updateMock },
+    };
+    const context = { params: { participantId: "part_a" } };
+
+    // Should not throw (outer catch handles it)
+    await confirmationFlow._onGameParticipantJoinHandler(snapshot, context, failingDb);
+
+    // The outer catch should attempt to write vibe_score_status: 'error'
+    expect(updateMock).toHaveBeenCalledWith({ vibe_score_status: 'error' });
+  });
+});

@@ -15,7 +15,7 @@
  * When omitted, router and scheduler each default to admin.firestore().
  */
 
-const { randomUUID } = require('crypto'); // Node 20 built-in — no extra dependency
+const { randomUUID } = require('crypto');
 const { scheduleJob, cancelGameJobs } = require('./scheduler');
 const { routeNotification } = require('./router');
 
@@ -58,7 +58,7 @@ async function onGameConfirmed(gameId, teeTime, hostUserId, playerUserIds, cours
 
     // 1. host_checkin_due (initial) — teeTime + 5h, always fires regardless of check-in state
     scheduleJob({
-      eventId:         randomUUID(),
+      eventId:         `host-checkin-${gameId}`,
       eventType:       'host_checkin_due',
       recipientUserId: hostUserId,
       sourceId:        gameId,
@@ -72,7 +72,7 @@ async function onGameConfirmed(gameId, teeTime, hostUserId, playerUserIds, cours
     // hours_remaining: assumes a 48h total check-in window → 48-29 = 19h remaining at send time.
     // Adjust if the check-in window policy changes.
     scheduleJob({
-      eventId:         randomUUID(),
+      eventId:         `host-checkin-reminder-${gameId}`,
       eventType:       'host_checkin_due',
       recipientUserId: hostUserId,
       sourceId:        gameId,
@@ -84,7 +84,7 @@ async function onGameConfirmed(gameId, teeTime, hostUserId, playerUserIds, cours
 
     // 3. host_checkin_fallback — teeTime + 24h, only if host hasn't checked in
     scheduleJob({
-      eventId:         randomUUID(),
+      eventId:         `host-fallback-${gameId}`,
       eventType:       'host_checkin_fallback',
       recipientUserId: hostUserId,
       sourceId:        gameId,
@@ -102,7 +102,7 @@ async function onGameConfirmed(gameId, teeTime, hostUserId, playerUserIds, cours
 
   await Promise.all(nonHostPlayers.map(async (uid) => {
     playerFallbackJobIds[uid] = await scheduleJob({
-      eventId:         randomUUID(),
+      eventId:         `player-fallback-${gameId}-${uid}`,
       eventType:       'player_fallback_confirm',
       recipientUserId: uid,
       sourceId:        gameId,
@@ -141,7 +141,7 @@ async function onHostCheckinCompleted(gameId, hostUserId, playerUserIds, courseN
 
   await Promise.all(playerUserIds.map(async (uid) => {
     playerRateJobIds[uid] = await scheduleJob({
-      eventId:         randomUUID(),
+      eventId:         `player-rate-${gameId}-${uid}`,
       eventType:       'player_rate_due',
       recipientUserId: uid,
       sourceId:        gameId,

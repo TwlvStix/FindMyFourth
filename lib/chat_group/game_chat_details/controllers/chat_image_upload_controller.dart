@@ -90,7 +90,10 @@ class ChatImageUploadController {
     try {
       final path = 'chat_images/$chatId/${uploadId}_$currentUserId.jpg';
       final ref = FirebaseStorage.instance.ref().child(path);
-      final metadata = SettableMetadata(contentType: 'image/jpeg');
+      final metadata = SettableMetadata(
+        contentType: 'image/jpeg',
+        customMetadata: {'uploadedBy': currentUserId},
+      );
       final uploadTask = ref.putData(bytes, metadata);
 
       uploadTask.snapshotEvents.listen(
