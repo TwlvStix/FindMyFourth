@@ -38,7 +38,7 @@ const admin = require("firebase-admin");
 const trustProfile = require("./trust_profile");
 const streaks = require("./streaks");
 const { routeNotification } = require('./notifications/trust/router');
-const { onGameConfirmed, onHostCheckinCompleted } = require('./notifications/trust/hooks');
+const { onGameConfirmed, onHostCheckinCompleted, onGameCancelled } = require('./notifications/trust/hooks');
 const { onJoinRequestExpired } = require('./join_request_notifications');
 const { randomUUID } = require('crypto');
 const { CloudTasksClient } = require('@google-cloud/tasks');
@@ -51,6 +51,10 @@ const HOST_NOTIFY_OFFSET_MS = 5 * 60 * 60 * 1000;        // 5 hours
 const PEER_NOTIFY_OFFSET_MS = 30 * 60 * 1000;            // 30 min after host confirms
 const REMINDER_OFFSET_MS = 24 * 60 * 60 * 1000;          // 24 hours
 const CLOSE_OFFSET_MS = 48 * 60 * 60 * 1000;             // 48 hours
+
+// Pre-game confirmation timing (partial games only)
+const PRE_GAME_CHECK_OFFSET_MS = 45 * 60 * 1000;         // 45 minutes before tee time
+const PRE_GAME_TIMEOUT_MS = 20 * 60 * 1000;              // 20 minutes to respond
 
 const PROJECT = process.env.GCLOUD_PROJECT || 'find-my-fourth';
 const LOCATION = 'us-west2';
@@ -223,9 +227,12 @@ const onGameParticipantJoin = functions
 
 /**
  * Raw handler for onGameStatusToFilled.
- * Schedules a Cloud Task at tee time to transition the game to 'played'.
  *
- * NOTE: This trigger fires on EVERY games/{gameId} update. It guards with
+ * NOTE: Tee-time Cloud Task scheduling is now handled by onGameCreated for ALL games.
+ * This trigger only handles the edge case where a game fills AFTER tee time has passed,
+ * flipping the status to 'played' immediately.
+ *
+ * This trigger fires on EVERY games/{gameId} update. It guards with
  * status checks so it only runs when a game transitions TO 'filled'.
  */
 async function _onGameStatusToFilledHandler(change, context, db) {
@@ -235,7 +242,7 @@ async function _onGameStatusToFilledHandler(change, context, db) {
   // Only fire on transition TO 'filled'
   if (after.status !== 'filled' || before.status === 'filled') return;
 
-  // Don't schedule if cancelled
+  // Don't flip if cancelled
   if (after.isCancelled === true) return;
 
   const gameId = context.params.gameId;
@@ -249,9 +256,52 @@ async function _onGameStatusToFilledHandler(change, context, db) {
   const teeTimeMs = teeTimeTs.toMillis();
 
   // If tee time is already in the past, flip immediately
+  // (Tee-time scheduling is handled by onGameCreated, but this catches
+  // games that fill after the scheduled task already ran)
   if (teeTimeMs <= Date.now()) {
     await change.after.ref.update({ status: 'played' });
     console.log(`onGameStatusToFilled: game ${gameId} tee time already passed, flipped to played immediately`);
+    return;
+  }
+
+  // No scheduling needed — onGameCreated already scheduled the tee-time task
+  console.log(`onGameStatusToFilled: game ${gameId} filled, tee-time task already scheduled by onGameCreated`);
+}
+
+const onGameStatusToFilled = functions
+  .region('us-west2')
+  .firestore.document('games/{gameId}')
+  .onUpdate(async (change, context) => {
+    return _onGameStatusToFilledHandler(change, context, admin.firestore());
+  });
+
+// ─────────────────────────────────────────────────────────────────────────────
+// GAME CREATION — onGameCreated
+// ─────────────────────────────────────────────────────────────────────────────
+
+/**
+ * Raw handler for onGameCreated.
+ * Schedules a Cloud Task at tee time to transition the game to 'played'.
+ *
+ * This ensures ALL games (not just filled ones) get their status updated
+ * and post-game notifications scheduled when tee time arrives.
+ */
+async function _onGameCreatedHandler(snapshot, context, db) {
+  const gameData = snapshot.data();
+  const gameId = context.params.gameId;
+  const teeTimeTs = gameData.date;
+
+  if (!teeTimeTs || typeof teeTimeTs.toMillis !== 'function') {
+    console.warn(`onGameCreated: game ${gameId} has no valid tee time, skipping`);
+    return;
+  }
+
+  const teeTimeMs = teeTimeTs.toMillis();
+
+  // If tee time already passed, flip immediately
+  if (teeTimeMs <= Date.now()) {
+    await snapshot.ref.update({ status: 'played' });
+    console.log(`onGameCreated: game ${gameId} tee time already passed, flipped to played`);
     return;
   }
 
@@ -262,18 +312,34 @@ async function _onGameStatusToFilledHandler(change, context, db) {
       { gameId },
       new Date(teeTimeMs)
     );
-    console.log(`onGameStatusToFilled: scheduled status change for game ${gameId} at tee time (task: ${taskName})`);
+    console.log(`onGameCreated: scheduled status change for game ${gameId} at tee time (task: ${taskName})`);
   } catch (err) {
-    console.error(`onGameStatusToFilled: failed to schedule task for game ${gameId}:`, err);
-    // Fallback: the game will stay 'filled' until manually handled or a future mechanism catches it
+    console.error(`onGameCreated: failed to schedule task for game ${gameId}:`, err);
+  }
+
+  // Schedule pre-game check at T-45min for partial game confirmation flow
+  // Only schedule if tee time is > 45 min away
+  const preCheckTime = teeTimeMs - PRE_GAME_CHECK_OFFSET_MS;
+  if (preCheckTime > Date.now()) {
+    try {
+      await _scheduleCloudTask(
+        'processScheduledPreGameCheck',
+        { gameId },
+        new Date(preCheckTime)
+      );
+      console.log(`onGameCreated: scheduled pre-game check for game ${gameId} at T-45min`);
+    } catch (err) {
+      // Non-fatal: pre-game check is optional enhancement
+      console.warn(`onGameCreated: failed to schedule pre-game check for game ${gameId}:`, err);
+    }
   }
 }
 
-const onGameStatusToFilled = functions
+const onGameCreated = functions
   .region('us-west2')
   .firestore.document('games/{gameId}')
-  .onUpdate(async (change, context) => {
-    return _onGameStatusToFilledHandler(change, context, admin.firestore());
+  .onCreate(async (snapshot, context) => {
+    return _onGameCreatedHandler(snapshot, context, admin.firestore());
   });
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -303,15 +369,21 @@ async function _processScheduledGameStatusChangeHandler(req, res, db = null) {
 
     const gameData = gameSnap.data();
 
-    // Only flip if still 'filled' and not cancelled
-    if (gameData.status !== 'filled') {
-      console.log(`processScheduledGameStatusChange: game ${gameId} is ${gameData.status}, not filled — skipping`);
+    // Only flip if still 'open' or 'filled' (not already 'played' or 'cancelled')
+    if (gameData.status !== 'filled' && gameData.status !== 'open') {
+      console.log(`processScheduledGameStatusChange: game ${gameId} is ${gameData.status}, not open/filled — skipping`);
       return res.status(200).send('SKIPPED');
     }
 
     if (gameData.isCancelled === true) {
       console.log(`processScheduledGameStatusChange: game ${gameId} is cancelled — skipping`);
       return res.status(200).send('CANCELLED');
+    }
+
+    // Check if game was cancelled via pre-game confirmation flow
+    if (gameData.hostConfirmation === 'cancelled') {
+      console.log(`processScheduledGameStatusChange: game ${gameId} was cancelled by host via pre-game confirmation — skipping`);
+      return res.status(200).send('CANCELLED_BY_HOST');
     }
 
     await gameRef.update({ status: 'played' });
@@ -370,6 +442,242 @@ async function _processScheduledWindowCloseHandler(req, res, db = null) {
     return res.status(500).send('ERROR');
   }
 }
+
+// ─────────────────────────────────────────────────────────────────────────────
+// HTTP HANDLERS — PRE-GAME CONFIRMATION (PARTIAL GAMES ONLY)
+// ─────────────────────────────────────────────────────────────────────────────
+
+/**
+ * HTTP handler: processScheduledPreGameCheck
+ * Called by Cloud Tasks at T-45min for games that were partial at creation time.
+ * Checks if game is still partial and sends host confirmation request.
+ */
+async function _processScheduledPreGameCheckHandler(req, res, db = null) {
+  if (!db) db = admin.firestore();
+  const { gameId } = req.body;
+
+  if (!gameId) {
+    return res.status(400).send('Missing gameId');
+  }
+
+  try {
+    const gameRef = db.collection('games').doc(gameId);
+    const gameSnap = await gameRef.get();
+
+    if (!gameSnap.exists) {
+      console.warn(`processScheduledPreGameCheck: game ${gameId} not found`);
+      return res.status(200).send('NOT_FOUND');
+    }
+
+    const gameData = gameSnap.data();
+
+    // Skip if game is full, cancelled, or already played
+    if (gameData.status === 'filled' || gameData.status === 'played' || gameData.isCancelled === true) {
+      console.log(`processScheduledPreGameCheck: game ${gameId} is ${gameData.status}${gameData.isCancelled ? ' (cancelled)' : ''}, skipping`);
+      return res.status(200).send('SKIPPED_FULL_OR_CANCELLED');
+    }
+
+    // Check if game is partial (2+ players but not full)
+    const joinedPlayers = Array.isArray(gameData.joined_players) ? gameData.joined_players : [];
+    const maxPlayers = typeof gameData.max_players === 'number' ? gameData.max_players : 4;
+
+    if (joinedPlayers.length < 2) {
+      console.log(`processScheduledPreGameCheck: game ${gameId} has ${joinedPlayers.length} player(s), skipping (need 2+)`);
+      return res.status(200).send('SKIPPED_TOO_FEW_PLAYERS');
+    }
+
+    if (joinedPlayers.length >= maxPlayers) {
+      console.log(`processScheduledPreGameCheck: game ${gameId} is full (${joinedPlayers.length}/${maxPlayers}), skipping`);
+      return res.status(200).send('SKIPPED_FULL');
+    }
+
+    // Game is partial - send pre-game confirmation request
+    const hostRef = gameData.userRef || gameData.host_ref;
+    if (!hostRef) {
+      console.warn(`processScheduledPreGameCheck: game ${gameId} has no host ref`);
+      return res.status(200).send('NO_HOST');
+    }
+
+    // Set hostConfirmation to pending
+    await gameRef.update({ hostConfirmation: 'pending' });
+
+    // Send notification to host
+    const courseName = typeof gameData.course_play === 'string' ? gameData.course_play : 'your course';
+    const gameDate = _formatGameDate(gameData.date);
+
+    try {
+      await routeNotification({
+        eventId:         randomUUID(),
+        eventType:       'host_pre_game_confirm',
+        recipientUserId: hostRef.id,
+        sourceId:        gameId,
+        data:            { course_name: courseName, game_date: gameDate, game_id: gameId },
+      }, db);
+    } catch (err) {
+      console.error(`processScheduledPreGameCheck: failed to send notification for game ${gameId}:`, err);
+    }
+
+    // Schedule timeout task for 20 minutes from now
+    try {
+      await _scheduleCloudTask(
+        'processScheduledPreGameTimeout',
+        { gameId },
+        new Date(Date.now() + PRE_GAME_TIMEOUT_MS)
+      );
+      console.log(`processScheduledPreGameCheck: scheduled timeout for game ${gameId} in 20 min`);
+    } catch (err) {
+      console.error(`processScheduledPreGameCheck: failed to schedule timeout for game ${gameId}:`, err);
+    }
+
+    console.log(`processScheduledPreGameCheck: sent pre-game confirmation request for partial game ${gameId} (${joinedPlayers.length}/${maxPlayers} players)`);
+    return res.status(200).send('OK');
+  } catch (err) {
+    console.error(`processScheduledPreGameCheck: error for game ${gameId}:`, err);
+    return res.status(500).send('ERROR');
+  }
+}
+
+/**
+ * HTTP handler: processScheduledPreGameTimeout
+ * Called by Cloud Tasks 20 minutes after pre-game check if host hasn't responded.
+ * Auto-proceeds by setting hostConfirmation to 'timeout'.
+ */
+async function _processScheduledPreGameTimeoutHandler(req, res, db = null) {
+  if (!db) db = admin.firestore();
+  const { gameId } = req.body;
+
+  if (!gameId) {
+    return res.status(400).send('Missing gameId');
+  }
+
+  try {
+    const gameRef = db.collection('games').doc(gameId);
+    const gameSnap = await gameRef.get();
+
+    if (!gameSnap.exists) {
+      console.warn(`processScheduledPreGameTimeout: game ${gameId} not found`);
+      return res.status(200).send('NOT_FOUND');
+    }
+
+    const gameData = gameSnap.data();
+
+    // Only update if still pending (host hasn't responded)
+    if (gameData.hostConfirmation === 'pending') {
+      await gameRef.update({ hostConfirmation: 'timeout' });
+      console.log(`processScheduledPreGameTimeout: auto-proceeded game ${gameId} (no host response)`);
+    } else {
+      console.log(`processScheduledPreGameTimeout: game ${gameId} already has hostConfirmation=${gameData.hostConfirmation}, skipping`);
+    }
+
+    return res.status(200).send('OK');
+  } catch (err) {
+    console.error(`processScheduledPreGameTimeout: error for game ${gameId}:`, err);
+    return res.status(500).send('ERROR');
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// CALLABLE — submitPreGameConfirmation
+// ─────────────────────────────────────────────────────────────────────────────
+
+/**
+ * Raw handler for submitPreGameConfirmation.
+ * Accepts data, context, and an injected db instance.
+ *
+ * Input: {
+ *   gameId: string,
+ *   confirmed: boolean  // true = game is on, false = cancel game
+ * }
+ */
+async function _submitPreGameConfirmationHandler(data, context, db) {
+  const HttpsError = functions.https.HttpsError;
+
+  if (!context.auth) {
+    throw new HttpsError('unauthenticated', 'Authentication required.');
+  }
+
+  const { gameId, confirmed } = data || {};
+  if (typeof gameId !== 'string' || gameId.length === 0) {
+    throw new HttpsError('invalid-argument', 'A valid gameId is required.');
+  }
+  if (typeof confirmed !== 'boolean') {
+    throw new HttpsError('invalid-argument', 'confirmed must be a boolean.');
+  }
+
+  const gameRef = db.collection('games').doc(gameId);
+  const gameSnap = await gameRef.get();
+
+  if (!gameSnap.exists) {
+    throw new HttpsError('not-found', `Game ${gameId} not found.`);
+  }
+
+  const gameData = gameSnap.data();
+
+  // Verify caller is the host
+  const hostRef = gameData.userRef || gameData.host_ref;
+  if (!hostRef || hostRef.id !== context.auth.uid) {
+    throw new HttpsError('permission-denied', 'Only the game host can confirm.');
+  }
+
+  // Guard: only accept if status is pending
+  if (gameData.hostConfirmation !== 'pending') {
+    console.log(`submitPreGameConfirmation: game ${gameId} already has hostConfirmation=${gameData.hostConfirmation}`);
+    return { success: true, status: gameData.hostConfirmation, alreadyHandled: true };
+  }
+
+  if (confirmed) {
+    // Host confirms - game continues
+    await gameRef.update({ hostConfirmation: 'confirmed' });
+    console.log(`submitPreGameConfirmation: host ${context.auth.uid} confirmed game ${gameId}`);
+    return { success: true, status: 'confirmed' };
+  } else {
+    // Host cancels - cancel game and notify players
+    await gameRef.update({
+      hostConfirmation: 'cancelled',
+      status: 'cancelled',
+      isCancelled: true,
+      cancelled_at: admin.firestore.FieldValue.serverTimestamp(),
+    });
+
+    // Get all players to notify (exclude host)
+    const joinedPlayers = Array.isArray(gameData.joined_players) ? gameData.joined_players : [];
+    const playerUserIds = joinedPlayers
+      .filter(ref => ref && typeof ref.id === 'string')
+      .map(ref => ref.id)
+      .filter(uid => uid !== context.auth.uid);
+
+    const courseName = typeof gameData.course_play === 'string' ? gameData.course_play : 'your course';
+    const gameDate = _formatGameDate(gameData.date);
+
+    // Cancel all pending scheduled tasks and notify players
+    try {
+      await onGameCancelled(gameId, playerUserIds, courseName, gameDate, db);
+    } catch (err) {
+      console.error(`submitPreGameConfirmation: failed to send cancellation notifications for game ${gameId}:`, err);
+    }
+
+    console.log(`submitPreGameConfirmation: host ${context.auth.uid} cancelled game ${gameId}, notified ${playerUserIds.length} player(s)`);
+    return { success: true, status: 'cancelled' };
+  }
+}
+
+/**
+ * Callable: submitPreGameConfirmation
+ */
+const submitPreGameConfirmation = functions
+  .region('us-west2')
+  .https.onCall(async (data, context) => {
+    const db = admin.firestore();
+    try {
+      return await _submitPreGameConfirmationHandler(data, context, db);
+    } catch (error) {
+      if (error instanceof functions.https.HttpsError) throw error;
+      throw new functions.https.HttpsError(
+        'internal',
+        `Failed to submit pre-game confirmation: ${error.message}`
+      );
+    }
+  });
 
 // ─────────────────────────────────────────────────────────────────────────────
 // STAGE 3 MAIN TRIGGER — onGameStatusToPlayed
@@ -1964,21 +2272,27 @@ module.exports = {
   // Firebase Functions exports (wrapped triggers/callables)
   onGameParticipantJoin,
   onGameStatusToFilled,
+  onGameCreated,
   onGameStatusToPlayed,
   submitHostCheckin,
   submitPeerRatings,
   submitFallbackConfirmation,
+  submitPreGameConfirmation,
 
   // Raw handler functions — exported for unit testing (bypass Firebase wrappers)
   // Tests call these directly with (data, context, mockDb)
   _onGameParticipantJoinHandler,
   _onGameStatusToFilledHandler,
+  _onGameCreatedHandler,
   _processScheduledGameStatusChangeHandler,
   _processScheduledWindowCloseHandler,
+  _processScheduledPreGameCheckHandler,
+  _processScheduledPreGameTimeoutHandler,
   _onGameStatusToPlayedHandler,
   _submitHostCheckinHandler,
   _submitPeerRatingsHandler,
   _submitFallbackConfirmationHandler,
+  _submitPreGameConfirmationHandler,
 
   // Other internal helpers exported for testing
   _handleNoShowStrike,

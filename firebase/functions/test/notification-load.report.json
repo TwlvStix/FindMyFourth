@@ -1,5 +1,5 @@
 {
-  "timestamp": "2026-03-07T17:14:29.773Z",
+  "timestamp": "2026-03-08T04:12:20.543Z",
   "config": {
     "totalGames": 500,
     "hostCheckinRate": 0.8,
@@ -13,11 +13,11 @@
     }
   },
   "duration": {
-    "totalMs": 1264,
-    "totalSec": 1.26
+    "totalMs": 1202,
+    "totalSec": 1.2
   },
   "operations": {
-    "total": 895,
+    "total": 907,
     "errors": 0
   },
   "latency": {
@@ -33,26 +33,26 @@
       "P95": 2,
       "P99": 3,
       "avg": 1,
-      "count": 393
+      "count": 405
     }
   },
   "externalCalls": {
-    "cloudTasksCreated": 3955,
-    "cloudTasksCancelled": 2149,
+    "cloudTasksCreated": 4014,
+    "cloudTasksCancelled": 2219,
     "fcmCalls": 0
   },
   "firestoreCosts": {
-    "reads": 1313095,
-    "writes": 9505,
+    "reads": 1366332,
+    "writes": 9629,
     "deletes": 0,
-    "readCostUsd": 0.07878569999999999,
-    "writeCostUsd": 0.0017108999999999998,
+    "readCostUsd": 0.08197992,
+    "writeCostUsd": 0.00173322,
     "deleteCostUsd": 0,
-    "totalCostUsd": 0.08049659999999999
+    "totalCostUsd": 0.08371313999999999
   },
   "throughput": {
-    "gamesPerSecond": 395.56962025316454,
-    "notificationsPerSecond": 3128.9556962025317
+    "gamesPerSecond": 415.973377703827,
+    "notificationsPerSecond": 3339.434276206323
   },
   "passed": true
 }

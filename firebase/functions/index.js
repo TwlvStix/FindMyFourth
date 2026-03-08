@@ -2031,10 +2031,12 @@ exports.markGhostNoShow = trustSystem.markGhostNoShow;
 // Confirmation Flow — Stage 3
 exports.onGameParticipantJoin = confirmationFlow.onGameParticipantJoin;
 exports.onGameStatusToFilled = confirmationFlow.onGameStatusToFilled;
+exports.onGameCreated = confirmationFlow.onGameCreated;
 exports.onGameStatusToPlayed = confirmationFlow.onGameStatusToPlayed;
 exports.submitHostCheckin = confirmationFlow.submitHostCheckin;
 exports.submitPeerRatings = confirmationFlow.submitPeerRatings;
 exports.submitFallbackConfirmation = confirmationFlow.submitFallbackConfirmation;
+exports.submitPreGameConfirmation = confirmationFlow.submitPreGameConfirmation;
 
 // Cloud Task receivers for confirmation flow
 exports.processScheduledGameStatusChange = functions
@@ -2046,6 +2048,17 @@ exports.processScheduledWindowClose = functions
   .region('us-west2')
   .runWith({ timeoutSeconds: 540, memory: '512MB' })
   .https.onRequest(confirmationFlow._processScheduledWindowCloseHandler);
+
+// Pre-game confirmation (partial games only)
+exports.processScheduledPreGameCheck = functions
+  .region('us-west2')
+  .runWith({ timeoutSeconds: 60, memory: '256MB' })
+  .https.onRequest(confirmationFlow._processScheduledPreGameCheckHandler);
+
+exports.processScheduledPreGameTimeout = functions
+  .region('us-west2')
+  .runWith({ timeoutSeconds: 60, memory: '256MB' })
+  .https.onRequest(confirmationFlow._processScheduledPreGameTimeoutHandler);
 
 // Trust Profile — Stage 5
 exports.updateTrustProfile = trustProfileModule.updateTrustProfile;

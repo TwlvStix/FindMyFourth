@@ -28,10 +28,10 @@ const {
 // ── Enum value correctness ────────────────────────────────────────────────────
 
 describe('TrustEventType enum', () => {
-  test('all 30 values use snake_case', () => {
+  test('all 31 values use snake_case', () => {
     const values = Object.values(TrustEventType);
-    // 4 post-round + 7 trust/enforcement + 2 badge + 3 game + 2 friend + 5 join request + 5 streak + 2 host-add
-    expect(values).toHaveLength(30);
+    // 4 post-round + 7 trust/enforcement + 2 badge + 4 game (incl. pre-game confirm) + 2 friend + 5 join request + 5 streak + 2 host-add
+    expect(values).toHaveLength(31);
     for (const v of values) {
       // snake_case: lowercase letters, digits, and underscores only
       expect(v).toMatch(/^[a-z][a-z0-9_]*$/);

@@ -46,6 +46,8 @@ const TrustEventType = Object.freeze({
   // Host-add-player events
   PLAYER_ADDED_BY_HOST:     'player_added_by_host',
   PLAYER_DECLINED_SPOT:     'player_declined_spot',
+  // Pre-game confirmation (partial games only)
+  HOST_PRE_GAME_CONFIRM:    'host_pre_game_confirm',
 });
 
 const NotificationPriority = Object.freeze({
@@ -401,6 +403,21 @@ const EVENT_REGISTRY = Object.freeze({
     deepLink:         'findmyfourth://game/{game_id}',
     threadId:         'game_{game_id}',
     androidChannelId: 'default',
+    icon:             'sports_golf',
+  },
+
+  [TrustEventType.HOST_PRE_GAME_CONFIRM]: {
+    priority:        NotificationPriority.HIGH,
+    category:        TrustCategory.GAMES,
+    maxDeliveries:   1,
+    timing:          'scheduled',
+    template: {
+      title: 'Is your game still on?',
+      body:  'Your {course_name} game starts in 45 minutes. Tap to confirm or cancel.',
+    },
+    deepLink:         'findmyfourth://game/{game_id}/confirm',
+    threadId:         'game_{game_id}',
+    androidChannelId: 'important',
     icon:             'sports_golf',
   },
 

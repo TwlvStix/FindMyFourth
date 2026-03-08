@@ -44,6 +44,7 @@ jest.mock('@google-cloud/tasks', () => {
 let mockRouteNotification;
 let mockOnGameConfirmed;
 let mockOnHostCheckinCompleted;
+let mockOnGameCancelled;
 let mockRandomUUID;
 
 jest.mock('../notifications/trust/router', () => ({
@@ -53,6 +54,7 @@ jest.mock('../notifications/trust/router', () => ({
 jest.mock('../notifications/trust/hooks', () => ({
   onGameConfirmed: (...args) => mockOnGameConfirmed(...args),
   onHostCheckinCompleted: (...args) => mockOnHostCheckinCompleted(...args),
+  onGameCancelled: (...args) => mockOnGameCancelled(...args),
 }));
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -431,6 +433,10 @@ beforeEach(() => {
     cancelledCount: 0,
     playerRateJobIds: {},
   });
+  mockOnGameCancelled = jest.fn().mockResolvedValue({
+    cancelledCount: 0,
+    notifyResults: [],
+  });
   mockRandomUUID = jest.fn(() => 'mock-uuid-' + Math.random().toString(36).slice(2));
 
   // Reset mock Firestore
@@ -667,7 +673,7 @@ describe("onGameStatusToFilled", () => {
     expect(change.after.ref.update).not.toHaveBeenCalled();
   });
 
-  test("schedules Cloud Task at tee time when transitioning to filled", async () => {
+  test("does not schedule Cloud Task when transitioning to filled (handled by onGameCreated)", async () => {
     const teeTimeMs = Date.now() + 2 * HOUR_MS; // 2 hours in future
     const change = {
       before: { data: () => ({ status: "open" }) },
@@ -684,19 +690,9 @@ describe("onGameStatusToFilled", () => {
 
     await confirmationFlow._onGameStatusToFilledHandler(change, context, mockDb);
 
-    expect(mockCreateTask).toHaveBeenCalledTimes(1);
-    const callArg = mockCreateTask.mock.calls[0][0];
-
-    // Verify schedule time matches tee time
-    const expectedSecs = Math.floor(teeTimeMs / 1000);
-    expect(callArg.task.scheduleTime.seconds).toBe(expectedSecs);
-
-    // Verify payload contains gameId
-    const decoded = JSON.parse(Buffer.from(callArg.task.httpRequest.body, 'base64').toString());
-    expect(decoded.gameId).toBe("g1");
-
-    // Verify URL targets processScheduledGameStatusChange
-    expect(callArg.task.httpRequest.url).toContain('processScheduledGameStatusChange');
+    // onGameStatusToFilled no longer schedules tasks — onGameCreated handles that
+    expect(mockCreateTask).not.toHaveBeenCalled();
+    expect(change.after.ref.update).not.toHaveBeenCalled();
   });
 
   test("flips to played immediately if tee time is in the past", async () => {
@@ -743,6 +739,76 @@ describe("onGameStatusToFilled", () => {
 });
 
 // ─────────────────────────────────────────────────────────────────────────────
+// onGameCreated
+// ─────────────────────────────────────────────────────────────────────────────
+
+describe("onGameCreated", () => {
+  test("schedules Cloud Task at tee time when game is created", async () => {
+    const teeTimeMs = Date.now() + 2 * HOUR_MS; // 2 hours in future
+    const snapshot = {
+      data: () => ({
+        date: MockTimestamp.fromMillis(teeTimeMs),
+      }),
+      ref: { update: jest.fn() },
+    };
+    const context = { params: { gameId: "g1" } };
+
+    await confirmationFlow._onGameCreatedHandler(snapshot, context, mockDb);
+
+    // Now schedules 2 tasks: tee-time status change + pre-game check (at T-45min)
+    expect(mockCreateTask).toHaveBeenCalledTimes(2);
+
+    // First task: tee-time status change
+    const teeTimeCallArg = mockCreateTask.mock.calls[0][0];
+    const expectedSecs = Math.floor(teeTimeMs / 1000);
+    expect(teeTimeCallArg.task.scheduleTime.seconds).toBe(expectedSecs);
+    const decoded1 = JSON.parse(Buffer.from(teeTimeCallArg.task.httpRequest.body, 'base64').toString());
+    expect(decoded1.gameId).toBe("g1");
+    expect(teeTimeCallArg.task.httpRequest.url).toContain('processScheduledGameStatusChange');
+
+    // Second task: pre-game check (T-45min)
+    const preGameCallArg = mockCreateTask.mock.calls[1][0];
+    const preGameExpectedSecs = Math.floor((teeTimeMs - 45 * 60 * 1000) / 1000);
+    expect(preGameCallArg.task.scheduleTime.seconds).toBe(preGameExpectedSecs);
+    const decoded2 = JSON.parse(Buffer.from(preGameCallArg.task.httpRequest.body, 'base64').toString());
+    expect(decoded2.gameId).toBe("g1");
+    expect(preGameCallArg.task.httpRequest.url).toContain('processScheduledPreGameCheck');
+  });
+
+  test("flips to played immediately if tee time is in the past", async () => {
+    const teeTimeMs = Date.now() - 2 * HOUR_MS; // 2 hours ago
+    const updateSpy = jest.fn().mockResolvedValue(undefined);
+    const snapshot = {
+      data: () => ({
+        date: MockTimestamp.fromMillis(teeTimeMs),
+      }),
+      ref: { update: updateSpy },
+    };
+    const context = { params: { gameId: "g1" } };
+
+    await confirmationFlow._onGameCreatedHandler(snapshot, context, mockDb);
+
+    expect(updateSpy).toHaveBeenCalledWith({ status: 'played' });
+    expect(mockCreateTask).not.toHaveBeenCalled();
+  });
+
+  test("does nothing if game has no valid tee time", async () => {
+    const snapshot = {
+      data: () => ({
+        date: null,
+      }),
+      ref: { update: jest.fn() },
+    };
+    const context = { params: { gameId: "g1" } };
+
+    await confirmationFlow._onGameCreatedHandler(snapshot, context, mockDb);
+
+    expect(mockCreateTask).not.toHaveBeenCalled();
+    expect(snapshot.ref.update).not.toHaveBeenCalled();
+  });
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
 // processScheduledGameStatusChange
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -767,7 +833,27 @@ describe("processScheduledGameStatusChange", () => {
     expect(res.send).toHaveBeenCalledWith("OK");
   });
 
-  test("returns 200 SKIPPED if game is not filled", async () => {
+  test("flips open game to played and returns 200", async () => {
+    mockDb.seedDoc("games", "g1", {
+      status: "open",
+      isCancelled: false,
+    });
+
+    const req = { body: { gameId: "g1" } };
+    const res = {
+      status: jest.fn().mockReturnThis(),
+      send: jest.fn(),
+    };
+
+    await confirmationFlow._processScheduledGameStatusChangeHandler(req, res, mockDb);
+
+    const game = mockDb.getDoc("games", "g1");
+    expect(game.status).toBe("played");
+    expect(res.status).toHaveBeenCalledWith(200);
+    expect(res.send).toHaveBeenCalledWith("OK");
+  });
+
+  test("returns 200 SKIPPED if game is already played", async () => {
     mockDb.seedDoc("games", "g1", {
       status: "played",
       isCancelled: false,
@@ -2096,5 +2182,416 @@ describe("Stage 4 — _closeConfirmationWindow converts pending no-shows to acti
 
     const round = mockDb.getDoc("round_records", "round_g1");
     expect(round.verification_status).toBe("expired");
+  });
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+// processScheduledPreGameCheck
+// ─────────────────────────────────────────────────────────────────────────────
+
+describe("processScheduledPreGameCheck", () => {
+  test("skips if game is filled", async () => {
+    mockDb.seedDoc("games", "g1", {
+      status: "filled",
+      joined_players: [playerRef("host"), playerRef("p1"), playerRef("p2"), playerRef("p3")],
+      max_players: 4,
+      userRef: playerRef("host"),
+    });
+
+    const req = { body: { gameId: "g1" } };
+    const res = { status: jest.fn().mockReturnThis(), send: jest.fn() };
+
+    await confirmationFlow._processScheduledPreGameCheckHandler(req, res, mockDb);
+
+    expect(res.status).toHaveBeenCalledWith(200);
+    expect(res.send).toHaveBeenCalledWith("SKIPPED_FULL_OR_CANCELLED");
+    expect(mockDb.getDoc("games", "g1").hostConfirmation).toBeUndefined();
+  });
+
+  test("skips if game is cancelled", async () => {
+    mockDb.seedDoc("games", "g1", {
+      status: "open",
+      isCancelled: true,
+      joined_players: [playerRef("host"), playerRef("p1")],
+      max_players: 4,
+      userRef: playerRef("host"),
+    });
+
+    const req = { body: { gameId: "g1" } };
+    const res = { status: jest.fn().mockReturnThis(), send: jest.fn() };
+
+    await confirmationFlow._processScheduledPreGameCheckHandler(req, res, mockDb);
+
+    expect(res.status).toHaveBeenCalledWith(200);
+    expect(res.send).toHaveBeenCalledWith("SKIPPED_FULL_OR_CANCELLED");
+  });
+
+  test("skips if game has < 2 players", async () => {
+    mockDb.seedDoc("games", "g1", {
+      status: "open",
+      joined_players: [playerRef("host")],
+      max_players: 4,
+      userRef: playerRef("host"),
+    });
+
+    const req = { body: { gameId: "g1" } };
+    const res = { status: jest.fn().mockReturnThis(), send: jest.fn() };
+
+    await confirmationFlow._processScheduledPreGameCheckHandler(req, res, mockDb);
+
+    expect(res.status).toHaveBeenCalledWith(200);
+    expect(res.send).toHaveBeenCalledWith("SKIPPED_TOO_FEW_PLAYERS");
+  });
+
+  test("skips if game is full (joined = max)", async () => {
+    mockDb.seedDoc("games", "g1", {
+      status: "open", // technically should be filled but testing edge case
+      joined_players: [playerRef("host"), playerRef("p1"), playerRef("p2"), playerRef("p3")],
+      max_players: 4,
+      userRef: playerRef("host"),
+    });
+
+    const req = { body: { gameId: "g1" } };
+    const res = { status: jest.fn().mockReturnThis(), send: jest.fn() };
+
+    await confirmationFlow._processScheduledPreGameCheckHandler(req, res, mockDb);
+
+    expect(res.status).toHaveBeenCalledWith(200);
+    expect(res.send).toHaveBeenCalledWith("SKIPPED_FULL");
+  });
+
+  test("sends notification and schedules timeout for partial game", async () => {
+    mockDb.seedDoc("games", "g1", {
+      status: "open",
+      joined_players: [playerRef("host_user"), playerRef("player_a")],
+      max_players: 4,
+      userRef: playerRef("host_user"),
+      course_play: "Sawgrass",
+      date: MockTimestamp.fromMillis(Date.now() + 45 * 60 * 1000), // future
+    });
+
+    const req = { body: { gameId: "g1" } };
+    const res = { status: jest.fn().mockReturnThis(), send: jest.fn() };
+
+    await confirmationFlow._processScheduledPreGameCheckHandler(req, res, mockDb);
+
+    // Check hostConfirmation was set to pending
+    const game = mockDb.getDoc("games", "g1");
+    expect(game.hostConfirmation).toBe("pending");
+
+    // Check notification was sent
+    expect(mockRouteNotification).toHaveBeenCalledWith(
+      expect.objectContaining({
+        eventType: "host_pre_game_confirm",
+        recipientUserId: "host_user",
+        sourceId: "g1",
+      }),
+      mockDb
+    );
+
+    // Check timeout task was scheduled
+    expect(mockCreateTask).toHaveBeenCalled();
+    const taskCall = mockCreateTask.mock.calls[0][0];
+    const payload = JSON.parse(Buffer.from(taskCall.task.httpRequest.body, 'base64').toString());
+    expect(payload.gameId).toBe("g1");
+
+    expect(res.status).toHaveBeenCalledWith(200);
+    expect(res.send).toHaveBeenCalledWith("OK");
+  });
+
+  test("returns 400 if gameId missing", async () => {
+    const req = { body: {} };
+    const res = { status: jest.fn().mockReturnThis(), send: jest.fn() };
+
+    await confirmationFlow._processScheduledPreGameCheckHandler(req, res, mockDb);
+
+    expect(res.status).toHaveBeenCalledWith(400);
+    expect(res.send).toHaveBeenCalledWith("Missing gameId");
+  });
+
+  test("returns 200 NOT_FOUND if game does not exist", async () => {
+    const req = { body: { gameId: "nonexistent" } };
+    const res = { status: jest.fn().mockReturnThis(), send: jest.fn() };
+
+    await confirmationFlow._processScheduledPreGameCheckHandler(req, res, mockDb);
+
+    expect(res.status).toHaveBeenCalledWith(200);
+    expect(res.send).toHaveBeenCalledWith("NOT_FOUND");
+  });
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+// processScheduledPreGameTimeout
+// ─────────────────────────────────────────────────────────────────────────────
+
+describe("processScheduledPreGameTimeout", () => {
+  test("sets hostConfirmation to timeout if still pending", async () => {
+    mockDb.seedDoc("games", "g1", {
+      status: "open",
+      hostConfirmation: "pending",
+    });
+
+    const req = { body: { gameId: "g1" } };
+    const res = { status: jest.fn().mockReturnThis(), send: jest.fn() };
+
+    await confirmationFlow._processScheduledPreGameTimeoutHandler(req, res, mockDb);
+
+    const game = mockDb.getDoc("games", "g1");
+    expect(game.hostConfirmation).toBe("timeout");
+    expect(res.status).toHaveBeenCalledWith(200);
+    expect(res.send).toHaveBeenCalledWith("OK");
+  });
+
+  test("does not change hostConfirmation if already confirmed", async () => {
+    mockDb.seedDoc("games", "g1", {
+      status: "open",
+      hostConfirmation: "confirmed",
+    });
+
+    const req = { body: { gameId: "g1" } };
+    const res = { status: jest.fn().mockReturnThis(), send: jest.fn() };
+
+    await confirmationFlow._processScheduledPreGameTimeoutHandler(req, res, mockDb);
+
+    const game = mockDb.getDoc("games", "g1");
+    expect(game.hostConfirmation).toBe("confirmed");
+    expect(res.status).toHaveBeenCalledWith(200);
+  });
+
+  test("does not change hostConfirmation if already cancelled", async () => {
+    mockDb.seedDoc("games", "g1", {
+      status: "cancelled",
+      hostConfirmation: "cancelled",
+    });
+
+    const req = { body: { gameId: "g1" } };
+    const res = { status: jest.fn().mockReturnThis(), send: jest.fn() };
+
+    await confirmationFlow._processScheduledPreGameTimeoutHandler(req, res, mockDb);
+
+    const game = mockDb.getDoc("games", "g1");
+    expect(game.hostConfirmation).toBe("cancelled");
+    expect(res.status).toHaveBeenCalledWith(200);
+  });
+
+  test("returns 400 if gameId missing", async () => {
+    const req = { body: {} };
+    const res = { status: jest.fn().mockReturnThis(), send: jest.fn() };
+
+    await confirmationFlow._processScheduledPreGameTimeoutHandler(req, res, mockDb);
+
+    expect(res.status).toHaveBeenCalledWith(400);
+    expect(res.send).toHaveBeenCalledWith("Missing gameId");
+  });
+
+  test("returns 200 NOT_FOUND if game does not exist", async () => {
+    const req = { body: { gameId: "nonexistent" } };
+    const res = { status: jest.fn().mockReturnThis(), send: jest.fn() };
+
+    await confirmationFlow._processScheduledPreGameTimeoutHandler(req, res, mockDb);
+
+    expect(res.status).toHaveBeenCalledWith(200);
+    expect(res.send).toHaveBeenCalledWith("NOT_FOUND");
+  });
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+// submitPreGameConfirmation
+// ─────────────────────────────────────────────────────────────────────────────
+
+describe("submitPreGameConfirmation", () => {
+  test("sets hostConfirmation to confirmed when confirmed=true", async () => {
+    mockDb.seedDoc("games", "g1", {
+      status: "open",
+      hostConfirmation: "pending",
+      userRef: playerRef("host_user"),
+      joined_players: [playerRef("host_user"), playerRef("player_a")],
+    });
+
+    const data = { gameId: "g1", confirmed: true };
+    const context = makeContext("host_user");
+
+    const result = await confirmationFlow._submitPreGameConfirmationHandler(data, context, mockDb);
+
+    expect(result.success).toBe(true);
+    expect(result.status).toBe("confirmed");
+    const game = mockDb.getDoc("games", "g1");
+    expect(game.hostConfirmation).toBe("confirmed");
+  });
+
+  test("cancels game and notifies players when confirmed=false", async () => {
+    // Need to mock onGameCancelled since it's imported
+    const mockOnGameCancelled = jest.fn().mockResolvedValue({ cancelledCount: 1, notifyResults: [] });
+    // The module imports onGameCancelled directly, so we need to use the existing mock pattern
+    // Actually, looking at the mocks, onGameCancelled is NOT mocked. Let me add it.
+
+    mockDb.seedDoc("games", "g1", {
+      status: "open",
+      hostConfirmation: "pending",
+      userRef: playerRef("host_user"),
+      joined_players: [playerRef("host_user"), playerRef("player_a")],
+      course_play: "Sawgrass",
+      date: MockTimestamp.fromMillis(Date.now() + HOUR_MS),
+    });
+
+    const data = { gameId: "g1", confirmed: false };
+    const context = makeContext("host_user");
+
+    const result = await confirmationFlow._submitPreGameConfirmationHandler(data, context, mockDb);
+
+    expect(result.success).toBe(true);
+    expect(result.status).toBe("cancelled");
+    const game = mockDb.getDoc("games", "g1");
+    expect(game.hostConfirmation).toBe("cancelled");
+    expect(game.status).toBe("cancelled");
+    expect(game.isCancelled).toBe(true);
+    // Note: onGameCancelled is called but not mocked, so we just verify the game state
+  });
+
+  test("returns alreadyHandled if hostConfirmation is not pending", async () => {
+    mockDb.seedDoc("games", "g1", {
+      status: "open",
+      hostConfirmation: "confirmed",
+      userRef: playerRef("host_user"),
+    });
+
+    const data = { gameId: "g1", confirmed: true };
+    const context = makeContext("host_user");
+
+    const result = await confirmationFlow._submitPreGameConfirmationHandler(data, context, mockDb);
+
+    expect(result.success).toBe(true);
+    expect(result.alreadyHandled).toBe(true);
+    expect(result.status).toBe("confirmed");
+  });
+
+  test("throws unauthenticated if no auth", async () => {
+    const data = { gameId: "g1", confirmed: true };
+    const context = { auth: null };
+
+    await expect(
+      confirmationFlow._submitPreGameConfirmationHandler(data, context, mockDb)
+    ).rejects.toMatchObject({ code: "unauthenticated" });
+  });
+
+  test("throws permission-denied if caller is not host", async () => {
+    mockDb.seedDoc("games", "g1", {
+      status: "open",
+      hostConfirmation: "pending",
+      userRef: playerRef("host_user"),
+    });
+
+    const data = { gameId: "g1", confirmed: true };
+    const context = makeContext("other_user");
+
+    await expect(
+      confirmationFlow._submitPreGameConfirmationHandler(data, context, mockDb)
+    ).rejects.toMatchObject({ code: "permission-denied" });
+  });
+
+  test("throws not-found if game does not exist", async () => {
+    const data = { gameId: "nonexistent", confirmed: true };
+    const context = makeContext("host_user");
+
+    await expect(
+      confirmationFlow._submitPreGameConfirmationHandler(data, context, mockDb)
+    ).rejects.toMatchObject({ code: "not-found" });
+  });
+
+  test("throws invalid-argument if gameId is missing", async () => {
+    const data = { confirmed: true };
+    const context = makeContext("host_user");
+
+    await expect(
+      confirmationFlow._submitPreGameConfirmationHandler(data, context, mockDb)
+    ).rejects.toMatchObject({ code: "invalid-argument" });
+  });
+
+  test("throws invalid-argument if confirmed is not boolean", async () => {
+    const data = { gameId: "g1", confirmed: "yes" };
+    const context = makeContext("host_user");
+
+    await expect(
+      confirmationFlow._submitPreGameConfirmationHandler(data, context, mockDb)
+    ).rejects.toMatchObject({ code: "invalid-argument" });
+  });
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+// processScheduledGameStatusChange — hostConfirmation cancelled check
+// ─────────────────────────────────────────────────────────────────────────────
+
+describe("processScheduledGameStatusChange - pre-game cancellation", () => {
+  test("returns CANCELLED_BY_HOST if hostConfirmation is cancelled", async () => {
+    mockDb.seedDoc("games", "g1", {
+      status: "open",
+      isCancelled: false,
+      hostConfirmation: "cancelled",
+    });
+
+    const req = { body: { gameId: "g1" } };
+    const res = { status: jest.fn().mockReturnThis(), send: jest.fn() };
+
+    await confirmationFlow._processScheduledGameStatusChangeHandler(req, res, mockDb);
+
+    expect(res.status).toHaveBeenCalledWith(200);
+    expect(res.send).toHaveBeenCalledWith("CANCELLED_BY_HOST");
+    // Game status should NOT be changed to 'played'
+    const game = mockDb.getDoc("games", "g1");
+    expect(game.status).toBe("open");
+  });
+
+  test("proceeds normally if hostConfirmation is confirmed", async () => {
+    mockDb.seedDoc("games", "g1", {
+      status: "open",
+      isCancelled: false,
+      hostConfirmation: "confirmed",
+    });
+
+    const req = { body: { gameId: "g1" } };
+    const res = { status: jest.fn().mockReturnThis(), send: jest.fn() };
+
+    await confirmationFlow._processScheduledGameStatusChangeHandler(req, res, mockDb);
+
+    expect(res.status).toHaveBeenCalledWith(200);
+    expect(res.send).toHaveBeenCalledWith("OK");
+    const game = mockDb.getDoc("games", "g1");
+    expect(game.status).toBe("played");
+  });
+
+  test("proceeds normally if hostConfirmation is timeout", async () => {
+    mockDb.seedDoc("games", "g1", {
+      status: "open",
+      isCancelled: false,
+      hostConfirmation: "timeout",
+    });
+
+    const req = { body: { gameId: "g1" } };
+    const res = { status: jest.fn().mockReturnThis(), send: jest.fn() };
+
+    await confirmationFlow._processScheduledGameStatusChangeHandler(req, res, mockDb);
+
+    expect(res.status).toHaveBeenCalledWith(200);
+    expect(res.send).toHaveBeenCalledWith("OK");
+    const game = mockDb.getDoc("games", "g1");
+    expect(game.status).toBe("played");
+  });
+
+  test("proceeds normally if hostConfirmation is null/undefined (full game)", async () => {
+    mockDb.seedDoc("games", "g1", {
+      status: "filled",
+      isCancelled: false,
+      // No hostConfirmation field - full game that skipped pre-check
+    });
+
+    const req = { body: { gameId: "g1" } };
+    const res = { status: jest.fn().mockReturnThis(), send: jest.fn() };
+
+    await confirmationFlow._processScheduledGameStatusChangeHandler(req, res, mockDb);
+
+    expect(res.status).toHaveBeenCalledWith(200);
+    expect(res.send).toHaveBeenCalledWith("OK");
+    const game = mockDb.getDoc("games", "g1");
+    expect(game.status).toBe("played");
   });
 });

@@ -74,6 +74,8 @@ const EVENT_DATA = {
   // Host-add-player events
   [TrustEventType.PLAYER_ADDED_BY_HOST]: { host_name: 'Alice', course_name: 'Pebble Beach', game_date: 'Saturday', game_id: GAME_ID },
   [TrustEventType.PLAYER_DECLINED_SPOT]: { player_name: 'Bob', course_name: 'Torrey Pines', game_id: GAME_ID },
+  // Pre-game confirmation (partial games only)
+  [TrustEventType.HOST_PRE_GAME_CONFIRM]: { course_name: 'Sawgrass', game_date: 'Saturday', game_id: GAME_ID },
 };
 
 /** Interpolates {game_id} in a string, mirroring the engine's logic. */
