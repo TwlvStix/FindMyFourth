@@ -168,8 +168,10 @@ class _GamesListContentState extends State<GamesListContent> {
         var visibleGames = applyGameListFilters(activeGames, widget.filters);
 
         // Apply geo filter if enabled and has location
-        final geoFilter = context.watch<GeoFilterProvider>();
-        if (geoFilter.isEnabled && geoFilter.hasLocation) {
+        final geoFilterEnabled = context.select<GeoFilterProvider, bool>((p) => p.isEnabled);
+        final geoFilterHasLocation = context.select<GeoFilterProvider, bool>((p) => p.hasLocation);
+        if (geoFilterEnabled && geoFilterHasLocation) {
+          final geoFilter = context.read<GeoFilterProvider>();
           visibleGames = applyGeoFilter(
             visibleGames,
             centerLat: geoFilter.lat!,

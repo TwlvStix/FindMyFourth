@@ -346,6 +346,7 @@ exports.sendChatMessageNotifications = functions
 
 exports.fetchReceiptants = functions
   .region("us-west2")
+  .runWith({ minInstances: 1 })
   .https.onCall(async (data, context) => {
     if (!context.auth) {
       throw new functions.https.HttpsError(
@@ -404,6 +405,7 @@ exports.fetchReceiptants = functions
 
 exports.deleteAccount = functions
   .region("us-west2")
+  .runWith({ minInstances: 1 })
   .https.onCall(async (data, context) => {
     const version = "deleteAccount-v3";
     let uid = context.auth?.uid;
@@ -1257,6 +1259,7 @@ exports._declineAddedSpotHandler = _declineAddedSpotHandler;
  */
 exports.declineAddedSpot = functions
   .region("us-west2")
+  .runWith({ minInstances: 1 })
   .https.onCall((data, context) => _declineAddedSpotHandler(data, context));
 
 /**
@@ -1750,6 +1753,7 @@ exports.sendSignupConfirmationEmail = functions
 
 exports.deleteChat = functions
   .region("us-west2")
+  .runWith({ minInstances: 1 })
   .https.onCall(async (data, context) => {
     // Verify authentication
     if (!context.auth) {
@@ -2369,6 +2373,7 @@ exports.joinRound = functions
  */
 exports.finalizeAndScore = functions
   .region("us-west2")
+  .runWith({ minInstances: 1 })
   .https.onCall(async (data, context) => {
   if (!context.auth) {
     throw new functions.https.HttpsError("unauthenticated", "Must be logged in");
@@ -2415,6 +2420,7 @@ exports.confirmJoin = functions
  */
 exports.declineInvitation = functions
   .region("us-west2")
+  .runWith({ minInstances: 1 })
   .https.onCall(async (data, context) => {
   if (!context.auth) {
     throw new functions.https.HttpsError("unauthenticated", "Must be logged in");
@@ -2435,6 +2441,7 @@ exports.declineInvitation = functions
  */
 exports.cancelJoin = functions
   .region("us-west2")
+  .runWith({ minInstances: 1 })
   .https.onCall(async (data, context) => {
   if (!context.auth) {
     throw new functions.https.HttpsError("unauthenticated", "Must be logged in");
@@ -2481,6 +2488,7 @@ exports.checkIn = functions
  */
 exports.endRound = functions
   .region("us-west2")
+  .runWith({ minInstances: 1 })
   .https.onCall(async (data, context) => {
   if (!context.auth) {
     throw new functions.https.HttpsError("unauthenticated", "Must be logged in");
@@ -2505,6 +2513,7 @@ exports.endRound = functions
  */
 exports.submitRoundFeedback = functions
   .region("us-west2")
+  .runWith({ minInstances: 1 })
   .https.onCall(async (data, context) => {
   if (!context.auth) {
     throw new functions.https.HttpsError("unauthenticated", "Must be logged in");

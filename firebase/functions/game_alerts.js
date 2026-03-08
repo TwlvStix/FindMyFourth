@@ -450,7 +450,7 @@ exports.sendGameCreatedNotifications = functions
   .region("us-west2")
   .runWith({
     timeoutSeconds: 540,
-    memory: "2GB",
+    memory: "512MB",
   })
   .firestore.document("games/{gameId}")
   .onCreate(async (snapshot, context) => {

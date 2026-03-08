@@ -19,11 +19,9 @@ class GamesListEmptyState extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final geoFilter = context.watch<GeoFilterProvider>();
-
     // Show geo-specific empty state when filter is active
-    final isGeoFiltered = geoFilter.isEnabled && geoFilter.hasLocation;
-    final radiusKm = geoFilter.radiusKm.toInt();
+    final isGeoFiltered = context.select<GeoFilterProvider, bool>((p) => p.isEnabled && p.hasLocation);
+    final radiusKm = context.select<GeoFilterProvider, int>((p) => p.radiusKm.toInt());
 
     return Padding(
       padding: EdgeInsets.only(
