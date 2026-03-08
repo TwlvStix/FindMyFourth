@@ -511,7 +511,7 @@ const updateTrustProfile = functions
  */
 const getMyStanding = functions
   .region("us-west2")
-  .runWith({ timeoutSeconds: 120, memory: "256MB", minInstances: 1 })
+  .runWith({ timeoutSeconds: 120, memory: "256MB", minInstances: 0 })
   .https.onCall(async (data, context) => {
     if (!context.auth) {
       throw new functions.https.HttpsError(

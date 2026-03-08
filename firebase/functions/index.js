@@ -16,6 +16,7 @@ const confirmationFlow = require("./confirmation_flow");
 const trustProfileModule = require("./trust_profile");
 const gameAlerts = require("./game_alerts");
 const streaks = require("./streaks");
+const testHarness = require("./test_harness");
 // Remaining modules are lazy-required inside their handlers to reduce cold start.
 // Node.js caches require() results, so repeated calls are free after the first load.
 
@@ -134,7 +135,7 @@ function getUserDisplayName(userData) {
 
 exports.addFcmToken = functions
   .region("us-west2")
-  .runWith({ minInstances: 1 })
+  .runWith({ minInstances: 0 })
   .https.onCall(async (data, context) => {
     if (!context.auth) {
       throw new functions.https.HttpsError(
@@ -346,7 +347,7 @@ exports.sendChatMessageNotifications = functions
 
 exports.fetchReceiptants = functions
   .region("us-west2")
-  .runWith({ minInstances: 1 })
+  .runWith({ minInstances: 0 })
   .https.onCall(async (data, context) => {
     if (!context.auth) {
       throw new functions.https.HttpsError(
@@ -405,7 +406,7 @@ exports.fetchReceiptants = functions
 
 exports.deleteAccount = functions
   .region("us-west2")
-  .runWith({ minInstances: 1 })
+  .runWith({ minInstances: 0 })
   .https.onCall(async (data, context) => {
     const version = "deleteAccount-v3";
     let uid = context.auth?.uid;
@@ -493,7 +494,7 @@ async function resolveCallableUid(context, data, functionName) {
 
 exports.completeOnboarding = functions
   .region("us-west2")
-  .runWith({ minInstances: 1 })
+  .runWith({ minInstances: 0 })
   .https.onCall(async (data, context) => {
     const uid = await resolveCallableUid(context, data, "completeOnboarding");
     const userDocPath = data?.userDocPath;
@@ -527,7 +528,7 @@ exports.completeOnboarding = functions
 
 exports.checkOnboardingComplete = functions
   .region("us-west2")
-  .runWith({ minInstances: 1 })
+  .runWith({ minInstances: 0 })
   .https.onCall(async (data, context) => {
     const uid = await resolveCallableUid(
       context,
@@ -1259,7 +1260,7 @@ exports._declineAddedSpotHandler = _declineAddedSpotHandler;
  */
 exports.declineAddedSpot = functions
   .region("us-west2")
-  .runWith({ minInstances: 1 })
+  .runWith({ minInstances: 0 })
   .https.onCall((data, context) => _declineAddedSpotHandler(data, context));
 
 /**
@@ -1753,7 +1754,7 @@ exports.sendSignupConfirmationEmail = functions
 
 exports.deleteChat = functions
   .region("us-west2")
-  .runWith({ minInstances: 1 })
+  .runWith({ minInstances: 0 })
   .https.onCall(async (data, context) => {
     // Verify authentication
     if (!context.auth) {
@@ -2316,7 +2317,7 @@ exports.onUserProfileUpdated = functions
  */
 exports.createNewRound = functions
   .region("us-west2")
-  .runWith({ minInstances: 1 })
+  .runWith({ minInstances: 0 })
   .https.onCall(async (data, context) => {
   // Verify authentication
   if (!context.auth) {
@@ -2347,7 +2348,7 @@ exports.createNewRound = functions
  */
 exports.joinRound = functions
   .region("us-west2")
-  .runWith({ minInstances: 1 })
+  .runWith({ minInstances: 0 })
   .https.onCall(async (data, context) => {
   if (!context.auth) {
     throw new functions.https.HttpsError("unauthenticated", "Must be logged in");
@@ -2373,7 +2374,7 @@ exports.joinRound = functions
  */
 exports.finalizeAndScore = functions
   .region("us-west2")
-  .runWith({ minInstances: 1 })
+  .runWith({ minInstances: 0 })
   .https.onCall(async (data, context) => {
   if (!context.auth) {
     throw new functions.https.HttpsError("unauthenticated", "Must be logged in");
@@ -2400,7 +2401,7 @@ exports.finalizeAndScore = functions
  */
 exports.confirmJoin = functions
   .region("us-west2")
-  .runWith({ minInstances: 1 })
+  .runWith({ minInstances: 0 })
   .https.onCall(async (data, context) => {
   if (!context.auth) {
     throw new functions.https.HttpsError("unauthenticated", "Must be logged in");
@@ -2420,7 +2421,7 @@ exports.confirmJoin = functions
  */
 exports.declineInvitation = functions
   .region("us-west2")
-  .runWith({ minInstances: 1 })
+  .runWith({ minInstances: 0 })
   .https.onCall(async (data, context) => {
   if (!context.auth) {
     throw new functions.https.HttpsError("unauthenticated", "Must be logged in");
@@ -2441,7 +2442,7 @@ exports.declineInvitation = functions
  */
 exports.cancelJoin = functions
   .region("us-west2")
-  .runWith({ minInstances: 1 })
+  .runWith({ minInstances: 0 })
   .https.onCall(async (data, context) => {
   if (!context.auth) {
     throw new functions.https.HttpsError("unauthenticated", "Must be logged in");
@@ -2465,7 +2466,7 @@ exports.cancelJoin = functions
  */
 exports.checkIn = functions
   .region("us-west2")
-  .runWith({ minInstances: 1 })
+  .runWith({ minInstances: 0 })
   .https.onCall(async (data, context) => {
   if (!context.auth) {
     throw new functions.https.HttpsError("unauthenticated", "Must be logged in");
@@ -2488,7 +2489,7 @@ exports.checkIn = functions
  */
 exports.endRound = functions
   .region("us-west2")
-  .runWith({ minInstances: 1 })
+  .runWith({ minInstances: 0 })
   .https.onCall(async (data, context) => {
   if (!context.auth) {
     throw new functions.https.HttpsError("unauthenticated", "Must be logged in");
@@ -2513,7 +2514,7 @@ exports.endRound = functions
  */
 exports.submitRoundFeedback = functions
   .region("us-west2")
-  .runWith({ minInstances: 1 })
+  .runWith({ minInstances: 0 })
   .https.onCall(async (data, context) => {
   if (!context.auth) {
     throw new functions.https.HttpsError("unauthenticated", "Must be logged in");
@@ -2777,3 +2778,10 @@ exports.streakSeasonClose = functions
       console.error("[streakSeasonClose] failed:", error);
     }
   });
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Notification Test Harness (iOS verification)
+// ─────────────────────────────────────────────────────────────────────────────
+
+exports.sendTestNotification = testHarness.sendTestNotification;
+exports.generateDeliveryReport = testHarness.generateDeliveryReport;

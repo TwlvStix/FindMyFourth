@@ -146,10 +146,11 @@ Future<void> handleNotificationNavigation(
   final initialPageName = resolvedRoute?.pageName ??
       (rawPageName is String && rawPageName.isNotEmpty ? rawPageName : null);
 
-  AppLog.d('🔔 [DIAG-BG] resolvedRoute: ${resolvedRoute?.pageName}, initialPageName=$initialPageName');
+  AppLog.d('🔔 [DIAG-NAV] Routing: type=${data['type']} → '
+      'page=$initialPageName, params=${resolvedRoute?.parameterData ?? {}}');
 
   if (initialPageName == null) {
-    AppLog.d('🔔 [DIAG-BG] No page name resolved, skipping navigation');
+    AppLog.d('🔔 [DIAG-NAV] No page name resolved, skipping navigation');
     return;
   }
 
@@ -422,6 +423,17 @@ _PushRoute? _resolveRouteFromType(Map<String, dynamic> data) {
     );
   }
 
+  // Pre-game confirmation (host confirms/cancels partial game)
+  if (type == 'host_pre_game_confirm') {
+    final gameId = data['gameId'] ?? data['game_id'];
+    if (gameId is String && gameId.isNotEmpty) {
+      return _PushRoute(
+        pageName: 'GameJoinedDetailed',
+        parameterData: {'gameRef': 'games/$gameId'},
+      );
+    }
+  }
+
   return null;
 }
 
@@ -539,6 +551,10 @@ class _PushNotificationsHandlerState extends State<PushNotificationsHandler> {
 
     final notification = await FirebaseMessaging.instance.getInitialMessage();
     if (notification != null) {
+      AppLog.d('🔔 [DIAG-COLD] Received: type=${notification.data['type']}, '
+          'messageId=${notification.messageId}, '
+          'data_keys=${notification.data.keys.toList()}');
+
       // Audit: Record cold start push opened
       final uid = FirebaseAuth.instance.currentUser?.uid;
       if (uid != null) {

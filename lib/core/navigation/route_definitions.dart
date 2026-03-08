@@ -36,6 +36,7 @@ import '/user_onboarding/progressive_onboarding_widget.dart';
 import '/user_onboarding/vibe_onboarding_widget.dart';
 import '/user_onboarding/vibe_archetype_reveal_widget.dart';
 import '/vibe/premium_vibe_page/premium_vibe_page_widget.dart';
+import '/debug/notification_audit_screen.dart';
 import '/debug/notification_routing_test_screen.dart';
 import '/debug/streak_debug_screen.dart';
 import '/settings/location_settings/location_settings_widget.dart';
@@ -608,6 +609,17 @@ List<GoRoute> buildRoutes(AppStateNotifier appStateNotifier) => [
           state,
           appStateNotifier,
           const StreakDebugScreen(),
+        ),
+      ),
+      GoRoute(
+        name: NotificationAuditScreen.routeName,
+        path: NotificationAuditScreen.routePath,
+        redirect: buildRedirect(appStateNotifier, requireAuth: true),
+        pageBuilder: (context, state) => buildPageWithTransition(
+          context,
+          state,
+          appStateNotifier,
+          const NotificationAuditScreen(),
         ),
       ),
     ];

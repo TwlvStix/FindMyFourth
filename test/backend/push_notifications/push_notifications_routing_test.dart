@@ -334,6 +334,14 @@ void main() {
         expectedPage: 'MainProfile',
         expectedParams: {},
       ),
+
+      // ===== Pre-game confirmation =====
+      _RoutingTestCase(
+        type: 'host_pre_game_confirm',
+        data: {'game_id': 'g123'},
+        expectedPage: 'GameJoinedDetailed',
+        expectedParams: {'gameRef': 'games/g123'},
+      ),
     ];
 
     for (final tc in testCases) {

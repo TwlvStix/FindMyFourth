@@ -24,6 +24,7 @@ class ProfileSettingsSection extends StatelessWidget {
     this.showDebugOptions = false,
     this.onDebugNotificationRouting,
     this.onDebugStreakPreview,
+    this.onDebugNotificationAudit,
   });
 
   /// Called when the user taps "Notifications".
@@ -47,6 +48,9 @@ class ProfileSettingsSection extends StatelessWidget {
 
   /// Called when the user taps "Streak UI Preview" (debug only).
   final VoidCallback? onDebugStreakPreview;
+
+  /// Called when the user taps "Notification Audit" (debug only).
+  final VoidCallback? onDebugNotificationAudit;
 
   @override
   Widget build(BuildContext context) {
@@ -116,6 +120,15 @@ class ProfileSettingsSection extends StatelessWidget {
                     onTap: () {
                       HapticFeedback.lightImpact();
                       onDebugStreakPreview?.call();
+                    },
+                  ),
+                  Divider(height: 1, color: AppColors.navyLight, indent: 56),
+                  _buildSettingsRow(
+                    phosphorIcon: AppPhosphorIcons.notifications,
+                    label: 'Notification Audit',
+                    onTap: () {
+                      HapticFeedback.lightImpact();
+                      onDebugNotificationAudit?.call();
                     },
                   ),
                 ],

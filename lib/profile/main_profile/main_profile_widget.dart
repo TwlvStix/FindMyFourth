@@ -242,6 +242,8 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                               context.push('/debug/notification-routing'),
                           onDebugStreakPreview: () =>
                               context.push('/debug/streak'),
+                          onDebugNotificationAudit: () =>
+                              context.push('/debug/notification-audit'),
                         ),
 
                         SizedBox(height: AppSpacing.xxxl),

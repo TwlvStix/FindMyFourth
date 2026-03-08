@@ -1309,7 +1309,7 @@ async function _submitHostCheckinHandler(data, context, db) {
  */
 const submitHostCheckin = functions
   .region("us-west2")
-  .runWith({ minInstances: 1 })
+  .runWith({ minInstances: 0 })
   .https.onCall(async (data, context) => {
     const db = admin.firestore();
     try {
@@ -1521,7 +1521,7 @@ async function _submitPeerRatingsHandler(data, context, db) {
  */
 const submitPeerRatings = functions
   .region("us-west2")
-  .runWith({ minInstances: 1 })
+  .runWith({ minInstances: 0 })
   .https.onCall(async (data, context) => {
     const db = admin.firestore();
     try {

@@ -41,6 +41,17 @@ class NotificationAuditService {
     _instance = service;
   }
 
+  /// Create a test instance with injected dependencies.
+  ///
+  /// Use with [setInstance] to replace the singleton in tests.
+  /// Not intended for production use.
+  factory NotificationAuditService.testInstance({
+    FirebaseFirestore? firestore,
+    FirebaseAuth? auth,
+  }) {
+    return NotificationAuditService._(firestore: firestore, auth: auth);
+  }
+
   final FirebaseFirestore _firestore;
   final FirebaseAuth _auth;
 
