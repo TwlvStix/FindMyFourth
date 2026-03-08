@@ -436,6 +436,58 @@
         { "fieldPath": "status", "order": "ASCENDING" },
         { "fieldPath": "createdAt", "order": "ASCENDING" }
       ]
+    },
+    {
+      "collectionGroup": "games",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "isCancelled", "order": "ASCENDING" },
+        { "fieldPath": "schedule_type", "order": "ASCENDING" },
+        { "fieldPath": "date", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "games",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "isCancelled", "order": "ASCENDING" },
+        { "fieldPath": "schedule_type", "order": "ASCENDING" },
+        { "fieldPath": "cancelled_at", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "game_participants",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "game_ref", "order": "ASCENDING" },
+        { "fieldPath": "user_ref", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "scheduledNotifications",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "gameId", "order": "ASCENDING" },
+        { "fieldPath": "status", "order": "ASCENDING" },
+        { "fieldPath": "eventType", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "users",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "streak_season_id", "order": "ASCENDING" },
+        { "fieldPath": "streak_current_weeks", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "users",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "streak_season_id", "order": "ASCENDING" },
+        { "fieldPath": "streak_freeze_earned", "order": "ASCENDING" },
+        { "fieldPath": "streak_freeze_used", "order": "ASCENDING" }
+      ]
     }
   ],
   "fieldOverrides": [
@@ -455,6 +507,20 @@
           "order": "ASCENDING",
           "queryScope": "COLLECTION_GROUP"
         }
+      ]
+    },
+    {
+      "collectionGroup": "notifications",
+      "fieldPath": "type",
+      "indexes": [
+        { "order": "ASCENDING", "queryScope": "COLLECTION_GROUP" }
+      ]
+    },
+    {
+      "collectionGroup": "notifications",
+      "fieldPath": "data.gameId",
+      "indexes": [
+        { "order": "ASCENDING", "queryScope": "COLLECTION_GROUP" }
       ]
     }
   ]

@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:provider/provider.dart';
 
 import '/core/design_tokens/colors.dart';
 import '/core/design_tokens/typography.dart';
@@ -10,8 +9,7 @@ import '/core/design_tokens/icon_size.dart';
 import '/core/design_tokens/app_phosphor_icons.dart';
 import '/core/widgets/app_icon.dart';
 import '/core/motion/motion_tokens.dart';
-import '/providers/geo_filter_provider.dart';
-import '/providers/user_provider.dart';
+import '/providers/provider_extensions.dart';
 
 /// "Near Me" toggle chip for the games list.
 ///
@@ -30,8 +28,8 @@ class _NearMeChipState extends State<NearMeChip> {
   Future<void> _handleTap() async {
     HapticFeedback.lightImpact();
 
-    final geoFilter = context.read<GeoFilterProvider>();
-    final userProvider = context.read<UserProvider>();
+    final geoFilter = context.geoFilterProvider;
+    final userProvider = context.userProvider;
 
     final newValue = !geoFilter.isEnabled;
     geoFilter.setEnabled(newValue);
@@ -42,15 +40,13 @@ class _NearMeChipState extends State<NearMeChip> {
 
   @override
   Widget build(BuildContext context) {
-    final userProvider = context.watch<UserProvider>();
-    final geoFilter = context.watch<GeoFilterProvider>();
+    final hasDefaultLocation = context.selectUser((p) => p.hasDefaultLocation);
+    final isEnabled = context.selectGeoFilter((p) => p.isEnabled);
 
     // Don't show if user has no location configured
-    if (!userProvider.hasDefaultLocation) {
+    if (!hasDefaultLocation) {
       return const SizedBox.shrink();
     }
-
-    final isEnabled = geoFilter.isEnabled;
 
     return GestureDetector(
       onTapDown: (_) => setState(() => _isPressed = true),

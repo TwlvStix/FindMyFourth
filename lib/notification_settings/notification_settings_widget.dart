@@ -50,8 +50,7 @@ class _NotificationSettingsWidgetState
 
   @override
   Widget build(BuildContext context) {
-    final provider = context.watchNotificationProvider;
-    final prefs = provider.preferences;
+    final prefs = context.selectNotification((p) => p.preferences);
     final activeProfile = prefs.activeProfile;
 
     return Scaffold(

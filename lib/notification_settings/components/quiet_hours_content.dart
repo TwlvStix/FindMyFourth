@@ -18,9 +18,9 @@ class QuietHoursContent extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final provider = context.watchNotificationProvider;
-    final prefs = provider.preferences;
-    final quietHours = prefs.quietHours;
+    final quietHours = context.selectNotification(
+      (p) => p.preferences.quietHours,
+    );
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,

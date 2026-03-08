@@ -34,7 +34,7 @@ class GameCardAvatarStack extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final profileProvider = context.watch<ProfileProvider>();
+    final profileProvider = context.read<ProfileProvider>();
 
     // Get all unique player refs (include host if not in players)
     final allPlayers = <DocumentReference>{

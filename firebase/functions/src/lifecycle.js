@@ -225,37 +225,89 @@ async function completeRound(roundId) {
     .get();
 
   const results = { completed: [], no_shows: [] };
+  const now = new Date();
+  const batch = db.batch();
 
   for (const doc of participantsSnapshot.docs) {
     const data = doc.data();
     const playerId = data.player_id;
 
     if (data.participation_status === "checked_in") {
-      await completeParticipant(roundId, playerId);
+      batch.update(doc.ref, {
+        participation_status: "completed",
+        status_history: admin.firestore.FieldValue.arrayUnion({
+          status: "completed",
+          timestamp: now.toISOString(),
+        }),
+        updated_at: admin.firestore.FieldValue.serverTimestamp(),
+      });
       results.completed.push(playerId);
     } else if (data.participation_status === "confirmed") {
       // Confirmed but never checked in = no-show
-      await markNoShow(roundId, playerId);
+      batch.update(doc.ref, {
+        participation_status: "no_show",
+        status_history: admin.firestore.FieldValue.arrayUnion({
+          status: "no_show",
+          timestamp: now.toISOString(),
+        }),
+        updated_at: admin.firestore.FieldValue.serverTimestamp(),
+      });
       results.no_shows.push(playerId);
     }
     // Other statuses (declined, cancelled) are already terminal — skip
   }
 
-  // Update the round status
-  await db.collection("rounds").doc(roundId).update({
+  // Update the round status in the same batch
+  const roundRef = db.collection("rounds").doc(roundId);
+  batch.update(roundRef, {
     round_status: "completed",
     completed_at: admin.firestore.FieldValue.serverTimestamp(),
     updated_at: admin.firestore.FieldValue.serverTimestamp(),
   });
 
-  await logEvent({
+  await batch.commit();
+
+  // Log events in parallel after commit
+  const logPromises = [];
+
+  for (const playerId of results.completed) {
+    logPromises.push(logEvent({
+      event_type: "status_change",
+      round_id: roundId,
+      player_id: playerId,
+      payload: {
+        previous_status: "checked_in",
+        new_status: "completed",
+        cancelled_after_seeing_group: null,
+        cancellation_reason: null,
+      },
+    }));
+  }
+
+  for (const playerId of results.no_shows) {
+    logPromises.push(logEvent({
+      event_type: "status_change",
+      round_id: roundId,
+      player_id: playerId,
+      payload: {
+        previous_status: "confirmed",
+        new_status: "no_show",
+        cancelled_after_seeing_group: null,
+        cancellation_reason: null,
+      },
+    }));
+  }
+
+  logPromises.push(logEvent({
     event_type: "round_completed",
     round_id: roundId,
     payload: {
       completed_players: results.completed,
       no_show_players: results.no_shows,
     },
-  });
+  }));
+
+  await Promise.all(logPromises);
 
   return results;
 }

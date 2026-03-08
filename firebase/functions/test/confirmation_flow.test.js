@@ -146,10 +146,19 @@ class MockDocRef {
       const existing = col[this.id] || {};
       const merged = { ...existing };
       for (const [k, v] of Object.entries(data)) {
-        if (v && v._type === "increment") {
-          merged[k] = (typeof existing[k] === "number" ? existing[k] : 0) + v.delta;
-        } else if (v && v._type === "arrayUnion") {
-          merged[k] = [...(Array.isArray(existing[k]) ? existing[k] : []), ...v.items];
+        const vStr = v && v.constructor ? v.constructor.name : "";
+        const isIncrement = (v && v._type === "increment") ||
+          (v && typeof v.operand === "number" && !Array.isArray(v)) ||
+          (vStr === "NumericIncrementTransform");
+        const isArrayUnion = (v && v._type === "arrayUnion") ||
+          (v && Array.isArray(v.elements)) ||
+          (vStr === "ArrayUnionTransform");
+        if (isIncrement) {
+          const delta = v.delta ?? v.operand ?? 0;
+          merged[k] = (typeof existing[k] === "number" ? existing[k] : 0) + delta;
+        } else if (isArrayUnion) {
+          const items = v.items ?? v.elements ?? [];
+          merged[k] = [...(Array.isArray(existing[k]) ? existing[k] : []), ...items];
         } else {
           merged[k] = v;
         }
@@ -1657,6 +1666,164 @@ describe("round record data — vibe scores copy-only rule", () => {
     expect(round.vibe_match_scores[pairKey]).toBeDefined();
     expect(round.vibe_match_scores[pairKey].finalScorePercent).toBe(80);
   });
+
+  // ── Idempotency & crash-resume tests ────────────────────────────────────
+
+  test("returns early if round_jobs already exists with processing_state 'ready'", async () => {
+    const teeTimeMs = Date.now() - 2 * HOUR_MS;
+    const gRef = new MockDocRef(mockDb, "games", "g1");
+
+    // Seed an existing round_job for this game with processing_state: "ready"
+    mockDb.seedDoc("round_jobs", "existing_job", {
+      game_ref: gRef,
+      processing_state: "ready",
+      status: "pending",
+    });
+
+    const change = {
+      before: { data: () => ({ status: "filled" }) },
+      after: {
+        data: () => ({
+          date: MockTimestamp.fromMillis(teeTimeMs),
+          status: "played",
+          userRef: playerRef("host_user"),
+          course_play: "Augusta",
+          joined_players: [playerRef("host_user")],
+          game_type: "Stroke Play",
+        }),
+        ref: gRef,
+      },
+    };
+    const context = { params: { gameId: "g1" } };
+
+    await confirmationFlow._onGameStatusToPlayedHandler(change, context, mockDb);
+
+    // Should NOT have created a second round_jobs doc
+    const jobs = mockDb.getDocs("round_jobs");
+    expect(Object.keys(jobs)).toHaveLength(1);
+    // Should NOT have called onGameConfirmed (skipped entirely)
+    expect(mockOnGameConfirmed).not.toHaveBeenCalled();
+  });
+
+  test("resumes post-batch steps if round_jobs exists with processing_state 'initializing'", async () => {
+    const teeTimeMs = Date.now() - 2 * HOUR_MS;
+    const gRef = new MockDocRef(mockDb, "games", "g1");
+
+    // Seed an existing round_job stuck in "initializing"
+    mockDb.seedDoc("round_jobs", "existing_job", {
+      game_ref: gRef,
+      processing_state: "initializing",
+      status: "pending",
+      host_ref: playerRef("host_user"),
+      app_user_refs: [playerRef("host_user"), playerRef("player_a")],
+    });
+
+    const change = {
+      before: { data: () => ({ status: "filled" }) },
+      after: {
+        data: () => ({
+          date: MockTimestamp.fromMillis(teeTimeMs),
+          status: "played",
+          userRef: playerRef("host_user"),
+          course_play: "Augusta",
+          joined_players: [playerRef("host_user"), playerRef("player_a")],
+          game_type: "Stroke Play",
+        }),
+        ref: gRef,
+      },
+    };
+    const context = { params: { gameId: "g1" } };
+
+    await confirmationFlow._onGameStatusToPlayedHandler(change, context, mockDb);
+
+    // Should NOT have created a second round_jobs doc
+    const jobs = mockDb.getDocs("round_jobs");
+    expect(Object.keys(jobs)).toHaveLength(1);
+    // Should have called onGameConfirmed (re-running post-batch steps)
+    expect(mockOnGameConfirmed).toHaveBeenCalledTimes(1);
+    // Should have updated processing_state to "ready"
+    const job = mockDb.getDoc("round_jobs", "existing_job");
+    expect(job.processing_state).toBe("ready");
+  });
+
+  test("onGameConfirmed error causes outer handler to throw (enables retry)", async () => {
+    const teeTimeMs = Date.now() - 2 * HOUR_MS;
+    mockOnGameConfirmed.mockRejectedValue(new Error("Trust notification failure"));
+
+    const change = {
+      before: { data: () => ({ status: "filled" }) },
+      after: {
+        data: () => ({
+          date: MockTimestamp.fromMillis(teeTimeMs),
+          status: "played",
+          userRef: playerRef("host_user"),
+          course_play: "Augusta",
+          joined_players: [playerRef("host_user")],
+          game_type: "Stroke Play",
+        }),
+        ref: new MockDocRef(mockDb, "games", "g1"),
+      },
+    };
+    const context = { params: { gameId: "g1" } };
+
+    const errorSpy = jest.spyOn(console, "error").mockImplementation(() => {});
+    await expect(
+      confirmationFlow._onGameStatusToPlayedHandler(change, context, mockDb)
+    ).rejects.toThrow("Trust notification failure");
+    errorSpy.mockRestore();
+  });
+
+  test("_scheduleCloudTask error causes outer handler to throw (enables retry)", async () => {
+    const teeTimeMs = Date.now() - 2 * HOUR_MS;
+    mockCreateTask.mockRejectedValue(new Error("Cloud Tasks unavailable"));
+
+    const change = {
+      before: { data: () => ({ status: "filled" }) },
+      after: {
+        data: () => ({
+          date: MockTimestamp.fromMillis(teeTimeMs),
+          status: "played",
+          userRef: playerRef("host_user"),
+          course_play: "Augusta",
+          joined_players: [playerRef("host_user")],
+          game_type: "Stroke Play",
+        }),
+        ref: new MockDocRef(mockDb, "games", "g1"),
+      },
+    };
+    const context = { params: { gameId: "g1" } };
+
+    const errorSpy = jest.spyOn(console, "error").mockImplementation(() => {});
+    await expect(
+      confirmationFlow._onGameStatusToPlayedHandler(change, context, mockDb)
+    ).rejects.toThrow("Cloud Tasks unavailable");
+    errorSpy.mockRestore();
+  });
+
+  test("processing_state transitions from 'initializing' to 'ready' on success", async () => {
+    const teeTimeMs = Date.now() - 2 * HOUR_MS;
+    const change = {
+      before: { data: () => ({ status: "filled" }) },
+      after: {
+        data: () => ({
+          date: MockTimestamp.fromMillis(teeTimeMs),
+          status: "played",
+          userRef: playerRef("host_user"),
+          course_play: "Augusta",
+          joined_players: [playerRef("host_user")],
+          game_type: "Stroke Play",
+        }),
+        ref: new MockDocRef(mockDb, "games", "g1"),
+      },
+    };
+    const context = { params: { gameId: "g1" } };
+
+    await confirmationFlow._onGameStatusToPlayedHandler(change, context, mockDb);
+
+    const jobs = mockDb.getDocs("round_jobs");
+    const job = Object.values(jobs)[0];
+    expect(job.processing_state).toBe("ready");
+  });
 });
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -1811,14 +1978,14 @@ describe("Stage 4 — _finalizeRoundVerification", () => {
     const roundData = mockDb.getDoc("round_records", "r1");
     await confirmationFlow._finalizeRoundVerification(mockDb, rRef, roundData, gRef);
 
-    // present users incremented; no_show user NOT incremented
-    const hostUser = mockDb.getDoc("users", "host_user");
-    const playerA = mockDb.getDoc("users", "player_a");
-    const playerB = mockDb.getDoc("users", "player_b");
+    // present users incremented in stats/counters subcollection; no_show user NOT incremented
+    const hostCounters = mockDb.getDoc("users/host_user/stats", "counters");
+    const playerACounters = mockDb.getDoc("users/player_a/stats", "counters");
+    const playerBCounters = mockDb.getDoc("users/player_b/stats", "counters");
 
-    expect(hostUser.verified_round_count).toBe(3);
-    expect(playerA.verified_round_count).toBe(2);
-    expect(playerB.verified_round_count).toBe(5); // unchanged
+    expect(hostCounters.verified_round_count).toBe(1);
+    expect(playerACounters.verified_round_count).toBe(1);
+    expect(playerBCounters).toBeUndefined(); // unchanged — no subcollection doc created
   });
 
   test("writes partner_plays subcollection for present user pairs", async () => {
@@ -1837,11 +2004,9 @@ describe("Stage 4 — _finalizeRoundVerification", () => {
 
     // partner_plays is a subcollection — check via the mock's nested structure
     // The MockDocRef set() and update() go into the flat collections map using path-based keys.
-    // Since we use subcollections (users/{uid}/partner_plays/{otherUid}), we need to check
-    // that the batch set was called with the right structure.
-    // Verification: both users' verified_round_count incremented confirms the batch ran.
-    const hostUser = mockDb.getDoc("users", "host_user");
-    expect(hostUser.verified_round_count).toBe(1);
+    // Verification: verified_round_count in stats/counters subcollection confirms the batch ran.
+    const hostCounters = mockDb.getDoc("users/host_user/stats", "counters");
+    expect(hostCounters.verified_round_count).toBe(1);
   });
 
   test("is idempotent — does nothing if already verified", async () => {

@@ -9,7 +9,7 @@ paths: lib/providers/**/*.dart
 - Implement `_disposed` flag, check before `notifyListeners()`
 - Use `_scheduleNotify()` debounce (50ms timer), never call `notifyListeners()` directly
 
-**Known debt**: `ChatProvider` (793 lines) exceeds the 500-line limit — split when next modified.
+**Pattern**: `ChatProvider` delegates view model stream composition to `ChatViewModelManager` (separate file) to stay under the 500-line limit.
 
 ## Setter Guards
 When a setter calls `notifyListeners()` (or `_scheduleNotify()`), always guard against no-op updates:
@@ -31,7 +31,7 @@ void setMapValue(String key, String value) {
 This prevents unnecessary rebuilds when the same value is set twice.
 
 ## Size Limit
-Provider files should stay under 500 lines. If approaching this limit, split by sub-domain (e.g., separate read-heavy stream logic from mutation methods). ChatProvider (732 lines) is tracked as tech debt.
+Provider files should stay under 500 lines. If approaching this limit, split by sub-domain (e.g., separate read-heavy stream logic from mutation methods, as done with ChatProvider → ChatViewModelManager).
 
 ## Caching
 - Cache data with TTL (typically 5 minutes) using `Map<String, DateTime>` timestamps

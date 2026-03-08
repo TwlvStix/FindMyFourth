@@ -29,69 +29,70 @@ async function cleanupCancelledGamesHandler() {
 
   console.log(`[cleanupCancelledGames] Starting cleanup. Deleting games expired before ${today.toISOString()}`);
 
-  // Query 1: Cancelled scheduled games where game date < today
-  const scheduledQuery = db.collection("games")
-    .where("isCancelled", "==", true)
-    .where("schedule_type", "==", "scheduled")
-    .where("date", "<", todayTimestamp);
-
-  // Query 2: Cancelled flexible games where cancelled_at < today
-  const flexibleQuery = db.collection("games")
-    .where("isCancelled", "==", true)
-    .where("schedule_type", "==", "flexible")
-    .where("cancelled_at", "<", todayTimestamp);
-
-  const [scheduledGames, flexibleGames] = await Promise.all([
-    scheduledQuery.get(),
-    flexibleQuery.get(),
-  ]);
-
-  const allGames = [...scheduledGames.docs, ...flexibleGames.docs];
-
-  if (allGames.length === 0) {
-    console.log("[cleanupCancelledGames] No cancelled games to clean up");
-    return {
-      deleted: 0,
-      errors: 0,
-      scheduledCount: 0,
-      flexibleCount: 0,
-    };
-  }
-
-  console.log(
-    `[cleanupCancelledGames] Found ${allGames.length} cancelled games to delete ` +
-    `(${scheduledGames.size} scheduled, ${flexibleGames.size} flexible)`
-  );
-
+  const BATCH_SIZE = 500;
   let deleted = 0;
   let errors = 0;
+  let scheduledCount = 0;
+  let flexibleCount = 0;
+  let hasMore = true;
 
-  for (const gameDoc of allGames) {
-    try {
-      // Delete subcollection (game_participants) first
-      const participants = await gameDoc.ref.collection("game_participants").get();
+  while (hasMore) {
+    const [scheduledGames, flexibleGames] = await Promise.all([
+      db.collection("games")
+        .where("isCancelled", "==", true)
+        .where("schedule_type", "==", "scheduled")
+        .where("date", "<", todayTimestamp)
+        .limit(BATCH_SIZE)
+        .get(),
+      db.collection("games")
+        .where("isCancelled", "==", true)
+        .where("schedule_type", "==", "flexible")
+        .where("cancelled_at", "<", todayTimestamp)
+        .limit(BATCH_SIZE)
+        .get(),
+    ]);
 
-      const batch = db.batch();
-      participants.docs.forEach((doc) => batch.delete(doc.ref));
-      batch.delete(gameDoc.ref);
+    const allGames = [...scheduledGames.docs, ...flexibleGames.docs];
+    if (allGames.length === 0) break;
 
-      await batch.commit();
-      deleted++;
+    scheduledCount += scheduledGames.size;
+    flexibleCount += flexibleGames.size;
 
-      console.log(
-        `[cleanupCancelledGames] Deleted game ${gameDoc.id} (${participants.size} participants)`
-      );
-    } catch (error) {
-      errors++;
-      console.error(`[cleanupCancelledGames] Failed to delete game ${gameDoc.id}:`, error);
+    console.log(
+      `[cleanupCancelledGames] Processing batch of ${allGames.length} games ` +
+      `(${scheduledGames.size} scheduled, ${flexibleGames.size} flexible)`
+    );
+
+    for (const gameDoc of allGames) {
+      try {
+        // Delete subcollection (game_participants) first
+        const participants = await gameDoc.ref.collection("game_participants").get();
+
+        const batch = db.batch();
+        participants.docs.forEach((doc) => batch.delete(doc.ref));
+        batch.delete(gameDoc.ref);
+
+        await batch.commit();
+        deleted++;
+
+        console.log(
+          `[cleanupCancelledGames] Deleted game ${gameDoc.id} (${participants.size} participants)`
+        );
+      } catch (error) {
+        errors++;
+        console.error(`[cleanupCancelledGames] Failed to delete game ${gameDoc.id}:`, error);
+      }
     }
+
+    // Deleted docs won't reappear — no cursor needed
+    hasMore = scheduledGames.size === BATCH_SIZE || flexibleGames.size === BATCH_SIZE;
   }
 
   const summary = {
     deleted,
     errors,
-    scheduledCount: scheduledGames.size,
-    flexibleCount: flexibleGames.size,
+    scheduledCount,
+    flexibleCount,
   };
 
   console.log(`[cleanupCancelledGames] Cleanup complete:`, summary);
@@ -116,65 +117,65 @@ async function cleanupScheduledChatsHandler() {
 
   console.log(`[cleanupScheduledChats] Starting cleanup. Deleting chats with deletesAt <= ${now.toDate().toISOString()}`);
 
-  // Query chats scheduled for deletion
-  const chatsQuery = db.collection("chats")
-    .where("deletesAt", "<=", now);
-
-  const chatsSnapshot = await chatsQuery.get();
-
-  if (chatsSnapshot.empty) {
-    console.log("[cleanupScheduledChats] No chats to clean up");
-    return {
-      deleted: 0,
-      errors: 0,
-      messagesDeleted: 0,
-    };
-  }
-
-  console.log(`[cleanupScheduledChats] Found ${chatsSnapshot.size} chats to delete`);
-
+  const BATCH_SIZE = 500;
   let deleted = 0;
   let errors = 0;
   let messagesDeleted = 0;
+  let hasMore = true;
 
-  for (const chatDoc of chatsSnapshot.docs) {
-    try {
-      // Delete messages subcollection first (in batches of 500)
-      const messagesRef = chatDoc.ref.collection("messages");
-      let messagesSnapshot = await messagesRef.limit(500).get();
+  while (hasMore) {
+    // Query chats scheduled for deletion (paginated via deletion)
+    const chatsSnapshot = await db.collection("chats")
+      .where("deletesAt", "<=", now)
+      .limit(BATCH_SIZE)
+      .get();
 
-      while (!messagesSnapshot.empty) {
-        const batch = db.batch();
-        messagesSnapshot.docs.forEach((doc) => batch.delete(doc.ref));
-        await batch.commit();
-        messagesDeleted += messagesSnapshot.size;
-        messagesSnapshot = await messagesRef.limit(500).get();
-      }
+    if (chatsSnapshot.empty) break;
 
-      // Delete chatRefs for all members
-      const chatData = chatDoc.data();
-      const memberIds = chatData.memberIds || [];
+    console.log(`[cleanupScheduledChats] Processing batch of ${chatsSnapshot.size} chats`);
 
-      if (memberIds.length > 0) {
-        const batch = db.batch();
-        for (const memberId of memberIds) {
-          const chatRefDoc = db.collection("users").doc(memberId).collection("chatRefs").doc(chatDoc.id);
-          batch.delete(chatRefDoc);
+    for (const chatDoc of chatsSnapshot.docs) {
+      try {
+        // Delete messages subcollection first (in batches of 500)
+        const messagesRef = chatDoc.ref.collection("messages");
+        let messagesSnapshot = await messagesRef.limit(500).get();
+
+        while (!messagesSnapshot.empty) {
+          const batch = db.batch();
+          messagesSnapshot.docs.forEach((doc) => batch.delete(doc.ref));
+          await batch.commit();
+          messagesDeleted += messagesSnapshot.size;
+          messagesSnapshot = await messagesRef.limit(500).get();
         }
-        await batch.commit();
+
+        // Delete chatRefs for all members
+        const chatData = chatDoc.data();
+        const memberIds = chatData.memberIds || [];
+
+        if (memberIds.length > 0) {
+          const batch = db.batch();
+          for (const memberId of memberIds) {
+            const chatRefDoc = db.collection("users").doc(memberId).collection("chatRefs").doc(chatDoc.id);
+            batch.delete(chatRefDoc);
+          }
+          await batch.commit();
+        }
+
+        // Delete the chat document itself
+        await chatDoc.ref.delete();
+        deleted++;
+
+        console.log(
+          `[cleanupScheduledChats] Deleted chat ${chatDoc.id} (${memberIds.length} members)`
+        );
+      } catch (error) {
+        errors++;
+        console.error(`[cleanupScheduledChats] Failed to delete chat ${chatDoc.id}:`, error);
       }
-
-      // Delete the chat document itself
-      await chatDoc.ref.delete();
-      deleted++;
-
-      console.log(
-        `[cleanupScheduledChats] Deleted chat ${chatDoc.id} (${memberIds.length} members)`
-      );
-    } catch (error) {
-      errors++;
-      console.error(`[cleanupScheduledChats] Failed to delete chat ${chatDoc.id}:`, error);
     }
+
+    // Deleted docs won't reappear — no cursor needed
+    hasMore = chatsSnapshot.size === BATCH_SIZE;
   }
 
   const summary = {

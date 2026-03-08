@@ -35,8 +35,7 @@ class CreateGameWidget extends StatefulWidget {
   State<CreateGameWidget> createState() => _CreateGameWidgetState();
 }
 
-class _CreateGameWidgetState extends State<CreateGameWidget>
-    with TickerProviderStateMixin {
+class _CreateGameWidgetState extends State<CreateGameWidget> {
   static const List<int> _mondayFirstDayOrder = [1, 2, 3, 4, 5, 6, 0];
 
   final _courseService = CourseService();
@@ -79,7 +78,8 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
           _isLoading = false;
         });
 
-        Future.delayed(const Duration(milliseconds: 50), () {
+        // Let the form render one frame before triggering entrance animations
+        WidgetsBinding.instance.addPostFrameCallback((_) {
           if (mounted && !_hasAnimated) {
             updateState(this, () => _hasAnimated = true);
           }
@@ -92,6 +92,7 @@ class _CreateGameWidgetState extends State<CreateGameWidget>
   void dispose() {
     _gameNameController.dispose();
     _otherGameController.dispose();
+    courseValueController.dispose();
     super.dispose();
   }
 

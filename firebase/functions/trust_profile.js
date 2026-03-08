@@ -136,11 +136,15 @@ async function _computeShowUpRate(db, uid) {
 
   const noShowCount = dayOfSnap.size + ghostSnap.size;
 
-  // Read verified_round_count from user doc
-  const userSnap = await db.collection("users").doc(uid).get();
-  const verifiedRounds = userSnap.exists
-    ? castToInt(userSnap.data().verified_round_count)
-    : 0;
+  // Read verified_round_count from stats subcollection (with fallback to user doc)
+  const [userSnap, countersSnap] = await Promise.all([
+    db.collection("users").doc(uid).get(),
+    db.collection("users").doc(uid).collection("stats").doc("counters").get(),
+  ]);
+  const countersData = countersSnap.exists ? countersSnap.data() : {};
+  const verifiedRounds = countersData.verified_round_count != null
+    ? castToInt(countersData.verified_round_count)
+    : (userSnap.exists ? castToInt(userSnap.data().verified_round_count) : 0);
 
   const denominator = verifiedRounds + noShowCount;
 

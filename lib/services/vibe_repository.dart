@@ -18,6 +18,9 @@ class VibeRepository {
   final FirebaseFirestore _firestore;
   final FirebaseAuth _auth;
 
+  // Cache for other users' vibe profiles (not the current user — that uses _cachedMyVibes)
+  final Map<String, VibeProfile> _vibeCache = {};
+
   DocumentReference<Map<String, dynamic>> _currentUserRef() {
     final user = _auth.currentUser;
     if (user == null) {
@@ -60,6 +63,10 @@ class VibeRepository {
   void clearMyVibesCache() {
     _cachedMyVibes = null;
     _cachedMyVibesUid = null;
+  }
+
+  void clearVibeCache() {
+    _vibeCache.clear();
   }
 
   void _updateCachedPreference(
@@ -222,8 +229,12 @@ class VibeRepository {
   /// Returns [VibeProfile.defaults()] if the user document doesn't exist
   /// or has no vibe_profile field.
   Future<VibeProfile> getVibeProfileForUser(String userId) async {
+    final cached = _vibeCache[userId];
+    if (cached != null) return cached;
     final doc = await _firestore.collection('users').doc(userId).get();
-    return profileFromSnapshot(doc);
+    final profile = profileFromSnapshot(doc);
+    _vibeCache[userId] = profile;
+    return profile;
   }
 
   /// Batch fetch vibe profiles for multiple users.
@@ -237,11 +248,24 @@ class VibeRepository {
 
     final uniqueIds = userIds.toSet().toList();
     final result = <String, VibeProfile>{};
+    final missingIds = <String>[];
+
+    // Check cache first
+    for (final id in uniqueIds) {
+      final cached = _vibeCache[id];
+      if (cached != null) {
+        result[id] = cached;
+      } else {
+        missingIds.add(id);
+      }
+    }
+
+    if (missingIds.isEmpty) return result;
 
     // Chunk by 10 (Firestore whereIn limit)
-    for (var i = 0; i < uniqueIds.length; i += 10) {
-      final end = (i + 10) > uniqueIds.length ? uniqueIds.length : i + 10;
-      final batch = uniqueIds.sublist(i, end);
+    for (var i = 0; i < missingIds.length; i += 10) {
+      final end = (i + 10) > missingIds.length ? missingIds.length : i + 10;
+      final batch = missingIds.sublist(i, end);
 
       try {
         final snapshot = await _firestore
@@ -250,13 +274,16 @@ class VibeRepository {
             .get();
 
         for (final doc in snapshot.docs) {
-          result[doc.id] = profileFromSnapshot(doc);
+          final profile = profileFromSnapshot(doc);
+          _vibeCache[doc.id] = profile;
+          result[doc.id] = profile;
         }
 
         // Add default profiles for users not found
         for (final userId in batch) {
           if (!result.containsKey(userId)) {
             result[userId] = VibeProfile.defaults();
+            _vibeCache[userId] = VibeProfile.defaults();
           }
         }
       } on FirebaseException catch (e) {

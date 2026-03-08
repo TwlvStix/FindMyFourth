@@ -24,9 +24,9 @@ class TrustContent extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final provider = context.watchNotificationProvider;
-    final prefs = provider.preferences;
-    final trust = prefs.trustCategories;
+    final trust = context.selectNotification(
+      (p) => p.preferences.trustCategories,
+    );
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,

@@ -7,71 +7,52 @@ import '/core/utils/app_log.dart';
 import '/models/chat.dart';
 import '/models/chat_message.dart';
 import '/models/chat_message_view_model.dart';
+import '/providers/chat_view_model_helpers.dart';
 import '/providers/profile_provider.dart';
 import '/services/chat_service.dart';
+
+export 'chat_view_model_helpers.dart';
+
+import 'chat_view_model_manager.dart';
 
 class ChatProvider extends ChangeNotifier {
   ChatProvider({ChatService? service}) : _service = service ?? ChatService();
 
   final ChatService _service;
 
-  // ========================================
-  // STATE FIELDS
-  // ========================================
-
-  // Chat cache (by chat ID)
   final Map<String, Chat> _chatCache = {};
-
-  // Messages cache (by chat ID)
   final Map<String, List<ChatMessage>> _messagesCache = {};
-
-  // StreamRequestManagers for message streams (by chat ID)
   final Map<String, StreamRequestManager<List<ChatMessage>>>
       _messageStreamManagers = {};
-
-  // StreamRequestManager for chat list streams (by user ID)
   final Map<String, StreamRequestManager<List<Chat>>> _chatListStreamManagers =
       {};
-
-  // Query result cache for chat lists (by query key)
   final Map<String, List<Chat>> _chatListCache = {};
-
-  // Cache timestamps for TTL tracking
   final Map<String, DateTime> _chatCacheTimestamps = {};
   final Map<String, DateTime> _messagesCacheTimestamps = {};
   final Map<String, DateTime> _chatListCacheTimestamps = {};
-
-  // Cache TTL duration
   final Duration _cacheTTL = const Duration(minutes: 5);
-
-  // Debounce timer for notifyListeners
   Timer? _notifyTimer;
+  bool _disposed = false;
 
-  // ========================================
-  // CACHE GETTERS
-  // ========================================
+  late final ChatViewModelManager _viewModelManager =
+      ChatViewModelManager(chatProvider: this);
 
-  /// Get cached chat by ID
   Chat? getCachedChat(String chatId) => _chatCache[chatId];
 
-  /// Get cached messages by chat ID
   List<ChatMessage>? getCachedMessages(String chatId) => _messagesCache[chatId];
 
-  /// Check if chat cache is valid (within TTL)
   bool isChatCacheValid(String chatId) {
     final timestamp = _chatCacheTimestamps[chatId];
     if (timestamp == null) return false;
     return DateTime.now().difference(timestamp) < _cacheTTL;
   }
 
-  /// Check if messages cache is valid (within TTL)
   bool isMessagesCacheValid(String chatId) {
     final timestamp = _messagesCacheTimestamps[chatId];
     if (timestamp == null) return false;
     return DateTime.now().difference(timestamp) < _cacheTTL;
   }
 
-  /// Check if chat list cache is valid (within TTL)
   bool isChatListCacheValid(String queryKey) {
     final timestamp = _chatListCacheTimestamps[queryKey];
     if (timestamp == null) return false;
@@ -83,43 +64,32 @@ class ChatProvider extends ChangeNotifier {
     int limit = 50,
   }) {
     final queryKey = 'chat_list_${uid}_$limit';
-
-    // Get or create StreamRequestManager for this query
     if (!_chatListStreamManagers.containsKey(queryKey)) {
       _chatListStreamManagers[queryKey] = StreamRequestManager<List<Chat>>(5);
     }
-
     return _chatListStreamManagers[queryKey]!
         .performRequest(
       uniqueQueryKey: queryKey,
       requestFn: () => _service.getChatListStream(uid: uid, limit: limit),
     )
         .map((chats) {
-      // Cache query results when they come through the stream
       _chatListCache[queryKey] = chats;
       _chatListCacheTimestamps[queryKey] = DateTime.now();
       return chats;
     });
   }
 
-  /// Get cached chat list if available (no fetch)
   List<Chat>? getCachedChatList(String uid, {int limit = 50}) {
     final queryKey = 'chat_list_${uid}_$limit';
-
-    // Check query result cache first
     if (isChatListCacheValid(queryKey)) {
       return _chatListCache[queryKey];
     }
-
-    // Fall back to BehaviorSubject cache
     return _chatListStreamManagers[queryKey]?.getLastValue(queryKey);
   }
 
   Stream<Chat?> chatStream(String chatId) {
     return _service.getChatStream(chatId: chatId).map((chat) {
       if (chat != null) {
-        // Cache the chat when it comes through the stream
-        // (no notifyListeners - stream delivers data directly to subscribers)
         _chatCache[chatId] = chat;
         _chatCacheTimestamps[chatId] = DateTime.now();
       }
@@ -133,12 +103,10 @@ class ChatProvider extends ChangeNotifier {
     DocumentSnapshot? startAfter,
     DateTime? visibleAfter,
   }) {
-    // Use StreamRequestManager for caching message streams (5-minute TTL)
     if (!_messageStreamManagers.containsKey(chatId)) {
       _messageStreamManagers[chatId] =
           StreamRequestManager<List<ChatMessage>>(5);
     }
-
     return _messageStreamManagers[chatId]!.performRequest(
       uniqueQueryKey: 'messages_${chatId}_$limit',
       requestFn: () => _service
@@ -149,8 +117,6 @@ class ChatProvider extends ChangeNotifier {
         visibleAfter: visibleAfter,
       )
           .map((messages) {
-        // Cache messages when they come through the stream
-        // (no notifyListeners - stream delivers data directly to subscribers)
         _messagesCache[chatId] = messages;
         _messagesCacheTimestamps[chatId] = DateTime.now();
         return messages;
@@ -190,7 +156,6 @@ class ChatProvider extends ChangeNotifier {
   }) async {
     AppLog.d('📱 ChatProvider: createOrGetDirectChat called');
     AppLog.d('📱 ChatProvider: currentUid=$currentUid, otherUid=$otherUid');
-
     try {
       final result = await _service.createOrGetDirectChat(
         currentUid: currentUid,
@@ -240,7 +205,6 @@ class ChatProvider extends ChangeNotifier {
         imageWidth: imageWidth,
         imageHeight: imageHeight,
       );
-      // Invalidate messages cache after sending to force refresh
       _messagesCacheTimestamps.remove(chatId);
       _scheduleNotify();
     } catch (e) {
@@ -273,7 +237,6 @@ class ChatProvider extends ChangeNotifier {
   }) async {
     try {
       await _service.markChatRead(chatId: chatId, uid: uid);
-      // Invalidate chat cache to refresh read status
       _chatCacheTimestamps.remove(chatId);
       _scheduleNotify();
     } catch (e) {
@@ -282,7 +245,6 @@ class ChatProvider extends ChangeNotifier {
   }
 
   /// Marks all chat_message notifications for this chat as read.
-  /// Called when user opens and reads the chat directly (not via notification tap).
   Future<void> markChatNotificationsAsRead({
     required String chatId,
     required String uid,
@@ -294,12 +256,9 @@ class ChatProvider extends ChangeNotifier {
     required String chatId,
     required String uid,
   }) async {
-    AppLog.d('📱 ChatProvider: deleteChat called');
-    AppLog.d('📱 ChatProvider: chatId=$chatId, uid=$uid');
-
+    AppLog.d('📱 ChatProvider: deleteChat called, chatId=$chatId, uid=$uid');
     try {
       await _service.deleteChat(chatId: chatId, uid: uid);
-      // Remove from caches
       _chatCache.remove(chatId);
       _chatCacheTimestamps.remove(chatId);
       _messagesCache.remove(chatId);
@@ -320,8 +279,6 @@ class ChatProvider extends ChangeNotifier {
   }) async {
     try {
       await _service.addMember(chatId: chatId, uid: uid);
-      // Invalidate chat and messages caches: the new memberJoinedAt timestamp
-      // changes the visibility window, so any cached messages are stale.
       _chatCacheTimestamps.remove(chatId);
       _messagesCache.remove(chatId);
       _messagesCacheTimestamps.remove(chatId);
@@ -338,7 +295,6 @@ class ChatProvider extends ChangeNotifier {
   }) async {
     try {
       await _service.removeMember(chatId: chatId, uid: uid);
-      // Invalidate chat cache to refresh member list
       _chatCacheTimestamps.remove(chatId);
       _scheduleNotify();
     } catch (e) {
@@ -346,17 +302,13 @@ class ChatProvider extends ChangeNotifier {
     }
   }
 
-  /// Send a system message to a chat
-  ///
-  /// System messages have no sender and are used for lifecycle notifications
-  /// (e.g., game cancellation). They bypass the read-only check.
+  /// Send a system message (no sender, lifecycle notifications).
   Future<void> sendSystemMessage({
     required String chatId,
     required String text,
   }) async {
     try {
       await _service.sendSystemMessage(chatId: chatId, text: text);
-      // Invalidate messages cache after sending
       _messagesCacheTimestamps.remove(chatId);
       _scheduleNotify();
     } catch (e) {
@@ -365,10 +317,7 @@ class ChatProvider extends ChangeNotifier {
     }
   }
 
-  /// Check if a user is the last member of a chat
-  ///
-  /// Use this before showing the leave chat confirmation dialog
-  /// to determine if the user needs a warning about deleting the chat.
+  /// Check if a user is the last member of a chat.
   Future<bool> isLastMember({
     required String chatId,
     required String uid,
@@ -376,22 +325,14 @@ class ChatProvider extends ChangeNotifier {
     return _service.isLastMember(chatId: chatId, uid: uid);
   }
 
-  /// Leave a chat
-  ///
-  /// If the user is the last member, this will delete the chat and all messages.
-  /// If other members remain, this will just remove the user from the chat.
-  ///
-  /// Call [isLastMember] first to check if a warning should be shown.
+  /// Leave a chat. Deletes if last member, otherwise just removes user.
   Future<void> leaveChat({
     required String chatId,
     required String uid,
   }) async {
-    AppLog.d('📱 ChatProvider: leaveChat called');
-    AppLog.d('📱 ChatProvider: chatId=$chatId, uid=$uid');
-
+    AppLog.d('📱 ChatProvider: leaveChat called, chatId=$chatId, uid=$uid');
     try {
       await _service.leaveChat(chatId: chatId, uid: uid);
-      // Remove from caches
       _chatCache.remove(chatId);
       _chatCacheTimestamps.remove(chatId);
       _messagesCache.remove(chatId);
@@ -406,34 +347,19 @@ class ChatProvider extends ChangeNotifier {
     }
   }
 
-  Future<Map<String, dynamic>> getUserProfile(String uid) {
-    return _service.getUserProfile(uid);
-  }
+  // Cache invalidation
 
-  void clearUserCache() {
-    _service.clearUserCache();
-  }
-
-  // ========================================
-  // CACHE INVALIDATION METHODS
-  // ========================================
-
-  /// Invalidate cache for a specific chat
   void invalidateChatCache(String chatId) {
     _chatCache.remove(chatId);
     _chatCacheTimestamps.remove(chatId);
-    // No notify - stream consumers get fresh data when resubscribed
   }
 
-  /// Invalidate messages cache for a specific chat
   void invalidateMessagesCache(String chatId) {
     _messagesCache.remove(chatId);
     _messagesCacheTimestamps.remove(chatId);
     _messageStreamManagers[chatId]?.clear();
-    // No notify - stream consumers get fresh data when resubscribed
   }
 
-  /// Invalidate all chat caches
   void invalidateAllChatCache() {
     _chatCache.clear();
     _chatCacheTimestamps.clear();
@@ -443,26 +369,18 @@ class ChatProvider extends ChangeNotifier {
       manager.clear();
     }
     _messageStreamManagers.clear();
-    // No notify - stream consumers get fresh data when resubscribed
   }
 
-  /// Refresh a specific chat (invalidate and refetch)
   Future<void> refreshChat(String chatId) async {
     invalidateChatCache(chatId);
-    // Stream will automatically refetch on next subscription
   }
 
-  /// Refresh messages for a specific chat
   Future<void> refreshMessages(String chatId) async {
     invalidateMessagesCache(chatId);
-    // Stream will automatically refetch on next subscription
   }
 
-  // ========================================
-  // INTERNAL HELPERS
-  // ========================================
+  // Internal helpers
 
-  /// Debounced notifyListeners to avoid excessive rebuilds
   void _scheduleNotify() {
     _notifyTimer?.cancel();
     _notifyTimer = Timer(const Duration(milliseconds: 50), () {
@@ -472,19 +390,13 @@ class ChatProvider extends ChangeNotifier {
     });
   }
 
-  // Track disposal state for safe async operations
-  bool _disposed = false;
-
   Future<void> setTypingStatus({
     required String chatId,
     required String uid,
     required bool isTyping,
   }) {
     return _service.setTypingStatus(
-      chatId: chatId,
-      uid: uid,
-      isTyping: isTyping,
-    );
+        chatId: chatId, uid: uid, isTyping: isTyping);
   }
 
   Future<void> addReaction({
@@ -494,11 +406,7 @@ class ChatProvider extends ChangeNotifier {
     required String uid,
   }) {
     return _service.addReaction(
-      chatId: chatId,
-      messageId: messageId,
-      emoji: emoji,
-      uid: uid,
-    );
+        chatId: chatId, messageId: messageId, emoji: emoji, uid: uid);
   }
 
   Future<void> removeReaction({
@@ -508,11 +416,7 @@ class ChatProvider extends ChangeNotifier {
     required String uid,
   }) {
     return _service.removeReaction(
-      chatId: chatId,
-      messageId: messageId,
-      emoji: emoji,
-      uid: uid,
-    );
+        chatId: chatId, messageId: messageId, emoji: emoji, uid: uid);
   }
 
   Future<void> markMessageAsRead({
@@ -521,16 +425,10 @@ class ChatProvider extends ChangeNotifier {
     required String uid,
   }) {
     return _service.markMessageAsRead(
-      chatId: chatId,
-      messageId: messageId,
-      uid: uid,
-    );
+        chatId: chatId, messageId: messageId, uid: uid);
   }
 
-  /// Mark multiple unread messages as read in a single batched operation
-  ///
-  /// This is a performance-optimized alternative to calling markMessageAsRead
-  /// in a loop. Returns diagnostic info about the operation.
+  /// Mark multiple unread messages as read in a single batched operation.
   Future<Map<String, int>> markMessagesAsReadBatch({
     required String chatId,
     required String uid,
@@ -549,283 +447,51 @@ class ChatProvider extends ChangeNotifier {
     _service.logError(message, error, stackTrace);
   }
 
-  // ========================================
-  // DISPOSE CLEANUP
-  // ========================================
+  // View model streams (delegated to ChatViewModelManager)
 
-  // ========================================
-  // VIEW MODEL STREAM (AUDIT #5 FIX)
-  // ========================================
-
-  /// Stream of chat message view models with resolved profiles
-  ///
-  /// This method combines message stream with profile resolution in a single stream,
-  /// avoiding nested StreamBuilder/FutureBuilder patterns and repeated profile fetches.
-  ///
-  /// Uses ProfileProvider's memoized cache to avoid re-fetching profiles on every rebuild.
   Stream<List<ChatMessageViewModel>> gameChatMessageViewModelsStream({
     required String chatId,
     required int limit,
     required ProfileProvider profileProvider,
     DateTime? visibleAfter,
-  }) {
-    if (kDebugMode) {
-      AppLog.d(
-          '🔵 ChatProvider: Creating VM stream for chatId=$chatId (should happen once per screen)');
-    }
+  }) =>
+      _viewModelManager.gameChatMessageViewModelsStream(
+        chatId: chatId,
+        limit: limit,
+        profileProvider: profileProvider,
+        visibleAfter: visibleAfter,
+      );
 
-    return messagesSnapshotStream(
-            chatId: chatId, limit: limit, visibleAfter: visibleAfter)
-        .asyncMap((snapshot) async {
-      // Skip processing if provider is disposed
-      if (_disposed) return <ChatMessageViewModel>[];
-
-      final docs = snapshot.docs;
-
-      if (docs.isEmpty) {
-        return <ChatMessageViewModel>[];
-      }
-
-      // Convert docs to ChatMessage objects
-      final messages = docs.map(ChatMessage.fromDoc).toList();
-
-      // Derive unique sender IDs
-      final senderIds = messages.map((msg) => msg.senderId).toSet().toList();
-
-      if (kDebugMode) {
-        AppLog.d(
-            '🔵 ChatProvider: VM stream emit - ${messages.length} messages, ${senderIds.length} unique senders');
-      }
-
-      // Fetch profiles using ProfileProvider's memoized cache
-      // This will only trigger network fetches for new sender IDs not already cached
-      Map<String, UsersRecord> profileMap = {};
-      if (senderIds.isNotEmpty) {
-        try {
-          profileMap = await profileProvider.batchGetProfiles(senderIds);
-
-          // Log which profiles were fetched vs cached
-          if (kDebugMode) {
-            final newSenderIds = senderIds
-                .where((id) => !profileProvider.isProfileCacheValid(id))
-                .toList();
-            if (newSenderIds.isNotEmpty) {
-              AppLog.d(
-                  '🆕 ChatProvider: Profile fetch triggered for new senderIds: $newSenderIds');
-            }
-          }
-        } catch (e) {
-          if (kDebugMode) {
-            AppLog.d('❌ ChatProvider: Failed to fetch profiles: $e');
-          }
-          // Continue with empty profile map on error
-        }
-      }
-
-      // Create view models
-      return messages.map((msg) {
-        final profile = profileMap[msg.senderId];
-        return ChatMessageViewModel(
-          message: msg,
-          senderDisplayName: profile?.displayName ?? '',
-          senderPhotoUrl: profile?.photoUrl ?? '',
-        );
-      }).toList();
-    });
-  }
-
-  // ========================================
-  // CHAT LIST VIEW MODEL STREAM (AUDIT #6 FIX)
-  // ========================================
-
-  /// Stream of chat row view models with resolved profiles
-  ///
-  /// This method combines chat list stream with profile resolution in a single stream,
-  /// avoiding nested StreamBuilder/FutureBuilder patterns and repeated profile fetches.
-  ///
-  /// Uses ProfileProvider's memoized cache to avoid re-fetching profiles on every rebuild.
   Stream<List<ChatRowViewModel>> chatRowsStream({
     required String currentUserId,
     required ProfileProvider profileProvider,
     int limit = 50,
-  }) {
-    if (kDebugMode) {
-      AppLog.d(
-          '💬 ChatProvider: Creating chat rows VM stream for userId=$currentUserId (should happen once per screen)');
-    }
-
-    return chatListStream(uid: currentUserId, limit: limit)
-        .asyncMap((chats) async {
-      // Skip processing if provider is disposed
-      if (_disposed) return <ChatRowViewModel>[];
-
-      if (chats.isEmpty) {
-        return <ChatRowViewModel>[];
-      }
-
-      // Collect ALL member IDs from all chats for group avatar display
-      final allMemberIds = <String>{};
-      for (final chat in chats) {
-        // For direct chats: include other user (not current user)
-        // For game chats: include up to 4 members (excluding current user)
-        for (final memberId in chat.memberIds) {
-          if (memberId != currentUserId && memberId.isNotEmpty) {
-            allMemberIds.add(memberId);
-          }
-        }
-      }
-
-      if (kDebugMode) {
-        AppLog.d(
-            '💬 ChatProvider: Chat rows VM emit - ${chats.length} chats, ${allMemberIds.length} member profiles needed');
-      }
-
-      // Fetch profiles using ProfileProvider's memoized cache
-      // This will only trigger network fetches for new user IDs not already cached
-      Map<String, UsersRecord> profileMap = {};
-      if (allMemberIds.isNotEmpty) {
-        try {
-          profileMap =
-              await profileProvider.batchGetProfiles(allMemberIds.toList());
-
-          // Log which profiles were fetched vs cached
-          if (kDebugMode) {
-            final newUserIds = allMemberIds
-                .where((id) => !profileProvider.isProfileCacheValid(id))
-                .toList();
-            if (newUserIds.isNotEmpty) {
-              AppLog.d(
-                  '🆕 ChatProvider: Profile fetch triggered for new userIds: $newUserIds');
-            }
-          }
-        } catch (e) {
-          if (kDebugMode) {
-            AppLog.d('❌ ChatProvider: Failed to fetch profiles: $e');
-          }
-          // Continue with empty profile map on error
-        }
-      }
-
-      // Create view models
-      return chats.map((chat) {
-        final unreadCount = chat.unreadCountByUser[currentUserId] ?? 0;
-
-        String displayName;
-        String photoUrl = '';
-
-        // Build members list for group avatar (up to 4 members, excluding current user)
-        final members = <ChatMemberInfo>[];
-        final otherMemberIds = chat.memberIds
-            .where((id) => id != currentUserId && id.isNotEmpty)
-            .take(4)
-            .toList();
-
-        for (final memberId in otherMemberIds) {
-          final profile = profileMap[memberId];
-          final name = (profile?.displayName ?? '').trim().isNotEmpty
-              ? profile!.displayName
-              : 'Golfer';
-          members.add(ChatMemberInfo(
-            name: name,
-            photoUrl: profile?.photoUrl,
-          ));
-        }
-
-        if (chat.type == 'game') {
-          displayName = (chat.gameName ?? '').trim().isNotEmpty
-              ? chat.gameName!
-              : 'Game Chat';
-        } else {
-          final otherUserId = chat.memberIds.firstWhere(
-            (id) => id != currentUserId,
-            orElse: () => currentUserId,
-          );
-          final profile = profileMap[otherUserId];
-          displayName = (profile?.displayName ?? '').trim().isNotEmpty
-              ? profile!.displayName
-              : 'Golfer';
-          photoUrl = profile?.photoUrl ?? '';
-        }
-
-        return ChatRowViewModel(
-          chatId: chat.id,
-          displayName: displayName,
-          photoUrl: photoUrl,
-          lastMessage: chat.lastMessage,
-          lastMessageAt: chat.lastMessageAt,
-          unreadCount: unreadCount,
-          members: members,
-        );
-      }).toList();
-    });
-  }
+  }) =>
+      _viewModelManager.chatRowsStream(
+        currentUserId: currentUserId,
+        profileProvider: profileProvider,
+        limit: limit,
+      );
 
   @override
   void dispose() {
     _disposed = true;
     _notifyTimer?.cancel();
-
-    // Clear all stream request managers
+    _viewModelManager.dispose();
     for (final manager in _messageStreamManagers.values) {
       manager.clear();
     }
     _messageStreamManagers.clear();
-
     for (final manager in _chatListStreamManagers.values) {
       manager.clear();
     }
     _chatListStreamManagers.clear();
-
-    // Clear all caches
     _chatCache.clear();
     _chatCacheTimestamps.clear();
     _messagesCache.clear();
     _messagesCacheTimestamps.clear();
     _chatListCache.clear();
     _chatListCacheTimestamps.clear();
-
     super.dispose();
   }
-}
-
-// ========================================
-// CHAT ROW VIEW MODEL (AUDIT #6 FIX)
-// ========================================
-
-/// Member info for group avatar display.
-class ChatMemberInfo {
-  const ChatMemberInfo({
-    required this.name,
-    this.photoUrl,
-  });
-
-  final String name;
-  final String? photoUrl;
-}
-
-/// View model for chat list rows with resolved profile data
-///
-/// This class combines Chat with resolved user profile data,
-/// avoiding the need for nested builders in the UI and moving
-/// profile fetching out of the build method.
-class ChatRowViewModel {
-  ChatRowViewModel({
-    required this.chatId,
-    required this.displayName,
-    required this.photoUrl,
-    required this.lastMessage,
-    required this.lastMessageAt,
-    required this.unreadCount,
-    required this.members,
-  });
-
-  final String chatId;
-  final String displayName;
-  final String photoUrl;
-  final String lastMessage;
-  final DateTime? lastMessageAt;
-  final int unreadCount;
-
-  /// Members for group avatar display (1-4 members).
-  final List<ChatMemberInfo> members;
 }

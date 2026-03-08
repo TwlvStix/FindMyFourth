@@ -16,6 +16,22 @@ class FriendService {
 
   final FirebaseFirestore _firestore;
 
+  // ── User Document Cache ──────────────────────────────────────────────────
+  final Map<String, DocumentSnapshot<Map<String, dynamic>>> _userDocCache = {};
+
+  Future<DocumentSnapshot<Map<String, dynamic>>> _getCachedUserDoc(
+      String uid) async {
+    final cached = _userDocCache[uid];
+    if (cached != null) return cached;
+    final doc = await _firestore.collection('users').doc(uid).get();
+    _userDocCache[uid] = doc;
+    return doc;
+  }
+
+  void clearUserCache() {
+    _userDocCache.clear();
+  }
+
   /// Remove a friend (bidirectional with one-way fallback)
   ///
   /// Attempts bidirectional removal first. If that fails (e.g., permission error
@@ -302,7 +318,7 @@ class FriendService {
   /// each other in their friends lists, but this only checks one direction.
   Future<bool> areFriends(String userId1, String userId2) async {
     try {
-      final user1Doc = await _firestore.collection('users').doc(userId1).get();
+      final user1Doc = await _getCachedUserDoc(userId1);
       if (!user1Doc.exists) return false;
 
       final rawFriends = user1Doc.data()?['friends'];
@@ -334,7 +350,7 @@ class FriendService {
   Future<void> initializeFriendFields(String userId) async {
     try {
       final userRef = _firestore.collection('users').doc(userId);
-      final snapshot = await userRef.get();
+      final snapshot = await _getCachedUserDoc(userId);
 
       if (!snapshot.exists) {
         AppLog.d('📖 FriendService: User document does not exist');
@@ -356,6 +372,7 @@ class FriendService {
 
       if (updates.isNotEmpty) {
         await userRef.update(updates);
+        _userDocCache.remove(userId);
         AppLog.d('✅ FriendService: Initialized fields: ${updates.keys.join(", ")}');
       } else {
         AppLog.d('📖 FriendService: All fields already initialized');

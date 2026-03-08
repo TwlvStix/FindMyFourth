@@ -700,6 +700,29 @@ async function _onGameStatusToPlayedHandler(change, context, db) {
   const gameRef = change.after.ref;
 
   try {
+    // ── 0. Idempotency guard ──────────────────────────────────────────────
+    const existingJobSnap = await db.collection("round_jobs")
+      .where("game_ref", "==", gameRef)
+      .limit(1)
+      .get();
+
+    let resumeMode = false;
+    let existingJobRef = null;
+
+    if (!existingJobSnap.empty) {
+      const existingJob = existingJobSnap.docs[0].data();
+      existingJobRef = existingJobSnap.docs[0].ref;
+      if (existingJob.processing_state === "ready") {
+        console.log(`onGameStatusToPlayed: already completed for game ${gameId}`);
+        return;
+      }
+      // If processing_state is "initializing", the previous run crashed mid-way.
+      // The batch wrote docs but post-batch steps may not have run.
+      // Fall through to re-run post-batch steps only.
+      console.warn(`onGameStatusToPlayed: resuming incomplete processing for game ${gameId}`);
+      resumeMode = true;
+    }
+
     const teeTimeTs = after.date;
     if (!teeTimeTs || typeof teeTimeTs.toMillis !== "function") {
       console.warn(
@@ -733,129 +756,129 @@ async function _onGameStatusToPlayedHandler(change, context, db) {
     const courseName =
       typeof after.course_play === "string" ? after.course_play : "your course";
 
-    // ── 1. Create round_jobs document ─────────────────────────────────────
-    const jobData = {
-      game_ref: gameRef,
-      round_ref: null, // filled in when round_records doc is created below
-      tee_time: teeTimeTs,
-      status: "pending",
-      host_ref: hostRef,
-      app_user_refs: appUserRefs,
-      course_name: courseName,
+    // ── 1–2. Create round_jobs + round_records (skip if resuming) ────────
+    let jobRef;
 
-      // Milestone timestamps
-      scheduled_host_notify_at: admin.firestore.Timestamp.fromMillis(
-        teeTimeMs + HOST_NOTIFY_OFFSET_MS
-      ),
-      scheduled_peer_notify_at: null, // set when host confirms
-      scheduled_reminder_at: admin.firestore.Timestamp.fromMillis(
-        teeTimeMs + REMINDER_OFFSET_MS
-      ),
-      scheduled_close_at: admin.firestore.Timestamp.fromMillis(
-        teeTimeMs + CLOSE_OFFSET_MS
-      ),
+    if (!resumeMode) {
+      const jobData = {
+        game_ref: gameRef,
+        round_ref: null, // filled in when round_records doc is created below
+        tee_time: teeTimeTs,
+        status: "pending",
+        processing_state: "initializing",
+        host_ref: hostRef,
+        app_user_refs: appUserRefs,
+        course_name: courseName,
 
-      // Event timestamps (null until reached)
-      host_notified_at: null,
-      host_confirmed_at: null,
-      peer_notified_at: null,
-      reminder_sent_at: null,
-      closed_at: null,
-      created_at: now,
-    };
+        // Milestone timestamps
+        scheduled_host_notify_at: admin.firestore.Timestamp.fromMillis(
+          teeTimeMs + HOST_NOTIFY_OFFSET_MS
+        ),
+        scheduled_peer_notify_at: null, // set when host confirms
+        scheduled_reminder_at: admin.firestore.Timestamp.fromMillis(
+          teeTimeMs + REMINDER_OFFSET_MS
+        ),
+        scheduled_close_at: admin.firestore.Timestamp.fromMillis(
+          teeTimeMs + CLOSE_OFFSET_MS
+        ),
 
-    // ── 2. Build initial round_records document ───────────────────────────
-    const { participantSnapshots, vibeMatchScores } =
-      await _buildRoundRecordData(db, gameId, appUserRefs);
+        // Event timestamps (null until reached)
+        host_notified_at: null,
+        host_confirmed_at: null,
+        peer_notified_at: null,
+        reminder_sent_at: null,
+        closed_at: null,
+        created_at: now,
+      };
 
-    const gameSettings = _snapshotGameSettings(after);
+      const { participantSnapshots, vibeMatchScores } =
+        await _buildRoundRecordData(db, gameId, appUserRefs);
 
-    const roundData = {
-      game_ref: gameRef,
-      course_ref: after.courseRef || null,
-      tee_time: teeTimeTs,
-      game_type: typeof after.game_type === "string" ? after.game_type : "",
-      game_settings: gameSettings,
-      participant_snapshots: participantSnapshots,
-      vibe_match_scores: vibeMatchScores,
-      verification_status: "pending",
-      // Stage 4: verification signal tracking
-      verification_signals: {},       // uid → true
-      verification_signal_count: 0,
-      verified_at: null,
-      // Stage 4: dispute resolution (no-shows are pending until window closes or resolved)
-      pending_no_shows: {},           // uid → { recorded_at, notified_at }
-      host_check_in_at: null,
-      host_confirmation_data: null,
-      attendance_records: {},
-      confirmed_player_refs: [],
-      created_at: now,
-    };
+      const gameSettings = _snapshotGameSettings(after);
 
-    // Write both docs in a batch
-    const batch = db.batch();
-    const jobRef = db.collection("round_jobs").doc();
-    const roundRef = db.collection("round_records").doc();
+      const roundData = {
+        game_ref: gameRef,
+        course_ref: after.courseRef || null,
+        tee_time: teeTimeTs,
+        game_type: typeof after.game_type === "string" ? after.game_type : "",
+        game_settings: gameSettings,
+        participant_snapshots: participantSnapshots,
+        vibe_match_scores: vibeMatchScores,
+        verification_status: "pending",
+        // Stage 4: verification signal tracking
+        verification_signals: {},       // uid → true
+        verification_signal_count: 0,
+        verified_at: null,
+        // Stage 4: dispute resolution (no-shows are pending until window closes or resolved)
+        pending_no_shows: {},           // uid → { recorded_at, notified_at }
+        host_check_in_at: null,
+        host_confirmation_data: null,
+        attendance_records: {},
+        confirmed_player_refs: [],
+        created_at: now,
+      };
 
-    batch.set(jobRef, jobData);
-    batch.set(roundRef, roundData);
+      // Write both docs in a batch
+      const batch = db.batch();
+      jobRef = db.collection("round_jobs").doc();
+      const roundRef = db.collection("round_records").doc();
 
-    // Back-link the round_ref on the job
-    batch.update(jobRef, { round_ref: roundRef });
+      batch.set(jobRef, jobData);
+      batch.set(roundRef, roundData);
 
-    await batch.commit();
+      // Back-link the round_ref on the job
+      batch.update(jobRef, { round_ref: roundRef });
 
-    // ── 3. Mark round as pending for streak tracking ─────────────────────
+      await batch.commit();
+    } else {
+      jobRef = existingJobRef;
+    }
+
+    // ── 3. Mark round as pending for streak tracking (non-fatal) ────────
     try {
-      const playerUserIds = appUserRefs.map(ref => ref.id);
-      await streaks.onRoundPending(db, gameId, teeTimeTs, playerUserIds, after);
+      const streakPlayerIds = appUserRefs.map(ref => ref.id);
+      await streaks.onRoundPending(db, gameId, teeTimeTs, streakPlayerIds, after);
     } catch (err) {
       // Non-fatal: streak tracking shouldn't block confirmation flow
       console.warn(`onGameStatusToPlayed: streak pending failed for game ${gameId}:`, err);
     }
 
-    // ── 4. Schedule Trust System notification tasks ──────────────────────
+    // ── 4. Schedule Trust System notification tasks (critical) ───────────
     const playerUserIds = appUserRefs.map(ref => ref.id);
     const gameDate = _formatGameDate(teeTimeTs);
 
-    try {
-      await onGameConfirmed(
-        gameId,
-        new Date(teeTimeMs),   // teeTime as Date
-        hostRef.id,            // hostUserId
-        playerUserIds,         // all player user IDs including host
-        courseName,            // course name string
-        gameDate,              // formatted date string
-        db
-      );
-      console.log(`onGameStatusToPlayed: scheduled Trust System notifications for game ${gameId}`);
-    } catch (err) {
-      // Non-fatal: game flow continues even if notification scheduling fails
-      console.error(`onGameStatusToPlayed: failed to schedule notifications for game ${gameId}:`, err);
-    }
+    await onGameConfirmed(
+      gameId,
+      new Date(teeTimeMs),   // teeTime as Date
+      hostRef.id,            // hostUserId
+      playerUserIds,         // all player user IDs including host
+      courseName,            // course name string
+      gameDate,              // formatted date string
+      db
+    );
+    console.log(`onGameStatusToPlayed: scheduled Trust System notifications for game ${gameId}`);
 
-    // ── 4. Schedule T+48h window close ───────────────────────────────────
-    try {
-      const closeAt = new Date(teeTimeMs + CLOSE_OFFSET_MS);
-      await _scheduleCloudTask(
-        'processScheduledWindowClose',
-        { jobId: jobRef.id, gameId },
-        closeAt
-      );
-      console.log(`onGameStatusToPlayed: scheduled window close for game ${gameId} at T+48h`);
-    } catch (err) {
-      console.error(`onGameStatusToPlayed: failed to schedule window close for game ${gameId}:`, err);
-    }
+    // ── 5. Schedule T+48h window close (critical) ────────────────────────
+    const closeAt = new Date(teeTimeMs + CLOSE_OFFSET_MS);
+    await _scheduleCloudTask(
+      'processScheduledWindowClose',
+      { jobId: jobRef.id, gameId },
+      closeAt
+    );
+    console.log(`onGameStatusToPlayed: scheduled window close for game ${gameId} at T+48h`);
 
-    // ── 5. Expire any pending join requests ─────────────────────────────
+    // ── 6. Expire any pending join requests ─────────────────────────────
     await _expirePendingJoinRequests(db, gameId, gameRef, courseName);
 
+    // ── 7. Mark processing complete ─────────────────────────────────────
+    await jobRef.update({ processing_state: "ready" });
+
     console.log(
-      `onGameStatusToPlayed: created round_jobs/${jobRef.id} and ` +
-        `round_records/${roundRef.id} for game ${gameId}`
+      `onGameStatusToPlayed: created round_jobs/${jobRef.id} for game ${gameId}`
     );
   } catch (error) {
     console.error(`onGameStatusToPlayed failed for game ${gameId}:`, error);
+    throw error;  // Let Cloud Functions retry
   }
 }
 
@@ -1668,12 +1691,13 @@ async function _finalizeRoundVerification(db, roundRef, roundData, gameRef) {
   });
 
   // ── 4. Increment verified_round_count for each present user ───────────────
+  // Write to stats/counters subcollection to avoid contention on the main user doc
   const userCountBatch = db.batch();
   for (const uid of presentUids) {
-    const userRef = db.collection("users").doc(uid);
-    userCountBatch.update(userRef, {
+    const countersRef = db.collection("users").doc(uid).collection("stats").doc("counters");
+    userCountBatch.set(countersRef, {
       verified_round_count: admin.firestore.FieldValue.increment(1),
-    });
+    }, { merge: true });
   }
   await userCountBatch.commit();
 

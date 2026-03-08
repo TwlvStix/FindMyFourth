@@ -19,6 +19,10 @@ const streaks = require("./streaks");
 const { generateInitialsAvatar } = require("./avatar-generator");
 const { getAvatarUrl } = require("./utils/avatar-utils");
 const {
+  scheduleDebouncedChatNotification,
+  deliverChatNotificationHandler,
+} = require("./notifications/chat_debounce");
+const {
   scheduleFlexibleNudges,
   cancelFlexibleNudges,
 } = require("./notifications/flexible_nudge");
@@ -119,27 +123,6 @@ function getUserNotificationPrefs(userData) {
   };
 }
 
-function isWithinQuietHours(start, end, now) {
-  if (typeof start !== "string" || typeof end !== "string") {
-    return false;
-  }
-  const startParts = start.split(":");
-  const endParts = end.split(":");
-  if (startParts.length !== 2 || endParts.length !== 2) {
-    return false;
-  }
-  const startMinutes = parseInt(startParts[0], 10) * 60 + parseInt(startParts[1], 10);
-  const endMinutes = parseInt(endParts[0], 10) * 60 + parseInt(endParts[1], 10);
-  const nowMinutes = now.getHours() * 60 + now.getMinutes();
-  if (startMinutes === endMinutes) {
-    return false;
-  }
-  if (startMinutes < endMinutes) {
-    return nowMinutes >= startMinutes && nowMinutes < endMinutes;
-  }
-  return nowMinutes >= startMinutes || nowMinutes < endMinutes;
-}
-
 function buildGameNotificationContent(gameData, styleLabel) {
   const name = gameData.name_game || "New game";
   const course = gameData.course_play || "";
@@ -180,24 +163,6 @@ function getUserDisplayName(userData) {
     typeof userData.last_name === "string" ? userData.last_name.trim() : "";
   const combined = `${firstName} ${lastName}`.trim();
   return combined;
-}
-
-function buildChatMessagePreview(messageData) {
-  const text = typeof messageData.text === "string" ? messageData.text.trim() : "";
-  if (text.length > 0) {
-    return text.length > 160 ? `${text.slice(0, 157)}...` : text;
-  }
-  const imageUrl =
-    typeof messageData.imageUrl === "string" ? messageData.imageUrl.trim() : "";
-  if (imageUrl.length > 0) {
-    return "Sent a photo";
-  }
-  const videoUrl =
-    typeof messageData.videoUrl === "string" ? messageData.videoUrl.trim() : "";
-  if (videoUrl.length > 0) {
-    return "Sent a video";
-  }
-  return "Sent a message";
 }
 
 exports.addFcmToken = functions
@@ -337,7 +302,6 @@ exports.sendChatMessageNotifications = functions
   .onCreate(async (snapshot, context) => {
     const messageData = snapshot.data() || {};
     const chatId = context.params.chatId;
-    const messageId = context.params.messageId;
     const senderId =
       messageData.senderId || messageData.sender_id || messageData.sender;
     if (typeof senderId !== "string" || senderId.length === 0) {
@@ -365,17 +329,7 @@ exports.sendChatMessageNotifications = functions
     const senderName = senderSnap.exists
       ? getUserDisplayName(senderSnap.data())
       : "";
-    const messagePreview = buildChatMessagePreview(messageData);
     const isDirect = chatData.type === "direct" || memberIds.length === 2;
-    const title = isDirect
-      ? senderName || "New message"
-      : chatData.gameId
-      ? "Game chat"
-      : "Group chat";
-    const body = !isDirect && senderName
-      ? `${senderName}: ${messagePreview}`
-      : messagePreview;
-    const now = new Date();
 
     for (const uid of recipients) {
       const userRef = firestore.collection("users").doc(uid);
@@ -400,107 +354,22 @@ exports.sendChatMessageNotifications = functions
         continue;
       }
 
-      const dedupeKey = `chat_${chatId}_msg_${messageId}_to_${uid}`;
-      const notificationRef = userRef
-        .collection(kUserNotificationsCollection)
-        .doc(dedupeKey);
-      const existing = await notificationRef.get();
-      if (existing.exists) {
-        continue;
-      }
-
-      await notificationRef.set({
-        type: "chat_message",
-        title,
-        body,
-        data: {
-          threadId: chatId,
-          senderId,
-        },
-        read: false,
-        createdAt: admin.firestore.FieldValue.serverTimestamp(),
-        dedupeKey: `chat:${chatId}:msg:${messageId}:to:${uid}`,
-      });
-
-      const inQuietHours =
-        prefs.quietHoursEnabled &&
-        isWithinQuietHours(prefs.quietHoursStart, prefs.quietHoursEnd, now);
-      if (prefs.digestMode !== "instant" || inQuietHours) {
-        continue;
-      }
-
-      const deviceSnap = await userRef
-        .collection(kUserDevicesCollection)
-        .get();
-      if (deviceSnap.empty) {
-        continue;
-      }
-      const deviceTokens = [];
-      deviceSnap.docs.forEach((doc) => {
-        const token = doc.data()?.fcmToken;
-        if (typeof token === "string" && token.length > 0) {
-          deviceTokens.push({ token, ref: doc.ref });
-        }
-      });
-      if (deviceTokens.length === 0) {
-        continue;
-      }
-
-      const message = {
-        notification: {
-          title,
-          body,
-        },
-        data: {
-          initialPageName: "ChatDetails",
-          parameterData: JSON.stringify({
-            chatId,
-          }),
-          type: "chat_message",
-          threadId: chatId,
-        },
-        tokens: deviceTokens.map((entry) => entry.token),
-      };
-
+      // Schedule debounced notification — cancels any pending task for this
+      // chat+recipient pair and schedules a new one 8 seconds out
       try {
-        const response = await admin.messaging().sendEachForMulticast(message);
-
-        // Record success
-        await userRef.update({
-          "notification_state.last_send_success": admin.firestore.FieldValue.serverTimestamp(),
-        });
-
-        const invalidRefs = [];
-        response.responses.forEach((resp, index) => {
-          if (resp.success) {
-            return;
-          }
-          const code = resp.error?.code || "";
-          if (
-            code === "messaging/registration-token-not-registered" ||
-            code === "messaging/invalid-registration-token"
-          ) {
-            invalidRefs.push(deviceTokens[index]?.ref);
-          }
-        });
-        if (invalidRefs.length > 0) {
-          await Promise.all(
-            invalidRefs
-              .filter((ref) => ref)
-              .map((ref) => ref.delete()),
-          );
-        }
+        await scheduleDebouncedChatNotification(
+          chatId,
+          uid,
+          messageData,
+          senderName,
+          chatData,
+          firestore,
+        );
       } catch (error) {
-        console.error("Notification send failed", { uid, error: error.message });
-
-        // Store error for frontend to read
-        await userRef.update({
-          "notification_state.last_error": {
-            message: error.message || "Failed to send notification",
-            code: error.code || "unknown",
-            timestamp: admin.firestore.FieldValue.serverTimestamp(),
-            type: "notification_send",
-          },
+        console.error("Failed to schedule debounced chat notification", {
+          chatId,
+          uid,
+          error: error.message,
         });
       }
     }
@@ -2071,6 +1940,12 @@ exports.processScheduledTrustNotification = functions
   .region('us-west2')
   .runWith({ timeoutSeconds: 60, memory: '256MB' })
   .https.onRequest(trustNotificationScheduler.processScheduledTrustNotificationHandler);
+
+// Chat Notification Debounce — delivers batched chat notifications after 8s window
+exports.deliverChatNotification = functions
+  .region('us-west2')
+  .runWith({ timeoutSeconds: 60, memory: '256MB' })
+  .https.onRequest(deliverChatNotificationHandler);
 
 // Flexible Game Nudge System
 // Schedules nudges when 2+ players join a flexible game, cancels when time confirmed

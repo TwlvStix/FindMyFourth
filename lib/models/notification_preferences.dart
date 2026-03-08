@@ -148,6 +148,31 @@ class NotificationPreferences {
     );
   }
 
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is NotificationPreferences &&
+          pushEnabled == other.pushEnabled &&
+          gameAlerts == other.gameAlerts &&
+          chatAlerts == other.chatAlerts &&
+          quietHours == other.quietHours &&
+          digestMode == other.digestMode &&
+          trustCategories == other.trustCategories &&
+          socialAlerts == other.socialAlerts &&
+          activeProfile == other.activeProfile;
+
+  @override
+  int get hashCode => Object.hash(
+        pushEnabled,
+        gameAlerts,
+        chatAlerts,
+        quietHours,
+        digestMode,
+        trustCategories,
+        socialAlerts,
+        activeProfile,
+      );
+
   Map<String, dynamic> toFirestore() {
     return mapToFirestore({
       'push_enabled': pushEnabled,
@@ -404,6 +429,16 @@ class NotificationGameAlerts {
     );
   }
 
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is NotificationGameAlerts &&
+          enabled == other.enabled &&
+          deliveryFrequency == other.deliveryFrequency;
+
+  @override
+  int get hashCode => Object.hash(enabled, deliveryFrequency);
+
   static NotificationGameAlerts fromMap(
     Map<String, dynamic>? map, {
     String? fallbackDigestMode,
@@ -451,6 +486,16 @@ class NotificationChatAlerts {
       deliveryFrequency: deliveryFrequency ?? this.deliveryFrequency,
     );
   }
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is NotificationChatAlerts &&
+          enabled == other.enabled &&
+          deliveryFrequency == other.deliveryFrequency;
+
+  @override
+  int get hashCode => Object.hash(enabled, deliveryFrequency);
 
   static NotificationChatAlerts fromMap(
     Map<String, dynamic>? map, {
@@ -537,6 +582,27 @@ class NotificationQuietHours {
     return fallback;
   }
 
+  @override
+  bool operator ==(Object other) {
+    if (identical(this, other)) return true;
+    if (other is! NotificationQuietHours) return false;
+    if (enabled != other.enabled ||
+        start != other.start ||
+        end != other.end ||
+        activeDays.length != other.activeDays.length) {
+      return false;
+    }
+    for (int i = 0; i < activeDays.length; i++) {
+      if (activeDays[i] != other.activeDays[i]) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  @override
+  int get hashCode => Object.hash(enabled, start, end, Object.hashAll(activeDays));
+
   Map<String, dynamic> toFirestore() {
     return {
       'enabled': enabled,
@@ -608,6 +674,20 @@ class NotificationTrustCategories {
     );
   }
 
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is NotificationTrustCategories &&
+          enabled == other.enabled &&
+          postRound == other.postRound &&
+          trustAlerts == other.trustAlerts &&
+          badges == other.badges &&
+          deliveryFrequency == other.deliveryFrequency;
+
+  @override
+  int get hashCode =>
+      Object.hash(enabled, postRound, trustAlerts, badges, deliveryFrequency);
+
   Map<String, dynamic> toFirestore() {
     return {
       'enabled': enabled,
@@ -638,6 +718,14 @@ class NotificationSocialAlerts {
       enabled: NotificationPreferences._boolValue(data, 'enabled', true),
     );
   }
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is NotificationSocialAlerts && enabled == other.enabled;
+
+  @override
+  int get hashCode => enabled.hashCode;
 
   Map<String, dynamic> toFirestore() {
     return {'enabled': enabled};

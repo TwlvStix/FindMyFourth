@@ -474,22 +474,37 @@ exports.sendGameCreatedNotifications = functions
     });
 
     try {
-      // Get all enabled alert subscriptions
-      const subsSnapshot = await firestore
+      // Get enabled alert subscriptions in paginated batches
+      const ALERT_BATCH_SIZE = 500;
+      let baseQuery = firestore
         .collection(kAlertSubsCollection)
         .where("enabled", "==", true)
-        .get();
-
-      console.log(`[GameAlerts] Found ${subsSnapshot.docs.length} enabled subscriptions`);
-
-      if (subsSnapshot.empty) {
-        console.log(`[GameAlerts] No enabled subscriptions, skipping`);
-        return;
-      }
+        .limit(ALERT_BATCH_SIZE);
 
       const now = new Date();
       let matchedCount = 0;
       let notifiedCount = 0;
+      let totalProcessed = 0;
+      let lastDoc = null;
+
+      // Upfront dedup: fetch all existing game_created notifications for this game
+      const existingNotifSnap = await firestore
+        .collectionGroup(kUserNotificationsCollection)
+        .where("type", "==", "game_created")
+        .where("data.gameId", "==", gameId)
+        .get();
+      const alreadyNotifiedUserIds = new Set(
+        existingNotifSnap.docs.map((doc) => doc.ref.parent.parent.id),
+      );
+
+      while (true) {
+      const currentQuery = lastDoc ? baseQuery.startAfter(lastDoc) : baseQuery;
+      const subsSnapshot = await currentQuery.get();
+
+      if (subsSnapshot.empty) break;
+
+      totalProcessed += subsSnapshot.docs.length;
+      console.log(`[GameAlerts] Processing batch of ${subsSnapshot.docs.length} subscriptions (${totalProcessed} total)`);
 
       // Check each subscription for a match
       for (const subDoc of subsSnapshot.docs) {
@@ -556,17 +571,17 @@ exports.sendGameCreatedNotifications = functions
           }
         }
 
-        // Create notification document (deduplicated)
+        // Check dedup from upfront query
+        if (alreadyNotifiedUserIds.has(userId)) {
+          console.log(`[GameAlerts] Notification already sent to ${userId}, skipping`);
+          continue;
+        }
+
+        // Create notification document
         const dedupeKey = `game_${gameId}_to_${userId}`;
         const notificationRef = userRef
           .collection(kUserNotificationsCollection)
           .doc(dedupeKey);
-
-        const existing = await notificationRef.get();
-        if (existing.exists) {
-          console.log(`[GameAlerts] Notification already sent to ${userId}, skipping`);
-          continue;
-        }
 
         const content = buildGameNotificationContent(gameData);
         await notificationRef.set({
@@ -580,6 +595,9 @@ exports.sendGameCreatedNotifications = functions
           createdAt: admin.firestore.FieldValue.serverTimestamp(),
           dedupeKey,
         });
+
+        // Track in dedup set to prevent intra-batch duplicates
+        alreadyNotifiedUserIds.add(userId);
 
         // Update cooldown timestamp
         await userRef.set(
@@ -717,7 +735,11 @@ exports.sendGameCreatedNotifications = functions
         }
       }
 
-      console.log(`[GameAlerts] Game ${gameId} complete: ${matchedCount} matched, ${notifiedCount} notified`);
+      lastDoc = subsSnapshot.docs[subsSnapshot.docs.length - 1];
+      if (subsSnapshot.docs.length < ALERT_BATCH_SIZE) break;
+      } // end pagination while loop
+
+      console.log(`[GameAlerts] Game ${gameId} complete: ${totalProcessed} subscriptions processed, ${matchedCount} matched, ${notifiedCount} notified`);
     } catch (error) {
       console.error(`[GameAlerts] Error processing game ${gameId}:`, error);
       throw error;

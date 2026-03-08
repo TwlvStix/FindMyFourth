@@ -295,6 +295,7 @@ module.exports = {
   cancelJob,
   cancelGameJobs,
   processScheduledTrustNotificationHandler,
+  getTasksClient,
   // Exported for testing only
   _resetTasksClient: () => { _tasksClient = null; },
 };
