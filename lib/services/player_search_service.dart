@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
+import '/core/utils/app_log.dart';
 import '/models/user_profile.dart';
 
 class PlayerSearchPage {
@@ -81,5 +82,45 @@ class PlayerSearchService {
       if (guestPlayers.isNotEmpty)
         'guest_players': FieldValue.arrayUnion(guestPlayers),
     });
+
+    // Create game_participants docs for host-added players and guests
+    await _createParticipantDocs(
+      gameRef: gameRef,
+      joinedPlayerUids: joinedPlayerUids,
+      guestPlayers: guestPlayers,
+    );
+  }
+
+  Future<void> _createParticipantDocs({
+    required DocumentReference gameRef,
+    required List<String> joinedPlayerUids,
+    required List<String> guestPlayers,
+  }) async {
+    try {
+      for (final uid in joinedPlayerUids) {
+        await _firestore.collection('game_participants').add({
+          'game_ref': gameRef,
+          'user_ref': userRefForUid(uid),
+          'role': 'player',
+          'status': 'joined',
+          'joined_at': FieldValue.serverTimestamp(),
+        });
+      }
+
+      for (final guestName in guestPlayers) {
+        await _firestore.collection('game_participants').add({
+          'game_ref': gameRef,
+          'guest_name': guestName,
+          'role': 'guest',
+          'status': 'joined',
+          'joined_at': FieldValue.serverTimestamp(),
+        });
+      }
+
+      AppLog.d('✅ PlayerSearchService: Created ${joinedPlayerUids.length} player + ${guestPlayers.length} guest participant docs');
+    } on FirebaseException catch (e) {
+      AppLog.d('❌ PlayerSearchService._createParticipantDocs error: ${e.code} - ${e.message}');
+      // Non-critical: don't fail the parent operation
+    }
   }
 }

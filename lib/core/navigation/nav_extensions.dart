@@ -34,6 +34,9 @@ class AppRouteNames {
   static const String successLeave = 'success_leave';
   static const String signIn = 'SignIn';
   static const String vibeArchetypeReveal = 'VibeArchetypeReveal';
+  static const String hostCheckin = 'HostCheckin';
+  static const String peerRating = 'PeerRating';
+  static const String fallbackConfirmation = 'FallbackConfirmation';
 }
 
 /// Route-specific typed navigation helpers for widget call sites.
@@ -345,6 +348,39 @@ extension AppNavigationExtensions on BuildContext {
       AppRouteNames.premiumVibePage,
       pathParameters: <String, String>{'userId': userId},
       extra: data,
+    );
+  }
+
+  void pushHostCheckin({
+    required DocumentReference gameRef,
+    TransitionInfo transition = TransitionStandards.detailTransition,
+  }) {
+    pushWithTransition(
+      AppRouteNames.hostCheckin,
+      extra: <String, dynamic>{'gameRef': gameRef},
+      transition: transition,
+    );
+  }
+
+  void pushPeerRating({
+    required DocumentReference gameRef,
+    TransitionInfo transition = TransitionStandards.detailTransition,
+  }) {
+    pushWithTransition(
+      AppRouteNames.peerRating,
+      extra: <String, dynamic>{'gameRef': gameRef},
+      transition: transition,
+    );
+  }
+
+  void pushFallbackConfirmation({
+    required DocumentReference gameRef,
+    TransitionInfo transition = TransitionStandards.detailTransition,
+  }) {
+    pushWithTransition(
+      AppRouteNames.fallbackConfirmation,
+      extra: <String, dynamic>{'gameRef': gameRef},
+      transition: transition,
     );
   }
 

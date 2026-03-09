@@ -14,13 +14,21 @@ class NotificationTypeHelpers {
     return type == 'game_created' || type == 'game_alert';
   }
 
-  /// Returns true for trust system game-related notification types.
-  static bool isTrustGameNotification(String type) {
+  /// Returns true for post-round confirmation notification types
+  /// that route to dedicated confirmation screens.
+  static bool isPostRoundNotification(String type) {
     return const {
       'host_checkin_due',
       'player_rate_due',
       'host_checkin_fallback',
       'player_fallback_confirm',
+    }.contains(type);
+  }
+
+  /// Returns true for trust system game-related notification types
+  /// (excludes post-round types which have dedicated screens).
+  static bool isTrustGameNotification(String type) {
+    return const {
       'game_spot_opened',
       'game_cancelled',
     }.contains(type);

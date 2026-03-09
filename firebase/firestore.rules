@@ -44,6 +44,16 @@ service cloud.firestore {
         ]);
     }
 
+    function isGameOwner(gameId) {
+      let gamePath = /databases/$(database)/documents/games/$(gameId);
+      let gameExists = gameId is string && exists(gamePath);
+      let gameData = gameExists ? get(gamePath).data : {};
+      return isSignedIn() &&
+        gameExists &&
+        gameData.uid is string &&
+        gameData.uid == request.auth.uid;
+    }
+
     function isChatMemberById(chatId) {
       let chatPath = /databases/$(database)/documents/chats/$(chatId);
       let chatExists = exists(chatPath);
@@ -781,13 +791,16 @@ service cloud.firestore {
       allow create: if isSignedIn() &&
         request.resource.data.game_ref is path &&
         (!request.resource.data.keys().hasAny(['user_ref']) ||
-          request.resource.data.user_ref == userRef(request.auth.uid));
+          request.resource.data.user_ref == userRef(request.auth.uid) ||
+          isGameOwner(request.resource.data.game_ref.id));
       // Any participant in the linked game can read all participant records for that game.
       // Allows roster display without requiring joins across game's joined_players.
       allow read: if isSignedIn() && (
         resource.data.user_ref == userRef(request.auth.uid) ||
-        (resource.data.game_ref is path &&
-          isGameParticipant(resource.data.game_ref.id))
+        (resource.data.game_ref is path && (
+          isGameParticipant(resource.data.game_ref.id) ||
+          isGameOwner(resource.data.game_ref.id)
+        ))
       );
       allow update: if isSignedIn() &&
         resource.data.user_ref == userRef(request.auth.uid) &&

@@ -39,6 +39,7 @@ class _HostCheckinScreenState extends State<HostCheckinScreen> {
   final _trustFlowService = TrustFlowService();
 
   bool _loading = true;
+  bool _loadCalled = false;
   bool _submitting = false;
   String? _error;
   String? _successMessage;
@@ -54,7 +55,10 @@ class _HostCheckinScreenState extends State<HostCheckinScreen> {
   @override
   void initState() {
     super.initState();
-    _loadParticipants();
+    if (!_loadCalled) {
+      _loadCalled = true;
+      _loadParticipants();
+    }
   }
 
   Future<void> _loadParticipants() async {
@@ -93,7 +97,7 @@ class _HostCheckinScreenState extends State<HostCheckinScreen> {
         });
       }
     } catch (e) {
-      AppLog.d('HostCheckinScreen load error: $e');
+      AppLog.d('❌ HostCheckinScreen load error: $e gameRef=${widget.gameRef.path}');
       if (mounted) {
         updateState(this, () {
           _error = 'Failed to load participants. Please try again.';

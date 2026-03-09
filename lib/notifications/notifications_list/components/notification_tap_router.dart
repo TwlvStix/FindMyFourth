@@ -89,6 +89,23 @@ class NotificationTapRouter {
       return;
     }
 
+    // Post-round confirmation types → dedicated screens
+    if (NotificationTypeHelpers.isPostRoundNotification(type)) {
+      final gameRef = provider.resolveGameRefFromPayload(payload);
+      if (gameRef == null) return;
+      if (!context.mounted) return;
+
+      if (type == 'host_checkin_due') {
+        context.pushHostCheckin(gameRef: gameRef);
+      } else if (type == 'player_rate_due') {
+        context.pushPeerRating(gameRef: gameRef);
+      } else {
+        // host_checkin_fallback, player_fallback_confirm
+        context.pushFallbackConfirmation(gameRef: gameRef);
+      }
+      return;
+    }
+
     if (NotificationTypeHelpers.isTrustGameNotification(type)) {
       await _handleGameNotification(
         context: context,

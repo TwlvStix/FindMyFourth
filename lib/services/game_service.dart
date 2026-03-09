@@ -266,6 +266,14 @@ class GameService {
         });
       });
 
+      // Create game_participants doc for the joining player
+      // (reuse userRef/gameRef declared above the transaction)
+      await _createParticipantDoc(
+        gameRef: gameRef,
+        userRef: userRef,
+        role: 'player',
+      );
+
       AppLog.d('GameService.joinGame: User $userId joined game $gameId');
     } on GameOperationException {
       // Re-throw our custom exceptions as-is
@@ -290,9 +298,14 @@ class GameService {
       final userRef =
           _firestore.collection('users').doc(userId);
 
-      await _firestore.collection('games').doc(gameId).update({
+      final gameRef = _firestore.collection('games').doc(gameId);
+
+      await gameRef.update({
         'joined_players': FieldValue.arrayRemove([userRef, userId]),
       });
+
+      // Mark the game_participants doc as cancelled
+      await _cancelParticipantDoc(gameRef: gameRef, userRef: userRef);
     } on FirebaseException catch (e) {
       AppLog.d('GameService.leaveGame error: ${e.code} - ${e.message}');
       rethrow;
@@ -335,6 +348,17 @@ class GameService {
       createData['status'] ??= 'open';
 
       await gameRef.set(createData);
+
+      // Create game_participants doc for the host
+      final hostRef = createData['userRef'] as DocumentReference?;
+      if (hostRef != null) {
+        await _createParticipantDoc(
+          gameRef: gameRef,
+          userRef: hostRef,
+          role: 'host',
+        );
+      }
+
       return gameRef;
     } on FirebaseException catch (e) {
       AppLog.d('GameService.createGame error: ${e.code} - ${e.message}');
@@ -360,6 +384,54 @@ class GameService {
     } on FirebaseException catch (e) {
       AppLog.d('GameService.cancelGame error: ${e.code} - ${e.message}');
       rethrow;
+    }
+  }
+
+  /// Create a game_participants document for a player or host.
+  Future<void> _createParticipantDoc({
+    required DocumentReference gameRef,
+    required DocumentReference userRef,
+    required String role,
+  }) async {
+    try {
+      await _firestore.collection('game_participants').add({
+        'game_ref': gameRef,
+        'user_ref': userRef,
+        'role': role,
+        'status': 'joined',
+        'joined_at': FieldValue.serverTimestamp(),
+      });
+      AppLog.d('✅ GameService._createParticipantDoc: Created $role doc for ${userRef.id} in game ${gameRef.id}');
+    } on FirebaseException catch (e) {
+      AppLog.d('❌ GameService._createParticipantDoc error: ${e.code} - ${e.message}');
+      // Non-critical: don't fail the parent operation
+    }
+  }
+
+  /// Update game_participants status to cancelled when a player leaves.
+  Future<void> _cancelParticipantDoc({
+    required DocumentReference gameRef,
+    required DocumentReference userRef,
+  }) async {
+    try {
+      final query = await _firestore
+          .collection('game_participants')
+          .where('game_ref', isEqualTo: gameRef)
+          .where('user_ref', isEqualTo: userRef)
+          .where('status', isEqualTo: 'joined')
+          .limit(1)
+          .get();
+
+      if (query.docs.isNotEmpty) {
+        await query.docs.first.reference.update({
+          'status': 'cancelled',
+          'cancelled_at': FieldValue.serverTimestamp(),
+        });
+        AppLog.d('✅ GameService._cancelParticipantDoc: Cancelled participant ${userRef.id} in game ${gameRef.id}');
+      }
+    } on FirebaseException catch (e) {
+      AppLog.d('❌ GameService._cancelParticipantDoc error: ${e.code} - ${e.message}');
+      // Non-critical: don't fail the parent operation
     }
   }
 

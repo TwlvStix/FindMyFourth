@@ -1,6 +1,8 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
+import '/core/utils/app_log.dart';
+
 class HostCheckinParticipant {
   const HostCheckinParticipant({
     required this.key,
@@ -67,18 +69,35 @@ class TrustFlowService {
   Future<HostCheckinLoadData> loadHostCheckinParticipants({
     required DocumentReference gameRef,
   }) async {
-    final gameSnap = await gameRef.get();
+    // 1. Read game doc (separate try-catch for diagnostics)
+    final DocumentSnapshot gameSnap;
+    try {
+      gameSnap = await gameRef.get();
+    } on FirebaseException catch (e) {
+      AppLog.d('❌ TrustFlowService: game read failed: ${e.code} - ${e.message} path=${gameRef.path}');
+      rethrow;
+    }
     if (!gameSnap.exists) {
+      AppLog.d('❌ TrustFlowService: game not found at path=${gameRef.path}');
       throw StateError('game_not_found');
     }
     final gameData = gameSnap.data() as Map<String, dynamic>;
     final courseName = (gameData['course_play'] as String?) ?? 'your course';
 
-    final participantsSnap = await _firestore
-        .collection('game_participants')
-        .where('game_ref', isEqualTo: gameRef)
-        .where('status', isEqualTo: 'joined')
-        .get();
+    // 2. Query game_participants (separate try-catch for diagnostics)
+    final QuerySnapshot<Map<String, dynamic>> participantsSnap;
+    try {
+      participantsSnap = await _firestore
+          .collection('game_participants')
+          .where('game_ref', isEqualTo: gameRef)
+          .where('status', isEqualTo: 'joined')
+          .get();
+    } on FirebaseException catch (e) {
+      AppLog.d('❌ TrustFlowService: participants query failed: ${e.code} - ${e.message} gameRef=${gameRef.path}');
+      rethrow;
+    }
+
+    AppLog.d('📖 TrustFlowService: Found ${participantsSnap.docs.length} participant docs for game ${gameRef.id}');
 
     final participants = <HostCheckinParticipant>[];
     final defaultAttendance = <String, bool>{};
