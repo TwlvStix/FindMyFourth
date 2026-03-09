@@ -97,12 +97,15 @@ class TrustRepository {
     if (uid.isEmpty) return null;
     try {
       final result = await makeCloudCall('getMyStanding', {'userId': uid});
+      AppLog.d('📖 TrustRepository.getPlayerStanding: '
+          'result keys=${result.keys.toList()}, '
+          'activeStrikes=${result['activeStrikeCount']}');
       if (result.isEmpty) return null;
       return PlayerStanding.fromMap(result);
       // Non-critical: makeCloudCall handles Firebase errors internally; this catches
       // response parsing failures. Fire-and-forget with safe fallback per services.md:28.
     } catch (e) {
-      AppLog.d('TrustRepository.getPlayerStanding error: $e');
+      AppLog.d('❌ TrustRepository.getPlayerStanding error: $e');
       return null;
     }
   }
@@ -157,6 +160,29 @@ class TrustRepository {
       // response parsing failures. Fire-and-forget with safe fallback per services.md:28.
     } catch (e) {
       AppLog.d('TrustRepository.getHostCheckInData error: $e');
+      return {};
+    }
+  }
+
+  /// Record a day-of cancellation for trust/strike tracking.
+  ///
+  /// Calls the recordCancellation cloud function which determines the
+  /// cancellation tier and issues a strike if appropriate.
+  /// Fire-and-forget safe — returns empty map on failure.
+  Future<Map<String, dynamic>> recordCancellation(
+      String gameId, String userId) async {
+    try {
+      final result = await makeCloudCall('recordCancellation', {
+        'gameId': gameId,
+        'userId': userId,
+      });
+      AppLog.d('📖 TrustRepository.recordCancellation: gameId=$gameId, '
+          'tier=${result['tier']}, strikeIssued=${result['strikeIssued']}');
+      return result;
+      // Non-critical: makeCloudCall handles Firebase errors internally; this catches
+      // response parsing failures. Fire-and-forget with safe fallback per services.md:28.
+    } catch (e) {
+      AppLog.d('❌ TrustRepository.recordCancellation error: $e');
       return {};
     }
   }

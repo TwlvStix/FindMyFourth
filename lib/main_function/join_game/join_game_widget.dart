@@ -8,9 +8,11 @@ import '/core/design_tokens/typography.dart';
 import '/core/design_tokens/border_radius.dart';
 import 'dart:ui';
 import '/models/game.dart';
+import '/providers/chat_provider.dart';
 import '/providers/provider_extensions.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:provider/provider.dart';
 
 class JoinGameWidget extends StatefulWidget {
   const JoinGameWidget({
@@ -173,6 +175,17 @@ class _JoinGameWidgetState extends State<JoinGameWidget> {
                                   'Unable to join the game right now. Please try again.',
                                 );
                                 return;
+                              }
+
+                              // Eagerly sync chat membership to prevent
+                              // permission-denied race with Cloud Function.
+                              if (!context.mounted) return;
+                              if (widget.gameRef.chatRef != null) {
+                                await context.read<ChatProvider>()
+                                    .ensureGameChatMembership(
+                                  chatId: widget.gameRef.chatRef!.id,
+                                  uid: currentUserId,
+                                );
                               }
 
                               if (!context.mounted) return;

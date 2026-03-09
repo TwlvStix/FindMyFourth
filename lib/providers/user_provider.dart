@@ -78,6 +78,10 @@ class UserProvider extends ChangeNotifier {
     _scheduleNotify(); // Mutation state - UI needs to know
   }
 
+  // In-memory override for onboarding_completed to avoid race condition
+  // where Firestore snapshot listener hasn't caught up yet after writing
+  bool? _onboardingCompletedOverride;
+
   // Individual user document cache
   final Map<String, UsersRecord> _userCache = {};
   final Map<String, StreamRequestManager<UsersRecord?>> _userStreamManagers = {};
@@ -110,6 +114,11 @@ class UserProvider extends ChangeNotifier {
           AppLog.d('🔐 UserProvider: auth transition → logged out');
         } else if (!wasLoggedIn && isNowLoggedIn) {
           AppLog.d('🔐 UserProvider: auth transition → logged in (${user.reference.id})');
+        }
+
+        // Clear onboarding override once stream confirms the value
+        if (user?.onboardingCompleted == true) {
+          _onboardingCompletedOverride = null;
         }
 
         // Ensure friend_requests field exists for logged-in user
@@ -204,7 +213,8 @@ class UserProvider extends ChangeNotifier {
   int get drinks => _currentUser?.drinks ?? 0;
   int get playForMoney => _currentUser?.playForMoney ?? 0;
   int get paceOfPlay => _currentUser?.paceOfPlay ?? 0;
-  bool get onboardingCompleted => _currentUser?.onboardingCompleted ?? false;
+  bool get onboardingCompleted =>
+      _onboardingCompletedOverride ?? _currentUser?.onboardingCompleted ?? false;
 
   // ========================================
   // LOCATION ACCESSORS (for GeoFilterProvider)
@@ -486,6 +496,34 @@ class UserProvider extends ChangeNotifier {
       // User data will automatically update via authenticatedUserStream
     } catch (e) {
       AppLog.d('❌ UserProvider.updateProfile error: $e');
+      rethrow;
+    }
+  }
+
+  /// Set the in-memory onboarding override without a Firestore write.
+  ///
+  /// Use when Firestore already has onboarding_completed=true and we just
+  /// need the route guard to see the correct value immediately.
+  void setOnboardingCompletedOverride() {
+    if (_onboardingCompletedOverride == true) return;
+    _onboardingCompletedOverride = true;
+    forceNotify();
+  }
+
+  /// Mark onboarding as completed for the current user
+  ///
+  /// Sets the override immediately so route guards see the correct value
+  /// without waiting for the Firestore snapshot listener to catch up.
+  Future<void> markOnboardingCompleted() async {
+    final uid = userIdOrNull;
+    if (uid == null) return;
+
+    try {
+      await _profileService.markOnboardingCompleted(uid);
+      _onboardingCompletedOverride = true;
+      forceNotify();
+    } catch (e) {
+      AppLog.d('❌ UserProvider.markOnboardingCompleted error: $e');
       rethrow;
     }
   }

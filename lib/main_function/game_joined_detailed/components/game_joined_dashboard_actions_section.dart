@@ -7,6 +7,7 @@ import '/core/widgets/app_premium_dialog.dart';
 import '/models/game.dart';
 import '/providers/chat_provider.dart';
 import '/providers/provider_extensions.dart';
+import '/providers/trust_provider.dart';
 import '/screens/trust/cancellation_warning_modal.dart';
 import '/utils/app_util.dart';
 import 'package:flutter/material.dart';
@@ -88,8 +89,17 @@ class GameJoinedDashboardActionsSection extends StatelessWidget {
     final userId = userRef.id;
 
     final gameProvider = context.gameProvider;
-    final confirmed =
-        await CancellationWarningModal.show(context, game: game);
+
+    // Fetch active strike count for the warning modal
+    final strikeCount =
+        await context.read<TrustProvider>().getActiveStrikeCount();
+    if (!context.mounted) return;
+
+    final confirmed = await CancellationWarningModal.show(
+      context,
+      game: game,
+      activeStrikes: strikeCount,
+    );
     if (confirmed != true) {
       return;
     }
@@ -102,6 +112,8 @@ class GameJoinedDashboardActionsSection extends StatelessWidget {
         userId,
       );
       if (context.mounted) {
+        // Invalidate standing cache so next view reflects any new strike
+        context.read<TrustProvider>().invalidateStanding();
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('You left the game'),

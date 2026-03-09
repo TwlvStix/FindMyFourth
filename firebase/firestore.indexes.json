@@ -311,6 +311,14 @@
       ]
     },
     {
+      "collectionGroup": "round_records",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "verification_status", "order": "ASCENDING" },
+        { "fieldPath": "tee_time", "order": "ASCENDING" }
+      ]
+    },
+    {
       "collectionGroup": "games",
       "queryScope": "COLLECTION",
       "fields": [

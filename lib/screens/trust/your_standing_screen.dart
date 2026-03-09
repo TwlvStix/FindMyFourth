@@ -399,7 +399,9 @@ class _YourStandingScreenState extends State<YourStandingScreen> {
   Widget _buildStrikesSection(Map<String, dynamic> s) {
     final strikes = (s['strikes'] as List<dynamic>?) ?? [];
     final activeCount = (s['activeStrikeCount'] as num?)?.toInt() ?? 0;
-    final nextThreshold = s['nextThreshold'] as int?;
+    final nextThresholdMap = s['nextThreshold'] as Map<String, dynamic>?;
+    final strikesNeeded = (nextThresholdMap?['strikesNeeded'] as num?)?.toInt();
+    final restrictionLabel = nextThresholdMap?['restriction'] as String?;
 
     return _SectionCard(
       child: Column(
@@ -440,10 +442,10 @@ class _YourStandingScreenState extends State<YourStandingScreen> {
               ),
             ],
           ),
-          if (nextThreshold != null && activeCount < nextThreshold) ...[
+          if (strikesNeeded != null && strikesNeeded > 0 && restrictionLabel != null) ...[
             SizedBox(height: AppSpacing.xs),
             Text(
-              '${nextThreshold - activeCount} more until: ${_thresholdLabel(nextThreshold)}',
+              '$strikesNeeded more strike${strikesNeeded == 1 ? "" : "s"} until: $restrictionLabel',
               style: AppTypography.labelSmall.copyWith(color: AppColors.textMuted),
             ),
           ],
@@ -463,16 +465,6 @@ class _YourStandingScreenState extends State<YourStandingScreen> {
         ],
       ),
     );
-  }
-
-  String _thresholdLabel(int threshold) {
-    switch (threshold) {
-      case 1: return '24-hour cooldown';
-      case 2: return '48-hour cooldown';
-      case 3: return '1-week cooldown';
-      case 4: return '2-week cooldown';
-      default: return 'Game restriction';
-    }
   }
 
   // ── Rates Section ──────────────────────────────────────────────────────────

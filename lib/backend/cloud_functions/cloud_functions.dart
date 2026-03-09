@@ -6,6 +6,21 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/foundation.dart' show visibleForTesting;
 import '/core/utils/app_log.dart';
 
+/// Recursively converts all nested maps to `Map<String, dynamic>`
+/// and processes list elements, so Cloud Function responses are
+/// fully typed for Dart's strict casting.
+dynamic _deepCast(dynamic value) {
+  if (value is Map) {
+    return Map<String, dynamic>.fromEntries(
+      value.entries.map((e) => MapEntry(e.key.toString(), _deepCast(e.value))),
+    );
+  }
+  if (value is List) {
+    return value.map(_deepCast).toList();
+  }
+  return value;
+}
+
 /// Retries a cloud function call on UNAUTHENTICATED errors.
 ///
 /// This helper encapsulates the retry logic for testing purposes.
@@ -123,7 +138,7 @@ Future<Map<String, dynamic>> callAuthenticatedCloudFunction(
             .call(payload);
 
         return response.data is Map
-            ? Map<String, dynamic>.from(response.data as Map)
+            ? _deepCast(response.data) as Map<String, dynamic>
             : {};
       } on FirebaseFunctionsException catch (e) {
         final isAuthError =
@@ -154,7 +169,7 @@ Future<Map<String, dynamic>> makeCloudCall(
         .httpsCallable(callName, options: HttpsCallableOptions())
         .call(input);
     return response.data is Map
-        ? Map<String, dynamic>.from(response.data as Map)
+        ? _deepCast(response.data) as Map<String, dynamic>
         : {};
   } on FirebaseFunctionsException catch (e) {
     AppLog.d(
@@ -193,7 +208,7 @@ Future<bool> deleteAccount() async {
         .httpsCallable('deleteAccount', options: HttpsCallableOptions())
         .call({'idToken': token});
     final data =
-        response.data is Map ? Map<String, dynamic>.from(response.data as Map) : {};
+        response.data is Map ? _deepCast(response.data) as Map<String, dynamic> : {};
     AppLog.d('deleteAccount response: $data');
     return data['ok'] == true;
   } on FirebaseFunctionsException catch (e) {

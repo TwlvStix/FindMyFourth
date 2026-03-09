@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 
+import 'package:provider/provider.dart';
+
 import '/core/design_tokens/colors.dart';
 import '/core/design_tokens/spacing.dart';
 import '/core/widgets/app_button_enhanced.dart';
 import '/core/widgets/app_premium_dialog.dart';
 import '/models/game.dart';
+import '/providers/trust_provider.dart';
 import '/screens/trust/cancellation_warning_modal.dart';
 
 /// Callbacks for game action buttons.
@@ -78,10 +81,17 @@ class GameActionButtons extends StatelessWidget {
   }
 
   Future<void> _handleLeaveGame(BuildContext context) async {
+    // Fetch active strike count for the warning modal
+    final strikeCount =
+        await Provider.of<TrustProvider>(context, listen: false)
+            .getActiveStrikeCount();
+    if (!context.mounted) return;
+
     // Show tier-aware cancellation warning
     final confirmed = await CancellationWarningModal.show(
       context,
       game: game,
+      activeStrikes: strikeCount,
     );
     if (confirmed != true) return;
 
@@ -90,6 +100,11 @@ class GameActionButtons extends StatelessWidget {
       currentUserId: currentUserRefId,
       chatId: game.chatRef?.id,
     );
+
+    if (context.mounted) {
+      // Invalidate standing cache so next view reflects any new strike
+      Provider.of<TrustProvider>(context, listen: false).invalidateStanding();
+    }
   }
 
   Future<void> _handleCancelGame(BuildContext context) async {

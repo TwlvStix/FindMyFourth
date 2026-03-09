@@ -318,6 +318,35 @@ class ChatService {
     }
   }
 
+  /// Eagerly sync chat membership after joining a game.
+  ///
+  /// Called client-side immediately after joinGame() to prevent a race condition
+  /// where the user opens the chat before the syncGameChatMembers Cloud Function
+  /// completes. Uses arrayUnion so it's idempotent with the Cloud Function.
+  ///
+  /// Non-critical — catches all errors so the join flow isn't blocked.
+  Future<void> ensureGameChatMembership({
+    required String chatId,
+    required String uid,
+  }) async {
+    try {
+      await _firestore.collection('chats').doc(chatId).update({
+        'memberIds': FieldValue.arrayUnion([uid]),
+        'updatedAt': FieldValue.serverTimestamp(),
+        'unreadCountByUser.$uid': 0,
+        'memberJoinedAt.$uid': FieldValue.serverTimestamp(),
+      });
+      await _userChatRef(uid, chatId).set({
+        'chatId': chatId,
+        'lastMessageAt': FieldValue.serverTimestamp(),
+      }, SetOptions(merge: true));
+      AppLog.d(
+          '✅ ChatService.ensureGameChatMembership: Synced $uid → chat $chatId');
+    } catch (e) {
+      AppLog.d('⚠️ ChatService.ensureGameChatMembership failed: $e');
+    }
+  }
+
   /// Remove a member from a chat (for non-game chats like direct messages).
   ///
   /// Note: For game chats, membership is managed by the syncGameChatMembers

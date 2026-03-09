@@ -95,6 +95,9 @@ class MockVibeRepository implements VibeRepository {
   void clearMyVibesCache() {}
 
   @override
+  void clearVibeCache() {}
+
+  @override
   Future<void> saveProfile(VibeProfile profile) async {}
 
   @override

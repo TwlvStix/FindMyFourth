@@ -5,7 +5,7 @@ import 'package:find_my_fourth/main_function/games_list/components/quick_filter_
 import 'package:find_my_fourth/main_function/games_list/models/quick_filter.dart';
 
 void main() {
-  Widget _buildSubject({
+  Widget buildSubject({
     QuickFilter selected = QuickFilter.all,
     ValueChanged<QuickFilter>? onChanged,
   }) {
@@ -21,7 +21,7 @@ void main() {
 
   testWidgets('renders current quick-filter pills and excludes removed pills',
       (tester) async {
-    await tester.pumpWidget(_buildSubject());
+    await tester.pumpWidget(buildSubject());
 
     expect(find.text('All Games'), findsOneWidget);
     expect(find.text('⚡ Flexible'), findsOneWidget);
@@ -37,7 +37,7 @@ void main() {
     QuickFilter? selected;
 
     await tester.pumpWidget(
-      _buildSubject(
+      buildSubject(
         onChanged: (filter) => selected = filter,
       ),
     );

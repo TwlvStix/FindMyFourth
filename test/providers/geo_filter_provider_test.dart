@@ -58,16 +58,16 @@ void main() {
   group('GeoFilterProvider', () {
     late GeoFilterProvider provider;
     late MockGeoLocationService mockService;
-    bool _skipTearDownDispose = false;
+    bool skipTearDownDispose = false;
 
     setUp(() {
       mockService = MockGeoLocationService();
       provider = GeoFilterProvider(service: mockService);
-      _skipTearDownDispose = false;
+      skipTearDownDispose = false;
     });
 
     tearDown(() {
-      if (!_skipTearDownDispose) {
+      if (!skipTearDownDispose) {
         provider.dispose();
       }
     });
@@ -463,7 +463,7 @@ void main() {
 
     group('dispose', () {
       test('cancels pending notify timer', () async {
-        _skipTearDownDispose = true;
+        skipTearDownDispose = true;
         provider.setEnabled(true);
         provider.dispose();
 
@@ -472,7 +472,7 @@ void main() {
       });
 
       test('cancels pending radius persist timer', () async {
-        _skipTearDownDispose = true;
+        skipTearDownDispose = true;
         var persistCalled = false;
 
         provider.setRadius(10.0, onPersist: () {

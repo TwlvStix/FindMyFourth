@@ -193,6 +193,7 @@ class _UnifiedGameCardState extends State<UnifiedGameCard>
                         isCancelled: isCancelled,
                         isExpired: isExpired,
                         isOwner: isOwner,
+                        isJoined: isUserGame,
                       ),
                       SizedBox(height: AppSpacing.sm),
                       // Detail pills
@@ -216,6 +217,7 @@ class _UnifiedGameCardState extends State<UnifiedGameCard>
     required bool isCancelled,
     required bool isExpired,
     required bool isOwner,
+    required bool isJoined,
   }) {
     final game = widget.game;
 
@@ -281,6 +283,7 @@ class _UnifiedGameCardState extends State<UnifiedGameCard>
               isCancelled: isCancelled,
               isExpired: isExpired,
               isOwner: isOwner,
+              isJoined: isJoined,
             ),
           ),
         if (widget.vibeScore != null)
@@ -299,6 +302,7 @@ class _UnifiedGameCardState extends State<UnifiedGameCard>
     required bool isCancelled,
     required bool isExpired,
     required bool isOwner,
+    required bool isJoined,
   }) {
     if (isCancelled) {
       return Container(
@@ -374,7 +378,11 @@ class _UnifiedGameCardState extends State<UnifiedGameCard>
       );
     }
 
-    // Default: Joined
+    // Only show Joined badge if the user actually joined this game
+    if (!isJoined) {
+      return SizedBox.shrink();
+    }
+
     return Container(
       padding: EdgeInsets.symmetric(
         horizontal: AppSpacing.sm,

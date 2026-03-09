@@ -9,8 +9,10 @@ import '/core/design_tokens/typography.dart';
 import 'dart:ui';
 import '/models/game.dart';
 import '/screens/trust/cancellation_warning_modal.dart';
+import '/providers/trust_provider.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '/providers/provider_extensions.dart';
 
 class LeaveGameWidget extends StatefulWidget {
@@ -144,11 +146,18 @@ class _LeaveGameWidgetState extends State<LeaveGameWidget> {
                           ),
                           child: AppButtonEnhanced(
                             onPressed: () async {
+                              // Fetch active strike count for the warning modal
+                              final strikeCount = await context
+                                  .read<TrustProvider>()
+                                  .getActiveStrikeCount();
+                              if (!context.mounted) return;
+
                               // Show tier-aware cancellation warning before proceeding
                               final confirmed =
                                   await CancellationWarningModal.show(
                                 context,
                                 game: widget.gameRef,
+                                activeStrikes: strikeCount,
                               );
                               if (confirmed != true) return;
                               if (!context.mounted) return;
@@ -184,6 +193,8 @@ class _LeaveGameWidgetState extends State<LeaveGameWidget> {
                               }
 
                               if (!context.mounted) return;
+                              // Invalidate standing cache so next view reflects any new strike
+                              context.read<TrustProvider>().invalidateStanding();
                               context.pushSuccessPage(
                                 transition: TransitionStandards.modalTransition,
                               );

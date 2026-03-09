@@ -194,6 +194,12 @@ class JoinGameDetailedController {
       final chatId = game.chatRef!.id;
       chatProvider.invalidateChatCache(chatId);
       chatProvider.invalidateMessagesCache(chatId);
+      // Eagerly sync chat membership to prevent permission-denied race
+      // condition when user opens the group chat before Cloud Function runs.
+      await chatProvider.ensureGameChatMembership(
+        chatId: chatId,
+        uid: currentUserRef.id,
+      );
     }
 
     return const JoinGameAttemptResult(status: JoinGameAttemptStatus.success);

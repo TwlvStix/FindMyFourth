@@ -6,8 +6,11 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_sign_in/google_sign_in.dart';
+import 'package:provider/provider.dart';
 import '../auth_manager.dart';
+import 'auth_util.dart';
 import '/core/utils/app_log.dart';
+import '/providers/user_provider.dart';
 
 import '/backend/backend.dart';
 import 'anonymous_auth.dart';
@@ -549,22 +552,6 @@ class FirebaseAuthManager extends AuthManager
     }
   }
 
-  Future<bool> _hasCompletedOnboarding() async {
-    final user = FirebaseAuth.instance.currentUser;
-    if (user == null) {
-      return true;
-    }
-
-    try {
-      final userDoc = await UsersRecord.getDocumentOnce(
-        UsersRecord.collection.doc(user.uid),
-      );
-      return userDoc.onboardingCompleted;
-    } catch (_) {
-      return false;
-    }
-  }
-
   Future<void> handlePostAuthNavigation(
     BuildContext context, {
     required String fallbackRouteName,
@@ -581,65 +568,70 @@ class FirebaseAuthManager extends AuthManager
       return;
     }
 
-    // Check for profile completion - require user-entered fields, not just
-    // OAuth-provided displayName. Google Auth pre-populates displayName,
-    // so we need to check fields that users explicitly fill out.
+    // Use already-loaded document when available (populated by maybeCreateUser
+    // via authenticatedUserStream), fall back to fresh fetch.
+    UsersRecord? userDoc = currentUserDocument;
+    if (userDoc == null) {
+      try {
+        userDoc = await UsersRecord.getDocumentOnce(
+          UsersRecord.collection.doc(user.uid),
+        );
+      } catch (e) {
+        AppLog.d('📖 AUTH: Profile fetch failed for ${user.uid}: $e');
+      }
+    }
+
+    if (!context.mounted) return;
+
+    // Fast path: returning user with onboarding already completed.
+    // Check this FIRST to avoid stale-cache issues with profile field checks.
+    if (userDoc != null && userDoc.onboardingCompleted) {
+      AppLog.d('📖 AUTH: onboarding_completed=true, routing to $fallbackRouteName');
+      final userProvider = Provider.of<UserProvider>(context, listen: false);
+      userProvider.setOnboardingCompletedOverride();
+      if (replaceRoute) {
+        context.goNamed(fallbackRouteName, extra: fallbackExtra);
+      } else {
+        context.pushNamed(fallbackRouteName, extra: fallbackExtra);
+      }
+      return;
+    }
+
+    // Onboarding not marked complete — check if profile fields are filled
+    // (handles edge case where user completed profile but flag wasn't set).
     bool hasProfileData = false;
-    try {
-      final userDoc = await UsersRecord.getDocumentOnce(
-        UsersRecord.collection.doc(user.uid),
-      );
+    if (userDoc != null) {
       hasProfileData = userDoc.firstName.isNotEmpty &&
           userDoc.lastName.isNotEmpty &&
           userDoc.hasGender() &&
           userDoc.hasDateOfBirth();
-    } catch (e) {
-      // Document doesn't exist or fetch failed - user needs onboarding
-      AppLog.d('📖 AUTH: Profile check failed for ${user.uid}: $e');
-      hasProfileData = false;
+      AppLog.d('📖 AUTH: Profile check: firstName=${userDoc.firstName.isNotEmpty}, '
+          'lastName=${userDoc.lastName.isNotEmpty}, '
+          'gender=${userDoc.hasGender()}, dob=${userDoc.hasDateOfBirth()}');
     }
 
-    if (!context.mounted) return;
-
-    if (!hasProfileData) {
-      // No profile data - send to onboarding
-      AppLog.d('📖 AUTH: No profile data, routing to onboarding');
-      context.goNamed(
-        'UserOnboarding',
-        queryParameters: {'next': fallbackRouteName},
-      );
+    if (hasProfileData) {
+      // Profile complete but onboarding flag missing — fix it and proceed.
+      AppLog.d('📖 AUTH: Profile complete, marking onboarding_completed');
+      final userProvider = Provider.of<UserProvider>(context, listen: false);
+      await userProvider.markOnboardingCompleted();
+      if (!context.mounted) return;
+      if (replaceRoute) {
+        context.goNamed(fallbackRouteName, extra: fallbackExtra);
+      } else {
+        context.pushNamed(fallbackRouteName, extra: fallbackExtra);
+      }
       return;
     }
 
-    // Profile exists - ensure onboarding is marked complete.
-    final completedOnboarding = await _hasCompletedOnboarding();
-    if (!context.mounted) return;
-
-    if (!completedOnboarding) {
-      await _markOnboardingCompletedLocally(user.uid);
-    }
-
-    if (!context.mounted) return;
-
-    // Route to fallback (e.g., Games List)
-    if (replaceRoute) {
-      context.goNamed(fallbackRouteName, extra: fallbackExtra);
-    } else {
-      context.pushNamed(fallbackRouteName, extra: fallbackExtra);
-    }
+    // No profile data — send to onboarding.
+    AppLog.d('📖 AUTH: No profile data, routing to onboarding');
+    context.goNamed(
+      'UserOnboarding',
+      queryParameters: {'next': fallbackRouteName},
+    );
   }
 
-  Future<void> _markOnboardingCompletedLocally(String uid) async {
-    try {
-      await UsersRecord.collection.doc(uid).set(
-        <String, dynamic>{'onboarding_completed': true},
-        SetOptions(merge: true),
-      );
-      AppLog.d('✅ AUTH: onboarding_completed set locally for $uid');
-    } catch (e) {
-      AppLog.d('❌ AUTH: Failed to set onboarding_completed locally: $e');
-    }
-  }
 }
 
 @visibleForTesting

@@ -289,6 +289,14 @@ class ChatProvider extends ChangeNotifier {
     }
   }
 
+  /// Eagerly sync chat membership after joining a game.
+  /// Non-critical passthrough — see ChatService.ensureGameChatMembership.
+  Future<void> ensureGameChatMembership({
+    required String chatId,
+    required String uid,
+  }) =>
+      _service.ensureGameChatMembership(chatId: chatId, uid: uid);
+
   Future<void> removeMember({
     required String chatId,
     required String uid,

@@ -49,8 +49,8 @@ class _GameChatDetailsWidgetState extends State<GameChatDetailsWidget>
   final ScrollController _scrollController = ScrollController();
 
   // Stream state
-  late final Stream<Chat?> _chatStream;
-  late final Stream<Chat?> _chatUiStream;
+  late Stream<Chat?> _chatStream;
+  late Stream<Chat?> _chatUiStream;
   Stream<QuerySnapshot>? _messagesStream;
   Stream<List<ChatMessageViewModel>>? _messageViewModelsStream;
   StreamSubscription<Chat?>? _chatUiSubscription;
@@ -77,6 +77,7 @@ class _GameChatDetailsWidgetState extends State<GameChatDetailsWidget>
   String _bannerText = '';
   bool _didMarkSeen = false;
   bool _isLeavingChat = false;
+  bool _hasRetriedPermission = false;
 
   // Extracted controllers/helpers
   late ChatTypingHelper _typingHelper;
@@ -127,6 +128,19 @@ class _GameChatDetailsWidgetState extends State<GameChatDetailsWidget>
           return;
         }
 
+        // Retry once on permission-denied — handles race condition where
+        // syncGameChatMembers Cloud Function hasn't completed yet.
+        if (!_hasRetriedPermission && _isPermissionDenied(error)) {
+          _hasRetriedPermission = true;
+          AppLog.d(
+              '📱 UI: Permission denied on chat stream, retrying in 2s');
+          Future.delayed(const Duration(seconds: 2), () {
+            if (!mounted) return;
+            _restartChatStream();
+          });
+          return;
+        }
+
         if (kDebugMode) {
           AppLog.d(
               '❌ UI: Chat stream error for chatId=${widget.chatId}: $error');
@@ -158,6 +172,43 @@ class _GameChatDetailsWidgetState extends State<GameChatDetailsWidget>
     _messageFocusNode.dispose();
     _scrollController.dispose();
     super.dispose();
+  }
+
+  bool _isPermissionDenied(dynamic error) {
+    if (error is FirebaseException) {
+      return error.code == 'permission-denied';
+    }
+    return error.toString().contains('permission-denied');
+  }
+
+  void _restartChatStream() {
+    _chatUiSubscription?.cancel();
+    final chatProvider = context.read<ChatProvider>();
+    chatProvider.invalidateChatCache(widget.chatId);
+    _chatStream = chatProvider.chatStream(widget.chatId);
+    _chatUiStream = _chatStream.distinct(_chatUiEquals);
+    _chatUiSubscription = _chatUiStream.listen(
+      (chat) {
+        if (!mounted) return;
+        _updateChatUiState(chat);
+      },
+      onError: (error) {
+        if (!mounted) return;
+        if (_isLeavingChat) return;
+        if (kDebugMode) {
+          AppLog.d(
+              '❌ UI: Chat stream error for chatId=${widget.chatId}: $error');
+        }
+        updateState(this, () {
+          _chatError = error;
+          _chatLoaded = true;
+          _chatUi = null;
+          _canSend = false;
+          _bannerText = '';
+          _isArchived = false;
+        });
+      },
+    );
   }
 
   void _onTextChanged() {

@@ -183,6 +183,23 @@ class GameService {
   /// - updated_at: server timestamp
   Future<void> joinGame(String gameId, String userId, {String? userGender}) async {
     try {
+      // Check if user previously cancelled this game day-of (struck from game)
+      final userRef = _firestore.collection('users').doc(userId);
+      final gameRef = _firestore.collection('games').doc(gameId);
+      final cancelQuery = await _firestore
+          .collection('cancellation_records')
+          .where('player_ref', isEqualTo: userRef)
+          .where('game_ref', isEqualTo: gameRef)
+          .where('tier', isEqualTo: 'day_of')
+          .limit(1)
+          .get();
+      if (cancelQuery.docs.isNotEmpty) {
+        throw GameOperationException(
+          'You cannot rejoin a game you cancelled from on the day of play',
+          code: 'struck-from-game',
+        );
+      }
+
       await _firestore.runTransaction((transaction) async {
         // 1. Read game document
         final gameRef =

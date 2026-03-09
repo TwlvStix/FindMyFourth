@@ -96,6 +96,23 @@ class ProfileService {
     }
   }
 
+  /// Mark onboarding as completed for a user
+  ///
+  /// Sets onboarding_completed = true on the user document.
+  Future<void> markOnboardingCompleted(String userId) async {
+    try {
+      await _firestore.collection('users').doc(userId).set(
+        <String, dynamic>{'onboarding_completed': true},
+        SetOptions(merge: true),
+      );
+      AppLog.d('✅ ProfileService.markOnboardingCompleted for $userId');
+    } on FirebaseException catch (e) {
+      AppLog.d(
+          'ProfileService.markOnboardingCompleted error: ${e.code} - ${e.message}');
+      rethrow;
+    }
+  }
+
   /// Get user statistics (games played, friends count, etc.)
   ///
   /// Returns aggregated stats from user document and related collections

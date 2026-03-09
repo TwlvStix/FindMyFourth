@@ -181,6 +181,14 @@ class TrustProvider extends ChangeNotifier {
     }
   }
 
+  /// Convenience method: returns the current user's active strike count.
+  ///
+  /// Fetches standing if not cached, returns 0 on failure.
+  Future<int> getActiveStrikeCount() async {
+    final standing = await fetchPlayerStanding();
+    return standing?.totalActiveStrikes ?? 0;
+  }
+
   /// Invalidate all caches (call after a round is verified or a strike is issued).
   void refreshAfterRound() {
     clearAll();

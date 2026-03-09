@@ -8,7 +8,7 @@ import '/models/game.dart';
 import '/models/player_eligibility.dart';
 import '/services/game_eligibility_service.dart';
 
-/// Filters games to only include active ones (not expired/completed).
+/// Filters games to only include active ones (not expired/completed/played).
 ///
 /// Cancelled games are delegated to [shouldHideCancelledGame] callback.
 List<Game> filterActiveGames(
@@ -17,7 +17,7 @@ List<Game> filterActiveGames(
 }) {
   return games.where((game) {
     // Always hide expired and completed games
-    if (game.status == 'expired' || game.status == 'completed') {
+    if (game.status == 'expired' || game.status == 'completed' || game.status == 'played') {
       return false;
     }
 

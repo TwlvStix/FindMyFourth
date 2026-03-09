@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 
 import '/services/game_service.dart';
+import '/services/trust_repository.dart';
 import '/backend/backend.dart';
 import '/core/request_manager.dart';
 import '/core/utils/app_log.dart';
@@ -23,11 +24,14 @@ class GameProvider extends ChangeNotifier {
   GameProvider({
     GameService? service,
     VibeFloorService? vibeFloorService,
+    TrustRepository? trustRepository,
   })  : _service = service ?? GameService(),
-        _vibeFloorService = vibeFloorService ?? VibeFloorService();
+        _vibeFloorService = vibeFloorService ?? VibeFloorService(),
+        _trustRepository = trustRepository ?? const TrustRepository();
 
   final GameService _service;
   final VibeFloorService _vibeFloorService;
+  final TrustRepository _trustRepository;
 
   // ========================================
   // STATE FIELDS
@@ -304,6 +308,9 @@ class GameProvider extends ChangeNotifier {
   Future<void> leaveGame(String gameId, String userId) async {
     try {
       await _service.leaveGame(gameId, userId);
+
+      // Await strike recording so standing data is accurate for subsequent reads
+      await _trustRepository.recordCancellation(gameId, userId);
 
       // Invalidate game cache to force refresh
       invalidateGameCache(gameId);
