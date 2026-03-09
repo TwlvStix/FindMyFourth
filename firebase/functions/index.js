@@ -2266,6 +2266,28 @@ exports.onUserProfileCreated = functions
         // Don't throw - avatar generation is non-critical
       }
     }
+
+    // Create default alertSub so the user receives game alert notifications.
+    // Schema matches AlertSubscription.defaults() from the Flutter client.
+    try {
+      const now = admin.firestore.FieldValue.serverTimestamp();
+      await admin.firestore().collection("alertSubs").doc(userId).set({
+        userId,
+        enabled: true,
+        gameVibes: [],
+        stakes: [],
+        formats: [],
+        handicapUses: [],
+        courses: [],
+        special: { games: false, twoVTwo: false, discount: false },
+        createdAt: now,
+        updatedAt: now,
+      });
+      console.log(`Created default alertSub for user ${userId}`);
+    } catch (error) {
+      console.error(`Error creating alertSub for ${userId}:`, error);
+      // Don't throw - alertSub creation is non-critical
+    }
   });
 
 /**

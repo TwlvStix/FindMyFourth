@@ -336,9 +336,13 @@ function getUserNotificationPrefs(userData) {
   const quietHours = prefs.quiet_hours || {};
   const pushEnabled =
     typeof prefs.push_enabled === "boolean" ? prefs.push_enabled : true;
+  const gameAlerts = prefs.game_alerts || {};
+  const gameAlertsEnabled =
+    typeof gameAlerts.enabled === "boolean" ? gameAlerts.enabled : true;
 
   return {
     pushEnabled,
+    gameAlertsEnabled,
     quietHoursEnabled: quietHours.enabled === true,
     quietHoursStart:
       typeof quietHours.start === "string" ? quietHours.start : "22:00",
@@ -553,6 +557,12 @@ exports.sendGameCreatedNotifications = functions
           continue;
         }
 
+        // Check if game alerts are enabled in user preferences
+        if (!prefs.gameAlertsEnabled) {
+          console.log(`[GameAlerts] User ${userId} has game alerts disabled, skipping`);
+          continue;
+        }
+
         // Check digest mode
         if (prefs.digestMode === "off") {
           console.log(`[GameAlerts] User ${userId} has digest mode off, skipping`);
@@ -683,6 +693,24 @@ exports.sendGameCreatedNotifications = functions
             }),
             type: "game_created",
             gameId,
+          },
+          android: {
+            priority: "high",
+            notification: {
+              channelId: "default",
+              sound: "default",
+            },
+          },
+          apns: {
+            headers: {
+              "apns-priority": "10",
+            },
+            payload: {
+              aps: {
+                sound: "default",
+                "mutable-content": 1,
+              },
+            },
           },
           tokens: deviceTokens.map((entry) => entry.token),
         };
