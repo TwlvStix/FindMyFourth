@@ -140,11 +140,15 @@ extension AppNavigationExtensions on BuildContext {
 
   void pushJoinGameDetailed({
     required DocumentReference gameRef,
+    bool skipFriendsOnlyCheck = false,
     TransitionInfo transition = TransitionStandards.detailTransition,
   }) {
     pushWithTransition(
       AppRouteNames.joinGameDetailed,
-      extra: <String, dynamic>{'gameRef': gameRef},
+      extra: <String, dynamic>{
+        'gameRef': gameRef,
+        'skipFriendsOnlyCheck': skipFriendsOnlyCheck,
+      },
       transition: transition,
     );
   }

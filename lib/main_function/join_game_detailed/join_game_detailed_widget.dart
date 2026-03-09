@@ -24,9 +24,11 @@ class JoinGameDetailedWidget extends StatefulWidget {
   const JoinGameDetailedWidget({
     super.key,
     this.gameRef,
+    this.skipFriendsOnlyCheck = false,
   });
 
   final DocumentReference? gameRef;
+  final bool skipFriendsOnlyCheck;
 
   static String routeName = 'JoinGameDetailed';
   static String routePath = '/joinGameDetailed';
@@ -132,7 +134,8 @@ class _JoinGameDetailedWidgetState extends State<JoinGameDetailedWidget>
     // Handle permission-denied (friends-only game) with one-shot dialog
     if (error != null &&
         FirebaseErrorUtils.isPermissionDenied(error) &&
-        !_hasShownAccessDeniedDialog) {
+        !_hasShownAccessDeniedDialog &&
+        !widget.skipFriendsOnlyCheck) {
       _hasShownAccessDeniedDialog = true;
       if (!_hasLoggedAccessDenied) {
         _hasLoggedAccessDenied = true;

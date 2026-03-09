@@ -119,11 +119,14 @@ class ChatViewModelManager {
         return <ChatRowViewModel>[];
       }
 
-      // Collect ALL member IDs from all chats for group avatar display
+      // Collect ALL member IDs from all chats for group avatar display.
+      // For game chats, include the current user so their avatar appears
+      // in the group split; for direct chats, exclude them.
       final allMemberIds = <String>{};
       for (final chat in chats) {
         for (final memberId in chat.memberIds) {
-          if (memberId != currentUserId && memberId.isNotEmpty) {
+          if (memberId.isEmpty) continue;
+          if (chat.type == 'game' || memberId != currentUserId) {
             allMemberIds.add(memberId);
           }
         }
@@ -165,14 +168,24 @@ class ChatViewModelManager {
         String displayName;
         String photoUrl = '';
 
-        // Build members list for group avatar (up to 4 members, excluding current user)
+        // Build members list for group avatar.
+        // Game chats: include current user so the group avatar shows all members.
+        // Direct chats: exclude current user (show the other person only).
         final members = <ChatMemberInfo>[];
-        final otherMemberIds = chat.memberIds
-            .where((id) => id != currentUserId && id.isNotEmpty)
-            .take(4)
-            .toList();
+        final avatarMemberIds = chat.type == 'game'
+            ? chat.memberIds.where((id) => id.isNotEmpty).take(4).toList()
+            : chat.memberIds
+                .where((id) => id != currentUserId && id.isNotEmpty)
+                .take(4)
+                .toList();
 
-        for (final memberId in otherMemberIds) {
+        if (kDebugMode) {
+          AppLog.d('💬 VM: chat=${chat.id} type=${chat.type} '
+              'allMemberIds=${chat.memberIds.length} '
+              'avatarMemberIds=${avatarMemberIds.length}');
+        }
+
+        for (final memberId in avatarMemberIds) {
           final profile = profileMap[memberId];
           final name = (profile?.displayName ?? '').trim().isNotEmpty
               ? profile!.displayName
@@ -181,6 +194,11 @@ class ChatViewModelManager {
             name: name,
             photoUrl: profile?.photoUrl,
           ));
+        }
+
+        if (kDebugMode) {
+          AppLog.d('💬 VM: chat=${chat.id} '
+              'resolvedMembers=${members.length}');
         }
 
         if (chat.type == 'game') {

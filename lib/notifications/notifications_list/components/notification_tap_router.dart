@@ -4,6 +4,7 @@ import 'package:phosphor_flutter/phosphor_flutter.dart';
 
 import '/core/navigation/nav_extensions.dart';
 import '/core/widgets/app_premium_dialog.dart';
+import '/notifications/components/pre_game_confirm_bottom_sheet.dart';
 import '/providers/notification_list_provider.dart';
 import 'notification_type_helpers.dart';
 
@@ -42,6 +43,7 @@ class NotificationTapRouter {
         provider: provider,
         payload: payload,
         currentUserRef: currentUserRef,
+        notificationType: type,
       );
       return;
     }
@@ -59,12 +61,41 @@ class NotificationTapRouter {
       return;
     }
 
+    // Pre-game confirmation (host confirms/cancels partial game)
+    if (type == 'host_pre_game_confirm') {
+      final gameId = payload['gameId'] ?? payload['game_id'];
+      final courseName =
+          payload['course_name'] ?? payload['courseName'] ?? 'your course';
+      final gameDate =
+          payload['game_date'] ?? payload['gameDate'] ?? 'your upcoming round';
+
+      if (gameId is String && gameId.isNotEmpty) {
+        await showPreGameConfirmBottomSheet(
+          context: context,
+          gameId: gameId,
+          courseName: courseName.toString(),
+          gameDate: gameDate.toString(),
+          onConfirmed: () {
+            final gameRef = provider.resolveGameRefFromPayload(payload);
+            if (gameRef != null) {
+              context.pushJoinGameDetailed(gameRef: gameRef);
+            }
+          },
+          onCancelled: () {
+            context.pushGamesList();
+          },
+        );
+      }
+      return;
+    }
+
     if (NotificationTypeHelpers.isTrustGameNotification(type)) {
       await _handleGameNotification(
         context: context,
         provider: provider,
         payload: payload,
         currentUserRef: currentUserRef,
+        notificationType: type,
       );
       return;
     }
@@ -97,6 +128,7 @@ class NotificationTapRouter {
         provider: provider,
         payload: payload,
         currentUserRef: currentUserRef,
+        notificationType: type,
       );
       return;
     }
@@ -117,6 +149,7 @@ class NotificationTapRouter {
         provider: provider,
         payload: payload,
         currentUserRef: currentUserRef,
+        notificationType: type,
       );
       return;
     }
@@ -128,6 +161,7 @@ class NotificationTapRouter {
         provider: provider,
         payload: payload,
         currentUserRef: currentUserRef,
+        notificationType: type,
       );
       return;
     }
@@ -150,6 +184,7 @@ class NotificationTapRouter {
         provider: provider,
         payload: payload,
         currentUserRef: currentUserRef,
+        notificationType: type,
       );
       return;
     }
@@ -160,11 +195,17 @@ class NotificationTapRouter {
     required NotificationListProvider provider,
     required Map<String, dynamic> payload,
     required DocumentReference? currentUserRef,
+    String? notificationType,
   }) async {
     final gameRef = provider.resolveGameRefFromPayload(payload);
     if (gameRef == null) return;
 
-    if (currentUserRef != null) {
+    // Skip friends-only check for host-specific notification types —
+    // the host always has access to their own game.
+    final isHostNotification = notificationType != null &&
+        NotificationTypeHelpers.isHostNotificationType(notificationType);
+
+    if (currentUserRef != null && !isHostNotification) {
       final shouldBlock = await provider.shouldBlockFriendsOnlyGame(
         gameRef,
         currentUserRef,
@@ -177,7 +218,10 @@ class NotificationTapRouter {
     }
 
     if (!context.mounted) return;
-    context.pushJoinGameDetailed(gameRef: gameRef);
+    context.pushJoinGameDetailed(
+      gameRef: gameRef,
+      skipFriendsOnlyCheck: isHostNotification,
+    );
   }
 
   static Future<void> _showFriendsOnlyDialog(BuildContext context) async {

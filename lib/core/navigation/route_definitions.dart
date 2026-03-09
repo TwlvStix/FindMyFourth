@@ -169,6 +169,7 @@ List<GoRoute> buildRoutes(AppStateNotifier appStateNotifier) => [
             initialPage: '',
             page: JoinGameDetailedWidget(
               gameRef: gameRefFromState(state),
+              skipFriendsOnlyCheck: skipFriendsOnlyCheckFromState(state),
             ),
           ),
         ),

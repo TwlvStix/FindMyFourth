@@ -118,6 +118,16 @@ DocumentReference? userRefFromState(GoRouterState state) {
   return null;
 }
 
+/// Extracts skipFriendsOnlyCheck boolean from route state.
+/// Defaults to false if not present.
+bool skipFriendsOnlyCheckFromState(GoRouterState state) {
+  final extra = state.extra;
+  if (extra is Map && extra['skipFriendsOnlyCheck'] is bool) {
+    return extra['skipFriendsOnlyCheck'] as bool;
+  }
+  return false;
+}
+
 /// Extracts isEditMode boolean from route state.
 /// Defaults to false if not present.
 bool isEditModeFromState(GoRouterState state) {

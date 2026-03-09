@@ -46,6 +46,7 @@ class Chat {
 
   static Chat fromDoc(DocumentSnapshot doc) {
     final data = (doc.data() as Map<String, dynamic>?) ?? <String, dynamic>{};
+
     final rawTypingUsers = data['typingUsers'];
     final typingUsers = <String, DateTime>{};
     if (rawTypingUsers is Map) {

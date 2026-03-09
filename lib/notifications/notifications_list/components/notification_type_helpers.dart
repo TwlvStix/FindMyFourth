@@ -80,6 +80,20 @@ class NotificationTypeHelpers {
     }.contains(type);
   }
 
+  /// Returns true for notification types sent specifically to the game host.
+  ///
+  /// Used to skip the friends-only gate — the host always has access to
+  /// their own game, so we can bypass the Firestore read check.
+  static bool isHostNotificationType(String type) {
+    return const {
+      'host_checkin_due',
+      'host_checkin_fallback',
+      'host_pre_game_confirm',
+      'player_declined_spot',
+      'join_request_new',
+    }.contains(type);
+  }
+
   /// Returns true for game alert notification types (deferred alerts).
   static bool isGameAlertNotification(String type) {
     return type == 'game_alert_deferred';
@@ -95,7 +109,8 @@ class NotificationTypeHelpers {
     // Trust System types
     if (type == 'host_checkin_due' ||
         type == 'host_checkin_fallback' ||
-        type == 'player_fallback_confirm') {
+        type == 'player_fallback_confirm' ||
+        type == 'host_pre_game_confirm') {
       return AppPhosphorIcons.calendarCheck;
     }
     if (type == 'player_rate_due') return AppPhosphorIcons.star;
@@ -146,6 +161,8 @@ class NotificationTypeHelpers {
     // Host-add-player types
     if (type == 'player_added_by_host') return AppColors.green;
     if (type == 'player_declined_spot') return AppColors.info;
+    // Pre-game confirmation
+    if (type == 'host_pre_game_confirm') return AppColors.green;
     // Streak types
     if (isStreakNotification(type)) return AppColors.gold;
     // Game alert deferred

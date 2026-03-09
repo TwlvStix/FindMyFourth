@@ -12,6 +12,7 @@ import 'package:phosphor_flutter/phosphor_flutter.dart';
 import '/core/widgets/app_premium_dialog.dart';
 import '/models/notification_receipt_event.dart';
 import '/notifications/components/player_added_bottom_sheet.dart';
+import '/notifications/components/pre_game_confirm_bottom_sheet.dart';
 import '/services/notification_audit_service.dart';
 
 /// TTL-based deduplication cache with 5-minute expiry.
@@ -131,6 +132,43 @@ Future<void> handleNotificationNavigation(
         },
         onDeclined: () {
           // Navigate to games list after declining
+          final navContext = appNavigatorKey.currentContext;
+          if (navContext != null && navContext.mounted) {
+            navContext.pushNamed('GamesList');
+          }
+        },
+      );
+      return; // Exit after handling bottom sheet
+    }
+  }
+
+  // Intercept host_pre_game_confirm to show confirmation bottom sheet
+  if (type == 'host_pre_game_confirm') {
+    AppLog.d('🔔 [DIAG-NAV] host_pre_game_confirm intercept: gameId=${data['game_id'] ?? data['gameId']}, mounted=${context.mounted}');
+    final gameId = data['game_id'] ?? data['gameId'];
+    final courseName =
+        data['course_name'] ?? data['courseName'] ?? 'your course';
+    final gameDate =
+        data['game_date'] ?? data['gameDate'] ?? 'your upcoming round';
+
+    if (gameId is String && gameId.isNotEmpty && context.mounted) {
+      await showPreGameConfirmBottomSheet(
+        context: context,
+        gameId: gameId,
+        courseName: courseName.toString(),
+        gameDate: gameDate.toString(),
+        onConfirmed: () {
+          final navContext = appNavigatorKey.currentContext;
+          if (navContext != null && navContext.mounted) {
+            navContext.pushNamed(
+              'GameJoinedDetailed',
+              extra: {
+                'gameRef': FirebaseFirestore.instance.doc('games/$gameId'),
+              },
+            );
+          }
+        },
+        onCancelled: () {
           final navContext = appNavigatorKey.currentContext;
           if (navContext != null && navContext.mounted) {
             navContext.pushNamed('GamesList');
@@ -457,9 +495,12 @@ Future<bool> _shouldBlockFriendsOnlyGame(
     final gameSnap = await gameRef.get();
     data = gameSnap.data() as Map<String, dynamic>?;
   } on FirebaseException catch (error) {
-    if (error.code == 'permission-denied') {
-      return true;
-    }
+    AppLog.d(
+      '❌ _shouldBlockFriendsOnlyGame: ${error.code} - ${error.message}',
+    );
+    // Don't block on permission-denied — let game detail widget handle it.
+    // This prevents hosts from being blocked when Firestore rules reject
+    // the read (e.g., stale auth token, rules not yet deployed).
     return false;
   } catch (_) {
     return false;
@@ -477,6 +518,11 @@ Future<bool> _shouldBlockFriendsOnlyGame(
   final ownerRef = data['userRef'];
   if (ownerRef is! DocumentReference) {
     return true;
+  }
+
+  // Host can always access their own game
+  if (ownerRef.id == currentUser.uid) {
+    return false;
   }
 
   final currentUserRef =

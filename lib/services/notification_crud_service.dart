@@ -276,9 +276,9 @@ class NotificationCrudService {
       AppLog.d(
         '❌ NotificationCrudService.shouldBlockFriendsOnlyGame: ${error.code} - ${error.message}',
       );
-      if (error.code == 'permission-denied') {
-        return true;
-      }
+      // Don't block on permission-denied — let game detail widget handle it.
+      // This prevents hosts from being blocked when Firestore rules reject
+      // the read (e.g., stale auth token, rules not yet deployed).
       return false;
     } catch (_) {
       return false;
@@ -297,6 +297,11 @@ class NotificationCrudService {
     final ownerRef = data['userRef'];
     if (ownerRef is! DocumentReference) {
       return true;
+    }
+
+    // Host can always access their own game
+    if (ownerRef.id == currentUserRef.id) {
+      return false;
     }
 
     final userSnap = await currentUserRef.get();
