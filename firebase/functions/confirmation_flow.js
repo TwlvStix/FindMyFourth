@@ -803,6 +803,43 @@ async function _onGameStatusToPlayedHandler(change, context, db) {
         entry.id.length > 0
     );
 
+    // ── Minimum player gate ───────────────────────────────────────────────
+    // Guests don't count. If fewer than 2 app users joined, cancel the game
+    // and notify the host — no round_jobs or round_records are created.
+    if (appUserRefs.length < 2) {
+      console.log(
+        `onGameStatusToPlayed: game ${gameId} has ${appUserRefs.length} app user(s), below minimum of 2 — auto-cancelling`
+      );
+
+      await gameRef.update({
+        status: "cancelled",
+        isCancelled: true,
+        cancelled_at: admin.firestore.FieldValue.serverTimestamp(),
+        cancellation_reason: "insufficient_players",
+      });
+
+      // Notify the host
+      try {
+        await routeNotification(
+          {
+            eventId: randomUUID(),
+            eventType: "game_auto_cancelled",
+            recipientUserId: hostRef.id,
+            sourceId: gameId,
+            data: { game_id: gameId },
+          },
+          db
+        );
+      } catch (notifyErr) {
+        console.warn(
+          `onGameStatusToPlayed: failed to notify host for auto-cancelled game ${gameId}:`,
+          notifyErr
+        );
+      }
+
+      return;
+    }
+
     const courseName =
       typeof after.course_play === "string" ? after.course_play : "your course";
 

@@ -1169,7 +1169,7 @@ describe("onGameStatusToPlayed", () => {
       status: "played",
       userRef: playerRef("host_user"),
       course_play: "Augusta",
-      joined_players: [playerRef("host_user")],
+      joined_players: [playerRef("host_user"), playerRef("second_player")],
       guest_players: [],
       game_type: "Stroke Play",
     };
@@ -1187,6 +1187,43 @@ describe("onGameStatusToPlayed", () => {
     expect(mockCreateTask).toHaveBeenCalled();
     const callArg = mockCreateTask.mock.calls[0][0];
     expect(callArg.parent).toBe('projects/find-my-fourth/locations/us-west2/queues/trust-notification-scheduler');
+  });
+
+  test("auto-cancels game with fewer than 2 app users", async () => {
+    const teeTimeMs = Date.now() - 2 * HOUR_MS;
+    const gameData = {
+      date: MockTimestamp.fromMillis(teeTimeMs),
+      status: "played",
+      userRef: playerRef("host_user"),
+      course_play: "Augusta",
+      joined_players: [playerRef("host_user")],
+      guest_players: [],
+      game_type: "Stroke Play",
+    };
+    const change = {
+      before: { data: () => ({ status: "filled" }) },
+      after: {
+        data: () => gameData,
+        ref: new MockDocRef(mockDb, "games", "g1"),
+      },
+    };
+    const context = { params: { gameId: "g1" } };
+
+    await confirmationFlow._onGameStatusToPlayedHandler(change, context, mockDb);
+
+    // Game should be cancelled
+    const gameDoc = mockDb.getDoc("games", "g1");
+    expect(gameDoc.status).toBe("cancelled");
+    expect(gameDoc.isCancelled).toBe(true);
+    expect(gameDoc.cancellation_reason).toBe("insufficient_players");
+
+    // No round_jobs should be created
+    const jobs = mockDb.getDocs("round_jobs");
+    expect(Object.keys(jobs).length).toBe(0);
+
+    // No round_records should be created
+    const rounds = mockDb.getDocs("round_records");
+    expect(Object.keys(rounds).length).toBe(0);
   });
 });
 
@@ -1595,7 +1632,7 @@ describe("round record data — vibe scores copy-only rule", () => {
           status: "played",
           userRef: playerRef("host_user"),
           course_play: "Pebble Beach",
-          joined_players: [playerRef("player_a")],
+          joined_players: [playerRef("player_a"), playerRef("player_b")],
           game_type: "Stroke Play",
         }),
         ref: new MockDocRef(mockDb, "games", "g1"),
@@ -1758,7 +1795,7 @@ describe("round record data — vibe scores copy-only rule", () => {
           status: "played",
           userRef: playerRef("host_user"),
           course_play: "Augusta",
-          joined_players: [playerRef("host_user")],
+          joined_players: [playerRef("host_user"), playerRef("second_player")],
           game_type: "Stroke Play",
         }),
         ref: new MockDocRef(mockDb, "games", "g1"),
@@ -1785,7 +1822,7 @@ describe("round record data — vibe scores copy-only rule", () => {
           status: "played",
           userRef: playerRef("host_user"),
           course_play: "Augusta",
-          joined_players: [playerRef("host_user")],
+          joined_players: [playerRef("host_user"), playerRef("second_player")],
           game_type: "Stroke Play",
         }),
         ref: new MockDocRef(mockDb, "games", "g1"),
@@ -1810,7 +1847,7 @@ describe("round record data — vibe scores copy-only rule", () => {
           status: "played",
           userRef: playerRef("host_user"),
           course_play: "Augusta",
-          joined_players: [playerRef("host_user")],
+          joined_players: [playerRef("host_user"), playerRef("second_player")],
           game_type: "Stroke Play",
         }),
         ref: new MockDocRef(mockDb, "games", "g1"),
@@ -2880,7 +2917,7 @@ describe("Issue 16 — crash-resume idempotency", () => {
       status: "played",
       userRef: playerRef("host_user"),
       course_play: "Augusta",
-      joined_players: [playerRef("host_user")],
+      joined_players: [playerRef("host_user"), playerRef("second_player")],
       guest_players: [],
       game_type: "Stroke Play",
     };

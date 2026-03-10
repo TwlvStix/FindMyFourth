@@ -12,6 +12,7 @@ import '/core/design_tokens/border_radius.dart';
 import '/core/design_tokens/app_phosphor_icons.dart';
 import '/core/utils/app_log.dart';
 import '/core/widgets/app_button_enhanced.dart';
+import '/services/trust_flow_service.dart';
 
 /// FallbackConfirmationScreen
 ///
@@ -38,10 +39,14 @@ class FallbackConfirmationScreen extends StatefulWidget {
 
 class _FallbackConfirmationScreenState
     extends State<FallbackConfirmationScreen> {
+  final _trustFlowService = TrustFlowService();
+
   bool _loading = true;
   bool _submitting = false;
   String? _error;
   bool? _answered; // true = yes, false = no, null = not answered
+  bool _alreadyCompleted = false;
+  bool _windowClosed = false;
 
   String _courseName = '';
 
@@ -53,6 +58,26 @@ class _FallbackConfirmationScreenState
 
   Future<void> _loadCourseName() async {
     try {
+      // Check if already submitted or window closed before showing the form.
+      final status = await _trustFlowService.checkFallbackStatus(
+        gameRef: widget.gameRef,
+      );
+      if (!mounted) return;
+      if (status == ConfirmationStatus.completed) {
+        updateState(this, () {
+          _alreadyCompleted = true;
+          _loading = false;
+        });
+        return;
+      }
+      if (status == ConfirmationStatus.windowClosed) {
+        updateState(this, () {
+          _windowClosed = true;
+          _loading = false;
+        });
+        return;
+      }
+
       final gameSnap = await widget.gameRef.get();
       if (gameSnap.exists) {
         final data = gameSnap.data() as Map<String, dynamic>;
@@ -90,6 +115,72 @@ class _FallbackConfirmationScreenState
       return Scaffold(
         backgroundColor: AppColors.navyDark,
         body: const Center(child: CircularProgressIndicator()),
+      );
+    }
+
+    if (_alreadyCompleted) {
+      return Scaffold(
+        backgroundColor: AppColors.navyDark,
+        body: SafeArea(
+          child: Center(
+            child: Padding(
+              padding: AppSpacing.symmetric(horizontal: AppSpacing.xl),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  PhosphorIcon(AppPhosphorIcons.successFill,
+                      color: AppColors.green, size: AppIconSize.hero),
+                  SizedBox(height: AppSpacing.lg),
+                  Text(
+                    'Already confirmed for this round.',
+                    style: AppTypography.titleMedium,
+                    textAlign: TextAlign.center,
+                  ),
+                  SizedBox(height: AppSpacing.xxl),
+                  AppButtonEnhanced(
+                    onPressed: () => Navigator.of(context).pop(),
+                    text: 'Close',
+                    variant: AppButtonVariant.primary,
+                    size: AppButtonSize.large,
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      );
+    }
+
+    if (_windowClosed) {
+      return Scaffold(
+        backgroundColor: AppColors.navyDark,
+        body: SafeArea(
+          child: Center(
+            child: Padding(
+              padding: AppSpacing.symmetric(horizontal: AppSpacing.xl),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  PhosphorIcon(AppPhosphorIcons.clock,
+                      color: AppColors.textMuted, size: AppIconSize.hero),
+                  SizedBox(height: AppSpacing.lg),
+                  Text(
+                    'This confirmation window has closed.',
+                    style: AppTypography.titleMedium,
+                    textAlign: TextAlign.center,
+                  ),
+                  SizedBox(height: AppSpacing.xxl),
+                  AppButtonEnhanced(
+                    onPressed: () => Navigator.of(context).pop(),
+                    text: 'Close',
+                    variant: AppButtonVariant.primary,
+                    size: AppButtonSize.large,
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
       );
     }
 

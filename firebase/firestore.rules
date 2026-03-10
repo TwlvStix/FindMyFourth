@@ -934,6 +934,15 @@ service cloud.firestore {
       }
     }
 
+    // round_jobs — game participants can read to check attendance records
+    match /round_jobs/{jobId} {
+      allow read: if isSignedIn() &&
+        resource.data.game_ref is path &&
+        (isGameParticipantByRef(resource.data.game_ref) ||
+         isGameOwnerByRef(resource.data.game_ref));
+      allow write: if false;
+    }
+
     // player_rounds — players can read their own trajectory
     match /player_rounds/{docId} {
       allow read: if isSignedIn() &&

@@ -52,6 +52,7 @@ const CRITICAL_BYPASS_TYPES = new Set([
 const GAME_ALERT_TYPES = new Set([
   TrustEventType.GAME_SPOT_OPENED,
   TrustEventType.GAME_CANCELLED,
+  TrustEventType.GAME_AUTO_CANCELLED,
   TrustEventType.GAME_ALERT_DEFERRED,
 ]);
 

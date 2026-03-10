@@ -28,6 +28,7 @@ const TrustEventType = Object.freeze({
   BADGE_PROGRESS:           'badge_progress',
   GAME_SPOT_OPENED:         'game_spot_opened',
   GAME_CANCELLED:           'game_cancelled',
+  GAME_AUTO_CANCELLED:      'game_auto_cancelled',
   GAME_ALERT_DEFERRED:      'game_alert_deferred',
   FRIEND_REQUEST_RECEIVED:  'friend_request_received',
   FRIEND_REQUEST_ACCEPTED:  'friend_request_accepted',
@@ -354,6 +355,21 @@ const EVENT_REGISTRY = Object.freeze({
     template: {
       title: 'Game cancelled',
       body:  'The {game_date} game at {course_name} has been cancelled by the host.',
+    },
+    deepLink:         'findmyfourth://game/{game_id}',
+    threadId:         'game_{game_id}',
+    androidChannelId: 'important',
+    icon:             'sports_golf',
+  },
+
+  [TrustEventType.GAME_AUTO_CANCELLED]: {
+    priority:        NotificationPriority.HIGH,
+    category:        TrustCategory.GAMES,
+    maxDeliveries:   1,
+    timing:          'immediate',
+    template: {
+      title: 'Game Cancelled',
+      body:  'Your game was automatically cancelled — not enough players joined.',
     },
     deepLink:         'findmyfourth://game/{game_id}',
     threadId:         'game_{game_id}',

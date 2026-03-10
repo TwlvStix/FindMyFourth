@@ -57,6 +57,7 @@ const EVENT_DATA = {
   [TrustEventType.BADGE_PROGRESS]:         { rounds_remaining: 3, next_badge_name: 'Platinum' },
   [TrustEventType.GAME_SPOT_OPENED]:       { game_date: 'Saturday', course_name: 'Chambers Bay', spots_remaining: 1, game_id: GAME_ID },
   [TrustEventType.GAME_CANCELLED]:         { game_date: 'Sunday', course_name: 'Pinehurst', game_id: GAME_ID },
+  [TrustEventType.GAME_AUTO_CANCELLED]:    { game_id: GAME_ID },
   [TrustEventType.GAME_ALERT_DEFERRED]:    { title: 'New Game Nearby', body: 'A new game at Pebble Beach matches your alerts.', gameId: GAME_ID },
   [TrustEventType.FRIEND_REQUEST_RECEIVED]: { sender_name: 'Alice', sender_id: 'user_alice' },
   [TrustEventType.FRIEND_REQUEST_ACCEPTED]: { acceptor_name: 'Bob', acceptor_id: 'user_bob' },

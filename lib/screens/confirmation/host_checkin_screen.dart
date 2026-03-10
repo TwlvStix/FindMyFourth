@@ -45,6 +45,8 @@ class _HostCheckinScreenState extends State<HostCheckinScreen>
   bool _submitting = false;
   String? _error;
   String? _successMessage;
+  bool _alreadyCompleted = false;
+  bool _windowClosed = false;
 
   String _courseName = '';
 
@@ -115,6 +117,26 @@ class _HostCheckinScreenState extends State<HostCheckinScreen>
 
   Future<void> _loadParticipants() async {
     try {
+      // Check if already submitted or window closed before loading the form.
+      final status = await _trustFlowService.checkHostCheckinStatus(
+        gameRef: widget.gameRef,
+      );
+      if (!mounted) return;
+      if (status == ConfirmationStatus.completed) {
+        updateState(this, () {
+          _alreadyCompleted = true;
+          _loading = false;
+        });
+        return;
+      }
+      if (status == ConfirmationStatus.windowClosed) {
+        updateState(this, () {
+          _windowClosed = true;
+          _loading = false;
+        });
+        return;
+      }
+
       final data = await _trustFlowService.loadHostCheckinParticipants(
         gameRef: widget.gameRef,
       );
@@ -216,6 +238,72 @@ class _HostCheckinScreenState extends State<HostCheckinScreen>
       );
     }
 
+    if (_alreadyCompleted) {
+      return Scaffold(
+        backgroundColor: AppColors.navyDark,
+        body: SafeArea(
+          child: Center(
+            child: Padding(
+              padding: AppSpacing.symmetric(horizontal: AppSpacing.xl),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  PhosphorIcon(AppPhosphorIcons.successFill,
+                      color: AppColors.green, size: AppIconSize.hero),
+                  SizedBox(height: AppSpacing.lg),
+                  Text(
+                    'Attendance already confirmed.',
+                    style: AppTypography.titleMedium,
+                    textAlign: TextAlign.center,
+                  ),
+                  SizedBox(height: AppSpacing.xxl),
+                  AppButtonEnhanced(
+                    onPressed: () => Navigator.of(context).pop(),
+                    text: 'Done',
+                    variant: AppButtonVariant.primary,
+                    size: AppButtonSize.large,
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      );
+    }
+
+    if (_windowClosed) {
+      return Scaffold(
+        backgroundColor: AppColors.navyDark,
+        body: SafeArea(
+          child: Center(
+            child: Padding(
+              padding: AppSpacing.symmetric(horizontal: AppSpacing.xl),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  PhosphorIcon(AppPhosphorIcons.clock,
+                      color: AppColors.textMuted, size: AppIconSize.hero),
+                  SizedBox(height: AppSpacing.lg),
+                  Text(
+                    'This confirmation window has closed.',
+                    style: AppTypography.titleMedium,
+                    textAlign: TextAlign.center,
+                  ),
+                  SizedBox(height: AppSpacing.xxl),
+                  AppButtonEnhanced(
+                    onPressed: () => Navigator.of(context).pop(),
+                    text: 'Done',
+                    variant: AppButtonVariant.primary,
+                    size: AppButtonSize.large,
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      );
+    }
+
     if (_successMessage != null) {
       return Scaffold(
         backgroundColor: AppColors.navyDark,
@@ -266,104 +354,127 @@ class _HostCheckinScreenState extends State<HostCheckinScreen>
         ),
       ),
       body: SafeArea(
-        child: Column(
-          children: [
-            // Header
-            _buildHeader(),
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            return SingleChildScrollView(
+              child: ConstrainedBox(
+                constraints: BoxConstraints(minHeight: constraints.maxHeight),
+                child: IntrinsicHeight(
+                  child: Column(
+                    children: [
+                      const Spacer(flex: 1),
 
-            if (_error != null)
-              Padding(
-                padding: AppSpacing.symmetric(
-                    horizontal: AppSpacing.xl, vertical: AppSpacing.sm),
-                child: Text(
-                  _error!,
-                  style: AppTypography.bodySmall.copyWith(
-                    color: AppColors.error,
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-              ),
+                      // Header
+                      _buildHeader(),
 
-            // Participant roster
-            Expanded(
-              child: ListView.builder(
-                padding: AppSpacing.symmetric(
-                    horizontal: AppSpacing.screenPadding,
-                    vertical: AppSpacing.xs),
-                itemCount: _participants.length,
-                itemBuilder: (context, i) {
-                  final p = _participants[i];
-                  final isPresent = _attendance[p.key] ?? true;
+                      SizedBox(height: AppSpacing.xxxl),
 
-                  Widget row = _ParticipantRow(
-                    participant: p,
-                    isPresent: isPresent,
-                    onToggle: (val) {
-                      updateState(this, () {
-                        _attendance[p.key] = val;
-                      });
-                    },
-                  );
-
-                  // Stagger animation
-                  if (i < _fadeAnimations.length) {
-                    row = AnimatedBuilder(
-                      animation: _staggerController,
-                      builder: (context, child) => Opacity(
-                        opacity: _fadeAnimations[i].value,
-                        child: SlideTransition(
-                          position: _slideAnimations[i],
-                          child: child,
+                      // Participant roster (non-scrollable column)
+                      Padding(
+                        padding: AppSpacing.symmetric(
+                            horizontal: AppSpacing.screenPadding),
+                        child: Column(
+                          children: [
+                            for (int i = 0; i < _participants.length; i++) ...[
+                              if (i > 0) SizedBox(height: AppSpacing.xxs),
+                              _buildParticipantRow(i),
+                            ],
+                          ],
                         ),
                       ),
-                      child: row,
-                    );
-                  }
 
-                  return Padding(
-                    padding: AppSpacing.only(bottom: AppSpacing.xs),
-                    child: row,
-                  );
-                },
-              ),
-            ),
+                      const Spacer(flex: 1),
 
-            // Submit button
-            Padding(
-              padding: AppSpacing.only(
-                  left: AppSpacing.xl,
-                  right: AppSpacing.xl,
-                  bottom: AppSpacing.xxl,
-                  top: AppSpacing.md),
-              child: AppButtonEnhanced(
-                onPressed: _submitting ? null : _submit,
-                text: _submitting ? 'Submitting...' : 'Confirm Attendance',
-                variant: AppButtonVariant.primary,
-                size: AppButtonSize.large,
+                      // Error message
+                      if (_error != null)
+                        Padding(
+                          padding: AppSpacing.symmetric(
+                              horizontal: AppSpacing.xl,
+                              vertical: AppSpacing.sm),
+                          child: Text(
+                            _error!,
+                            style: AppTypography.bodySmall.copyWith(
+                              color: AppColors.error,
+                            ),
+                            textAlign: TextAlign.center,
+                          ),
+                        ),
+
+                      // Submit button
+                      Padding(
+                        padding: AppSpacing.only(
+                            left: AppSpacing.xl,
+                            right: AppSpacing.xl,
+                            bottom: AppSpacing.xxl,
+                            top: AppSpacing.lg),
+                        child: AppButtonEnhanced(
+                          onPressed: _submitting ? null : _submit,
+                          text: _submitting
+                              ? 'Submitting...'
+                              : 'Confirm Attendance',
+                          variant: AppButtonVariant.primary,
+                          size: AppButtonSize.large,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
               ),
-            ),
-          ],
+            );
+          },
         ),
       ),
     );
   }
 
+  Widget _buildParticipantRow(int i) {
+    final p = _participants[i];
+    final isPresent = _attendance[p.key] ?? true;
+
+    Widget row = _ParticipantRow(
+      participant: p,
+      isPresent: isPresent,
+      onToggle: (val) {
+        updateState(this, () {
+          _attendance[p.key] = val;
+        });
+      },
+    );
+
+    // Stagger animation
+    if (i < _fadeAnimations.length) {
+      row = AnimatedBuilder(
+        animation: _staggerController,
+        builder: (context, child) => Opacity(
+          opacity: _fadeAnimations[i].value,
+          child: SlideTransition(
+            position: _slideAnimations[i],
+            child: child,
+          ),
+        ),
+        child: row,
+      );
+    }
+
+    return row;
+  }
+
   Widget _buildHeader() {
     return Padding(
       padding: AppSpacing.only(
-        top: AppSpacing.sm,
+        top: AppSpacing.xxl,
         left: AppSpacing.xl,
         right: AppSpacing.xl,
-        bottom: AppSpacing.sm,
+        bottom: AppSpacing.xl,
       ),
       child: Column(
         children: [
           PhosphorIcon(
             AppPhosphorIcons.golfCourse,
             color: AppColors.textSecondary,
-            size: AppIconSize.xl,
+            size: AppIconSize.xxl,
           ),
-          SizedBox(height: AppSpacing.xs),
+          SizedBox(height: AppSpacing.md),
           Text(
             _courseName,
             style: AppTypography.titleMedium.copyWith(
@@ -371,7 +482,7 @@ class _HostCheckinScreenState extends State<HostCheckinScreen>
             ),
             textAlign: TextAlign.center,
           ),
-          SizedBox(height: AppSpacing.xxs),
+          SizedBox(height: AppSpacing.xs),
           Text(
             'Who played today?',
             style: AppTypography.bodyMedium.copyWith(
@@ -498,7 +609,7 @@ class _ParticipantRow extends StatelessWidget {
             participant.photoUrl.isNotEmpty ? participant.photoUrl : null,
         initials: initials.isEmpty ? '?' : initials,
         size: AppAvatarSize.small,
-        backgroundColor: AppColors.navyLight,
+        backgroundColor: AppColors.navyDark,
       ),
     );
   }
@@ -602,13 +713,13 @@ class _ToggleSegment extends StatelessWidget {
         height: 32,
         padding: EdgeInsets.symmetric(horizontal: AppSpacing.sm),
         decoration: BoxDecoration(
-          color: selected ? selectedColor : AppColors.transparent,
+          color: selected ? selectedColor : AppColors.navyLight,
         ),
         alignment: Alignment.center,
         child: Text(
           label,
           style: AppTypography.labelSmall.copyWith(
-            color: selected ? AppColors.textPrimary : AppColors.textMuted,
+            color: selected ? AppColors.textPrimary : AppColors.textSecondary,
             fontWeight: FontWeight.w600,
           ),
         ),
