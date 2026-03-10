@@ -54,6 +54,30 @@ service cloud.firestore {
         gameData.uid == request.auth.uid;
     }
 
+    // Ref-based variant: accepts a full document reference path (e.g. request.resource.data.game_ref)
+    // instead of a string ID. Use when the game_ref field is a Firestore reference/path,
+    // since .id is not valid on reference field values in security rules.
+    function isGameOwnerByRef(gameRefPath) {
+      let gameExists = exists(gameRefPath);
+      let gameData = gameExists ? get(gameRefPath).data : {};
+      return isSignedIn() &&
+        gameExists &&
+        gameData.uid is string &&
+        gameData.uid == request.auth.uid;
+    }
+
+    function isGameParticipantByRef(gameRefPath) {
+      let gameExists = exists(gameRefPath);
+      let gameData = gameExists ? get(gameRefPath).data : {};
+      return isSignedIn() &&
+        gameExists &&
+        gameData.joined_players is list &&
+        gameData.joined_players.hasAny([
+          userRef(request.auth.uid),
+          request.auth.uid
+        ]);
+    }
+
     function isChatMemberById(chatId) {
       let chatPath = /databases/$(database)/documents/chats/$(chatId);
       let chatExists = exists(chatPath);
@@ -352,7 +376,16 @@ service cloud.firestore {
         'unique_co_players',
         'games_hosted',
         'show_up_rate',
-        'badge_level'
+        'badge_level',
+        'location_source',
+        'search_radius_km',
+        'near_me_enabled',
+        'hometown',
+        'hometown_name',
+        'hometown_lat',
+        'hometown_lng',
+        'home_course_lat',
+        'home_course_lng'
       ];
       let changed = request.resource.data.diff(resource.data).changedKeys();
       return changed.hasOnly(allowedFields);
@@ -792,14 +825,14 @@ service cloud.firestore {
         request.resource.data.game_ref is path &&
         (!request.resource.data.keys().hasAny(['user_ref']) ||
           request.resource.data.user_ref == userRef(request.auth.uid) ||
-          isGameOwner(request.resource.data.game_ref.id));
+          isGameOwnerByRef(request.resource.data.game_ref));
       // Any participant in the linked game can read all participant records for that game.
       // Allows roster display without requiring joins across game's joined_players.
       allow read: if isSignedIn() && (
         resource.data.user_ref == userRef(request.auth.uid) ||
         (resource.data.game_ref is path && (
-          isGameParticipant(resource.data.game_ref.id) ||
-          isGameOwner(resource.data.game_ref.id)
+          isGameParticipantByRef(resource.data.game_ref) ||
+          isGameOwnerByRef(resource.data.game_ref)
         ))
       );
       allow update: if isSignedIn() &&

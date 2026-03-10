@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 
+import '/core/design_tokens/app_phosphor_icons.dart';
 import '/core/design_tokens/border_radius.dart';
 import '/core/design_tokens/colors.dart';
 import '/core/design_tokens/spacing.dart';
 import '/core/design_tokens/typography.dart';
+import '/core/widgets/app_icon.dart';
 
 /// Callout banner showing the mutual friend connection.
 ///
@@ -40,10 +42,11 @@ class MutualFriendCallout extends StatelessWidget {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          // Wave emoji
-          Text(
-            '\u{1F44B}',
-            style: TextStyle(fontSize: 14),
+          // Mutual friends icon
+          AppIcon(
+            icon: AppPhosphorIcons.friends,
+            size: 14,
+            color: AppColors.mutualAccent,
           ),
           SizedBox(width: AppSpacing.xs),
           // Connection text
@@ -59,7 +62,7 @@ class MutualFriendCallout extends StatelessWidget {
                     text: mutualFriendName,
                     style: AppTypography.bodySmall.copyWith(
                       color: AppColors.mutualAccent.withValues(alpha: 0.85),
-                      fontWeight: FontWeight.w600,
+                      fontWeight: FontWeight.w700,
                     ),
                   ),
                   if (additionalCount > 0)

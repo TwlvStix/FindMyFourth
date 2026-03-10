@@ -48,6 +48,7 @@ class _CreateProfileWidgetState extends State<CreateProfileWidget>
 
   // Form Values
   String? _coursesValue;
+  CourseRecord? _selectedCourseRecord;
   FormFieldController<String>? _coursesValueController;
   int? _handicapValue;
   String? _genderValue;
@@ -144,10 +145,12 @@ class _CreateProfileWidgetState extends State<CreateProfileWidget>
   Future<void> _handleSaveProfile() async {
     // Resolve hometown reference if selected
     DocumentReference? hometownRef;
+    LatLng? hometownLocation;
     if (_hometownValue != null && _hometownValue!.isNotEmpty) {
       final hometowns = await HometownRecord.fetchAll();
       final match = hometowns.where((h) => h.name == _hometownValue).firstOrNull;
       hometownRef = match?.reference;
+      hometownLocation = match?.location;
     }
 
     final formData = CreateProfileFormData(
@@ -161,9 +164,13 @@ class _CreateProfileWidgetState extends State<CreateProfileWidget>
       dateOfBirth: _dateOfBirth,
       handicap: _handicapValue,
       homeCourse: _coursesValue,
+      homeCourseLat: _selectedCourseRecord?.location?.latitude,
+      homeCourseLng: _selectedCourseRecord?.location?.longitude,
       golfCanadaNumber: _golfCanadaController.text,
       hometownName: _hometownValue,
       hometownRef: hometownRef,
+      hometownLat: hometownLocation?.latitude,
+      hometownLng: hometownLocation?.longitude,
     );
 
     final result = await _controller.submitProfile(
@@ -325,7 +332,10 @@ class _CreateProfileWidgetState extends State<CreateProfileWidget>
                                     FormFieldController<String>(null),
                                 handicapValue: _handicapValue,
                                 golfCanadaController: _golfCanadaController,
-                                onCourseChanged: (val) => setState(() => _coursesValue = val),
+                                onCourseChanged: (name, record) => setState(() {
+                                  _coursesValue = name;
+                                  _selectedCourseRecord = record;
+                                }),
                                 onHandicapChanged: (val) => setState(() => _handicapValue = val),
                               );
                             },

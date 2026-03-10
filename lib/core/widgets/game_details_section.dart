@@ -35,7 +35,7 @@ class GameDetailsSection extends StatelessWidget {
   }
 
   Widget _buildJustForFunLayout() {
-    final isFriendsOnly = game.friendGame.toLowerCase() == 'yes';
+    final isFriendsOnly = game.friendGame.trim().toLowerCase() == 'friends';
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -158,7 +158,7 @@ class GameDetailsSection extends StatelessWidget {
   }
 
   Widget _buildCompetitiveLayout() {
-    final isFriendsOnly = game.friendGame.toLowerCase() == 'yes';
+    final isFriendsOnly = game.friendGame.trim().toLowerCase() == 'friends';
 
     // Build list of rows, filtering out empty values
     final rows = <_DetailRowData>[];

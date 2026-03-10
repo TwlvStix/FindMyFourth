@@ -21,6 +21,10 @@ class CreateProfileFormData {
     this.golfCanadaNumber,
     this.hometownName,
     this.hometownRef,
+    this.hometownLat,
+    this.hometownLng,
+    this.homeCourseLat,
+    this.homeCourseLng,
   });
 
   final String firstName;
@@ -36,6 +40,10 @@ class CreateProfileFormData {
   final String? golfCanadaNumber;
   final String? hometownName;
   final DocumentReference? hometownRef;
+  final double? hometownLat;
+  final double? hometownLng;
+  final double? homeCourseLat;
+  final double? homeCourseLng;
 
   /// Creates the username using the username creator function.
   String get processedUsername => functions.usernameCreator(username);
@@ -211,6 +219,8 @@ class CreateProfileController {
             handicap: formData.handicap,
             golfCanadaNumber: golfCanadaRaw.isEmpty ? null : golfCanadaRaw,
             homeCourse: formData.homeCourse,
+            homeCourseLat: formData.homeCourseLat,
+            homeCourseLng: formData.homeCourseLng,
             firstName: formData.firstName,
             lastName: formData.lastName,
             displayName: desiredUsername,
@@ -221,6 +231,8 @@ class CreateProfileController {
             dateOfBirth: formData.dateOfBirth,
             hometown: formData.hometownRef,
             hometownName: formData.hometownName,
+            hometownLat: formData.hometownLat,
+            hometownLng: formData.hometownLng,
             friends: [],
             friendRequests: [],
           ),

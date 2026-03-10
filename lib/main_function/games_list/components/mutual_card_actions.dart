@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:phosphor_flutter/phosphor_flutter.dart';
 
+import '/core/design_tokens/app_phosphor_icons.dart';
 import '/core/design_tokens/border_radius.dart';
 import '/core/design_tokens/colors.dart';
 import '/core/design_tokens/spacing.dart';
 import '/core/design_tokens/typography.dart';
+import '/core/widgets/app_icon.dart';
 
 /// Action state for mutual card buttons.
 enum MutualActionState {
@@ -49,8 +52,8 @@ class MutualCardActions extends StatelessWidget {
         // Ask to Chat button
         Expanded(
           child: _MutualActionButton(
-            icon: '\u{1F4AC}', // speech bubble
-            label: 'Ask to Chat',
+            icon: AppPhosphorIcons.chat,
+            label: 'Message',
             completedLabel: 'Sent',
             state: chatState,
             onTap: onAskToChat,
@@ -60,7 +63,7 @@ class MutualCardActions extends StatelessWidget {
         // Add Friend button
         Expanded(
           child: _MutualActionButton(
-            icon: '\u{2795}', // plus sign
+            icon: AppPhosphorIcons.addPlayer,
             label: 'Add Friend',
             completedLabel: 'Requested',
             state: friendState,
@@ -81,7 +84,7 @@ class _MutualActionButton extends StatefulWidget {
     required this.onTap,
   });
 
-  final String icon;
+  final PhosphorIconData icon;
   final String label;
   final String completedLabel;
   final MutualActionState state;
@@ -140,14 +143,14 @@ class _MutualActionButtonState extends State<_MutualActionButton> {
                 ),
               ),
             ] else ...[
-              Text(
-                isCompleted ? '\u{2713}' : widget.icon,
-                style: TextStyle(
-                  fontSize: 12,
-                  color: isCompleted
-                      ? AppColors.mutualAccent
-                      : AppColors.textSecondary,
-                ),
+              AppIcon(
+                icon: isCompleted
+                    ? AppPhosphorIcons.check
+                    : widget.icon,
+                size: 14,
+                color: isCompleted
+                    ? AppColors.mutualAccent
+                    : AppColors.textSecondary,
               ),
               SizedBox(width: AppSpacing.xxs),
               Text(

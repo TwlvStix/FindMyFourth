@@ -179,10 +179,16 @@ class _MutualGameCardState extends State<MutualGameCard>
     return Container(
       padding: EdgeInsets.symmetric(
         horizontal: AppSpacing.md,
-        vertical: AppSpacing.xs,
+        vertical: AppSpacing.xs + 2,
       ),
       decoration: BoxDecoration(
         gradient: AppColors.mutualHeaderGradient,
+        border: Border(
+          bottom: BorderSide(
+            color: AppColors.gold.withValues(alpha: 0.15),
+            width: 1,
+          ),
+        ),
       ),
       child: Row(
         children: [
@@ -194,29 +200,10 @@ class _MutualGameCardState extends State<MutualGameCard>
           SizedBox(width: AppSpacing.xxs),
           Text(
             'FRIENDS ONLY',
-            style: TextStyle(
-              fontSize: 10,
-              fontWeight: FontWeight.w700,
+            style: AppTypography.labelSmall.copyWith(
               color: AppColors.mutualAccent.withValues(alpha: 0.85),
+              fontWeight: FontWeight.w700,
               letterSpacing: 0.5,
-            ),
-          ),
-          SizedBox(width: AppSpacing.xs),
-          Text(
-            '\u{00B7}', // middle dot
-            style: TextStyle(
-              fontSize: 10,
-              color: AppColors.mutualAccent.withValues(alpha: 0.5),
-            ),
-          ),
-          SizedBox(width: AppSpacing.xs),
-          Text(
-            'private game',
-            style: TextStyle(
-              fontSize: 10,
-              fontWeight: FontWeight.w400,
-              color: AppColors.mutualAccent.withValues(alpha: 0.5),
-              letterSpacing: 0.3,
             ),
           ),
         ],
@@ -230,7 +217,7 @@ class _MutualGameCardState extends State<MutualGameCard>
       children: [
         // Course name (slightly muted)
         Opacity(
-          opacity: 0.85,
+          opacity: 0.90,
           child: Text(
             game.coursePlay,
             style: AppTypography.titleSmall.copyWith(
@@ -294,12 +281,9 @@ class _MutualGameCardState extends State<MutualGameCard>
       children: [
         // Avatar stack with host name (muted via parent opacity)
         Expanded(
-          child: Opacity(
-            opacity: 0.5,
-            child: GameCardAvatarStack(
-              playerRefs: game.joinedPlayers,
-              hostRef: game.userRef,
-            ),
+          child: GameCardAvatarStack(
+            playerRefs: game.joinedPlayers,
+            hostRef: game.userRef,
           ),
         ),
         // Spots badge (muted via parent opacity)

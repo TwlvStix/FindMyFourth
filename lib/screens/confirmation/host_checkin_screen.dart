@@ -10,6 +10,7 @@ import '/core/design_tokens/typography.dart';
 import '/core/design_tokens/icon_size.dart';
 import '/core/design_tokens/border_radius.dart';
 import '/core/design_tokens/app_phosphor_icons.dart';
+import '/core/motion/motion_tokens.dart';
 import '/core/utils/app_log.dart';
 import '/core/widgets/app_avatar.dart';
 import '/core/widgets/app_button_enhanced.dart';
@@ -35,7 +36,8 @@ class HostCheckinScreen extends StatefulWidget {
   State<HostCheckinScreen> createState() => _HostCheckinScreenState();
 }
 
-class _HostCheckinScreenState extends State<HostCheckinScreen> {
+class _HostCheckinScreenState extends State<HostCheckinScreen>
+    with TickerProviderStateMixin {
   final _trustFlowService = TrustFlowService();
 
   bool _loading = true;
@@ -52,12 +54,62 @@ class _HostCheckinScreenState extends State<HostCheckinScreen> {
   // Attendance map: uid or guestName → isPresent
   final Map<String, bool> _attendance = {};
 
+  // Staggered entrance animation
+  late AnimationController _staggerController;
+  final List<Animation<double>> _fadeAnimations = [];
+  final List<Animation<Offset>> _slideAnimations = [];
+
   @override
   void initState() {
     super.initState();
+    _staggerController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 600),
+    );
     if (!_loadCalled) {
       _loadCalled = true;
       _loadParticipants();
+    }
+  }
+
+  @override
+  void dispose() {
+    _staggerController.dispose();
+    super.dispose();
+  }
+
+  void _buildStaggerAnimations() {
+    _fadeAnimations.clear();
+    _slideAnimations.clear();
+
+    final itemCount =
+        _participants.length.clamp(0, MotionTokens.staggerMaxItems);
+    if (itemCount == 0) return;
+
+    for (int i = 0; i < _participants.length; i++) {
+      final staggerIndex = i.clamp(0, MotionTokens.staggerMaxItems - 1);
+      final startFraction = (staggerIndex * 24) / 600;
+      final endFraction = (startFraction + 0.4).clamp(0.0, 1.0);
+
+      _fadeAnimations.add(
+        Tween<double>(begin: 0.0, end: 1.0).animate(
+          CurvedAnimation(
+            parent: _staggerController,
+            curve: Interval(startFraction, endFraction,
+                curve: MotionTokens.curveEnter),
+          ),
+        ),
+      );
+
+      _slideAnimations.add(
+        Tween<Offset>(begin: const Offset(0, 0.08), end: Offset.zero).animate(
+          CurvedAnimation(
+            parent: _staggerController,
+            curve: Interval(startFraction, endFraction,
+                curve: MotionTokens.curveEnter),
+          ),
+        ),
+      );
     }
   }
 
@@ -85,6 +137,8 @@ class _HostCheckinScreenState extends State<HostCheckinScreen> {
           _attendance.addAll(data.defaultAttendance);
           _loading = false;
         });
+        _buildStaggerAnimations();
+        _staggerController.forward();
       }
     } on StateError catch (e) {
       final code = e.message;
@@ -97,7 +151,8 @@ class _HostCheckinScreenState extends State<HostCheckinScreen> {
         });
       }
     } catch (e) {
-      AppLog.d('❌ HostCheckinScreen load error: $e gameRef=${widget.gameRef.path}');
+      AppLog.d(
+          '❌ HostCheckinScreen load error: $e gameRef=${widget.gameRef.path}');
       if (mounted) {
         updateState(this, () {
           _error = 'Failed to load participants. Please try again.';
@@ -152,7 +207,12 @@ class _HostCheckinScreenState extends State<HostCheckinScreen> {
     if (_loading) {
       return Scaffold(
         backgroundColor: AppColors.navyDark,
-        body: const Center(child: CircularProgressIndicator()),
+        body: Center(
+          child: CircularProgressIndicator(
+            color: AppColors.green,
+            strokeWidth: 2.5,
+          ),
+        ),
       );
     }
 
@@ -200,26 +260,17 @@ class _HostCheckinScreenState extends State<HostCheckinScreen> {
         ),
         centerTitle: true,
         leading: IconButton(
-          icon:
-              PhosphorIcon(AppPhosphorIcons.back, color: AppColors.textPrimary),
+          icon: PhosphorIcon(AppPhosphorIcons.back,
+              color: AppColors.textPrimary),
           onPressed: () => Navigator.of(context).pop(),
         ),
       ),
       body: SafeArea(
         child: Column(
           children: [
-            Padding(
-              padding: AppSpacing.only(
-                  top: AppSpacing.md,
-                  left: AppSpacing.xl,
-                  right: AppSpacing.xl,
-                  bottom: AppSpacing.sm),
-              child: Text(
-                'Who played at $_courseName today?',
-                style: AppTypography.bodyLarge,
-                textAlign: TextAlign.center,
-              ),
-            ),
+            // Header
+            _buildHeader(),
+
             if (_error != null)
               Padding(
                 padding: AppSpacing.symmetric(
@@ -232,15 +283,19 @@ class _HostCheckinScreenState extends State<HostCheckinScreen> {
                   textAlign: TextAlign.center,
                 ),
               ),
+
+            // Participant roster
             Expanded(
               child: ListView.builder(
                 padding: AppSpacing.symmetric(
-                    horizontal: AppSpacing.lg, vertical: AppSpacing.sm),
+                    horizontal: AppSpacing.screenPadding,
+                    vertical: AppSpacing.xs),
                 itemCount: _participants.length,
                 itemBuilder: (context, i) {
                   final p = _participants[i];
                   final isPresent = _attendance[p.key] ?? true;
-                  return _ParticipantRow(
+
+                  Widget row = _ParticipantRow(
                     participant: p,
                     isPresent: isPresent,
                     onToggle: (val) {
@@ -249,9 +304,31 @@ class _HostCheckinScreenState extends State<HostCheckinScreen> {
                       });
                     },
                   );
+
+                  // Stagger animation
+                  if (i < _fadeAnimations.length) {
+                    row = AnimatedBuilder(
+                      animation: _staggerController,
+                      builder: (context, child) => Opacity(
+                        opacity: _fadeAnimations[i].value,
+                        child: SlideTransition(
+                          position: _slideAnimations[i],
+                          child: child,
+                        ),
+                      ),
+                      child: row,
+                    );
+                  }
+
+                  return Padding(
+                    padding: AppSpacing.only(bottom: AppSpacing.xs),
+                    child: row,
+                  );
                 },
               ),
             ),
+
+            // Submit button
             Padding(
               padding: AppSpacing.only(
                   left: AppSpacing.xl,
@@ -267,6 +344,42 @@ class _HostCheckinScreenState extends State<HostCheckinScreen> {
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildHeader() {
+    return Padding(
+      padding: AppSpacing.only(
+        top: AppSpacing.sm,
+        left: AppSpacing.xl,
+        right: AppSpacing.xl,
+        bottom: AppSpacing.sm,
+      ),
+      child: Column(
+        children: [
+          PhosphorIcon(
+            AppPhosphorIcons.golfCourse,
+            color: AppColors.textSecondary,
+            size: AppIconSize.xl,
+          ),
+          SizedBox(height: AppSpacing.xs),
+          Text(
+            _courseName,
+            style: AppTypography.titleMedium.copyWith(
+              color: AppColors.textPrimary,
+            ),
+            textAlign: TextAlign.center,
+          ),
+          SizedBox(height: AppSpacing.xxs),
+          Text(
+            'Who played today?',
+            style: AppTypography.bodyMedium.copyWith(
+              color: AppColors.textSecondary,
+            ),
+            textAlign: TextAlign.center,
+          ),
+        ],
       ),
     );
   }
@@ -288,6 +401,7 @@ class _ParticipantEntry {
   final String role;
 }
 
+/// Compact roster row: [Avatar] [Name + badge] ····· [Present | No-show]
 class _ParticipantRow extends StatelessWidget {
   const _ParticipantRow({
     required this.participant,
@@ -302,45 +416,58 @@ class _ParticipantRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      margin: AppSpacing.only(bottom: AppSpacing.sm),
-      padding: AppSpacing.symmetric(
-          horizontal: AppSpacing.lg, vertical: AppSpacing.md),
+      padding: EdgeInsets.symmetric(
+        horizontal: AppSpacing.md,
+        vertical: AppSpacing.sm,
+      ),
       decoration: BoxDecoration(
         color: AppColors.navy,
         borderRadius: BorderRadius.circular(AppBorderRadius.md),
         border: Border.all(
-          color: isPresent
-              ? AppColors.green.withValues(alpha: 0.3)
-              : AppColors.error.withValues(alpha: 0.3),
+          color: AppColors.navyLight,
           width: 1,
         ),
       ),
       child: Row(
         children: [
-          // Avatar
+          // Avatar with visible background + border
           _buildAvatar(),
-          SizedBox(width: AppSpacing.md),
-          // Name + role
+          SizedBox(width: AppSpacing.sm),
+
+          // Name + inline badge
           Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+            child: Row(
               children: [
-                Text(participant.displayName, style: AppTypography.bodyLarge),
-                if (participant.role == 'host')
-                  Text('Host',
-                      style: AppTypography.bodySmall.copyWith(
-                        color: AppColors.gold,
-                      ))
-                else if (participant.isGuest)
-                  Text('Guest',
-                      style: AppTypography.bodySmall.copyWith(
-                        color: AppColors.textSecondary,
-                      )),
+                Flexible(
+                  child: Text(
+                    participant.displayName,
+                    style: AppTypography.bodyLarge.copyWith(
+                      color: AppColors.textPrimary,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+                if (participant.role == 'host') ...[
+                  SizedBox(width: AppSpacing.xs),
+                  _HostBadge(),
+                ] else if (participant.isGuest) ...[
+                  SizedBox(width: AppSpacing.xs),
+                  Text(
+                    'Guest',
+                    style: AppTypography.labelSmall.copyWith(
+                      color: AppColors.textMuted,
+                    ),
+                  ),
+                ],
               ],
             ),
           ),
-          // Present / No-show toggle
-          _AttendanceToggle(
+
+          SizedBox(width: AppSpacing.sm),
+
+          // Compact toggle pair
+          _TogglePair(
             isPresent: isPresent,
             onToggle: onToggle,
           ),
@@ -357,54 +484,112 @@ class _ParticipantRow extends StatelessWidget {
         .map((p) => p[0].toUpperCase())
         .take(2)
         .join();
-    return AppAvatar(
-      imageUrl: participant.photoUrl.isNotEmpty ? participant.photoUrl : null,
-      initials: initials.isEmpty ? '?' : initials,
-      size: AppAvatarSize.medium,
+
+    return Container(
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        border: Border.all(
+          color: AppColors.navyLight,
+          width: 1,
+        ),
+      ),
+      child: AppAvatar(
+        imageUrl:
+            participant.photoUrl.isNotEmpty ? participant.photoUrl : null,
+        initials: initials.isEmpty ? '?' : initials,
+        size: AppAvatarSize.small,
+        backgroundColor: AppColors.navyLight,
+      ),
     );
   }
 }
 
-class _AttendanceToggle extends StatelessWidget {
-  const _AttendanceToggle({required this.isPresent, required this.onToggle});
+/// Inline gold pill badge for "Host" role.
+class _HostBadge extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: EdgeInsets.symmetric(
+        horizontal: AppSpacing.xs,
+        vertical: 2,
+      ),
+      decoration: BoxDecoration(
+        color: AppColors.gold.withValues(alpha: 0.12),
+        borderRadius: BorderRadius.circular(AppBorderRadius.full),
+        border: Border.all(
+          color: AppColors.gold.withValues(alpha: 0.25),
+          width: 1,
+        ),
+      ),
+      child: Text(
+        'Host',
+        style: AppTypography.labelSmall.copyWith(
+          color: AppColors.gold,
+          fontWeight: FontWeight.w600,
+        ),
+      ),
+    );
+  }
+}
+
+/// Compact segmented toggle pair: [Present | No-show]
+/// Reads as a single binary control, right-aligned in the row.
+class _TogglePair extends StatelessWidget {
+  const _TogglePair({required this.isPresent, required this.onToggle});
 
   final bool isPresent;
   final ValueChanged<bool> onToggle;
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        _ToggleChip(
-          label: 'Present',
-          selected: isPresent,
-          selectedColor: AppColors.green,
-          onTap: () => onToggle(true),
+    return Container(
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(AppBorderRadius.full),
+        border: Border.all(
+          color: AppColors.navyLight,
+          width: 1,
         ),
-        SizedBox(width: AppSpacing.sm),
-        _ToggleChip(
-          label: 'No-show',
-          selected: !isPresent,
-          selectedColor: AppColors.error,
-          onTap: () => onToggle(false),
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(AppBorderRadius.full),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            _ToggleSegment(
+              label: 'Present',
+              selected: isPresent,
+              selectedColor: AppColors.green,
+              isLeft: true,
+              onTap: () => onToggle(true),
+            ),
+            _ToggleSegment(
+              label: 'No-show',
+              selected: !isPresent,
+              selectedColor: AppColors.error,
+              isLeft: false,
+              onTap: () => onToggle(false),
+            ),
+          ],
         ),
-      ],
+      ),
     );
   }
 }
 
-class _ToggleChip extends StatelessWidget {
-  const _ToggleChip({
+/// Individual segment within the toggle pair.
+class _ToggleSegment extends StatelessWidget {
+  const _ToggleSegment({
     required this.label,
     required this.selected,
     required this.selectedColor,
+    required this.isLeft,
     required this.onTap,
   });
 
   final String label;
   final bool selected;
   final Color selectedColor;
+  final bool isLeft;
   final VoidCallback onTap;
 
   @override
@@ -412,22 +597,18 @@ class _ToggleChip extends StatelessWidget {
     return GestureDetector(
       onTap: onTap,
       child: AnimatedContainer(
-        duration: const Duration(milliseconds: 150),
-        padding: EdgeInsets.symmetric(
-            horizontal: AppSpacing.sm - 2, vertical: AppSpacing.xs - 2),
+        duration: MotionTokens.microInteraction,
+        curve: MotionTokens.curveEnter,
+        height: 32,
+        padding: EdgeInsets.symmetric(horizontal: AppSpacing.sm),
         decoration: BoxDecoration(
           color: selected ? selectedColor : AppColors.transparent,
-          borderRadius: BorderRadius.circular(AppBorderRadius.xl),
-          border: Border.all(
-            color: selected
-                ? selectedColor
-                : AppColors.textMuted.withValues(alpha: 0.4),
-          ),
         ),
+        alignment: Alignment.center,
         child: Text(
           label,
-          style: AppTypography.bodySmall.copyWith(
-            color: selected ? AppColors.textPrimary : AppColors.textSecondary,
+          style: AppTypography.labelSmall.copyWith(
+            color: selected ? AppColors.textPrimary : AppColors.textMuted,
             fontWeight: FontWeight.w600,
           ),
         ),

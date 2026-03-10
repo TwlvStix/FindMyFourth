@@ -65,6 +65,22 @@ class CreateGameService {
         chatRef: chatRef,
       ));
       AppLog.d('✅ CREATE GAME SERVICE: Game created ${gameRef.path}');
+
+      // Create game_participants doc for the host
+      try {
+        await _resolvedFirestore.collection('game_participants').add({
+          'game_ref': gameRef,
+          'user_ref': userRef,
+          'role': 'host',
+          'status': 'joined',
+          'joined_at': FieldValue.serverTimestamp(),
+        });
+        AppLog.d('✅ CREATE GAME SERVICE: Host participant doc created');
+      } on FirebaseException catch (e) {
+        AppLog.d(
+            '❌ CREATE GAME SERVICE: participant doc failed: ${e.code}');
+      }
+
       return gameRef;
     } on FirebaseException catch (e) {
       AppLog.d('❌ CREATE GAME SERVICE: ${e.code} - ${e.message}');

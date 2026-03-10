@@ -1,3 +1,4 @@
+import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '/backend/schema/course_record.dart';
@@ -48,7 +49,8 @@ class GolfProfileSection extends StatelessWidget {
   final TextEditingController golfCanadaController;
 
   /// Callback when course selection changes.
-  final ValueChanged<String?> onCourseChanged;
+  /// Returns both the course name and the full CourseRecord for geo data.
+  final void Function(String? name, CourseRecord? record) onCourseChanged;
 
   /// Callback when handicap changes.
   final ValueChanged<int> onHandicapChanged;
@@ -122,7 +124,10 @@ class GolfProfileSection extends StatelessWidget {
       child: AppDropDown<String>(
         controller: coursesValueController ?? FormFieldController<String>(null),
         options: courses.map((c) => c.name).toList(),
-        onChanged: onCourseChanged,
+        onChanged: (name) {
+          final record = courses.firstWhereOrNull((c) => c.name == name);
+          onCourseChanged(name, record);
+        },
         width: double.infinity,
         height: 56,
         textStyle: AppTypography.bodyMedium.copyWith(

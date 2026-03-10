@@ -212,48 +212,48 @@ class AppColors {
   static const Color whiteStrong = Color(0xF2FFFFFF);
 
   // ==========================================================================
-  // MUTUAL FRIEND CARD TOKENS (Amber-tinted for friends-only via mutual)
-  // Used for games visible through mutual friend connections
+  // MUTUAL FRIEND CARD TOKENS (Gold-accented for friends-only exclusivity)
+  // Navy structural base + gold accents for trust/premium access signal
   // ==========================================================================
 
-  /// Header gradient start - dark amber
-  static const Color mutualHeaderStart = Color(0xFF3D3010);
+  /// Header gradient start - warm dark with gold undertone
+  static const Color mutualHeaderStart = Color(0xFF1A2410);
 
-  /// Header gradient end - lighter amber
-  static const Color mutualHeaderEnd = Color(0xFF4A3A12);
+  /// Header gradient end - warm brown with subtle gold warmth
+  static const Color mutualHeaderEnd = Color(0xFF2A2112);
 
-  /// Card background gradient start
-  static const Color mutualCardStart = Color(0xFF1E1C16);
+  /// Card background gradient start - navy (matches standard cards)
+  static const Color mutualCardStart = Color(0xFF142A36);
 
-  /// Card background gradient end
-  static const Color mutualCardEnd = Color(0xFF181610);
+  /// Card background gradient end - navyDark (matches standard cards)
+  static const Color mutualCardEnd = Color(0xFF0E1C26);
 
-  /// Primary amber accent
-  static const Color mutualAccent = Color(0xFFDCB450);
+  /// Primary gold accent - exclusivity/trust signal
+  static const Color mutualAccent = Color(0xFFC9A24D);
 
-  /// Muted amber accent
-  static const Color mutualAccentMuted = Color(0xFFB4963C);
+  /// Muted gold accent
+  static const Color mutualAccentMuted = Color(0xFF9A7E2A);
 
-  /// Amber border (20% opacity)
-  static const Color mutualBorder = Color(0x33B4963C);
+  /// Gold border (20% opacity)
+  static const Color mutualBorder = Color(0x33C9A24D);
 
-  /// Callout background (7% amber)
-  static const Color mutualCalloutBg = Color(0x12B4963C);
+  /// Callout background (6% gold)
+  static const Color mutualCalloutBg = Color(0x0FC9A24D);
 
-  /// Callout border (18% amber)
-  static const Color mutualCalloutBorder = Color(0x2EB4963C);
+  /// Callout border (15% gold)
+  static const Color mutualCalloutBorder = Color(0x26C9A24D);
 
   /// Button background (unselected - 4% white)
   static const Color mutualButtonBg = Color(0x0AFFFFFF);
 
-  /// Button border (unselected - 8% white)
-  static const Color mutualButtonBorder = Color(0x14FFFFFF);
+  /// Button border (unselected - 10% white)
+  static const Color mutualButtonBorder = Color(0x1AFFFFFF);
 
-  /// Button background (selected - 14% amber)
-  static const Color mutualButtonSelectedBg = Color(0x24B4963C);
+  /// Button background (selected - 10% gold)
+  static const Color mutualButtonSelectedBg = Color(0x1AC9A24D);
 
-  /// Button border (selected - amber tint)
-  static const Color mutualButtonSelectedBorder = Color(0x4DB4963C);
+  /// Button border (selected - 25% gold)
+  static const Color mutualButtonSelectedBorder = Color(0x40C9A24D);
 
   // ==========================================================================
   // UI COMPONENT COLORS
@@ -307,14 +307,14 @@ class AppColors {
     stops: [0.0, 0.65, 1.0],
   );
 
-  /// Mutual friend card header gradient - amber tint
+  /// Mutual friend card header gradient - warm gold undertone
   static const LinearGradient mutualHeaderGradient = LinearGradient(
     begin: Alignment.centerLeft,
     end: Alignment.centerRight,
     colors: [mutualHeaderStart, mutualHeaderEnd],
   );
 
-  /// Mutual friend card background gradient - amber-tinted dark
+  /// Mutual friend card background gradient - navy (matches standard cards)
   static const LinearGradient mutualCardGradient = LinearGradient(
     begin: Alignment.topCenter,
     end: Alignment.bottomCenter,
