@@ -189,6 +189,25 @@ class NotificationCrudService {
     }
   }
 
+  /// Updates the response status on a notification document.
+  ///
+  /// Used by actionable notifications to persist user's response
+  /// (e.g., 'confirmed' or 'cancelled').
+  Future<void> updateResponseStatus(
+    DocumentReference notificationRef,
+    String status,
+  ) async {
+    try {
+      await notificationRef.update({'responseStatus': status});
+      AppLog.d(
+          '✅ NotificationCrudService: Updated responseStatus=$status on ${notificationRef.path}');
+    } on FirebaseException catch (e) {
+      AppLog.d(
+          '❌ NotificationCrudService.updateResponseStatus: ${e.code} - ${e.message}');
+      rethrow;
+    }
+  }
+
   /// Resolves a game reference from notification payload fields.
   DocumentReference? resolveGameRefFromPayload(Map<String, dynamic> payload) {
     final gameRefPath = payload['gameRef'];

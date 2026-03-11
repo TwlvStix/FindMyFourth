@@ -186,6 +186,12 @@ class NotificationListItemCard extends StatelessWidget {
                       ),
                     ),
                   ),
+                if (type == 'host_pre_game_confirm' &&
+                    item.responseStatus != null)
+                  Padding(
+                    padding: EdgeInsetsDirectional.only(top: AppSpacing.xs),
+                    child: _buildResponseStatusBadge(item.responseStatus!),
+                  ),
                 if (type == 'dispute_resolved_upheld')
                   Padding(
                     padding: EdgeInsetsDirectional.only(top: AppSpacing.sm),
@@ -202,6 +208,27 @@ class NotificationListItemCard extends StatelessWidget {
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildResponseStatusBadge(String status) {
+    final isConfirmed = status == 'confirmed';
+    final label = isConfirmed ? 'Confirmed' : 'Cancelled';
+    final color = isConfirmed ? AppColors.success : AppColors.textMuted;
+
+    return Container(
+      padding: EdgeInsets.symmetric(
+        horizontal: AppSpacing.xs,
+        vertical: 2,
+      ),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.15),
+        borderRadius: BorderRadius.circular(AppBorderRadius.xxs),
+      ),
+      child: Text(
+        label,
+        style: AppTypography.labelSmall.copyWith(color: color),
       ),
     );
   }

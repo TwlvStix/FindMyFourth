@@ -441,10 +441,10 @@ describe('buildInAppNotification — return shape', () => {
     );
   });
 
-  test('data keys are exactly: eventId, eventType, gameId, gameRef', () => {
+  test('data keys are exactly: courseName, eventId, eventType, gameDate, gameId, gameRef', () => {
     const doc = buildInAppNotification(TrustEventType.COOLDOWN_STARTED, {}, EVENT_ID);
     expect(Object.keys(doc.data).sort()).toEqual(
-      ['eventId', 'eventType', 'gameId', 'gameRef'],
+      ['courseName', 'eventId', 'eventType', 'gameDate', 'gameId', 'gameRef'],
     );
   });
 

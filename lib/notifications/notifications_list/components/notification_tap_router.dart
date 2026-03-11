@@ -64,17 +64,32 @@ class NotificationTapRouter {
     // Pre-game confirmation (host confirms/cancels partial game)
     if (type == 'host_pre_game_confirm') {
       final gameId = payload['gameId'] ?? payload['game_id'];
-      final courseName =
-          payload['course_name'] ?? payload['courseName'] ?? 'your course';
+
+      // If already responded, skip bottom sheet and navigate directly
+      if (item.responseStatus == 'confirmed') {
+        final gameRef = provider.resolveGameRefFromPayload(payload);
+        if (gameRef != null) {
+          context.pushJoinGameDetailed(gameRef: gameRef);
+        }
+        return;
+      }
+      if (item.responseStatus == 'cancelled') {
+        context.pushGamesList();
+        return;
+      }
+
+      // Parse course name: prefer data fields, fall back to body text
+      final courseName = _resolveCourseName(payload, item.body);
       final gameDate =
-          payload['game_date'] ?? payload['gameDate'] ?? 'your upcoming round';
+          payload['game_date'] ?? payload['gameDate'] ?? '';
 
       if (gameId is String && gameId.isNotEmpty) {
         await showPreGameConfirmBottomSheet(
           context: context,
           gameId: gameId,
-          courseName: courseName.toString(),
+          courseName: courseName,
           gameDate: gameDate.toString(),
+          notificationRef: item.reference,
           onConfirmed: () {
             final gameRef = provider.resolveGameRefFromPayload(payload);
             if (gameRef != null) {
@@ -205,6 +220,29 @@ class NotificationTapRouter {
       );
       return;
     }
+  }
+
+  /// Resolves course name from notification data fields, falling back to
+  /// parsing the notification body text.
+  ///
+  /// Body format: "Your {course_name} game starts in 45 minutes..."
+  static String _resolveCourseName(
+    Map<String, dynamic> payload,
+    String? body,
+  ) {
+    final fromData = payload['course_name'] ?? payload['courseName'];
+    if (fromData is String && fromData.isNotEmpty) return fromData;
+
+    // Fallback: parse from body text "Your {course_name} game starts in..."
+    if (body != null && body.startsWith('Your ') && body.contains(' game ')) {
+      final afterYour = body.substring(5); // skip "Your "
+      final gameIdx = afterYour.indexOf(' game ');
+      if (gameIdx > 0) {
+        return afterYour.substring(0, gameIdx);
+      }
+    }
+
+    return '';
   }
 
   static Future<void> _handleGameNotification({

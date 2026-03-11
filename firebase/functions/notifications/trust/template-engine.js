@@ -108,8 +108,10 @@ function buildInAppNotification(eventType, eventData, eventId) {
     read:      false,
     createdAt: admin.firestore.FieldValue.serverTimestamp(),
     data: {
-      gameId:    eventData.game_id  != null ? eventData.game_id  : null,
-      gameRef:   eventData.game_ref != null ? eventData.game_ref : null,
+      gameId:     eventData.game_id     != null ? eventData.game_id     : null,
+      gameRef:    eventData.game_ref    != null ? eventData.game_ref    : null,
+      courseName: eventData.course_name != null ? eventData.course_name : null,
+      gameDate:   eventData.game_date   != null ? eventData.game_date   : null,
       eventId,
       eventType,
     },

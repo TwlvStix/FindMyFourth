@@ -39,7 +39,6 @@ class GamesListContent extends StatefulWidget {
     required this.quickFilter,
     required this.sortOption,
     required this.vibeScores,
-    required this.shouldHideCancelledGame,
     required this.getCancelledHandling,
     required this.onFilterMetaChanged,
     required this.onOwnerUidsReady,
@@ -70,7 +69,6 @@ class GamesListContent extends StatefulWidget {
   final QuickFilter quickFilter;
   final GameSortOption sortOption;
   final Map<String, double> vibeScores;
-  final bool Function(Game) shouldHideCancelledGame;
   final CancelledGameHandling? Function(Game) getCancelledHandling;
   final ValueChanged<GameFilterMeta> onFilterMetaChanged;
   final ValueChanged<Set<String>> onOwnerUidsReady;
@@ -141,10 +139,7 @@ class _GamesListContentState extends State<GamesListContent> {
         }());
 
         // Filter games by status
-        final activeGames = filterActiveGames(
-          gamesList,
-          shouldHideCancelledGame: widget.shouldHideCancelledGame,
-        );
+        final activeGames = filterActiveGames(gamesList);
 
         assert(() {
           AppLog.d(

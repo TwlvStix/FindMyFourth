@@ -260,7 +260,7 @@ class _YourStandingScreenState extends State<YourStandingScreen> {
 
     // Progress toward next badge (weighted rounds component)
     final nextReqs = s['nextBadgeRequirements'] as Map<String, dynamic>?;
-    final roundsNeeded = (nextReqs?['weightedRounds'] as num?)?.toDouble() ?? 0.0;
+    final roundsNeeded = (nextReqs?['weightedRoundsNeeded'] as num?)?.toDouble() ?? 0.0;
     final progress = roundsNeeded > 0
         ? (weighted / (weighted + roundsNeeded)).clamp(0.0, 1.0)
         : 1.0;
@@ -377,11 +377,11 @@ class _YourStandingScreenState extends State<YourStandingScreen> {
   Widget _buildProgressGaps(
       Map<String, dynamic> nextReqs, Map<String, dynamic> s) {
     final parts = <String>[];
-    final rw = (nextReqs['weightedRounds'] as num?)?.toDouble() ?? 0.0;
-    final ru = (nextReqs['uniqueCoPlayers'] as num?)?.toInt() ?? 0;
-    final rh = (nextReqs['gamesHosted'] as num?)?.toInt() ?? 0;
+    final rw = (nextReqs['weightedRoundsNeeded'] as num?)?.toDouble() ?? 0.0;
+    final ru = (nextReqs['uniquePlayersNeeded'] as num?)?.toInt() ?? 0;
+    final rh = (nextReqs['hostedNeeded'] as num?)?.toInt() ?? 0;
     if (rw > 0) parts.add('${rw.toStringAsFixed(1)} more weighted rounds');
-    if (ru > 0) parts.add('$ru more unique co-players');
+    if (ru > 0) parts.add('$ru more new playing partners');
     if (rh > 0) parts.add('$rh more hosted games');
     if (parts.isEmpty) return const SizedBox.shrink();
     return Text(
@@ -593,9 +593,9 @@ class _YourStandingScreenState extends State<YourStandingScreen> {
 
     // Determine full requirements for next badge from BADGE_TIERS logic
     // We infer requirements from what gaps remain
-    final rwNeeded = (nextReqs['weightedRounds'] as num?)?.toDouble() ?? 0.0;
-    final ruNeeded = (nextReqs['uniqueCoPlayers'] as num?)?.toInt() ?? 0;
-    final rhNeeded = (nextReqs['gamesHosted'] as num?)?.toInt() ?? 0;
+    final rwNeeded = (nextReqs['weightedRoundsNeeded'] as num?)?.toDouble() ?? 0.0;
+    final ruNeeded = (nextReqs['uniquePlayersNeeded'] as num?)?.toInt() ?? 0;
+    final rhNeeded = (nextReqs['hostedNeeded'] as num?)?.toInt() ?? 0;
     final maxCancelRate = (nextReqs['maxCancelRate'] as num?)?.toDouble();
 
     return _SectionCard(
@@ -625,7 +625,7 @@ class _YourStandingScreenState extends State<YourStandingScreen> {
           ),
           SizedBox(height: AppSpacing.xs),
           _buildRequirementRow(
-            label: 'Unique co-players',
+            label: 'New playing partners',
             current: unique.toDouble(),
             needed: (unique + ruNeeded).toDouble(),
             met: ruNeeded == 0,

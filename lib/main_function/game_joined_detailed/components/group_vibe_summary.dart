@@ -202,15 +202,10 @@ class GroupVibeSummary extends StatelessWidget {
             ),
             child: Center(
               child: hasResult
-                  ? Image.asset(
-                      'assets/images/brain_icon.png',
-                      width: 28,
-                      height: 28,
-                      errorBuilder: (context, error, stackTrace) => AppIcon(
-                        icon: AppPhosphorIcons.brain,
-                        color: AppColors.textSecondary,
-                        size: AppIconSize.md,
-                      ),
+                  ? AppIcon(
+                      icon: AppPhosphorIcons.brain,
+                      color: AppColors.textSecondary,
+                      size: AppIconSize.md,
                     )
                   : SizedBox(
                       width: 20,

@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 
@@ -10,6 +11,7 @@ import '/core/motion/motion_helpers.dart';
 import '/core/utils/app_log.dart';
 import '/core/widgets/app_button_enhanced.dart';
 import '/core/widgets/app_icon.dart';
+import '/services/notification_crud_service.dart';
 import '/services/pre_game_confirmation_service.dart';
 
 /// Bottom sheet shown when a host taps the pre-game confirmation notification.
@@ -25,6 +27,7 @@ class PreGameConfirmBottomSheet extends StatefulWidget {
     required this.gameDate,
     required this.onConfirmed,
     required this.onCancelled,
+    this.notificationRef,
   });
 
   /// Game ID for the confirmation action
@@ -41,6 +44,9 @@ class PreGameConfirmBottomSheet extends StatefulWidget {
 
   /// Called when host cancels the game
   final VoidCallback onCancelled;
+
+  /// Optional notification reference to write responseStatus after action.
+  final DocumentReference? notificationRef;
 
   @override
   State<PreGameConfirmBottomSheet> createState() =>
@@ -63,6 +69,9 @@ class _PreGameConfirmBottomSheetState extends State<PreGameConfirmBottomSheet> {
         gameId: widget.gameId,
         confirmed: true,
       );
+
+      // Non-critical: persist response status on the notification doc
+      _writeResponseStatus('confirmed');
 
       if (!mounted) return;
       Navigator.of(context).pop();
@@ -90,6 +99,9 @@ class _PreGameConfirmBottomSheetState extends State<PreGameConfirmBottomSheet> {
         confirmed: false,
       );
 
+      // Non-critical: persist response status on the notification doc
+      _writeResponseStatus('cancelled');
+
       if (!mounted) return;
       Navigator.of(context).pop();
       widget.onCancelled();
@@ -101,6 +113,31 @@ class _PreGameConfirmBottomSheetState extends State<PreGameConfirmBottomSheet> {
         _errorMessage = 'Something went wrong. Please try again.';
       });
     }
+  }
+
+  /// Writes responseStatus to the notification doc (fire-and-forget).
+  void _writeResponseStatus(String status) {
+    final ref = widget.notificationRef;
+    if (ref == null) return;
+    try {
+      NotificationCrudService().updateResponseStatus(ref, status);
+    } catch (e) {
+      AppLog.d('📖 PreGameConfirmBottomSheet: Failed to write responseStatus: $e');
+    }
+  }
+
+  String _buildBodyMessage() {
+    final hasCourseName = widget.courseName.isNotEmpty;
+    final hasGameDate = widget.gameDate.isNotEmpty;
+    const suffix = "doesn't have a full group yet. Would you like to play anyway?";
+
+    if (hasCourseName && hasGameDate) {
+      return 'Your ${widget.courseName} round on ${widget.gameDate} $suffix';
+    }
+    if (hasCourseName) {
+      return 'Your ${widget.courseName} round $suffix';
+    }
+    return 'This round $suffix';
   }
 
   @override
@@ -165,8 +202,7 @@ class _PreGameConfirmBottomSheetState extends State<PreGameConfirmBottomSheet> {
 
                   // Game details
                   Text(
-                    'Your round at ${widget.courseName} on ${widget.gameDate} '
-                    "isn't full yet.",
+                    _buildBodyMessage(),
                     style: AppTypography.bodyMedium.copyWith(
                       color: AppColors.textSecondary,
                     ),
@@ -228,6 +264,7 @@ Future<String?> showPreGameConfirmBottomSheet({
   required String gameDate,
   required VoidCallback onConfirmed,
   required VoidCallback onCancelled,
+  DocumentReference? notificationRef,
 }) {
   return showAppBottomSheet<String>(
     context: context,
@@ -239,6 +276,7 @@ Future<String?> showPreGameConfirmBottomSheet({
       gameDate: gameDate,
       onConfirmed: onConfirmed,
       onCancelled: onCancelled,
+      notificationRef: notificationRef,
     ),
   );
 }

@@ -22,6 +22,10 @@ class NotificationListItem {
   final Map<String, dynamic> data;
   final DocumentReference reference;
 
+  /// Status of the user's response for actionable notifications
+  /// (e.g., 'confirmed' or 'cancelled' for host_pre_game_confirm).
+  final String? responseStatus;
+
   NotificationListItem._({
     required this.id,
     required this.type,
@@ -31,6 +35,7 @@ class NotificationListItem {
     this.createdAt,
     required this.data,
     required this.reference,
+    this.responseStatus,
   });
 
   factory NotificationListItem.fromDoc(QueryDocumentSnapshot doc) {
@@ -44,6 +49,7 @@ class NotificationListItem {
       createdAt: (raw['createdAt'] as Timestamp?)?.toDate(),
       data: (raw['data'] as Map?)?.cast<String, dynamic>() ?? {},
       reference: doc.reference,
+      responseStatus: raw['responseStatus'] as String?,
     );
   }
 }
@@ -642,6 +648,17 @@ class NotificationListProvider extends ChangeNotifier {
     final count = await _service.deleteAllNotifications(userRef);
     _clearState();
     return count;
+  }
+
+  /// Update the response status on a notification document.
+  ///
+  /// Used by actionable notifications (e.g., pre-game confirm) to record
+  /// whether the user confirmed or cancelled, preventing re-opening.
+  Future<void> updateResponseStatus(
+    NotificationListItem item,
+    String status,
+  ) async {
+    await _service.updateResponseStatus(item.reference, status);
   }
 
   // ═══════════════════════════════════════════════════════════════════════════

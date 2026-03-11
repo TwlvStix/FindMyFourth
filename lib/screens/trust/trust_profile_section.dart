@@ -259,7 +259,7 @@ class TrustProfileSection extends StatelessWidget {
                     icon: AppPhosphorIcons.users,
                     iconGradient: [AppColors.navyLight, AppColors.navy],
                     value: '${user.uniqueCoPlayers.length}',
-                    label: 'CO-PLAYERS',
+                    label: 'NEW PLAYERS',
                   ),
                 ),
                 SizedBox(width: AppSpacing.xs),

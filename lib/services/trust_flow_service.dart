@@ -456,8 +456,8 @@ class TrustFlowService {
           photoUrl: photoUrl,
         );
       }
-    } catch (_) {
-      // Fallback below.
+    } catch (e) {
+      AppLog.d('⚠️ TrustFlowService._resolveProfile fallback: $e');
     }
 
     return const _ProfileProjection(

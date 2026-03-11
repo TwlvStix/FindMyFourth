@@ -150,10 +150,6 @@ class _GamesListWidgetState extends State<GamesListWidget> {
     return getCancelledHandling(game, _cancelledGameHandlingByGame);
   }
 
-  bool _shouldHideCancelledGame(Game game) {
-    return shouldHideCancelledGame(game, _cancelledGameHandlingByGame);
-  }
-
   Future<void> _sendFriendRequest(
     BuildContext context,
     DocumentReference hostRef,
@@ -243,7 +239,6 @@ class _GamesListWidgetState extends State<GamesListWidget> {
                 quickFilter: _quickFilter,
                 sortOption: _sortOption,
                 vibeScores: _vibeScores,
-                shouldHideCancelledGame: _shouldHideCancelledGame,
                 getCancelledHandling: _getCancelledHandling,
                 onFilterMetaChanged: (meta) => _lastFilterMeta = meta,
                 onOwnerUidsReady: _profileWarmer.scheduleProfileWarm,
