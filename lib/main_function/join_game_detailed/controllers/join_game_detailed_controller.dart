@@ -164,8 +164,7 @@ class JoinGameDetailedController {
           );
       }
     } on FirebaseException catch (error) {
-      final friendGameLower = game.friendGame.trim().toLowerCase();
-      final isFriendsOnly = friendGameLower == 'friends';
+      final isFriendsOnly = game.friendGame == Game.visibilityFriends;
       final message = error.code == 'permission-denied'
           ? (isFriendsOnly
               ? 'You must be friends with the game creator to join this game.'
@@ -211,9 +210,8 @@ class JoinGameDetailedController {
     required bool isCreatorFriend,
     required ProfileProvider profileProvider,
   }) async {
-    final friendGameLower = game.friendGame.trim().toLowerCase();
-    final isFriendsOnly = friendGameLower == 'friends';
-    final isPublic = friendGameLower == 'public';
+    final isFriendsOnly = game.friendGame == Game.visibilityFriends;
+    final isPublic = game.friendGame.isEmpty || game.friendGame == Game.visibilityPublic;
     var isOwnerFriendsWithUser = isCreatorFriend;
 
     if (!isFriendsOnly) {

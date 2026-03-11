@@ -58,35 +58,11 @@ class GameService {
       }
 
       Stream<List<GamesRecord>> publicOnlyStream() {
-        final publicValuesQuery = baseQuery.where(
+        final publicQuery = baseQuery.where(
           'friend_game',
-          whereIn: ['Public', 'public'],
+          isEqualTo: 'public',
         );
-        final publicNullQuery = baseQuery.where(
-          'friend_game',
-          isNull: true,
-        );
-
-        return Rx.combineLatest2(
-          streamFromQuery(publicValuesQuery),
-          streamFromQuery(publicNullQuery),
-          (List<GamesRecord> a, List<GamesRecord> b) {
-            final merged = <String, GamesRecord>{};
-            for (final record in a) {
-              merged[record.reference.id] = record;
-            }
-            for (final record in b) {
-              merged[record.reference.id] = record;
-            }
-            final mergedList = merged.values.toList();
-            mergedList.sort((left, right) {
-              final leftDate = left.date ?? DateTime(1970);
-              final rightDate = right.date ?? DateTime(1970);
-              return leftDate.compareTo(rightDate);
-            });
-            return mergedList;
-          },
-        );
+        return streamFromQuery(publicQuery);
       }
 
       return FirebaseAuth.instance.authStateChanges().switchMap((user) {

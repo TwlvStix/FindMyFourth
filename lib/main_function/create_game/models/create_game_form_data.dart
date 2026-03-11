@@ -279,7 +279,7 @@ class CreateGameFormData {
       'course_play': courseValue,
       'member_discount': memberValue,
       'scoring': scoringValue,
-      'friend_game': friendsValue,
+      'friend_game': friendsValue?.trim().toLowerCase(),
       'max_players': 4,
       'rules_setting': rulesSetValue,
       'created_time': DateTime.now(),

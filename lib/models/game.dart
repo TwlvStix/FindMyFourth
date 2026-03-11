@@ -5,6 +5,11 @@ import '/models/player_eligibility.dart';
 import '/utils/flexible_date_formatter.dart';
 
 class Game {
+  /// Normalized visibility constants for the `friend_game` Firestore field.
+  /// All writes and reads should use these lowercase values.
+  static const visibilityPublic = 'public';
+  static const visibilityFriends = 'friends';
+
   Game({
     required this.reference,
     required this.nameGame,

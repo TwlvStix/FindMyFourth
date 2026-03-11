@@ -387,7 +387,7 @@ exports.fetchReceiptants = functions
       forFunUsers.docs.forEach((doc) => users.add(doc.ref.path));
     }
 
-    if (data.friend_game === "Friends") {
+    if (data.friend_game === "friends") {
       const friendUsers = await userCollection
         .where("notify_only_from_friends", "==", true)
         .get();
@@ -1528,97 +1528,6 @@ exports.syncUsernameIndex = functions
  * @param {Object} context - Authentication context
  * @returns {Promise<{success: boolean, messagesDeleted: number}>}
  */
-/**
- * One-time migration function to backfill alertSubs for existing users.
- * Call this once after deploying the syncNotificationPreferencesToAlertSubs function.
- *
- * Usage: firebase functions:call backfillAlertSubs
- */
-exports.backfillAlertSubs = functions
-  .region("us-west2")
-  .runWith({
-    timeoutSeconds: 540,
-    memory: "2GB",
-  })
-  .https.onCall(async (data, context) => {
-    // Require authentication and optionally restrict to admins
-    if (!context.auth) {
-      throw new functions.https.HttpsError(
-        "unauthenticated",
-        "Must be authenticated to run backfill",
-      );
-    }
-
-    console.log(`Starting alertSubs backfill initiated by ${context.auth.uid}`);
-
-    try {
-      // Get all users
-      const usersSnap = await firestore.collection("users").get();
-      console.log(`Found ${usersSnap.docs.length} users to process`);
-
-      let processedCount = 0;
-      let skippedCount = 0;
-      let errorCount = 0;
-
-      for (const userDoc of usersSnap.docs) {
-        const userId = userDoc.id;
-        const userData = userDoc.data() || {};
-
-        try {
-          const prefs = getUserNotificationPrefs(userData);
-          const gameAlertsEnabled = prefs.pushEnabled && prefs.gameAlertsEnabled;
-          const styles = prefs.styles || [];
-
-          if (styles.length === 0) {
-            skippedCount++;
-            continue;
-          }
-
-          const batch = firestore.batch();
-
-          for (const style of styles) {
-            const docId = `${userId}_${style}`;
-            const subRef = firestore.collection(kAlertSubsCollection).doc(docId);
-
-            batch.set(subRef, {
-              uid: userId,
-              style,
-              enabled: gameAlertsEnabled,
-              createdAt: admin.firestore.FieldValue.serverTimestamp(),
-              updatedAt: admin.firestore.FieldValue.serverTimestamp(),
-            });
-          }
-
-          await batch.commit();
-          processedCount++;
-
-          if (processedCount % 50 === 0) {
-            console.log(`Processed ${processedCount} users so far...`);
-          }
-        } catch (error) {
-          console.error(`Error processing user ${userId}:`, error);
-          errorCount++;
-        }
-      }
-
-      const summary = {
-        totalUsers: usersSnap.docs.length,
-        processedCount,
-        skippedCount,
-        errorCount,
-      };
-
-      console.log("Backfill complete:", summary);
-      return summary;
-    } catch (error) {
-      console.error("Backfill failed:", error);
-      throw new functions.https.HttpsError(
-        "internal",
-        `Backfill failed: ${error.message}`,
-      );
-    }
-  });
-
 const sgMail = require("@sendgrid/mail");
 
 /**

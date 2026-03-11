@@ -145,11 +145,8 @@ class _JoinGameWidgetState extends State<JoinGameWidget> {
                                 return;
                               }
                               final currentUserId = currentUserRef.id;
-                              final friendGameLower = widget.gameRef.friendGame
-                                  .trim()
-                                  .toLowerCase();
                               final isFriendsOnly =
-                                  friendGameLower == 'friends';
+                                  widget.gameRef.friendGame == Game.visibilityFriends;
 
                               try {
                                 await context.gameProvider.joinGame(

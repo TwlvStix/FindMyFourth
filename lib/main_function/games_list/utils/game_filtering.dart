@@ -38,13 +38,12 @@ bool matchesDateRange(DateTime? gameDate, GameDateRange range) {
 
 /// Checks if a game is publicly visible (not friends-only).
 bool isPublicGame(Game game) {
-  final value = game.friendGame.trim().toLowerCase();
-  return value.isEmpty || value == 'public';
+  return game.friendGame.isEmpty || game.friendGame == Game.visibilityPublic;
 }
 
 /// Checks if a game is friends-only.
 bool isFriendsOnlyGame(Game game) {
-  return game.friendGame.trim().toLowerCase() == 'friends';
+  return game.friendGame == Game.visibilityFriends;
 }
 
 /// Extracts friend IDs from a user record as a Set.

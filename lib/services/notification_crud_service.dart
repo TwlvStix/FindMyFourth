@@ -289,7 +289,7 @@ class NotificationCrudService {
     }
 
     final friendGameValue = (data['friendGame'] as String?) ?? '';
-    final isFriendsOnly = friendGameValue.trim().toLowerCase() == 'friends';
+    final isFriendsOnly = friendGameValue == 'friends';
     if (!isFriendsOnly) {
       return false;
     }

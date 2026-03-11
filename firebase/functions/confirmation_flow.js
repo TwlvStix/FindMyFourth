@@ -910,6 +910,7 @@ async function _onGameStatusToPlayedHandler(change, context, db) {
         host_confirmation_data: null,
         attendance_records: {},
         confirmed_player_refs: [],
+        participant_refs: appUserRefs,
         created_at: now,
       };
 

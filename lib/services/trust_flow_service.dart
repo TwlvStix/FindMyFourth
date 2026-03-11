@@ -277,10 +277,15 @@ class TrustFlowService {
   Future<ConfirmationStatus> checkHostCheckinStatus({
     required DocumentReference gameRef,
   }) async {
+    final currentUid = _auth.currentUser?.uid;
+    if (currentUid == null) return ConfirmationStatus.pending;
+
     try {
+      final currentUserRef = _firestore.collection('users').doc(currentUid);
       final jobsSnap = await _firestore
           .collection('round_jobs')
           .where('game_ref', isEqualTo: gameRef)
+          .where('app_user_refs', arrayContains: currentUserRef)
           .limit(1)
           .get();
 
@@ -309,9 +314,11 @@ class TrustFlowService {
 
     try {
       // Check window first
+      final currentUserRef = _firestore.collection('users').doc(currentUid);
       final jobsSnap = await _firestore
           .collection('round_jobs')
           .where('game_ref', isEqualTo: gameRef)
+          .where('app_user_refs', arrayContains: currentUserRef)
           .limit(1)
           .get();
 
@@ -321,7 +328,6 @@ class TrustFlowService {
       }
 
       // Check for existing pair_ratings
-      final currentUserRef = _firestore.collection('users').doc(currentUid);
       final ratingsSnap = await _firestore
           .collection('pair_ratings')
           .where('rater_ref', isEqualTo: currentUserRef)
@@ -348,9 +354,11 @@ class TrustFlowService {
 
     try {
       // Check window first
+      final currentUserRef = _firestore.collection('users').doc(currentUid);
       final jobsSnap = await _firestore
           .collection('round_jobs')
           .where('game_ref', isEqualTo: gameRef)
+          .where('app_user_refs', arrayContains: currentUserRef)
           .limit(1)
           .get();
 
@@ -386,9 +394,14 @@ class TrustFlowService {
   Future<Map<String, dynamic>> _loadAttendanceRecords({
     required DocumentReference gameRef,
   }) async {
+    final currentUid = _auth.currentUser?.uid;
+    if (currentUid == null) return <String, dynamic>{};
+
+    final currentUserRef = _firestore.collection('users').doc(currentUid);
     final jobsSnap = await _firestore
         .collection('round_jobs')
         .where('game_ref', isEqualTo: gameRef)
+        .where('app_user_refs', arrayContains: currentUserRef)
         .limit(1)
         .get();
 

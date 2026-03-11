@@ -7,12 +7,13 @@ import '/backend/cloud_functions/cloud_functions.dart';
 import '/core/design_tokens/colors.dart';
 import '/core/design_tokens/spacing.dart';
 import '/core/design_tokens/typography.dart';
-import '/core/design_tokens/icon_size.dart';
-import '/core/design_tokens/border_radius.dart';
 import '/core/design_tokens/app_phosphor_icons.dart';
 import '/core/utils/app_log.dart';
 import '/core/widgets/app_button_enhanced.dart';
 import '/services/trust_flow_service.dart';
+import 'components/fallback_header.dart';
+import 'components/fallback_status_view.dart';
+import 'components/fallback_toggle.dart';
 
 /// FallbackConfirmationScreen
 ///
@@ -38,22 +39,54 @@ class FallbackConfirmationScreen extends StatefulWidget {
 }
 
 class _FallbackConfirmationScreenState
-    extends State<FallbackConfirmationScreen> {
+    extends State<FallbackConfirmationScreen>
+    with SingleTickerProviderStateMixin {
   final _trustFlowService = TrustFlowService();
 
   bool _loading = true;
   bool _submitting = false;
   String? _error;
-  bool? _answered; // true = yes, false = no, null = not answered
+  bool _selection = true; // toggle state: true = yes, false = no
+  bool _submitted = false; // post-submit
   bool _alreadyCompleted = false;
   bool _windowClosed = false;
 
   String _courseName = '';
 
+  // Entrance animation
+  late AnimationController _entranceController;
+  late Animation<double> _fadeAnimation;
+  late Animation<Offset> _slideAnimation;
+
   @override
   void initState() {
     super.initState();
+    _entranceController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 600),
+    );
+    _fadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(
+        parent: _entranceController,
+        curve: const Interval(0.0, 0.6, curve: Curves.easeOutCubic),
+      ),
+    );
+    _slideAnimation = Tween<Offset>(
+      begin: const Offset(0, 0.08),
+      end: Offset.zero,
+    ).animate(
+      CurvedAnimation(
+        parent: _entranceController,
+        curve: const Interval(0.0, 0.6, curve: Curves.easeOutCubic),
+      ),
+    );
     _loadCourseName();
+  }
+
+  @override
+  void dispose() {
+    _entranceController.dispose();
+    super.dispose();
   }
 
   Future<void> _loadCourseName() async {
@@ -86,20 +119,23 @@ class _FallbackConfirmationScreenState
     } catch (e) {
       AppLog.d('FallbackConfirmationScreen load error: $e');
     }
-    if (mounted) updateState(this, () { _loading = false; });
+    if (mounted) {
+      updateState(this, () { _loading = false; });
+      _entranceController.forward();
+    }
   }
 
-  Future<void> _submit(bool didPlay) async {
+  Future<void> _submit() async {
     updateState(this, () { _submitting = true; _error = null; });
 
     try {
       final result = await makeCloudCall('submitFallbackConfirmation', {
         'gameId': widget.gameRef.id,
-        'didPlay': didPlay,
+        'didPlay': _selection,
       });
 
       if (result['success'] == true) {
-        if (mounted) updateState(this, () { _submitting = false; _answered = didPlay; });
+        if (mounted) updateState(this, () { _submitting = false; _submitted = true; });
       } else {
         if (mounted) updateState(this, () { _submitting = false; _error = 'Submission failed. Please try again.'; });
       }
@@ -114,115 +150,48 @@ class _FallbackConfirmationScreenState
     if (_loading) {
       return Scaffold(
         backgroundColor: AppColors.navyDark,
-        body: const Center(child: CircularProgressIndicator()),
+        body: Center(
+          child: CircularProgressIndicator(
+            color: AppColors.green,
+            strokeWidth: 2.5,
+          ),
+        ),
       );
     }
 
+    void pop() => Navigator.of(context).pop();
+
     if (_alreadyCompleted) {
-      return Scaffold(
-        backgroundColor: AppColors.navyDark,
-        body: SafeArea(
-          child: Center(
-            child: Padding(
-              padding: AppSpacing.symmetric(horizontal: AppSpacing.xl),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  PhosphorIcon(AppPhosphorIcons.successFill,
-                      color: AppColors.green, size: AppIconSize.hero),
-                  SizedBox(height: AppSpacing.lg),
-                  Text(
-                    'Already confirmed for this round.',
-                    style: AppTypography.titleMedium,
-                    textAlign: TextAlign.center,
-                  ),
-                  SizedBox(height: AppSpacing.xxl),
-                  AppButtonEnhanced(
-                    onPressed: () => Navigator.of(context).pop(),
-                    text: 'Close',
-                    variant: AppButtonVariant.primary,
-                    size: AppButtonSize.large,
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ),
+      return FallbackStatusView(
+        icon: AppPhosphorIcons.successFill,
+        iconColor: AppColors.green,
+        message: 'Already confirmed for this round.',
+        onDone: pop,
       );
     }
 
     if (_windowClosed) {
-      return Scaffold(
-        backgroundColor: AppColors.navyDark,
-        body: SafeArea(
-          child: Center(
-            child: Padding(
-              padding: AppSpacing.symmetric(horizontal: AppSpacing.xl),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  PhosphorIcon(AppPhosphorIcons.clock,
-                      color: AppColors.textMuted, size: AppIconSize.hero),
-                  SizedBox(height: AppSpacing.lg),
-                  Text(
-                    'This confirmation window has closed.',
-                    style: AppTypography.titleMedium,
-                    textAlign: TextAlign.center,
-                  ),
-                  SizedBox(height: AppSpacing.xxl),
-                  AppButtonEnhanced(
-                    onPressed: () => Navigator.of(context).pop(),
-                    text: 'Close',
-                    variant: AppButtonVariant.primary,
-                    size: AppButtonSize.large,
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ),
+      return FallbackStatusView(
+        icon: AppPhosphorIcons.clock,
+        iconColor: AppColors.textMuted,
+        message: 'This confirmation window has closed.',
+        onDone: pop,
       );
     }
 
-    // Post-answer confirmation view
-    if (_answered != null) {
-      return Scaffold(
-        backgroundColor: AppColors.navyDark,
-        body: SafeArea(
-          child: Center(
-            child: Padding(
-              padding: AppSpacing.symmetric(horizontal: AppSpacing.xl),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  PhosphorIcon(
-                    _answered! ? AppPhosphorIcons.successFill : AppPhosphorIcons.cancelFill,
-                    color: _answered! ? AppColors.green : AppColors.textSecondary,
-                    size: AppIconSize.hero,
-                  ),
-                  SizedBox(height: AppSpacing.lg),
-                  Text(
-                    _answered!
-                        ? 'Got it — glad you played!'
-                        : 'Thanks for letting us know.',
-                    style: AppTypography.titleMedium,
-                    textAlign: TextAlign.center,
-                  ),
-                  SizedBox(height: AppSpacing.xxl),
-                  AppButtonEnhanced(
-                    onPressed: () => Navigator.of(context).pop(),
-                    text: 'Close',
-                    variant: AppButtonVariant.primary,
-                    size: AppButtonSize.large,
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ),
+    if (_submitted) {
+      return FallbackStatusView(
+        icon: _selection ? AppPhosphorIcons.successFill : AppPhosphorIcons.cancelFill,
+        iconColor: _selection ? AppColors.green : AppColors.textSecondary,
+        message: _selection ? 'Got it — glad you played!' : 'Thanks for letting us know.',
+        onDone: pop,
       );
     }
 
+    return _buildFormView();
+  }
+
+  Widget _buildFormView() {
     return Scaffold(
       backgroundColor: AppColors.navyDark,
       appBar: AppBar(
@@ -236,114 +205,75 @@ class _FallbackConfirmationScreenState
         ),
       ),
       body: SafeArea(
-        child: Padding(
-          padding: AppSpacing.symmetric(horizontal: AppSpacing.xl),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              PhosphorIcon(
-                AppPhosphorIcons.golfCourse,
-                color: AppColors.green,
-                size: AppIconSize.xxl,
-              ),
-              SizedBox(height: AppSpacing.xl),
-              Text(
-                'Did you play at $_courseName today?',
-                style: AppTypography.headlineMediumSans,
-                textAlign: TextAlign.center,
-              ),
-              SizedBox(height: AppSpacing.sm),
-              Text(
-                "The host hasn't confirmed the round yet. Let us know if it happened.",
-                style: AppTypography.bodyMedium.copyWith(
-                  color: AppColors.textSecondary,
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            return SingleChildScrollView(
+              child: ConstrainedBox(
+                constraints: BoxConstraints(minHeight: constraints.maxHeight),
+                child: IntrinsicHeight(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      const Spacer(flex: 1),
+                      FallbackHeader(courseName: _courseName),
+                      SizedBox(height: AppSpacing.xxxl),
+                      Center(child: AnimatedBuilder(
+                        animation: _entranceController,
+                        builder: (context, child) => Opacity(
+                          opacity: _fadeAnimation.value,
+                          child: SlideTransition(
+                            position: _slideAnimation,
+                            child: child,
+                          ),
+                        ),
+                        child: FallbackToggle(
+                          selection: _selection,
+                          onSelect: (val) {
+                            updateState(this, () {
+                              _selection = val;
+                              _error = null;
+                            });
+                          },
+                        ),
+                      )),
+                      const Spacer(flex: 1),
+                      if (_error != null)
+                        Padding(
+                          padding: AppSpacing.symmetric(
+                              horizontal: AppSpacing.xl,
+                              vertical: AppSpacing.sm),
+                          child: Text(
+                            _error!,
+                            style: AppTypography.bodySmall.copyWith(
+                              color: AppColors.error,
+                            ),
+                            textAlign: TextAlign.center,
+                          ),
+                        ),
+                      Center(
+                        child: Padding(
+                          padding: AppSpacing.only(
+                              left: AppSpacing.xl,
+                              right: AppSpacing.xl,
+                              bottom: AppSpacing.xxl,
+                              top: AppSpacing.lg),
+                          child: AppButtonEnhanced(
+                            onPressed: _submitting ? null : _submit,
+                            text: _submitting ? 'Submitting...' : 'Confirm',
+                            variant: AppButtonVariant.primary,
+                            size: AppButtonSize.large,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
-                textAlign: TextAlign.center,
               ),
-              if (_error != null) ...[
-                SizedBox(height: AppSpacing.md),
-                Text(
-                  _error!,
-                  style: AppTypography.bodySmall.copyWith(
-                    color: AppColors.error,
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-              ],
-              SizedBox(height: AppSpacing.xxxl),
-              Row(
-                children: [
-                  Expanded(
-                    child: _YesNoButton(
-                      label: 'Yes',
-                      icon: AppPhosphorIcons.check,
-                      color: AppColors.green,
-                      onTap: _submitting ? null : () => _submit(true),
-                    ),
-                  ),
-                  SizedBox(width: AppSpacing.md),
-                  Expanded(
-                    child: _YesNoButton(
-                      label: 'No',
-                      icon: AppPhosphorIcons.close,
-                      color: AppColors.textSecondary,
-                      onTap: _submitting ? null : () => _submit(false),
-                    ),
-                  ),
-                ],
-              ),
-            ],
-          ),
+            );
+          },
         ),
       ),
     );
   }
-}
 
-class _YesNoButton extends StatelessWidget {
-  const _YesNoButton({
-    required this.label,
-    required this.icon,
-    required this.color,
-    required this.onTap,
-  });
-
-  final String label;
-  final PhosphorIconData icon;
-  final Color color;
-  final VoidCallback? onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: AnimatedOpacity(
-        opacity: onTap == null ? 0.5 : 1.0,
-        duration: const Duration(milliseconds: 150),
-        child: Container(
-          padding: EdgeInsets.symmetric(vertical: AppSpacing.lg - 2),
-          decoration: BoxDecoration(
-            color: color.withValues(alpha:0.12),
-            borderRadius: BorderRadius.circular(AppBorderRadius.lg),
-            border: Border.all(color: color.withValues(alpha:0.5), width: 1.5),
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              PhosphorIcon(icon, color: color, size: AppIconSize.lg),
-              AppSpacing.verticalXsBox,
-              Text(
-                label,
-                style: AppTypography.titleMedium.copyWith(
-                  color: color,
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
 }

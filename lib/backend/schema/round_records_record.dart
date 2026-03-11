@@ -70,6 +70,11 @@ class RoundRecordsRecord extends FirestoreRecord {
   DateTime? get hostCheckInAt => _hostCheckInAt;
   bool hasHostCheckInAt() => _hostCheckInAt != null;
 
+  // "participant_refs" field. All game participants at round creation time.
+  List<DocumentReference>? _participantRefs;
+  List<DocumentReference> get participantRefs => _participantRefs ?? const [];
+  bool hasParticipantRefs() => _participantRefs != null;
+
   // "confirmed_player_refs" field. App users who confirmed the round happened.
   List<DocumentReference>? _confirmedPlayerRefs;
   List<DocumentReference> get confirmedPlayerRefs =>
@@ -105,6 +110,19 @@ class RoundRecordsRecord extends FirestoreRecord {
     _verifiedAt = snapshotData['verified_at'] as DateTime?;
     _verificationStatus = snapshotData['verification_status'] as String?;
     _hostCheckInAt = snapshotData['host_check_in_at'] as DateTime?;
+    final participantRaw = snapshotData['participant_refs'];
+    if (participantRaw is List) {
+      _participantRefs = participantRaw
+          .map((item) {
+            if (item is DocumentReference) return item;
+            if (item is String && item.isNotEmpty) {
+              return FirebaseFirestore.instance.doc(item);
+            }
+            return null;
+          })
+          .whereType<DocumentReference>()
+          .toList();
+    }
     final confirmedRaw = snapshotData['confirmed_player_refs'];
     if (confirmedRaw is List) {
       _confirmedPlayerRefs = confirmedRaw
@@ -169,6 +187,7 @@ Map<String, dynamic> createRoundRecordsRecordData({
   DateTime? verifiedAt,
   String? verificationStatus,
   DateTime? hostCheckInAt,
+  List<DocumentReference>? participantRefs,
   List<DocumentReference>? confirmedPlayerRefs,
   Map<String, dynamic>? attendanceRecords,
 }) {
@@ -184,6 +203,7 @@ Map<String, dynamic> createRoundRecordsRecordData({
       'verified_at': verifiedAt,
       'verification_status': verificationStatus,
       'host_check_in_at': hostCheckInAt,
+      'participant_refs': participantRefs,
       'confirmed_player_refs': confirmedPlayerRefs,
       'attendance_records': attendanceRecords,
     }.withoutNulls,
@@ -210,6 +230,7 @@ class RoundRecordsRecordDocumentEquality
         e1?.verifiedAt == e2?.verifiedAt &&
         e1?.verificationStatus == e2?.verificationStatus &&
         e1?.hostCheckInAt == e2?.hostCheckInAt &&
+        listEquality.equals(e1?.participantRefs, e2?.participantRefs) &&
         listEquality.equals(e1?.confirmedPlayerRefs, e2?.confirmedPlayerRefs) &&
         mapEquality.equals(e1?.attendanceRecords, e2?.attendanceRecords);
   }
@@ -226,6 +247,7 @@ class RoundRecordsRecordDocumentEquality
         e?.verifiedAt,
         e?.verificationStatus,
         e?.hostCheckInAt,
+        e?.participantRefs,
         e?.confirmedPlayerRefs,
         const DeepCollectionEquality().hash(e?.attendanceRecords),
       ]);

@@ -12,7 +12,6 @@ import 'schema/course_record.dart';
 import 'schema/chat_messages_record.dart';
 import 'schema/chats_record.dart';
 import 'schema/games_record.dart';
-import 'schema/friend_request_record.dart';
 import 'dart:async';
 import 'package:infinite_scroll_pagination/infinite_scroll_pagination.dart';
 
@@ -28,8 +27,6 @@ export 'schema/course_record.dart';
 export 'schema/chat_messages_record.dart';
 export 'schema/chats_record.dart';
 export 'schema/games_record.dart';
-export 'schema/friend_request_record.dart';
-
 const FirestoreRepository firestoreRepository = FirestoreRepository();
 
 void _appendPageToController<T>(
@@ -394,75 +391,6 @@ Future<FirestorePage<GamesRecord>> queryGamesRecordPage({
       if (isStream) {
         final streamSubscription =
             (page.dataStream)?.listen((List<GamesRecord> data) {
-          _replaceStreamItems(controller, data);
-        });
-        streamSubscriptions?.add(streamSubscription);
-      }
-      return page;
-    });
-
-/// Functions to query FriendRequestRecords (as a Stream and as a Future).
-Future<int> queryFriendRequestRecordCount({
-  Query Function(Query)? queryBuilder,
-  int limit = -1,
-}) =>
-    queryCollectionCount(
-      FriendRequestRecord.collection,
-      queryBuilder: queryBuilder,
-      limit: limit,
-    );
-
-Stream<List<FriendRequestRecord>> queryFriendRequestRecord({
-  Query Function(Query)? queryBuilder,
-  int limit = -1,
-  bool singleRecord = false,
-}) =>
-    queryCollection(
-      FriendRequestRecord.collection,
-      FriendRequestRecord.fromSnapshot,
-      queryBuilder: queryBuilder,
-      limit: limit,
-      singleRecord: singleRecord,
-    );
-
-Future<List<FriendRequestRecord>> queryFriendRequestRecordOnce({
-  Query Function(Query)? queryBuilder,
-  int limit = -1,
-  bool singleRecord = false,
-}) =>
-    queryCollectionOnce(
-      FriendRequestRecord.collection,
-      FriendRequestRecord.fromSnapshot,
-      queryBuilder: queryBuilder,
-      limit: limit,
-      singleRecord: singleRecord,
-    );
-Future<FirestorePage<FriendRequestRecord>> queryFriendRequestRecordPage({
-  Query Function(Query)? queryBuilder,
-  DocumentSnapshot? nextPageMarker,
-  required int pageSize,
-  required bool isStream,
-  required PagingController<DocumentSnapshot?, FriendRequestRecord> controller,
-  List<StreamSubscription<dynamic>?>? streamSubscriptions,
-}) =>
-    firestoreRepository
-        .queryCollectionPage(
-      FriendRequestRecord.collection,
-      FriendRequestRecord.fromSnapshot,
-      queryBuilder: queryBuilder,
-      nextPageMarker: nextPageMarker,
-      pageSize: pageSize,
-      isStream: isStream,
-    )
-        .then((page) {
-      _appendPageToController(
-        controller,
-        page.data,
-        page.nextPageMarker,
-      );
-      if (isStream) {
-        final streamSubscription =
-            (page.dataStream)?.listen((List<FriendRequestRecord> data) {
           _replaceStreamItems(controller, data);
         });
         streamSubscriptions?.add(streamSubscription);

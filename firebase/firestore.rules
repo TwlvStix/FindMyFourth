@@ -158,12 +158,6 @@ service cloud.firestore {
       return value == userRef(request.auth.uid) || value == request.auth.uid;
     }
 
-    function isFriendRequestParticipant(data) {
-      return isSignedIn() &&
-        (isSelfReference(data.requester_id) ||
-         isSelfReference(data.receiver_id));
-    }
-
     function canUpdateUnreadCount(oldData, newData) {
       let oldCounts = oldData.get('unreadCountByUser', {});
       let newCounts = newData.get('unreadCountByUser', {});
@@ -385,7 +379,8 @@ service cloud.firestore {
         'hometown_lat',
         'hometown_lng',
         'home_course_lat',
-        'home_course_lng'
+        'home_course_lng',
+        'updated_at'
       ];
       let changed = request.resource.data.diff(resource.data).changedKeys();
       return changed.hasOnly(allowedFields);
@@ -459,13 +454,11 @@ service cloud.firestore {
 
     function isPublicGame(data) {
       return !data.keys().hasAny(['friend_game']) ||
-        data.friend_game == 'Public' ||
         data.friend_game == 'public';
     }
 
     function isFriendsOnlyGame(data) {
-      return data.friend_game == 'Friends' ||
-        data.friend_game == 'friends';
+      return data.friend_game == 'friends';
     }
 
     function isFriendOfOwner(data) {
@@ -784,18 +777,6 @@ service cloud.firestore {
       }
     }
 
-    match /friend_request/{document} {
-      allow create: if isSignedIn() &&
-        isSelfReference(request.resource.data.requester_id) &&
-        request.resource.data.receiver_id != null &&
-        request.resource.data.receiver_id != request.resource.data.requester_id;
-      allow read: if isFriendRequestParticipant(resource.data);
-      allow update: if isFriendRequestParticipant(resource.data) &&
-        request.resource.data.requester_id == resource.data.requester_id &&
-        request.resource.data.receiver_id == resource.data.receiver_id;
-      allow delete: if isFriendRequestParticipant(resource.data);
-    }
-
     match /usernames/{name} {
       allow create: if request.auth != null &&
         (request.resource.data.uid == userRef(request.auth.uid) ||
@@ -853,11 +834,15 @@ service cloud.firestore {
     }
 
     // round_records — written exclusively by Cloud Functions (Admin SDK).
-    // Confirmed participants in the round can read the record.
+    // Any participant in the round can read the record.
+    // participant_refs is set at creation; confirmed_player_refs is a fallback
+    // for pre-backfill records where participant_refs doesn't exist yet.
     match /round_records/{roundId} {
       allow read: if isSignedIn() && (
-        resource.data.confirmed_player_refs is list &&
-        resource.data.confirmed_player_refs.hasAny([userRef(request.auth.uid)])
+        (resource.data.participant_refs is list &&
+         resource.data.participant_refs.hasAny([userRef(request.auth.uid)])) ||
+        (resource.data.confirmed_player_refs is list &&
+         resource.data.confirmed_player_refs.hasAny([userRef(request.auth.uid)]))
       );
       allow create: if false; // Cloud Function only
       allow update: if false;
@@ -934,12 +919,14 @@ service cloud.firestore {
       }
     }
 
-    // round_jobs — game participants can read to check attendance records
+    // round_jobs — game participants can read to check confirmation status.
+    // Uses document-own fields (host_ref, app_user_refs) written by Cloud Functions
+    // at creation time, avoiding cross-collection get() calls to the game document.
     match /round_jobs/{jobId} {
       allow read: if isSignedIn() &&
-        resource.data.game_ref is path &&
-        (isGameParticipantByRef(resource.data.game_ref) ||
-         isGameOwnerByRef(resource.data.game_ref));
+        (resource.data.host_ref == userRef(request.auth.uid) ||
+         (resource.data.app_user_refs is list &&
+          resource.data.app_user_refs.hasAny([userRef(request.auth.uid)])));
       allow write: if false;
     }
 
