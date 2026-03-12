@@ -59,6 +59,8 @@
 	<string>In order to upload data, this app requires permission to access the photo library.</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
 	<string>Find My Fourth uses your location to show nearby games.</string>
+	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+	<string>Find My Fourth uses your location to show nearby games.</string>
 	<key>UIApplicationSceneManifest</key>
 	<dict>
 		<key>UIApplicationSupportsMultipleScenes</key>

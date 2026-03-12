@@ -339,6 +339,26 @@ async function sendPushToUser(userId, notification, db) {
       body: notification.body,
     },
     data: notification.data || {},
+    android: {
+      priority: 'high',
+      notification: {
+        channelId: 'fmm_general',
+        sound: 'default',
+      },
+    },
+    apns: {
+      headers: {
+        'apns-push-type': 'alert',
+        'apns-priority': '10',
+      },
+      payload: {
+        aps: {
+          sound: 'default',
+          badge: 1,
+          'mutable-content': 1,
+        },
+      },
+    },
     tokens: deviceTokens.map((entry) => entry.token),
   };
 

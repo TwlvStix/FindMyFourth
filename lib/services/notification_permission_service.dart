@@ -102,8 +102,21 @@ class NotificationPermissionService {
     // Check current status first
     await refreshPermissionStatus();
 
-    // If not yet granted, request permission (triggers iOS prompt)
-    if (_cachedStatus == NotificationPermissionStatus.denied) {
+    if (_cachedStatus == NotificationPermissionStatus.granted ||
+        _cachedStatus == NotificationPermissionStatus.provisional) {
+      // Already authorized — fetch and persist FCM token
+      try {
+        final token = await _getMessagingToken();
+        if (token != null && token.isNotEmpty) {
+          await _upsertDeviceToken(uid, token);
+          AppLog.d('[NotificationService] ✅ FCM token persisted on init');
+        }
+      } on FirebaseException catch (e) {
+        AppLog.d(
+            '❌ [NotificationService] Failed to persist token on init: ${e.code} - ${e.message}');
+      }
+    } else if (_cachedStatus == NotificationPermissionStatus.denied) {
+      // Not yet granted — request permission (triggers iOS prompt)
       await requestPermissionAndRegister();
     }
 

@@ -703,11 +703,13 @@ exports.sendGameCreatedNotifications = functions
           },
           apns: {
             headers: {
+              "apns-push-type": "alert",
               "apns-priority": "10",
             },
             payload: {
               aps: {
                 sound: "default",
+                badge: 1,
                 "mutable-content": 1,
               },
             },

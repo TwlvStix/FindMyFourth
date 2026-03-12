@@ -161,13 +161,15 @@ async function send(fcmToken, deviceId, payload, baseDelayMs = 1000) {
     },
     apns: {
       headers: {
-        'apns-priority': apnsPriority,
+        'apns-push-type': 'alert',
+        'apns-priority':  apnsPriority,
       },
       payload: {
         aps: {
           'thread-id':          payload.threadId,
           'interruption-level': interruptionLevel,
           sound:                'default',
+          badge:                1,
           'mutable-content':    1,
         },
       },
