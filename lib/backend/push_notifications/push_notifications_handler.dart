@@ -13,6 +13,7 @@ import '/core/widgets/app_premium_dialog.dart';
 import '/models/notification_receipt_event.dart';
 import '/notifications/components/player_added_bottom_sheet.dart';
 import '/notifications/components/pre_game_confirm_bottom_sheet.dart';
+import '/services/app_badge_service.dart';
 import '/services/notification_audit_service.dart';
 
 /// TTL-based deduplication cache with 5-minute expiry.
@@ -99,6 +100,9 @@ Future<void> handleNotificationNavigation(
     return;
   }
   _handledMessageCache[dedupeKey] = DateTime.now();
+
+  // Clear OS-level app badge on notification tap
+  AppBadgeService().clearBadge();
 
   // Normalize keys BEFORE routing
   final data = normalizeNotificationPayload(rawData);

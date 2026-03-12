@@ -63,7 +63,7 @@ class _NearMeChipState extends State<NearMeChip> {
             : Matrix4.identity(),
         padding: EdgeInsets.symmetric(
           horizontal: AppSpacing.md,
-          vertical: AppSpacing.sm,
+          vertical: AppSpacing.xs,
         ),
         decoration: BoxDecoration(
           color: isEnabled ? AppColors.green : AppColors.glassSurface,

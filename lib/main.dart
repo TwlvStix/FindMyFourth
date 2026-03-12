@@ -34,6 +34,7 @@ import '/providers/notification_list_provider.dart';
 import '/providers/streak_provider.dart';
 import '/providers/trust_provider.dart';
 import '/services/notification_audit_service.dart';
+import '/services/app_badge_service.dart';
 import '/services/notification_orchestration_service.dart';
 import '/services/remote_config_service.dart';
 
@@ -322,6 +323,9 @@ class MyAppState extends State<MyApp> with WidgetsBindingObserver {
       },
     );
     _bootstrapCoordinator.start();
+
+    // Clear OS-level app badge on cold start (e.g. notification tap launch)
+    AppBadgeService().clearBadge();
   }
 
   @override
@@ -337,6 +341,10 @@ class MyAppState extends State<MyApp> with WidgetsBindingObserver {
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      // Clear OS-level app badge when user returns to the app
+      AppBadgeService().clearBadge();
+    }
     // Flush notification audit events when app goes to background
     if (state == AppLifecycleState.paused) {
       NotificationAuditService.instance.flush();

@@ -270,6 +270,7 @@ class _GamesListContentState extends State<GamesListContent> {
                           ),
                           Padding(
                             padding: EdgeInsets.only(
+                              left: AppSpacing.sm,
                               right: AppSpacing.screenPadding,
                             ),
                             child: const NearMeChip(),

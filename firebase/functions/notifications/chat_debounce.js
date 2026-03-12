@@ -135,7 +135,6 @@ async function scheduleDebouncedChatNotification(chatId, recipientUid, messageDa
  */
 async function deliverChatNotificationHandler(req, res) {
   const db = admin.firestore();
-  console.log('[CHAT_DELIVER] started, request body:', JSON.stringify(req.body));
 
   // 1. Parse payload
   const {
@@ -169,7 +168,6 @@ async function deliverChatNotificationHandler(req, res) {
     const unreadCount = (chatData.unreadCountByUser || {})[recipientUid] || 0;
     if (unreadCount === 0) {
       console.log(`[ChatDebounce] Unread count is 0 for ${recipientUid} in chat ${chatId} — skipping`);
-      console.log('[CHAT_DELIVER] skipping - reason: unread count is 0 for', recipientUid);
       await trackingRef.delete();
       return res.status(200).send('SKIPPED_READ');
     }
@@ -179,7 +177,6 @@ async function deliverChatNotificationHandler(req, res) {
   const userRef = db.collection('users').doc(recipientUid);
   const userSnap = await userRef.get();
   if (!userSnap.exists) {
-    console.log('[CHAT_DELIVER] skipping - reason: user doc not found for', recipientUid);
     await trackingRef.delete();
     return res.status(200).send('SKIPPED_NO_USER');
   }
@@ -189,22 +186,18 @@ async function deliverChatNotificationHandler(req, res) {
   const isDirect = chatType === 'direct';
 
   if (!prefs.pushEnabled || !prefs.chatAlertsEnabled) {
-    console.log('[CHAT_DELIVER] skipping - reason: push or chat alerts disabled for', recipientUid);
     await trackingRef.delete();
     return res.status(200).send('PREFS_DISABLED');
   }
   if (prefs.mutedThreads.includes(chatId)) {
-    console.log('[CHAT_DELIVER] skipping - reason: thread muted for', recipientUid, 'chat:', chatId);
     await trackingRef.delete();
     return res.status(200).send('PREFS_DISABLED');
   }
   if (isDirect && !prefs.chatDirectEnabled) {
-    console.log('[CHAT_DELIVER] skipping - reason: direct chat notifications disabled for', recipientUid);
     await trackingRef.delete();
     return res.status(200).send('PREFS_DISABLED');
   }
   if (!isDirect && !prefs.chatGroupEnabled) {
-    console.log('[CHAT_DELIVER] skipping - reason: group chat notifications disabled for', recipientUid);
     await trackingRef.delete();
     return res.status(200).send('PREFS_DISABLED');
   }
@@ -214,7 +207,6 @@ async function deliverChatNotificationHandler(req, res) {
     prefs.quietHoursEnabled &&
     isWithinQuietHours(prefs.quietHoursStart, prefs.quietHoursEnd, now);
   if (prefs.digestMode !== 'instant' || inQuietHours) {
-    console.log('[CHAT_DELIVER] skipping - reason:', inQuietHours ? 'quiet hours active' : 'digest mode is ' + prefs.digestMode, 'for', recipientUid);
     await trackingRef.delete();
     return res.status(200).send('PREFS_DISABLED');
   }
@@ -267,7 +259,6 @@ async function deliverChatNotificationHandler(req, res) {
   // 7. Fetch FCM tokens and send
   const deviceSnap = await userRef.collection('devices').get();
   if (deviceSnap.empty) {
-    console.log('[CHAT_DELIVER] skipping - reason: no device docs for', recipientUid);
     await trackingRef.delete();
     return res.status(200).send('OK');
   }
@@ -280,10 +271,7 @@ async function deliverChatNotificationHandler(req, res) {
     }
   });
 
-  console.log('[CHAT_DELIVER] tokens found:', deviceTokens.length, JSON.stringify(deviceTokens.map(t => ({ token: t.token?.substring(0, 20) + '...', ref: t.ref?.path }))));
-
   if (deviceTokens.length === 0) {
-    console.log('[CHAT_DELIVER] skipping - reason: no valid device tokens');
     await trackingRef.delete();
     return res.status(200).send('OK');
   }
@@ -319,11 +307,8 @@ async function deliverChatNotificationHandler(req, res) {
     tokens: deviceTokens.map((entry) => entry.token),
   };
 
-  console.log('[CHAT_DELIVER] sending FCM message:', JSON.stringify(message, null, 2));
-
   try {
     const response = await admin.messaging().sendEachForMulticast(message);
-    console.log('[CHAT_DELIVER] FCM result:', JSON.stringify({ successCount: response.successCount, failureCount: response.failureCount, responses: response.responses.map(r => ({ success: r.success, error: r.error?.code })) }));
 
     // Record success
     await userRef.update({

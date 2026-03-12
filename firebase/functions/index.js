@@ -273,15 +273,12 @@ exports.sendChatMessageNotifications = functions
     const chatId = context.params.chatId;
     const senderId =
       messageData.senderId || messageData.sender_id || messageData.sender;
-    console.log('[CHAT_NOTIF] triggered for chat:', chatId, 'message:', context.params.messageId);
     if (typeof senderId !== "string" || senderId.length === 0) {
-      console.log('[CHAT_NOTIF] skipping - reason: no valid senderId in message data');
       return;
     }
 
     const chatSnap = await firestore.collection("chats").doc(chatId).get();
     if (!chatSnap.exists) {
-      console.log('[CHAT_NOTIF] skipping - reason: chat doc not found for', chatId);
       return;
     }
     const chatData = chatSnap.data() || {};
@@ -289,13 +286,11 @@ exports.sendChatMessageNotifications = functions
       ? chatData.memberIds.filter((id) => typeof id === "string")
       : [];
     if (memberIds.length === 0) {
-      console.log('[CHAT_NOTIF] skipping - reason: no memberIds in chat', chatId);
       return;
     }
 
     const recipients = memberIds.filter((id) => id !== senderId);
     if (recipients.length === 0) {
-      console.log('[CHAT_NOTIF] skipping - reason: no recipients after filtering sender', senderId);
       return;
     }
 
@@ -309,28 +304,22 @@ exports.sendChatMessageNotifications = functions
       const userRef = firestore.collection("users").doc(uid);
       const userSnap = await userRef.get();
       if (!userSnap.exists) {
-        console.log('[CHAT_NOTIF] skipping recipient', uid, '- reason: user doc not found');
         continue;
       }
       const prefs = getUserNotificationPrefs(userSnap.data() || {});
       if (!prefs.pushEnabled || !prefs.chatAlertsEnabled) {
-        console.log('[CHAT_NOTIF] skipping recipient', uid, '- reason: push disabled or chat alerts disabled');
         continue;
       }
       if (prefs.mutedThreads.includes(chatId)) {
-        console.log('[CHAT_NOTIF] skipping recipient', uid, '- reason: chat thread muted');
         continue;
       }
       if (isDirect && !prefs.chatDirectEnabled) {
-        console.log('[CHAT_NOTIF] skipping recipient', uid, '- reason: direct chat notifications disabled');
         continue;
       }
       if (!isDirect && !prefs.chatGroupEnabled) {
-        console.log('[CHAT_NOTIF] skipping recipient', uid, '- reason: group chat notifications disabled');
         continue;
       }
       if (prefs.digestMode === "off") {
-        console.log('[CHAT_NOTIF] skipping recipient', uid, '- reason: digest mode is off');
         continue;
       }
 
@@ -338,7 +327,6 @@ exports.sendChatMessageNotifications = functions
       // chat+recipient pair and schedules a new one 8 seconds out
       try {
         const { scheduleDebouncedChatNotification } = require("./notifications/chat_debounce");
-        console.log('[CHAT_NOTIF] scheduling debounced notification for recipient:', uid, 'chat:', chatId, 'sender:', senderName);
         await scheduleDebouncedChatNotification(
           chatId,
           uid,
@@ -347,9 +335,8 @@ exports.sendChatMessageNotifications = functions
           chatData,
           firestore,
         );
-        console.log('[CHAT_NOTIF] debounced notification scheduled successfully for', uid);
       } catch (error) {
-        console.error('[CHAT_NOTIF] failed to schedule debounced notification', {
+        console.error('[ChatDebounce] Failed to schedule debounced notification', {
           chatId,
           uid,
           error: error.message,

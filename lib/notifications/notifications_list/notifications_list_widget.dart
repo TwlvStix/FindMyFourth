@@ -10,6 +10,7 @@ import '/core/widgets/fairway_background.dart';
 import '/core/widgets/premium_back_button.dart';
 import '/providers/notification_list_provider.dart';
 import '/providers/provider_extensions.dart';
+import '/services/app_badge_service.dart';
 import 'components/notification_list_item_card.dart';
 import 'components/notification_tap_router.dart';
 import 'components/notifications_list_app_bar_actions.dart';
@@ -37,6 +38,7 @@ class _NotificationsListWidgetState extends State<NotificationsListWidget> {
     final userRef = currentUserReference;
     if (userRef != null) {
       _notificationListProvider!.startListening(userRef);
+      AppBadgeService().clearBadge();
     }
   }
 
@@ -50,6 +52,7 @@ class _NotificationsListWidgetState extends State<NotificationsListWidget> {
 
   Future<void> _markAllAsRead() async {
     await _notificationListProvider!.markAllAsRead();
+    AppBadgeService().clearBadge();
   }
 
   Future<void> _markReadIfNeeded(NotificationListItem item) async {

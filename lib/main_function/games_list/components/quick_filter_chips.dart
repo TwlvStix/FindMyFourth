@@ -38,7 +38,7 @@ class QuickFilterChips extends StatelessWidget {
             vertical: AppSpacing.sm,
           ),
       child: Row(
-        children: QuickFilter.values.map((filter) {
+        children: QuickFilter.values.where((f) => f != QuickFilter.nearMe).map((filter) {
           final isSelected = filter == selectedFilter;
           return Padding(
             padding: EdgeInsets.only(

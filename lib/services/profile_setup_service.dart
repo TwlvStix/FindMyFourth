@@ -74,13 +74,13 @@ class ProfileSetupService {
     await _firestore.runTransaction((transaction) async {
       final usernameSnap = await transaction.get(usernamesRef);
       if (usernameSnap.exists) {
-        final existingRef = usernameSnap.get('uid') as DocumentReference?;
-        if (existingRef != null && existingRef.path != userRef.path) {
+        final existingUid = usernameSnap.get('uid') as String?;
+        if (existingUid != null && existingUid != userRef.id) {
           throw StateError('username_taken');
         }
       } else {
         transaction.set(usernamesRef, <String, dynamic>{
-          'uid': userRef,
+          'uid': userRef.id,
           'created_at': FieldValue.serverTimestamp(),
         });
       }
@@ -97,8 +97,8 @@ class ProfileSetupService {
       if (!usernameDoc.exists) {
         return;
       }
-      final existingRef = usernameDoc.get('uid') as DocumentReference?;
-      if (existingRef != null && existingRef.path == userRef.path) {
+      final existingUid = usernameDoc.get('uid') as String?;
+      if (existingUid != null && existingUid == userRef.id) {
         await usernamesRef.delete();
       }
     } catch (_) {
@@ -142,21 +142,13 @@ class ProfileSetupService {
     required Map<String, dynamic> userData,
     String? phoneNumber,
   }) async {
-    final usernamesRef = _firestore.collection('usernames').doc(username);
-    await _firestore.runTransaction((transaction) async {
-      final usernameSnap = await transaction.get(usernamesRef);
-      if (usernameSnap.exists) {
-        final existingRef = usernameSnap.get('uid') as DocumentReference?;
-        if (existingRef != null && existingRef.path != userRef.path) {
-          throw StateError('username_taken');
-        }
-      } else {
-        transaction.set(usernamesRef, <String, dynamic>{
-          'uid': userRef,
-          'created_at': FieldValue.serverTimestamp(),
-        });
-      }
+    // Step 1: Reserve the username in a separate transaction so Firestore
+    // rules can see the committed username doc when evaluating the user
+    // doc update (rules use get() which reads pre-transaction state).
+    await reserveUsername(username: username, userRef: userRef);
 
+    // Step 2: Update the user doc + private info in a second transaction.
+    await _firestore.runTransaction((transaction) async {
       transaction.update(userRef, userData);
       if (phoneNumber != null && phoneNumber.isNotEmpty) {
         transaction.set(

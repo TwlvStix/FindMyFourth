@@ -412,10 +412,8 @@ service cloud.firestore {
       let usernameDoc = get(/databases/$(database)/documents/usernames/$(desired));
       return desired == current ||
         (desired is string && desired != '' &&
-         ((!usernameDoc.exists && current == null) ||
-          (usernameDoc.exists &&
-           (usernameDoc.data.uid == userRef(request.auth.uid) ||
-            usernameDoc.data.uid == request.auth.uid))));
+          usernameDoc.exists &&
+          usernameDoc.data.uid == request.auth.uid);
     }
 
     // Game-related helper functions
@@ -779,8 +777,7 @@ service cloud.firestore {
 
     match /usernames/{name} {
       allow create: if request.auth != null &&
-        (request.resource.data.uid == userRef(request.auth.uid) ||
-         request.resource.data.uid == request.auth.uid) &&
+        request.resource.data.uid == request.auth.uid &&
         !exists(/databases/$(database)/documents/usernames/$(name));
       allow read: if request.auth != null;
       allow update: if false;
