@@ -166,23 +166,19 @@ class ProfileService {
   /// Query users by name (search)
   ///
   /// Returns `Stream<List<UsersRecord>>` matching the search query
-  /// Note: Firestore text search is limited - this uses >= and <= for prefix matching
+  /// Uses search_tokens array-contains for substring matching
   Stream<List<UsersRecord>> searchUsersByName(String searchQuery) {
     try {
       if (searchQuery.isEmpty) {
         return Stream.value([]);
       }
 
-      // Firestore text search limitation: use >= and <= for prefix matching
       final searchLower = searchQuery.toLowerCase();
-      final searchEnd = searchLower.substring(0, searchLower.length - 1) +
-          String.fromCharCode(
-              searchLower.codeUnitAt(searchLower.length - 1) + 1);
 
       return _firestore
           .collection('users')
-          .where('display_name_lowercase', isGreaterThanOrEqualTo: searchLower)
-          .where('display_name_lowercase', isLessThan: searchEnd)
+          .where('search_tokens', arrayContains: searchLower)
+          .orderBy('display_name_lowercase')
           .limit(20)
           .snapshots()
           .map((snapshot) => snapshot.docs

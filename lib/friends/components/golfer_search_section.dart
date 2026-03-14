@@ -438,9 +438,8 @@ class _GolferSearchSectionState extends State<GolferSearchSection> {
     return StreamBuilder<List<UsersRecord>>(
       stream: queryUsersRecord(
         queryBuilder: (usersRecord) => usersRecord
+            .where('search_tokens', arrayContains: searchTerm)
             .orderBy('display_name_lowercase')
-            .startAt([searchTerm])
-            .endAt(['$searchTerm\uf8ff'])
             .limit(25),
       ),
       builder: (context, snapshot) {

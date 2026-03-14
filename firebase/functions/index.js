@@ -2203,6 +2203,23 @@ exports.onUserProfileCreated = functions
       console.error(`Error creating alertSub for ${userId}:`, error);
       // Don't throw - alertSub creation is non-critical
     }
+
+    // Generate search tokens for substring-based user search
+    try {
+      const { generateSearchTokens } = require("./utils/search-tokens");
+      const tokens = generateSearchTokens(
+        data.display_name,
+        data.first_name,
+        data.last_name
+      );
+      if (tokens.length > 0) {
+        await snap.ref.update({ search_tokens: tokens });
+        console.log(`Generated ${tokens.length} search tokens for user ${userId}`);
+      }
+    } catch (error) {
+      console.error(`Error generating search tokens for ${userId}:`, error);
+      // Don't throw - search token generation is non-critical
+    }
   });
 
 /**
@@ -2219,7 +2236,8 @@ exports.onUserProfileUpdated = functions
     // Check if name changed
     const nameChanged =
       before.first_name !== after.first_name ||
-      before.last_name !== after.last_name;
+      before.last_name !== after.last_name ||
+      before.display_name !== after.display_name;
 
     // Regenerate if name changed and we have a first name
     if (nameChanged && after.first_name) {
@@ -2235,6 +2253,23 @@ exports.onUserProfileUpdated = functions
       } catch (error) {
         console.error(`Error regenerating initials avatar:`, error);
         // Don't throw - avatar generation is non-critical
+      }
+    }
+
+    // Regenerate search tokens when any name field changes
+    if (nameChanged) {
+      try {
+        const { generateSearchTokens } = require("./utils/search-tokens");
+        const tokens = generateSearchTokens(
+          after.display_name,
+          after.first_name,
+          after.last_name
+        );
+        await change.after.ref.update({ search_tokens: tokens });
+        console.log(`Regenerated search tokens for user ${context.params.userId}`);
+      } catch (error) {
+        console.error(`Error regenerating search tokens:`, error);
+        // Don't throw - search token generation is non-critical
       }
     }
   });

@@ -39,8 +39,9 @@ class PlayerSearchService {
   }) async {
     Query<Map<String, dynamic>> request = _firestore
         .collection('users')
+        .where('search_tokens', arrayContains: query)
         .orderBy('display_name_lowercase')
-        .startAt([query]).endAt(['$query\uf8ff']).limit(pageSize);
+        .limit(pageSize);
 
     if (startAfter != null) {
       request = request.startAfterDocument(startAfter);

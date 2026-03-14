@@ -496,6 +496,14 @@
         { "fieldPath": "streak_freeze_earned", "order": "ASCENDING" },
         { "fieldPath": "streak_freeze_used", "order": "ASCENDING" }
       ]
+    },
+    {
+      "collectionGroup": "users",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "search_tokens", "arrayConfig": "CONTAINS" },
+        { "fieldPath": "display_name_lowercase", "order": "ASCENDING" }
+      ]
     }
   ],
   "fieldOverrides": [
