@@ -263,6 +263,7 @@ exports.sendUserPushNotificationsTrigger = functions
 
 // Game alerts: Use the modularized implementation with gender eligibility checks.
 exports.sendGameCreatedNotifications = gameAlerts.sendGameCreatedNotifications;
+exports.onGameLastSpotUpdate = gameAlerts.onGameLastSpotUpdate;
 
 exports.sendChatMessageNotifications = functions
   .region("us-west2")

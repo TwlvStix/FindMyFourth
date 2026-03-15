@@ -28,6 +28,15 @@ PushRoute? resolveRouteFromType(Map<String, dynamic> data) {
       );
     }
   }
+  if (type == 'friend_game_created') {
+    final gameId = data['gameId'] ?? data['game_id'];
+    if (gameId is String && gameId.isNotEmpty) {
+      return PushRoute(
+        pageName: 'JoinGameDetailed',
+        parameterData: {'gameRef': 'games/$gameId'},
+      );
+    }
+  }
   if (type == 'chat_message') {
     final chatId = data['threadId'] ?? data['chatId'];
     if (chatId is String && chatId.isNotEmpty) {

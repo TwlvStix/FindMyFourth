@@ -429,23 +429,82 @@ function isWithinQuietHours(start, end, nowValue) {
 }
 
 /**
+ * Compute the number of open spots in a game.
+ * @param {object} gameData - Firestore game document data
+ * @returns {number} Available spots (clamped to 0)
+ */
+function computeSpots(gameData) {
+  const numPlayers = gameData.num_players || 4;
+  const joinedCount = Array.isArray(gameData.joined_players) ? gameData.joined_players.length : 0;
+  const guestCount = gameData.guest_count || 0;
+  return Math.max(0, numPlayers - joinedCount - guestCount);
+}
+
+/**
+ * Format game date as "Sat, Mar 14 at 2:00 PM" in Vancouver timezone.
+ * @param {object} gameData - Firestore game document data
+ * @returns {string|null} Formatted date string, or null if unavailable
+ */
+function formatGameDate(gameData) {
+  if (gameData.date && typeof gameData.date.toDate === "function") {
+    try {
+      const dateObj = gameData.date.toDate();
+      return new Intl.DateTimeFormat("en-US", {
+        timeZone: kQuietHoursTimezone,
+        weekday: "short",
+        month: "short",
+        day: "numeric",
+        hour: "numeric",
+        minute: "2-digit",
+        hour12: true,
+      }).format(dateObj);
+    } catch (_) {
+      return null;
+    }
+  }
+  return null;
+}
+
+/**
  * Build notification content for a game
  */
 function buildGameNotificationContent(gameData) {
-  const name = gameData.name_game || "New game";
   const course = gameData.course_play || "";
-  const title = "New game posted";
+  const spots = computeSpots(gameData);
 
-  // Build a nice summary
-  const parts = [];
-  if (gameData.style_game) parts.push(gameData.style_game);
-  if (gameData.game_type) parts.push(gameData.game_type);
-  if (gameData.rules_setting) parts.push(gameData.rules_setting);
+  // Title: course-aware + spots-aware
+  let title;
+  if (spots === 1) {
+    title = course ? `Last spot at ${course}` : "Last spot available";
+  } else {
+    title = course ? `New game at ${course}` : "New game posted";
+  }
 
-  const suffix = parts.length > 0 ? ` • ${parts.join(' • ')}` : "";
-  const body = course ? `${name} at ${course}${suffix}` : `${name}${suffix}`;
+  // Body: Date · Stakes · N spots left
+  const bodyParts = [];
+  const dateStr = formatGameDate(gameData);
+  if (dateStr) bodyParts.push(dateStr);
+  if (gameData.style_game) bodyParts.push(gameData.style_game);
+  const spotLabel = spots === 1 ? "1 spot left" : `${spots} spots left`;
+  bodyParts.push(spotLabel);
 
+  const body = bodyParts.join(" \u00B7 ");
   return { title, body };
+}
+
+/**
+ * Build body text for last-spot silent update.
+ * @param {object} gameData - Firestore game document data
+ * @returns {string} Body text for last-spot notification
+ */
+function buildLastSpotBody(gameData) {
+  const bodyParts = ["Last spot!"];
+  const course = gameData.course_play || "";
+  if (course) bodyParts.push(course);
+  const dateStr = formatGameDate(gameData);
+  if (dateStr) bodyParts.push(dateStr);
+  bodyParts.push("Join now");
+  return bodyParts.join(" \u00B7 ");
 }
 
 /**
@@ -457,35 +516,19 @@ function buildGameNotificationContent(gameData) {
  */
 function buildFriendGameNotificationContent(gameData, creatorDisplayName) {
   const displayName = creatorDisplayName || "A friend";
-  const title = `${displayName} posted a game`;
+  const spots = computeSpots(gameData);
+
+  // Spots-aware title
+  const title = spots === 1
+    ? `${displayName} posted a game \u2014 last spot!`
+    : `${displayName} posted a game`;
 
   const course = gameData.course_play || "";
-  const numPlayers = gameData.num_players || 4;
-  const joinedCount = Array.isArray(gameData.joined_players) ? gameData.joined_players.length : 0;
-  const guestCount = gameData.guest_count || 0;
-  const spots = Math.max(0, numPlayers - joinedCount - guestCount);
-
   const bodyParts = [];
   if (course) bodyParts.push(course);
 
-  // Format game date as "Sat, Mar 14 at 2:00 PM"
-  if (gameData.date && typeof gameData.date.toDate === "function") {
-    try {
-      const dateObj = gameData.date.toDate();
-      const formatted = new Intl.DateTimeFormat("en-US", {
-        timeZone: kQuietHoursTimezone,
-        weekday: "short",
-        month: "short",
-        day: "numeric",
-        hour: "numeric",
-        minute: "2-digit",
-        hour12: true,
-      }).format(dateObj);
-      bodyParts.push(formatted);
-    } catch (_) {
-      // Omit date if formatting fails
-    }
-  }
+  const dateStr = formatGameDate(gameData);
+  if (dateStr) bodyParts.push(dateStr);
 
   const spotLabel = spots === 1 ? "1 spot left" : `${spots} spots left`;
   bodyParts.push(spotLabel);
@@ -1056,6 +1099,89 @@ exports.sendGameCreatedNotifications = functions
     }
   });
 
+/**
+ * Silent Last-Spot Update
+ *
+ * Triggered when a game document is updated. When the number of open spots
+ * transitions from >=2 to exactly 1, this function silently updates the body
+ * of all existing notification documents for this game to reflect "Last spot!".
+ *
+ * No new push notification is sent, no new notification doc is created,
+ * and no badge count changes. A one-shot flag (`last_spot_notified`) prevents
+ * re-firing if a player leaves and another joins.
+ */
+exports.onGameLastSpotUpdate = functions
+  .region("us-west2")
+  .runWith({
+    timeoutSeconds: 120,
+    memory: "256MB",
+  })
+  .firestore.document("games/{gameId}")
+  .onUpdate(async (change, context) => {
+    const gameId = context.params.gameId;
+    const beforeData = change.before.data() || {};
+    const afterData = change.after.data() || {};
+
+    const beforeSpots = computeSpots(beforeData);
+    const afterSpots = computeSpots(afterData);
+
+    // Only fire when transitioning from >=2 spots to exactly 1
+    if (beforeSpots < 2 || afterSpots !== 1) {
+      return;
+    }
+
+    // One-shot guard
+    if (afterData.last_spot_notified === true) {
+      console.log(`[GameAlerts] Game ${gameId} already sent last-spot update, skipping`);
+      return;
+    }
+
+    console.log(`[GameAlerts] Last-spot trigger fired for game ${gameId} (${beforeSpots} → ${afterSpots})`);
+
+    // Set one-shot flag
+    await change.after.ref.update({ last_spot_notified: true });
+
+    // Build the updated body
+    const lastSpotBody = buildLastSpotBody(afterData);
+
+    // Query existing notification docs for this game (two queries to avoid composite index)
+    const [gameCreatedSnap, friendGameCreatedSnap] = await Promise.all([
+      firestore
+        .collectionGroup(kUserNotificationsCollection)
+        .where("type", "==", "game_created")
+        .where("data.gameId", "==", gameId)
+        .get(),
+      firestore
+        .collectionGroup(kUserNotificationsCollection)
+        .where("type", "==", "friend_game_created")
+        .where("data.gameId", "==", gameId)
+        .get(),
+    ]);
+
+    const allDocs = [...gameCreatedSnap.docs, ...friendGameCreatedSnap.docs];
+
+    if (allDocs.length === 0) {
+      console.log(`[GameAlerts] No existing notifications found for game ${gameId}`);
+      return;
+    }
+
+    // Batch update all notification docs (chunk if >500)
+    const BATCH_LIMIT = 500;
+    for (let i = 0; i < allDocs.length; i += BATCH_LIMIT) {
+      const chunk = allDocs.slice(i, i + BATCH_LIMIT);
+      const batch = firestore.batch();
+      for (const doc of chunk) {
+        batch.update(doc.ref, {
+          body: lastSpotBody,
+          updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+        });
+      }
+      await batch.commit();
+    }
+
+    console.log(`[GameAlerts] Updated ${allDocs.length} notification docs for game ${gameId} with last-spot body`);
+  });
+
 // Export for testing
 module.exports = {
   ...exports,
@@ -1067,5 +1193,9 @@ module.exports = {
   isWithinQuietHours,
   isActiveDay,
   computeReleaseAt,
+  computeSpots,
+  formatGameDate,
+  buildGameNotificationContent,
   buildFriendGameNotificationContent,
+  buildLastSpotBody,
 };

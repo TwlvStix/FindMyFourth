@@ -20,12 +20,13 @@ jest.mock('firebase-admin', () => ({
 
 // ── Mock: firebase-functions ──────────────────────────────────────────────────
 
-jest.mock('firebase-functions', () => ({
+jest.mock('firebase-functions/v1', () => ({
   region: jest.fn(() => ({
     runWith: jest.fn(() => ({
       firestore: {
         document: jest.fn(() => ({
           onCreate: jest.fn(),
+          onUpdate: jest.fn(),
         })),
       },
     })),
@@ -42,7 +43,11 @@ const {
   isWithinQuietHours,
   isActiveDay,
   computeReleaseAt,
+  computeSpots,
+  formatGameDate,
+  buildGameNotificationContent,
   buildFriendGameNotificationContent,
+  buildLastSpotBody,
 } = require('../game_alerts');
 
 afterEach(() => {
@@ -777,5 +782,210 @@ describe('buildFriendGameNotificationContent', () => {
     const result = buildFriendGameNotificationContent(gameData, 'Alex');
 
     expect(result.body).toContain('3 spots left');
+  });
+
+  it('uses spots-aware title when exactly 1 spot remains', () => {
+    const gameData = {
+      course_play: 'Test Course',
+      num_players: 4,
+      joined_players: ['uid1', 'uid2'],
+      guest_count: 1,
+    };
+    const result = buildFriendGameNotificationContent(gameData, 'Alex');
+
+    expect(result.title).toBe('Alex posted a game \u2014 last spot!');
+    expect(result.body).toContain('1 spot left');
+  });
+
+  it('uses standard title when more than 1 spot remains', () => {
+    const gameData = {
+      course_play: 'Test Course',
+      num_players: 4,
+      joined_players: ['uid1'],
+      guest_count: 0,
+    };
+    const result = buildFriendGameNotificationContent(gameData, 'Alex');
+
+    expect(result.title).toBe('Alex posted a game');
+  });
+});
+
+// ── Tests: computeSpots ───────────────────────────────────────────────────────
+
+describe('computeSpots', () => {
+  it('computes spots: 4 players, 1 joined, 0 guests = 3', () => {
+    expect(computeSpots({ num_players: 4, joined_players: ['uid1'], guest_count: 0 })).toBe(3);
+  });
+
+  it('computes spots: 4 players, 2 joined, 1 guest = 1', () => {
+    expect(computeSpots({ num_players: 4, joined_players: ['uid1', 'uid2'], guest_count: 1 })).toBe(1);
+  });
+
+  it('clamps to 0 when over capacity', () => {
+    expect(computeSpots({ num_players: 2, joined_players: ['a', 'b', 'c'], guest_count: 1 })).toBe(0);
+  });
+
+  it('defaults num_players to 4', () => {
+    expect(computeSpots({ joined_players: ['uid1'] })).toBe(3);
+  });
+
+  it('defaults joined_players to empty array', () => {
+    expect(computeSpots({ num_players: 4 })).toBe(4);
+  });
+
+  it('defaults guest_count to 0', () => {
+    expect(computeSpots({ num_players: 4, joined_players: ['uid1'] })).toBe(3);
+  });
+
+  it('handles all defaults (empty object)', () => {
+    expect(computeSpots({})).toBe(4);
+  });
+});
+
+// ── Tests: formatGameDate ─────────────────────────────────────────────────────
+
+describe('formatGameDate', () => {
+  const makeTimestamp = (isoStr) => ({
+    toDate: () => new Date(isoStr),
+  });
+
+  it('formats a valid Firestore timestamp', () => {
+    const gameData = { date: makeTimestamp('2026-03-14T21:00:00Z') };
+    const result = formatGameDate(gameData);
+    expect(result).toBeTruthy();
+    expect(result).toContain('Mar');
+    expect(result).toContain('14');
+  });
+
+  it('returns null when date is missing', () => {
+    expect(formatGameDate({})).toBeNull();
+  });
+
+  it('returns null when date has no toDate method', () => {
+    expect(formatGameDate({ date: '2026-03-14' })).toBeNull();
+  });
+});
+
+// ── Tests: buildGameNotificationContent ───────────────────────────────────────
+
+describe('buildGameNotificationContent', () => {
+  const makeTimestamp = (isoStr) => ({
+    toDate: () => new Date(isoStr),
+  });
+
+  it('uses course in title when available', () => {
+    const result = buildGameNotificationContent({
+      course_play: 'Tower Ranch',
+      num_players: 4,
+      joined_players: [],
+    });
+    expect(result.title).toBe('New game at Tower Ranch');
+  });
+
+  it('falls back to generic title when no course', () => {
+    const result = buildGameNotificationContent({
+      num_players: 4,
+      joined_players: [],
+    });
+    expect(result.title).toBe('New game posted');
+  });
+
+  it('uses last-spot title when exactly 1 spot with course', () => {
+    const result = buildGameNotificationContent({
+      course_play: 'Tower Ranch',
+      num_players: 4,
+      joined_players: ['a', 'b'],
+      guest_count: 1,
+    });
+    expect(result.title).toBe('Last spot at Tower Ranch');
+  });
+
+  it('uses last-spot title without course', () => {
+    const result = buildGameNotificationContent({
+      num_players: 4,
+      joined_players: ['a', 'b'],
+      guest_count: 1,
+    });
+    expect(result.title).toBe('Last spot available');
+  });
+
+  it('includes stakes in body', () => {
+    const result = buildGameNotificationContent({
+      course_play: 'Tower Ranch',
+      style_game: 'Low Stakes',
+      num_players: 4,
+      joined_players: ['a'],
+    });
+    expect(result.body).toContain('Low Stakes');
+    expect(result.body).toContain('3 spots left');
+  });
+
+  it('includes date in body when available', () => {
+    const result = buildGameNotificationContent({
+      course_play: 'Tower Ranch',
+      date: makeTimestamp('2026-03-14T21:00:00Z'),
+      num_players: 4,
+      joined_players: [],
+    });
+    expect(result.body).toContain('Mar');
+  });
+
+  it('shows singular spot label', () => {
+    const result = buildGameNotificationContent({
+      num_players: 4,
+      joined_players: ['a', 'b'],
+      guest_count: 1,
+    });
+    expect(result.body).toContain('1 spot left');
+    expect(result.body).not.toContain('spots left');
+  });
+
+  it('body parts separated by middle dot', () => {
+    const result = buildGameNotificationContent({
+      style_game: 'No Money',
+      num_players: 4,
+      joined_players: [],
+    });
+    expect(result.body).toContain('\u00B7');
+  });
+});
+
+// ── Tests: buildLastSpotBody ──────────────────────────────────────────────────
+
+describe('buildLastSpotBody', () => {
+  const makeTimestamp = (isoStr) => ({
+    toDate: () => new Date(isoStr),
+  });
+
+  it('includes all parts when course and date present', () => {
+    const result = buildLastSpotBody({
+      course_play: 'Tower Ranch',
+      date: makeTimestamp('2026-03-14T21:00:00Z'),
+    });
+    expect(result).toContain('Last spot!');
+    expect(result).toContain('Tower Ranch');
+    expect(result).toContain('Mar');
+    expect(result).toContain('Join now');
+  });
+
+  it('omits course when missing', () => {
+    const result = buildLastSpotBody({
+      date: makeTimestamp('2026-03-14T21:00:00Z'),
+    });
+    expect(result).toContain('Last spot!');
+    expect(result).not.toContain('Tower');
+    expect(result).toContain('Join now');
+  });
+
+  it('omits date when missing', () => {
+    const result = buildLastSpotBody({
+      course_play: 'Tower Ranch',
+    });
+    expect(result).toBe('Last spot! \u00B7 Tower Ranch \u00B7 Join now');
+  });
+
+  it('handles minimal data', () => {
+    const result = buildLastSpotBody({});
+    expect(result).toBe('Last spot! \u00B7 Join now');
   });
 });

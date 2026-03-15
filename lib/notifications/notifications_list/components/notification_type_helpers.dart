@@ -54,8 +54,11 @@ class NotificationTypeHelpers {
 
   /// Returns true for social/friend-related notification types.
   static bool isSocialNotification(String type) {
-    return const {'friend_request_received', 'friend_request_accepted'}
-        .contains(type);
+    return const {
+      'friend_request_received',
+      'friend_request_accepted',
+      'friend_game_created',
+    }.contains(type);
   }
 
   /// Returns true for join request notification types.
@@ -132,6 +135,7 @@ class NotificationTypeHelpers {
           : AppPhosphorIcons.warning;
     }
     if (isBadgeNotification(type)) return AppPhosphorIcons.badge;
+    if (type == 'friend_game_created') return AppPhosphorIcons.games;
     if (type == 'friend_request_received') return AppPhosphorIcons.addPlayer;
     if (type == 'friend_request_accepted') return AppPhosphorIcons.golfers;
     // Join request types
@@ -194,6 +198,9 @@ class NotificationTypeHelpers {
     }
     if (type == 'dispute_resolved_upheld') {
       return 'Strike Added';
+    }
+    if (type == 'friend_game_created') {
+      return 'A friend posted a game';
     }
     return 'Notification';
   }
