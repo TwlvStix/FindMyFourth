@@ -5,9 +5,6 @@ import '/core/design_tokens/colors.dart';
 import '/core/design_tokens/typography.dart';
 import '/core/design_tokens/spacing.dart';
 import '/core/design_tokens/border_radius.dart';
-import '/core/design_tokens/icon_size.dart';
-import '/core/design_tokens/app_phosphor_icons.dart';
-import '/core/widgets/app_icon.dart';
 import '/core/motion/motion_tokens.dart';
 import '/providers/provider_extensions.dart';
 
@@ -63,7 +60,7 @@ class _NearMeChipState extends State<NearMeChip> {
             : Matrix4.identity(),
         padding: EdgeInsets.symmetric(
           horizontal: AppSpacing.md,
-          vertical: AppSpacing.xs,
+          vertical: AppSpacing.sm,
         ),
         decoration: BoxDecoration(
           color: isEnabled ? AppColors.green : AppColors.glassSurface,
@@ -73,23 +70,12 @@ class _NearMeChipState extends State<NearMeChip> {
             width: 1.5,
           ),
         ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            AppIcon(
-              icon: AppPhosphorIcons.homeCourse,
-              size: AppIconSize.sm,
-              color: isEnabled ? AppColors.pure : AppColors.whiteStrong,
-            ),
-            SizedBox(width: AppSpacing.xs),
-            Text(
-              'Near Me',
-              style: AppTypography.labelMedium.copyWith(
-                color: isEnabled ? AppColors.pure : AppColors.whiteStrong,
-                fontWeight: isEnabled ? FontWeight.w600 : FontWeight.w400,
-              ),
-            ),
-          ],
+        child: Text(
+          'Near Me',
+          style: AppTypography.labelMedium.copyWith(
+            color: isEnabled ? AppColors.pure : AppColors.whiteStrong,
+            fontWeight: isEnabled ? FontWeight.w600 : FontWeight.w400,
+          ),
         ),
       ),
     );

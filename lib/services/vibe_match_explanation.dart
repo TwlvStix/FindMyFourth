@@ -1,5 +1,6 @@
 import 'dart:math';
 
+import '/models/vibe_labels.dart';
 import '/models/vibe_profile.dart';
 import '/services/vibe_matcher.dart';
 import '/vibe/vibe_match_types.dart';

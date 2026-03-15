@@ -16,17 +16,17 @@ enum QuickFilter {
   /// Display label for the filter chip
   final String label;
 
-  /// Returns the emoji prefix for special filters (if any)
+  /// Emoji prefix for the chip UI (only some filters have one)
   String? get emoji {
     switch (this) {
       case QuickFilter.flexible:
-        return '\u26A1'; // lightning bolt
+        return '\u26A1'; // ⚡ lightning bolt
       default:
         return null;
     }
   }
 
-  /// Display label with emoji prefix (if applicable)
+  /// Display label for the chip UI
   String get displayLabel {
     final prefix = emoji;
     return prefix != null ? '$prefix $label' : label;

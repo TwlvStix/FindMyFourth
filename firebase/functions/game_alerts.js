@@ -339,10 +339,14 @@ function getUserNotificationPrefs(userData) {
   const gameAlerts = prefs.game_alerts || {};
   const gameAlertsEnabled =
     typeof gameAlerts.enabled === "boolean" ? gameAlerts.enabled : true;
+  const socialAlerts = prefs.social_alerts || {};
+  const socialAlertsEnabled =
+    typeof socialAlerts.enabled === "boolean" ? socialAlerts.enabled : true;
 
   return {
     pushEnabled,
     gameAlertsEnabled,
+    socialAlertsEnabled,
     quietHoursEnabled: quietHours.enabled === true,
     quietHoursStart:
       typeof quietHours.start === "string" ? quietHours.start : "22:00",
@@ -445,6 +449,52 @@ function buildGameNotificationContent(gameData) {
 }
 
 /**
+ * Build notification content for a friend's game posting.
+ *
+ * @param {object} gameData - Firestore game document data
+ * @param {string} creatorDisplayName - Display name of the game creator
+ * @returns {{title: string, body: string}}
+ */
+function buildFriendGameNotificationContent(gameData, creatorDisplayName) {
+  const displayName = creatorDisplayName || "A friend";
+  const title = `${displayName} posted a game`;
+
+  const course = gameData.course_play || "";
+  const numPlayers = gameData.num_players || 4;
+  const joinedCount = Array.isArray(gameData.joined_players) ? gameData.joined_players.length : 0;
+  const guestCount = gameData.guest_count || 0;
+  const spots = Math.max(0, numPlayers - joinedCount - guestCount);
+
+  const bodyParts = [];
+  if (course) bodyParts.push(course);
+
+  // Format game date as "Sat, Mar 14 at 2:00 PM"
+  if (gameData.date && typeof gameData.date.toDate === "function") {
+    try {
+      const dateObj = gameData.date.toDate();
+      const formatted = new Intl.DateTimeFormat("en-US", {
+        timeZone: kQuietHoursTimezone,
+        weekday: "short",
+        month: "short",
+        day: "numeric",
+        hour: "numeric",
+        minute: "2-digit",
+        hour12: true,
+      }).format(dateObj);
+      bodyParts.push(formatted);
+    } catch (_) {
+      // Omit date if formatting fails
+    }
+  }
+
+  const spotLabel = spots === 1 ? "1 spot left" : `${spots} spots left`;
+  bodyParts.push(spotLabel);
+
+  const body = bodyParts.join(" \u00B7 ");
+  return { title, body };
+}
+
+/**
  * Send game created notifications using new matching logic
  *
  * Triggered when a new game is created in Firestore.
@@ -500,6 +550,236 @@ exports.sendGameCreatedNotifications = functions
       const alreadyNotifiedUserIds = new Set(
         existingNotifSnap.docs.map((doc) => doc.ref.parent.parent.id),
       );
+
+      // Also dedup friend_game_created notifications (separate query to avoid
+      // needing a composite index with `in` on the type field)
+      const existingFriendNotifSnap = await firestore
+        .collectionGroup(kUserNotificationsCollection)
+        .where("type", "==", "friend_game_created")
+        .where("data.gameId", "==", gameId)
+        .get();
+      for (const doc of existingFriendNotifSnap.docs) {
+        alreadyNotifiedUserIds.add(doc.ref.parent.parent.id);
+      }
+
+      // ── Friend-posted bypass ──────────────────────────────────────────────
+      // Friends of the game creator receive a notification regardless of their
+      // alert subscription filters. This block runs before the filter-match
+      // loop so that friend-notified users are added to alreadyNotifiedUserIds
+      // and don't also receive a generic game_created notification.
+      if (creatorUid) {
+        const creatorDoc = await firestore.collection("users").doc(creatorUid).get();
+        const creatorData = creatorDoc.exists ? creatorDoc.data() || {} : {};
+        const creatorDisplayName = creatorData.display_name || "A friend";
+        const friendRefs = Array.isArray(creatorData.friends) ? creatorData.friends : [];
+        const friendUids = friendRefs
+          .filter((ref) => ref && ref.id)
+          .map((ref) => ref.id);
+
+        const friendContent = buildFriendGameNotificationContent(gameData, creatorDisplayName);
+        let friendNotified = 0;
+        let friendSkipped = 0;
+
+        for (const friendUid of friendUids) {
+          // Self-reference safety
+          if (friendUid === creatorUid) {
+            friendSkipped++;
+            continue;
+          }
+
+          // Dedup
+          if (alreadyNotifiedUserIds.has(friendUid)) {
+            friendSkipped++;
+            continue;
+          }
+
+          // Load friend user doc
+          const friendRef = firestore.collection("users").doc(friendUid);
+          const friendSnap = await friendRef.get();
+          if (!friendSnap.exists) {
+            friendSkipped++;
+            continue;
+          }
+
+          const friendData = friendSnap.data() || {};
+
+          // Gender eligibility check
+          const friendGender = friendData.gender || null;
+          if (!isUserEligibleByGender(friendGender, gameData.player_eligibility)) {
+            friendSkipped++;
+            continue;
+          }
+
+          const friendPrefs = getUserNotificationPrefs(friendData);
+
+          // Push enabled check
+          if (!friendPrefs.pushEnabled) {
+            friendSkipped++;
+            continue;
+          }
+
+          // Social alerts check — friend notifications are categorized under
+          // SOCIAL, gated by social_alerts.enabled (not game_alerts.enabled)
+          if (!friendPrefs.socialAlertsEnabled) {
+            friendSkipped++;
+            continue;
+          }
+
+          // Write in-app notification
+          const friendDedupeKey = `friend_game_${gameId}_to_${friendUid}`;
+          const friendNotifRef = friendRef
+            .collection(kUserNotificationsCollection)
+            .doc(friendDedupeKey);
+
+          await friendNotifRef.set({
+            type: "friend_game_created",
+            title: friendContent.title,
+            body: friendContent.body,
+            data: {
+              gameId,
+              creatorUid,
+            },
+            read: false,
+            createdAt: admin.firestore.FieldValue.serverTimestamp(),
+            dedupeKey: friendDedupeKey,
+          });
+
+          // Add to dedup set so the filter-match loop won't also notify this user
+          alreadyNotifiedUserIds.add(friendUid);
+
+          // Intentionally NO cooldown update here. Friend notifications should
+          // not consume the user's 60-min generic alert cooldown window. A user
+          // should still receive their next filter-matched game_created alert
+          // on schedule even if they just got a friend notification.
+
+          // Quiet hours check
+          const nowHHMM = getNowHHMMInVancouver(now);
+          const friendInQuietHours =
+            friendPrefs.quietHoursEnabled &&
+            isActiveDay(friendPrefs.quietHoursActiveDays) &&
+            isWithinQuietHours(friendPrefs.quietHoursStart, friendPrefs.quietHoursEnd, nowHHMM);
+
+          if (friendInQuietHours) {
+            const releaseAt = computeReleaseAt(friendPrefs.quietHoursEnd);
+            const deferredEvent = {
+              eventId: `friend_game_alert_${gameId}_${friendUid}_${Date.now()}`,
+              eventType: "friend_game_alert_deferred",
+              recipientUserId: friendUid,
+              sourceId: gameId,
+              data: {
+                title: friendContent.title,
+                body: friendContent.body,
+                gameId,
+                creatorUid,
+                initialPageName: "JoinGameDetailed",
+              },
+              scheduleTime: releaseAt,
+              quietHoursBypass: true,
+              conditionCheck: "always",
+            };
+            try {
+              const jobId = await scheduleJob(deferredEvent, admin.firestore());
+              console.log(`[GameAlerts] Friend ${friendUid} in quiet hours — scheduled for ${releaseAt.toISOString()}, jobId: ${jobId}`);
+            } catch (e) {
+              console.error(`[GameAlerts] Failed to schedule deferred friend notification for ${friendUid}:`, e.message);
+            }
+            friendNotified++;
+            continue;
+          }
+
+          // Fetch devices and send FCM push
+          const friendDeviceSnap = await friendRef
+            .collection(kUserDevicesCollection)
+            .get();
+
+          if (friendDeviceSnap.empty) {
+            console.log(`[GameAlerts] Friend ${friendUid} has no devices, skipping push`);
+            friendNotified++;
+            continue;
+          }
+
+          const friendDeviceTokens = [];
+          friendDeviceSnap.docs.forEach((doc) => {
+            const token = doc.data()?.fcmToken;
+            if (typeof token === "string" && token.length > 0) {
+              friendDeviceTokens.push({ token, ref: doc.ref });
+            }
+          });
+
+          if (friendDeviceTokens.length === 0) {
+            console.log(`[GameAlerts] Friend ${friendUid} has no valid tokens, skipping push`);
+            friendNotified++;
+            continue;
+          }
+
+          const friendMessage = {
+            notification: {
+              title: friendContent.title,
+              body: friendContent.body,
+            },
+            data: {
+              initialPageName: "JoinGameDetailed",
+              parameterData: JSON.stringify({
+                gameRef: `games/${gameId}`,
+              }),
+              type: "friend_game_created",
+              gameId,
+              creatorUid,
+            },
+            android: {
+              priority: "high",
+              notification: {
+                channelId: "default",
+                sound: "default",
+              },
+            },
+            apns: {
+              headers: {
+                "apns-push-type": "alert",
+                "apns-priority": "10",
+              },
+              payload: {
+                aps: {
+                  sound: "default",
+                  badge: 1,
+                  "mutable-content": 1,
+                },
+              },
+            },
+            tokens: friendDeviceTokens.map((entry) => entry.token),
+          };
+
+          try {
+            const response = await admin.messaging().sendEachForMulticast(friendMessage);
+            console.log(`[GameAlerts] Sent friend push to ${friendUid}, success: ${response.successCount}/${response.responses.length}`);
+
+            // Clean up invalid tokens
+            const invalidRefs = [];
+            response.responses.forEach((resp, index) => {
+              if (resp.success) return;
+              const code = resp.error?.code || "";
+              if (
+                code === "messaging/registration-token-not-registered" ||
+                code === "messaging/invalid-registration-token"
+              ) {
+                invalidRefs.push(friendDeviceTokens[index]?.ref);
+              }
+            });
+
+            if (invalidRefs.length > 0) {
+              await Promise.all(
+                invalidRefs.filter((ref) => ref).map((ref) => ref.delete()),
+              );
+            }
+          } catch (error) {
+            console.error(`[GameAlerts] Failed to send friend push to ${friendUid}:`, error.message);
+          }
+
+          friendNotified++;
+        }
+
+        console.log(`[GameAlerts] Friend pass complete: ${friendUids.length} friends, ${friendNotified} notified, ${friendSkipped} skipped`);
+      }
 
       while (true) {
       const currentQuery = lastDoc ? baseQuery.startAfter(lastDoc) : baseQuery;
@@ -787,4 +1067,5 @@ module.exports = {
   isWithinQuietHours,
   isActiveDay,
   computeReleaseAt,
+  buildFriendGameNotificationContent,
 };

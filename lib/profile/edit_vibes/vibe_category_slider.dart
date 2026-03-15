@@ -15,6 +15,7 @@ import '/core/widgets/app_button_enhanced.dart';
 import '/core/widgets/app_icon.dart';
 import '/core/widgets/app_card.dart';
 import '/core/widgets/vibe_slider_theme.dart';
+import '/models/vibe_labels.dart';
 import '/models/vibe_profile.dart';
 
 /// Clean, scannable vibe category slider used on Edit Vibes and Onboarding

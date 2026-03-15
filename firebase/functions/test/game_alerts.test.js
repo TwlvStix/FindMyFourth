@@ -42,6 +42,7 @@ const {
   isWithinQuietHours,
   isActiveDay,
   computeReleaseAt,
+  buildFriendGameNotificationContent,
 } = require('../game_alerts');
 
 afterEach(() => {
@@ -639,5 +640,142 @@ describe('computeReleaseAt', () => {
     const release = computeReleaseAt('07:00');
 
     expect(release.toISOString()).toBe('2026-11-01T15:00:00.000Z');
+  });
+});
+
+// ── Tests: buildFriendGameNotificationContent ─────────────────────────────────
+
+describe('buildFriendGameNotificationContent', () => {
+  const makeTimestamp = (isoStr) => ({
+    toDate: () => new Date(isoStr),
+  });
+
+  it('builds content with all fields present', () => {
+    const gameData = {
+      course_play: 'Shaughnessy Golf Club',
+      date: makeTimestamp('2026-03-14T21:00:00Z'),
+      num_players: 4,
+      joined_players: ['uid1'],
+      guest_count: 0,
+    };
+    const result = buildFriendGameNotificationContent(gameData, 'Ryan');
+
+    expect(result.title).toBe('Ryan posted a game');
+    expect(result.body).toContain('Shaughnessy Golf Club');
+    expect(result.body).toContain('3 spots left');
+  });
+
+  it('calculates spots correctly: 4 players, 1 joined, 0 guests = 3 spots', () => {
+    const gameData = {
+      course_play: 'Test Course',
+      num_players: 4,
+      joined_players: ['uid1'],
+      guest_count: 0,
+    };
+    const result = buildFriendGameNotificationContent(gameData, 'Alex');
+
+    expect(result.body).toContain('3 spots left');
+  });
+
+  it('shows full capacity when joined_players is empty', () => {
+    const gameData = {
+      course_play: 'Test Course',
+      num_players: 4,
+      joined_players: [],
+      guest_count: 0,
+    };
+    const result = buildFriendGameNotificationContent(gameData, 'Alex');
+
+    expect(result.body).toContain('4 spots left');
+  });
+
+  it('shows full capacity when joined_players is missing', () => {
+    const gameData = {
+      course_play: 'Test Course',
+      num_players: 4,
+    };
+    const result = buildFriendGameNotificationContent(gameData, 'Alex');
+
+    expect(result.body).toContain('4 spots left');
+  });
+
+  it('omits date when date field is missing', () => {
+    const gameData = {
+      course_play: 'Test Course',
+      num_players: 4,
+      joined_players: ['uid1', 'uid2'],
+    };
+    const result = buildFriendGameNotificationContent(gameData, 'Alex');
+
+    expect(result.title).toBe('Alex posted a game');
+    // Body should only have course and spots, separated by middle dot
+    expect(result.body).toBe('Test Course \u00B7 2 spots left');
+  });
+
+  it('uses "A friend" when creator name is missing', () => {
+    const gameData = {
+      course_play: 'Test Course',
+      num_players: 4,
+    };
+    const result = buildFriendGameNotificationContent(gameData, null);
+
+    expect(result.title).toBe('A friend posted a game');
+  });
+
+  it('uses "A friend" when creator name is empty string', () => {
+    const gameData = {
+      course_play: 'Test Course',
+      num_players: 4,
+    };
+    const result = buildFriendGameNotificationContent(gameData, '');
+
+    expect(result.title).toBe('A friend posted a game');
+  });
+
+  it('clamps negative spots to 0', () => {
+    const gameData = {
+      course_play: 'Test Course',
+      num_players: 2,
+      joined_players: ['uid1', 'uid2', 'uid3'],
+      guest_count: 1,
+    };
+    const result = buildFriendGameNotificationContent(gameData, 'Alex');
+
+    expect(result.body).toContain('0 spots left');
+  });
+
+  it('shows singular "1 spot left" when exactly one spot remains', () => {
+    const gameData = {
+      course_play: 'Test Course',
+      num_players: 4,
+      joined_players: ['uid1', 'uid2'],
+      guest_count: 1,
+    };
+    const result = buildFriendGameNotificationContent(gameData, 'Alex');
+
+    expect(result.body).toContain('1 spot left');
+    expect(result.body).not.toContain('spots left');
+  });
+
+  it('accounts for guest_count in spots calculation', () => {
+    const gameData = {
+      course_play: 'Test Course',
+      num_players: 4,
+      joined_players: ['uid1'],
+      guest_count: 2,
+    };
+    const result = buildFriendGameNotificationContent(gameData, 'Alex');
+
+    expect(result.body).toContain('1 spot left');
+  });
+
+  it('defaults num_players to 4 when missing', () => {
+    const gameData = {
+      course_play: 'Test Course',
+      joined_players: ['uid1'],
+    };
+    const result = buildFriendGameNotificationContent(gameData, 'Alex');
+
+    expect(result.body).toContain('3 spots left');
   });
 });

@@ -49,6 +49,9 @@ const TrustEventType = Object.freeze({
   PLAYER_DECLINED_SPOT:     'player_declined_spot',
   // Pre-game confirmation (partial games only)
   HOST_PRE_GAME_CONFIRM:    'host_pre_game_confirm',
+  // Friend-posted game alerts
+  FRIEND_GAME_CREATED:          'friend_game_created',
+  FRIEND_GAME_ALERT_DEFERRED:   'friend_game_alert_deferred',
 });
 
 const NotificationPriority = Object.freeze({
@@ -434,6 +437,38 @@ const EVENT_REGISTRY = Object.freeze({
     deepLink:         'findmyfourth://game/{game_id}/confirm',
     threadId:         'game_{game_id}',
     androidChannelId: 'important',
+    icon:             'sports_golf',
+  },
+
+  // ── Friend Game Alerts ────────────────────────────────────────────────────
+
+  [TrustEventType.FRIEND_GAME_CREATED]: {
+    priority:        NotificationPriority.HIGH,
+    category:        TrustCategory.SOCIAL,
+    maxDeliveries:   1,
+    timing:          'immediate',
+    template: {
+      title: '{creator_name} posted a game',
+      body:  '{course_name} \u00B7 {game_date} \u00B7 {spots_left} spot(s) left',
+    },
+    deepLink:         'findmyfourth://game/{game_id}',
+    threadId:         'social',
+    androidChannelId: 'important',
+    icon:             'sports_golf',
+  },
+
+  [TrustEventType.FRIEND_GAME_ALERT_DEFERRED]: {
+    priority:        NotificationPriority.DEFAULT,
+    category:        TrustCategory.SOCIAL,
+    maxDeliveries:   1,
+    timing:          'scheduled',
+    template: {
+      title: '{title}',
+      body:  '{body}',
+    },
+    deepLink:         'findmyfourth://game/{gameId}',
+    threadId:         'social',
+    androidChannelId: 'default',
     icon:             'sports_golf',
   },
 

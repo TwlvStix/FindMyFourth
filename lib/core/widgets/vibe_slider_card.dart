@@ -7,6 +7,7 @@ import '/core/design_tokens/spacing.dart';
 import '/core/design_tokens/typography.dart';
 import '/core/widgets/app_card.dart';
 import '/core/widgets/vibe_slider_theme.dart';
+import '/models/vibe_labels.dart';
 import '/models/vibe_profile.dart';
 
 class VibeSliderCard extends StatefulWidget {

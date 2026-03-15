@@ -5,7 +5,7 @@ import '/core/design_tokens/colors.dart';
 import '/core/design_tokens/spacing.dart';
 import '/core/design_tokens/typography.dart';
 import '/core/motion/motion_helpers.dart';
-import '/models/vibe_profile.dart';
+import '/models/vibe_labels.dart';
 import '/services/vibe_group_matcher.dart';
 import '/vibe/vibe_recommendation_rank.dart';
 

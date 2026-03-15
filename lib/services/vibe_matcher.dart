@@ -1,5 +1,6 @@
 import 'dart:math';
 
+import '/models/vibe_labels.dart';
 import '/models/vibe_profile.dart';
 import '/services/vibe_interaction_adjustments.dart';
 import '/vibe/vibe_dealbreaker.dart';

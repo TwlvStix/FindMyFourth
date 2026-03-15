@@ -210,32 +210,33 @@ class CreateProfileController {
       try {
         // Save profile data
         final golfCanadaRaw = formData.golfCanadaNumber?.trim() ?? '';
-        AppLog.d('📖 Creating user document with friend fields initialized...');
+        final userData = createUsersRecordData(
+          photoUrl: formData.photoUrl,
+          handicap: formData.handicap,
+          golfCanadaNumber: golfCanadaRaw.isEmpty ? null : golfCanadaRaw,
+          homeCourse: formData.homeCourse,
+          homeCourseLat: formData.homeCourseLat,
+          homeCourseLng: formData.homeCourseLng,
+          firstName: formData.firstName,
+          lastName: formData.lastName,
+          displayName: desiredUsername,
+          // onboardingCompleted is set at the END of vibe onboarding flow
+          // (in VibeArchetypeRevealWidget) to prevent onboarding bypass
+          onboardingCompleted: false,
+          gender: formData.gender,
+          dateOfBirth: formData.dateOfBirth,
+          hometown: formData.hometownRef,
+          hometownName: formData.hometownName,
+          hometownLat: formData.hometownLat,
+          hometownLng: formData.hometownLng,
+          friends: [],
+          friendRequests: [],
+        );
+        AppLog.d('📖 Profile save keys: ${userData.keys.toList()}');
 
         await _profileSetupService.saveCreateProfileData(
           userRef: userRef,
-          userData: createUsersRecordData(
-            photoUrl: formData.photoUrl,
-            handicap: formData.handicap,
-            golfCanadaNumber: golfCanadaRaw.isEmpty ? null : golfCanadaRaw,
-            homeCourse: formData.homeCourse,
-            homeCourseLat: formData.homeCourseLat,
-            homeCourseLng: formData.homeCourseLng,
-            firstName: formData.firstName,
-            lastName: formData.lastName,
-            displayName: desiredUsername,
-            // onboardingCompleted is set at the END of vibe onboarding flow
-            // (in VibeArchetypeRevealWidget) to prevent onboarding bypass
-            onboardingCompleted: false,
-            gender: formData.gender,
-            dateOfBirth: formData.dateOfBirth,
-            hometown: formData.hometownRef,
-            hometownName: formData.hometownName,
-            hometownLat: formData.hometownLat,
-            hometownLng: formData.hometownLng,
-            friends: [],
-            friendRequests: [],
-          ),
+          userData: userData,
           phoneNumber: formData.phone,
         );
 

@@ -6,17 +6,15 @@ import '/backend/schema/users_record.dart';
 import '/providers/geo_filter_provider.dart';
 import '/core/design_tokens/colors.dart';
 import '/core/design_tokens/spacing.dart';
-import '/core/utils/app_log.dart';
 import '/core/widgets/app_stream_builder.dart';
 import '/main_function/games_list/components/game_list_filter_bottom_sheet.dart';
 import '/main_function/games_list/components/games_list_empty_state.dart';
 import '/main_function/games_list/components/games_sort_bar.dart';
+import '/main_function/games_list/components/game_list_slivers.dart';
 import '/main_function/games_list/components/mutual_card_actions.dart';
-import '/main_function/games_list/components/mutual_game_card.dart';
 import '/main_function/games_list/components/near_me_chip.dart';
 import '/main_function/games_list/components/quick_filter_chips.dart';
 import '/main_function/games_list/components/restriction_banner_selector.dart';
-import '/main_function/games_list/components/unified_game_card.dart';
 import '/main_function/games_list/models/quick_filter.dart';
 import '/main_function/games_list/utils/cancelled_game_handler.dart';
 import '/main_function/games_list/utils/game_canonicalization.dart';
@@ -131,21 +129,7 @@ class _GamesListContentState extends State<GamesListContent> {
       initialData: widget.initialGames,
       onRetry: widget.onRetry,
       builder: (context, gamesList) {
-        // Debug logging wrapped in assertions (only runs in debug mode)
-        assert(() {
-          AppLog.d(
-              '📋 GAME LIST: StreamBuilder triggered with ${gamesList.length} games');
-          return true;
-        }());
-
-        // Filter games by status
         final activeGames = filterActiveGames(gamesList);
-
-        assert(() {
-          AppLog.d(
-              '📊 GAME LIST: After status filter: ${activeGames.length} games');
-          return true;
-        }());
 
         // Compute filter metadata once from the active games snapshot
         final filterMeta = GameFilterMeta.fromGames(
@@ -175,15 +159,7 @@ class _GamesListContentState extends State<GamesListContent> {
           );
         }
 
-        // Apply quick filter
         final quickFilteredGames = widget.quickFilter.apply(visibleGames);
-
-        assert(() {
-          AppLog.d(
-              '✅ GAME LIST: After quick filter: ${quickFilteredGames.length}');
-          return true;
-        }());
-
         final userRef = widget.currentUserReference;
         return StreamBuilder<UsersRecord?>(
           stream: _userStream,
@@ -257,25 +233,10 @@ class _GamesListContentState extends State<GamesListContent> {
                       padding: EdgeInsets.symmetric(
                         vertical: AppSpacing.sm,
                       ),
-                      child: Row(
-                        children: [
-                          Expanded(
-                            child: QuickFilterChips(
-                              selectedFilter: widget.quickFilter,
-                              onFilterChanged: widget.onQuickFilterChanged,
-                              padding: EdgeInsets.only(
-                                left: AppSpacing.screenPadding,
-                              ),
-                            ),
-                          ),
-                          Padding(
-                            padding: EdgeInsets.only(
-                              left: AppSpacing.sm,
-                              right: AppSpacing.screenPadding,
-                            ),
-                            child: const NearMeChip(),
-                          ),
-                        ],
+                      child: QuickFilterChips(
+                        selectedFilter: widget.quickFilter,
+                        onFilterChanged: widget.onQuickFilterChanged,
+                        trailing: const NearMeChip(),
                       ),
                     ),
                   ),
@@ -303,78 +264,23 @@ class _GamesListContentState extends State<GamesListContent> {
                     ),
                   // Joinable Games List
                   if (sortedJoinableGames.isNotEmpty)
-                    SliverPadding(
-                      padding: EdgeInsets.symmetric(
-                        horizontal: AppSpacing.screenPadding,
-                      ),
-                      sliver: SliverList(
-                        delegate: SliverChildBuilderDelegate(
-                          (context, index) {
-                            final game = sortedJoinableGames[index];
-                            final isLastJoinable = index == sortedJoinableGames.length - 1;
-                            final hasMoreMutual = sortedMutualGames.isNotEmpty;
-                            return Padding(
-                              padding: EdgeInsets.only(
-                                bottom: isLastJoinable && !hasMoreMutual
-                                    ? AppSpacing.md
-                                    : AppSpacing.sm,
-                              ),
-                              child: UnifiedGameCard(
-                                game: game,
-                                currentUserReference: widget.currentUserReference,
-                                vibeScore: widget.vibeScores[game.reference.id],
-                                animationIndex: index,
-                                showStatusBadge: true,
-                              ),
-                            );
-                          },
-                          childCount: sortedJoinableGames.length,
-                        ),
-                      ),
+                    JoinableGamesSliverList(
+                      games: sortedJoinableGames,
+                      currentUserReference: widget.currentUserReference,
+                      vibeScores: widget.vibeScores,
+                      hasMutualGames: sortedMutualGames.isNotEmpty,
                     ),
                   // Mutual Games List (amber cards, rendered inline after joinable)
                   if (sortedMutualGames.isNotEmpty)
-                    SliverPadding(
-                      padding: EdgeInsets.symmetric(
-                        horizontal: AppSpacing.screenPadding,
-                      ),
-                      sliver: SliverList(
-                        delegate: SliverChildBuilderDelegate(
-                          (context, index) {
-                            final game = sortedMutualGames[index];
-                            final hostId = game.userRef?.id ?? game.uid;
-                            final mutualName = widget.firstMutualFriendName[hostId] ?? 'a friend';
-                            final mutualCount = (widget.mutualFriendsMap[hostId]?.length ?? 1) - 1;
-                            final animationIndex = sortedJoinableGames.length + index;
-                            return Padding(
-                              padding: EdgeInsets.only(
-                                bottom: index < sortedMutualGames.length - 1
-                                    ? AppSpacing.sm
-                                    : AppSpacing.md,
-                              ),
-                              child: MutualGameCard(
-                                game: game,
-                                mutualFriendName: mutualName,
-                                additionalMutualCount: mutualCount,
-                                chatState: widget.chatActionStates[hostId] ?? MutualActionState.idle,
-                                friendState: widget.friendActionStates[hostId] ?? MutualActionState.idle,
-                                animationIndex: animationIndex,
-                                onAskToChat: () {
-                                  if (widget.onAskToChat != null && game.userRef != null) {
-                                    widget.onAskToChat!(game.userRef!);
-                                  }
-                                },
-                                onAddFriend: () {
-                                  if (widget.onAddFriendFromMutual != null && game.userRef != null) {
-                                    widget.onAddFriendFromMutual!(game.userRef!);
-                                  }
-                                },
-                              ),
-                            );
-                          },
-                          childCount: sortedMutualGames.length,
-                        ),
-                      ),
+                    MutualGamesSliverList(
+                      games: sortedMutualGames,
+                      firstMutualFriendName: widget.firstMutualFriendName,
+                      mutualFriendsMap: widget.mutualFriendsMap,
+                      chatActionStates: widget.chatActionStates,
+                      friendActionStates: widget.friendActionStates,
+                      joinableGameCount: sortedJoinableGames.length,
+                      onAskToChat: widget.onAskToChat,
+                      onAddFriendFromMutual: widget.onAddFriendFromMutual,
                     ),
                   // Bottom padding for FAB
                   SliverToBoxAdapter(

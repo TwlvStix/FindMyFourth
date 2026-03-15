@@ -1461,7 +1461,7 @@ exports.monitorUsernameChanges = functions
       const usernameDoc = await usernameRef.get();
       if (
         !usernameDoc.exists ||
-        usernameDoc.data()?.uid?.path !== change.after.ref.path
+        usernameDoc.data()?.uid !== context.params.uid
       ) {
         console.warn(
           `Username inconsistency detected for ${change.after.ref.path}:`,
@@ -1500,11 +1500,11 @@ exports.syncUsernameIndex = functions
       const newUsernameDoc = await newUsernameRef.get();
       if (
         !newUsernameDoc.exists ||
-        newUsernameDoc.data()?.uid?.path !== userRef.path
+        newUsernameDoc.data()?.uid !== context.params.uid
       ) {
         await newUsernameRef.set(
           {
-            uid: userRef,
+            uid: context.params.uid,
             created_at: admin.firestore.FieldValue.serverTimestamp(),
           },
           { merge: true },
@@ -1516,7 +1516,7 @@ exports.syncUsernameIndex = functions
         const oldUsernameDoc = await oldUsernameRef.get();
         if (
           oldUsernameDoc.exists &&
-          oldUsernameDoc.data()?.uid?.path === userRef.path
+          oldUsernameDoc.data()?.uid === context.params.uid
         ) {
           await oldUsernameRef.delete();
         }

@@ -16,6 +16,7 @@ import '/core/widgets/app_button_enhanced.dart';
 import '/core/widgets/app_text.dart';
 import '/core/widgets/premium_back_button.dart';
 import '/core/widgets/fairway_background.dart';
+import '/models/vibe_labels.dart';
 import '/models/vibe_profile.dart';
 import '/services/vibe_repository.dart';
 

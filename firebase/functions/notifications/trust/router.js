@@ -68,6 +68,7 @@ const SOCIAL_ALERT_TYPES = new Set([
   TrustEventType.JOIN_REQUEST_DECLINED,
   TrustEventType.JOIN_REQUEST_ROUND_FILLED,
   TrustEventType.JOIN_REQUEST_EXPIRED,
+  TrustEventType.FRIEND_GAME_ALERT_DEFERRED,
 ]);
 
 const MS_IN_24H = 24 * 60 * 60 * 1000;

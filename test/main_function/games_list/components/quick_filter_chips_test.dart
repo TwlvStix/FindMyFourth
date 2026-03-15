@@ -26,7 +26,7 @@ void main() {
     expect(find.text('All Games'), findsOneWidget);
     expect(find.text('⚡ Flexible'), findsOneWidget);
     expect(find.text('This Weekend'), findsOneWidget);
-    expect(find.text('Near Me'), findsOneWidget);
+    expect(find.text('Near Me'), findsNothing);
 
     expect(find.text('Morning'), findsNothing);
     expect(find.text('🔥 Top VIBE'), findsNothing);
@@ -42,9 +42,9 @@ void main() {
       ),
     );
 
-    await tester.tap(find.text('Near Me'));
+    await tester.tap(find.text('This Weekend'));
     await tester.pumpAndSettle();
 
-    expect(selected, equals(QuickFilter.nearMe));
+    expect(selected, equals(QuickFilter.thisWeekend));
   });
 }

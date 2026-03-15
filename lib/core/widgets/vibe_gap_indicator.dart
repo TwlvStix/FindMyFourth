@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '/core/design_tokens/colors.dart';
 import '/core/design_tokens/spacing.dart';
 import '/core/design_tokens/typography.dart';
+import '/models/vibe_labels.dart';
 import '/models/vibe_profile.dart';
 import '/services/vibe_matcher.dart';
 import '/vibe/premium_vibe_page/components/vibe_spectrum_bar.dart';

@@ -77,6 +77,9 @@ const EVENT_DATA = {
   [TrustEventType.PLAYER_DECLINED_SPOT]: { player_name: 'Bob', course_name: 'Torrey Pines', game_id: GAME_ID },
   // Pre-game confirmation (partial games only)
   [TrustEventType.HOST_PRE_GAME_CONFIRM]: { course_name: 'Sawgrass', game_date: 'Saturday', game_id: GAME_ID },
+  // Friend game alerts
+  [TrustEventType.FRIEND_GAME_CREATED]: { creator_name: 'Alice', course_name: 'Pebble Beach', game_date: 'Saturday', spots_left: 3, game_id: GAME_ID },
+  [TrustEventType.FRIEND_GAME_ALERT_DEFERRED]: { title: 'Alice posted a game', body: 'Pebble Beach \u00B7 Saturday \u00B7 3 spots left', gameId: GAME_ID },
 };
 
 /** Interpolates {game_id} in a string, mirroring the engine's logic. */
