@@ -15,6 +15,7 @@ import '/main_function/games_list/components/game_card_avatar_stack.dart';
 import '/main_function/games_list/components/game_card_detail_pills.dart';
 import '/main_function/games_list/components/game_card_spots_badge.dart';
 import '/main_function/games_list/components/game_card_vibe_ring.dart';
+import '/main_function/games_joined/components/game_card_rematch_actions.dart';
 import '/models/game.dart';
 import '/models/player_eligibility.dart';
 import '/utils/app_util.dart';
@@ -32,6 +33,7 @@ class UnifiedGameCard extends StatefulWidget {
     this.vibeScore,
     this.isLocked = false,
     this.showStatusBadge = false,
+    this.showRematchActions = false,
     this.animationIndex = 0,
     this.onTap,
   });
@@ -48,6 +50,9 @@ class UnifiedGameCard extends StatefulWidget {
   /// Whether to show status badge (Owner/Joined/Cancelled/Played).
   /// Used on My Games page to indicate user's relationship to the game.
   final bool showStatusBadge;
+
+  /// Whether to show "Play Again" / "Switch Course" actions on completed cards.
+  final bool showRematchActions;
 
   /// Index for staggered entrance animation
   final int animationIndex;
@@ -204,6 +209,11 @@ class _UnifiedGameCardState extends State<UnifiedGameCard>
                     ],
                   ),
                 ),
+                // Rematch actions for completed/locked games
+                if (widget.showRematchActions &&
+                    game.isLocked &&
+                    !isCancelled)
+                  GameCardRematchActions(game: game),
               ],
             ),
           ),

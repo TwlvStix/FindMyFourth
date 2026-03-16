@@ -349,6 +349,11 @@ class UsersRecord extends FirestoreRecord {
   String get archetype => _archetype ?? '';
   bool hasArchetype() => _archetype != null;
 
+  // "season_rounds_played" field. Top-level count for leaderboard queries.
+  int? _seasonRoundsPlayed;
+  int get seasonRoundsPlayed => _seasonRoundsPlayed ?? 0;
+  bool hasSeasonRoundsPlayed() => _seasonRoundsPlayed != null;
+
   void _initializeFields() {
     _photoUrl = snapshotData['photo_url'] as String?;
     _createdTime = snapshotData['created_time'] as DateTime?;
@@ -462,6 +467,8 @@ class UsersRecord extends FirestoreRecord {
     _streakMilestoneLevel =
         castToType<int>(snapshotData['streak_milestone_level']);
     _archetype = snapshotData['archetype'] as String?;
+    _seasonRoundsPlayed =
+        castToType<int>(snapshotData['season_rounds_played']);
   }
 
   static CollectionReference get collection =>
@@ -553,6 +560,7 @@ Map<String, dynamic> createUsersRecordData({
   int? vibeEditCount,
   DateTime? lastVibeEditAt,
   String? archetype,
+  int? seasonRoundsPlayed,
 }) {
   final displayNameLower = displayName?.toLowerCase();
   final firestoreData = mapToFirestore(
@@ -614,6 +622,7 @@ Map<String, dynamic> createUsersRecordData({
       'vibe_edit_count': vibeEditCount,
       'last_vibe_edit_at': lastVibeEditAt,
       'archetype': archetype,
+      'season_rounds_played': seasonRoundsPlayed,
     }.withoutNulls,
   );
 
@@ -681,7 +690,8 @@ class UsersRecordDocumentEquality implements Equality<UsersRecord> {
         e1?.locationSource == e2?.locationSource &&
         e1?.vibeEditCount == e2?.vibeEditCount &&
         e1?.lastVibeEditAt == e2?.lastVibeEditAt &&
-        e1?.archetype == e2?.archetype;
+        e1?.archetype == e2?.archetype &&
+        e1?.seasonRoundsPlayed == e2?.seasonRoundsPlayed;
   }
 
   @override
@@ -740,6 +750,7 @@ class UsersRecordDocumentEquality implements Equality<UsersRecord> {
         e?.vibeEditCount,
         e?.lastVibeEditAt,
         e?.archetype,
+        e?.seasonRoundsPlayed,
       ]);
 
   @override

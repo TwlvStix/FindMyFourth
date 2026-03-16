@@ -434,10 +434,10 @@ function isWithinQuietHours(start, end, nowValue) {
  * @returns {number} Available spots (clamped to 0)
  */
 function computeSpots(gameData) {
-  const numPlayers = gameData.num_players || 4;
+  const maxPlayers = gameData.max_players || gameData.num_players || 4;
   const joinedCount = Array.isArray(gameData.joined_players) ? gameData.joined_players.length : 0;
   const guestCount = gameData.guest_count || 0;
-  return Math.max(0, numPlayers - joinedCount - guestCount);
+  return Math.max(0, maxPlayers - joinedCount - guestCount);
 }
 
 /**

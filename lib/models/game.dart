@@ -9,6 +9,7 @@ class Game {
   /// All writes and reads should use these lowercase values.
   static const visibilityPublic = 'public';
   static const visibilityFriends = 'friends';
+  static const visibilityPrivate = 'private';
 
   Game({
     required this.reference,
@@ -21,7 +22,10 @@ class Game {
     required this.memberDiscount,
     required this.friendGame,
     this.hasSideGames = false,
+    this.sideGameTags = const [],
     this.is2v2 = false,
+    this.sourceGameId,
+    this.createdVia,
     required this.numPlayers,
     required this.maxPlayers,
     required this.joinedPlayers,
@@ -57,7 +61,10 @@ class Game {
   final String memberDiscount;
   final String friendGame;
   final bool hasSideGames;
+  final List<String> sideGameTags;
   final bool is2v2;
+  final String? sourceGameId;
+  final String? createdVia;
   final int numPlayers;
   final int maxPlayers;
   final List<DocumentReference> joinedPlayers;
@@ -175,7 +182,13 @@ class Game {
       memberDiscount: (data['member_discount'] as String?) ?? '',
       friendGame: (data['friend_game'] as String?) ?? '',
       hasSideGames: (data['has_side_games'] as bool?) ?? false,
+      sideGameTags: (data['side_game_tags'] as List<dynamic>?)
+              ?.whereType<String>()
+              .toList() ??
+          const [],
       is2v2: (data['is_2v2'] as bool?) ?? false,
+      sourceGameId: data['source_game_id'] as String?,
+      createdVia: data['created_via'] as String?,
       numPlayers: (data['num_players'] as int?) ?? 0,
       maxPlayers: (data['max_players'] as int?) ?? 0,
       joinedPlayers: (data['joined_players'] as List<dynamic>?)
@@ -236,7 +249,10 @@ class Game {
       memberDiscount: record.memberDiscount,
       friendGame: record.friendGame,
       hasSideGames: record.hasSideGames,
+      sideGameTags: record.sideGameTags,
       is2v2: record.is2v2,
+      sourceGameId: record.sourceGameId,
+      createdVia: record.createdVia,
       numPlayers: record.numPlayers,
       maxPlayers: record.maxPlayers,
       joinedPlayers: record.joinedPlayers,

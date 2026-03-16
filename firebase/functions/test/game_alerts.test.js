@@ -659,7 +659,7 @@ describe('buildFriendGameNotificationContent', () => {
     const gameData = {
       course_play: 'Shaughnessy Golf Club',
       date: makeTimestamp('2026-03-14T21:00:00Z'),
-      num_players: 4,
+      max_players: 4,
       joined_players: ['uid1'],
       guest_count: 0,
     };
@@ -673,7 +673,7 @@ describe('buildFriendGameNotificationContent', () => {
   it('calculates spots correctly: 4 players, 1 joined, 0 guests = 3 spots', () => {
     const gameData = {
       course_play: 'Test Course',
-      num_players: 4,
+      max_players: 4,
       joined_players: ['uid1'],
       guest_count: 0,
     };
@@ -685,7 +685,7 @@ describe('buildFriendGameNotificationContent', () => {
   it('shows full capacity when joined_players is empty', () => {
     const gameData = {
       course_play: 'Test Course',
-      num_players: 4,
+      max_players: 4,
       joined_players: [],
       guest_count: 0,
     };
@@ -697,7 +697,7 @@ describe('buildFriendGameNotificationContent', () => {
   it('shows full capacity when joined_players is missing', () => {
     const gameData = {
       course_play: 'Test Course',
-      num_players: 4,
+      max_players: 4,
     };
     const result = buildFriendGameNotificationContent(gameData, 'Alex');
 
@@ -707,7 +707,7 @@ describe('buildFriendGameNotificationContent', () => {
   it('omits date when date field is missing', () => {
     const gameData = {
       course_play: 'Test Course',
-      num_players: 4,
+      max_players: 4,
       joined_players: ['uid1', 'uid2'],
     };
     const result = buildFriendGameNotificationContent(gameData, 'Alex');
@@ -720,7 +720,7 @@ describe('buildFriendGameNotificationContent', () => {
   it('uses "A friend" when creator name is missing', () => {
     const gameData = {
       course_play: 'Test Course',
-      num_players: 4,
+      max_players: 4,
     };
     const result = buildFriendGameNotificationContent(gameData, null);
 
@@ -730,7 +730,7 @@ describe('buildFriendGameNotificationContent', () => {
   it('uses "A friend" when creator name is empty string', () => {
     const gameData = {
       course_play: 'Test Course',
-      num_players: 4,
+      max_players: 4,
     };
     const result = buildFriendGameNotificationContent(gameData, '');
 
@@ -740,7 +740,7 @@ describe('buildFriendGameNotificationContent', () => {
   it('clamps negative spots to 0', () => {
     const gameData = {
       course_play: 'Test Course',
-      num_players: 2,
+      max_players: 2,
       joined_players: ['uid1', 'uid2', 'uid3'],
       guest_count: 1,
     };
@@ -752,7 +752,7 @@ describe('buildFriendGameNotificationContent', () => {
   it('shows singular "1 spot left" when exactly one spot remains', () => {
     const gameData = {
       course_play: 'Test Course',
-      num_players: 4,
+      max_players: 4,
       joined_players: ['uid1', 'uid2'],
       guest_count: 1,
     };
@@ -765,7 +765,7 @@ describe('buildFriendGameNotificationContent', () => {
   it('accounts for guest_count in spots calculation', () => {
     const gameData = {
       course_play: 'Test Course',
-      num_players: 4,
+      max_players: 4,
       joined_players: ['uid1'],
       guest_count: 2,
     };
@@ -774,7 +774,7 @@ describe('buildFriendGameNotificationContent', () => {
     expect(result.body).toContain('1 spot left');
   });
 
-  it('defaults num_players to 4 when missing', () => {
+  it('defaults to 4 spots when max_players and num_players are both missing', () => {
     const gameData = {
       course_play: 'Test Course',
       joined_players: ['uid1'],
@@ -787,7 +787,7 @@ describe('buildFriendGameNotificationContent', () => {
   it('uses spots-aware title when exactly 1 spot remains', () => {
     const gameData = {
       course_play: 'Test Course',
-      num_players: 4,
+      max_players: 4,
       joined_players: ['uid1', 'uid2'],
       guest_count: 1,
     };
@@ -800,7 +800,7 @@ describe('buildFriendGameNotificationContent', () => {
   it('uses standard title when more than 1 spot remains', () => {
     const gameData = {
       course_play: 'Test Course',
-      num_players: 4,
+      max_players: 4,
       joined_players: ['uid1'],
       guest_count: 0,
     };
@@ -813,28 +813,36 @@ describe('buildFriendGameNotificationContent', () => {
 // ── Tests: computeSpots ───────────────────────────────────────────────────────
 
 describe('computeSpots', () => {
-  it('computes spots: 4 players, 1 joined, 0 guests = 3', () => {
-    expect(computeSpots({ num_players: 4, joined_players: ['uid1'], guest_count: 0 })).toBe(3);
+  it('computes spots: 4 max_players, 1 joined, 0 guests = 3', () => {
+    expect(computeSpots({ max_players: 4, joined_players: ['uid1'], guest_count: 0 })).toBe(3);
   });
 
-  it('computes spots: 4 players, 2 joined, 1 guest = 1', () => {
-    expect(computeSpots({ num_players: 4, joined_players: ['uid1', 'uid2'], guest_count: 1 })).toBe(1);
+  it('computes spots: 4 max_players, 2 joined, 1 guest = 1', () => {
+    expect(computeSpots({ max_players: 4, joined_players: ['uid1', 'uid2'], guest_count: 1 })).toBe(1);
   });
 
   it('clamps to 0 when over capacity', () => {
-    expect(computeSpots({ num_players: 2, joined_players: ['a', 'b', 'c'], guest_count: 1 })).toBe(0);
+    expect(computeSpots({ max_players: 2, joined_players: ['a', 'b', 'c'], guest_count: 1 })).toBe(0);
   });
 
-  it('defaults num_players to 4', () => {
+  it('falls back to num_players when max_players is absent', () => {
+    expect(computeSpots({ num_players: 4, joined_players: ['uid1'] })).toBe(3);
+  });
+
+  it('defaults to 4 when both max_players and num_players are absent', () => {
     expect(computeSpots({ joined_players: ['uid1'] })).toBe(3);
   });
 
+  it('prefers max_players over num_players', () => {
+    expect(computeSpots({ max_players: 4, num_players: 1, joined_players: ['uid1'] })).toBe(3);
+  });
+
   it('defaults joined_players to empty array', () => {
-    expect(computeSpots({ num_players: 4 })).toBe(4);
+    expect(computeSpots({ max_players: 4 })).toBe(4);
   });
 
   it('defaults guest_count to 0', () => {
-    expect(computeSpots({ num_players: 4, joined_players: ['uid1'] })).toBe(3);
+    expect(computeSpots({ max_players: 4, joined_players: ['uid1'] })).toBe(3);
   });
 
   it('handles all defaults (empty object)', () => {
@@ -876,7 +884,7 @@ describe('buildGameNotificationContent', () => {
   it('uses course in title when available', () => {
     const result = buildGameNotificationContent({
       course_play: 'Tower Ranch',
-      num_players: 4,
+      max_players: 4,
       joined_players: [],
     });
     expect(result.title).toBe('New game at Tower Ranch');
@@ -884,7 +892,7 @@ describe('buildGameNotificationContent', () => {
 
   it('falls back to generic title when no course', () => {
     const result = buildGameNotificationContent({
-      num_players: 4,
+      max_players: 4,
       joined_players: [],
     });
     expect(result.title).toBe('New game posted');
@@ -893,7 +901,7 @@ describe('buildGameNotificationContent', () => {
   it('uses last-spot title when exactly 1 spot with course', () => {
     const result = buildGameNotificationContent({
       course_play: 'Tower Ranch',
-      num_players: 4,
+      max_players: 4,
       joined_players: ['a', 'b'],
       guest_count: 1,
     });
@@ -902,7 +910,7 @@ describe('buildGameNotificationContent', () => {
 
   it('uses last-spot title without course', () => {
     const result = buildGameNotificationContent({
-      num_players: 4,
+      max_players: 4,
       joined_players: ['a', 'b'],
       guest_count: 1,
     });
@@ -913,7 +921,7 @@ describe('buildGameNotificationContent', () => {
     const result = buildGameNotificationContent({
       course_play: 'Tower Ranch',
       style_game: 'Low Stakes',
-      num_players: 4,
+      max_players: 4,
       joined_players: ['a'],
     });
     expect(result.body).toContain('Low Stakes');
@@ -924,7 +932,7 @@ describe('buildGameNotificationContent', () => {
     const result = buildGameNotificationContent({
       course_play: 'Tower Ranch',
       date: makeTimestamp('2026-03-14T21:00:00Z'),
-      num_players: 4,
+      max_players: 4,
       joined_players: [],
     });
     expect(result.body).toContain('Mar');
@@ -932,7 +940,7 @@ describe('buildGameNotificationContent', () => {
 
   it('shows singular spot label', () => {
     const result = buildGameNotificationContent({
-      num_players: 4,
+      max_players: 4,
       joined_players: ['a', 'b'],
       guest_count: 1,
     });
@@ -943,7 +951,7 @@ describe('buildGameNotificationContent', () => {
   it('body parts separated by middle dot', () => {
     const result = buildGameNotificationContent({
       style_game: 'No Money',
-      num_players: 4,
+      max_players: 4,
       joined_players: [],
     });
     expect(result.body).toContain('\u00B7');

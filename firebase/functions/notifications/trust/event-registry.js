@@ -49,6 +49,8 @@ const TrustEventType = Object.freeze({
   PLAYER_DECLINED_SPOT:     'player_declined_spot',
   // Pre-game confirmation (partial games only)
   HOST_PRE_GAME_CONFIRM:    'host_pre_game_confirm',
+  // Rematch prompt after round verification
+  REMATCH_PROMPT:               'rematch_prompt',
   // Friend-posted game alerts
   FRIEND_GAME_CREATED:          'friend_game_created',
   FRIEND_GAME_ALERT_DEFERRED:   'friend_game_alert_deferred',
@@ -192,6 +194,21 @@ const EVENT_REGISTRY = Object.freeze({
     threadId:         'post_round_{game_id}',
     androidChannelId: 'default',
     icon:             'fact_check',
+  },
+
+  [TrustEventType.REMATCH_PROMPT]: {
+    priority:        NotificationPriority.DEFAULT,
+    category:        TrustCategory.POST_ROUND,
+    maxDeliveries:   1,
+    timing:          'immediate',
+    template: {
+      title: 'Round verified',
+      body:  'Your round at {course_name} is verified. Ready for another?',
+    },
+    deepLink:         'findmyfourth://game/{game_id}',
+    threadId:         'post_round_{game_id}',
+    androidChannelId: 'default',
+    icon:             'sports_golf',
   },
 
   // ── Trust & enforcement ────────────────────────────────────────────────────

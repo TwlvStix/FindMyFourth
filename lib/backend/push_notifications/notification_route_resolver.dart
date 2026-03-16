@@ -261,6 +261,17 @@ PushRoute? resolveRouteFromType(Map<String, dynamic> data) {
     );
   }
 
+  // Rematch prompt after round verification
+  if (type == 'rematch_prompt') {
+    final gameId = data['gameId'] ?? data['game_id'];
+    if (gameId is String && gameId.isNotEmpty) {
+      return PushRoute(
+        pageName: 'GameJoinedDetailed',
+        parameterData: {'gameRef': 'games/$gameId'},
+      );
+    }
+  }
+
   // Pre-game confirmation (host confirms/cancels partial game)
   if (type == 'host_pre_game_confirm') {
     final gameId = data['gameId'] ?? data['game_id'];

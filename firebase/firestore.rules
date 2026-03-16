@@ -639,6 +639,12 @@ service cloud.firestore {
             .hasOnly(['read']);
         allow delete: if request.auth.uid == document;
       }
+
+      match /notification_receipts/{receiptId} {
+        allow create: if request.auth.uid == document;
+        allow read: if request.auth.uid == document;
+        allow update, delete: if false;
+      }
     }
 
     // ── Public reference data ──────────────────────────────────────────

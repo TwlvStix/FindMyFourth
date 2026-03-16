@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
+import '/main_function/create_game/models/create_game_form_data.dart';
 import 'transition_standards.dart';
 
 /// Canonical route-name constants for typed navigation helpers.
@@ -183,6 +184,17 @@ extension AppNavigationExtensions on BuildContext {
   }) {
     pushWithTransition(
       AppRouteNames.createGame,
+      transition: transition,
+    );
+  }
+
+  void pushCreateGameRematch({
+    required CreateGameFormData formData,
+    TransitionInfo transition = TransitionStandards.modalTransition,
+  }) {
+    pushWithTransition(
+      AppRouteNames.createGame,
+      extra: <String, dynamic>{'prefillFormData': formData},
       transition: transition,
     );
   }

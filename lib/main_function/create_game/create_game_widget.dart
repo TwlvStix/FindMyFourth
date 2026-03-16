@@ -24,9 +24,12 @@ import 'package:provider/provider.dart';
 import '/providers/chat_provider.dart';
 import 'components/create_game_form_sections.dart';
 import 'components/draft_banner.dart';
+import 'components/rematch_banner.dart';
 
 class CreateGameWidget extends StatefulWidget {
-  const CreateGameWidget({super.key});
+  const CreateGameWidget({super.key, this.prefillFormData});
+
+  final CreateGameFormData? prefillFormData;
 
   static String routeName = 'CreateGame';
   static String routePath = '/createGame';
@@ -55,12 +58,18 @@ class _CreateGameWidgetState extends State<CreateGameWidget> {
 
   bool _isLoading = true;
   bool _hasDraft = false;
+  bool _isRematch = false;
   bool _hasAnimated = false;
 
   @override
   void initState() {
     super.initState();
-    _formData = CreateGameFormData();
+    if (widget.prefillFormData != null) {
+      _formData = widget.prefillFormData!;
+      _isRematch = true;
+    } else {
+      _formData = CreateGameFormData();
+    }
     _gameNameController.text = _formData.gameName;
     courseValueController = FormFieldController<String>(_formData.courseValue);
 
@@ -97,6 +106,7 @@ class _CreateGameWidgetState extends State<CreateGameWidget> {
   }
 
   Future<void> _loadDraft() async {
+    if (_isRematch) return;
     final draft = await _controller.loadDraft();
     if (draft != null) {
       _formData = draft;
@@ -324,7 +334,19 @@ class _CreateGameWidgetState extends State<CreateGameWidget> {
                         child: Column(
                           mainAxisSize: MainAxisSize.max,
                           children: [
-                            if (_hasDraft) DraftBanner(onClear: _clearDraft),
+                            if (_isRematch)
+                              RematchBanner(
+                                courseName: _formData.courseValue,
+                                onDismiss: () {
+                                  updateState(this, () {
+                                    _isRematch = false;
+                                    _formData = CreateGameFormData();
+                                    _syncControllersFromFormData();
+                                  });
+                                },
+                              )
+                            else if (_hasDraft)
+                              DraftBanner(onClear: _clearDraft),
                             Consumer<TrustProvider>(
                               builder: (context, trust, _) {
                                 final restriction =

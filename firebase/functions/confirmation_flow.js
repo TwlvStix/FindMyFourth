@@ -1894,6 +1894,37 @@ async function _finalizeRoundVerification(db, roundRef, roundData, gameRef) {
       `_finalizeRoundVerification: streak verification failed for round ${roundRef.id}:`, err
     );
   }
+
+  // ── 8. Stage 7: send rematch prompt notification to present players ────────
+  try {
+    const gameSnap = await gameRef.get();
+    const gameData = gameSnap.exists ? gameSnap.data() : {};
+    const courseName = typeof gameData.course_play === 'string'
+      ? gameData.course_play
+      : 'your course';
+    const gameId = gameRef.id;
+
+    for (const uid of presentUids) {
+      try {
+        await routeNotification({
+          eventId:         randomUUID(),
+          eventType:       'rematch_prompt',
+          recipientUserId: uid,
+          sourceId:        gameId,
+          data:            { course_name: courseName, game_id: gameId },
+        }, db);
+      } catch (err) {
+        // Non-fatal per player
+        console.warn(
+          `_finalizeRoundVerification: rematch prompt failed for ${uid}:`, err
+        );
+      }
+    }
+  } catch (err) {
+    console.warn(
+      `_finalizeRoundVerification: rematch prompt step failed for round ${roundRef.id}:`, err
+    );
+  }
 }
 
 /**

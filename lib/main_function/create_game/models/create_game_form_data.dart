@@ -48,6 +48,10 @@ class CreateGameFormData {
   String gameName;
   bool memberDiscount;
 
+  // Rematch tracking
+  String? sourceGameId;
+  String? createdVia;
+
   CreateGameFormData({
     this.friendsValue,
     this.courseValue,
@@ -72,6 +76,8 @@ class CreateGameFormData {
     this.otherGameText,
     String? gameName,
     this.memberDiscount = false,
+    this.sourceGameId,
+    this.createdVia,
   })  : selectedDays = selectedDays ?? {},
         flexibleTimesOfDay = flexibleTimesOfDay ?? {'anytime'},
         selectedGames = selectedGames ?? {},
@@ -299,9 +305,13 @@ class CreateGameFormData {
       'is_fun_game': isJustForFun,
       'is_2v2': is2v2,
       'has_side_games': selectedGames.isNotEmpty,
+      if (selectedGames.isNotEmpty)
+        'side_game_tags': selectedGames.toList(),
       'schedule_type': scheduleType,
       'player_eligibility': playerEligibility,
       'require_vibe_match': requireVibeMatch,
+      if (sourceGameId != null) 'source_game_id': sourceGameId,
+      if (createdVia != null) 'created_via': createdVia,
       if (scheduleType == 'flexible') ...{
         'flexible_week': flexibleWeek,
         'flexible_days': selectedDays.toList(),

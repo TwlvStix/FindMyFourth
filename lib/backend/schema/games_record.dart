@@ -207,6 +207,21 @@ class GamesRecord extends FirestoreRecord {
   String get playerEligibility => _playerEligibility ?? 'open_to_all';
   bool hasPlayerEligibility() => _playerEligibility != null;
 
+  // "side_game_tags" field.
+  List<String>? _sideGameTags;
+  List<String> get sideGameTags => _sideGameTags ?? const [];
+  bool hasSideGameTags() => _sideGameTags != null;
+
+  // "source_game_id" field. Reference to the original game for rematches.
+  String? _sourceGameId;
+  String? get sourceGameId => _sourceGameId;
+  bool hasSourceGameId() => _sourceGameId != null;
+
+  // "created_via" field. How the game was created (e.g., 'rematch', 'switch_course').
+  String? _createdVia;
+  String? get createdVia => _createdVia;
+  bool hasCreatedVia() => _createdVia != null;
+
   void _initializeFields() {
     _nameGame = snapshotData['name_game'] as String?;
     _date = snapshotData['date'] as DateTime?;
@@ -246,6 +261,9 @@ class GamesRecord extends FirestoreRecord {
     _verifiedAt = snapshotData['verified_at'] as DateTime?;
     _verificationStatus = snapshotData['verification_status'] as String?;
     _playerEligibility = snapshotData['player_eligibility'] as String?;
+    _sideGameTags = getDataList(snapshotData['side_game_tags']);
+    _sourceGameId = snapshotData['source_game_id'] as String?;
+    _createdVia = snapshotData['created_via'] as String?;
   }
 
   static CollectionReference get collection =>
@@ -319,6 +337,9 @@ Map<String, dynamic> createGamesRecordData({
   DateTime? verifiedAt,
   String? verificationStatus,
   String? playerEligibility,
+  List<String>? sideGameTags,
+  String? sourceGameId,
+  String? createdVia,
 }) {
   final firestoreData = mapToFirestore(
     <String, dynamic>{
@@ -359,6 +380,9 @@ Map<String, dynamic> createGamesRecordData({
       'verified_at': verifiedAt,
       'verification_status': verificationStatus,
       'player_eligibility': playerEligibility,
+      'side_game_tags': sideGameTags,
+      'source_game_id': sourceGameId,
+      'created_via': createdVia,
     }.withoutNulls,
   );
 
@@ -403,7 +427,10 @@ class GamesRecordDocumentEquality implements Equality<GamesRecord> {
         e1?.guestCount == e2?.guestCount &&
         e1?.verifiedAt == e2?.verifiedAt &&
         e1?.verificationStatus == e2?.verificationStatus &&
-        e1?.playerEligibility == e2?.playerEligibility;
+        e1?.playerEligibility == e2?.playerEligibility &&
+        listEquality.equals(e1?.sideGameTags, e2?.sideGameTags) &&
+        e1?.sourceGameId == e2?.sourceGameId &&
+        e1?.createdVia == e2?.createdVia;
   }
 
   @override
@@ -441,6 +468,9 @@ class GamesRecordDocumentEquality implements Equality<GamesRecord> {
         e?.verifiedAt,
         e?.verificationStatus,
         e?.playerEligibility,
+        e?.sideGameTags,
+        e?.sourceGameId,
+        e?.createdVia,
       ]);
 
   @override

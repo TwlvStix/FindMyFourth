@@ -12,10 +12,10 @@ import '/core/widgets/app_button_enhanced.dart';
 import '/core/widgets/app_empty_state_premium.dart';
 import '/core/widgets/app_stream_builder.dart';
 import '/core/widgets/fairway_background.dart';
-import '/main_function/games_list/components/unified_game_card.dart';
 import '/models/game.dart';
 import '/providers/game_provider.dart';
 import '/utils/app_util.dart';
+import 'components/games_joined_section.dart';
 
 class GamesJoinedWidget extends StatefulWidget {
   const GamesJoinedWidget({super.key});
@@ -103,6 +103,34 @@ class _GamesJoinedWidgetState extends State<GamesJoinedWidget> {
                     return status != 'cancelled';
                   }).toList();
 
+                  // Split into upcoming vs recent rounds
+                  final upcomingGames = <Game>[];
+                  final recentRounds = <Game>[];
+
+                  for (final record in visibleGames) {
+                    final game = Game.fromRecord(record);
+                    if (game.isActive) {
+                      upcomingGames.add(game);
+                    } else if (game.isPlayed ||
+                        game.isCompleted ||
+                        game.isExpired) {
+                      recentRounds.add(game);
+                    }
+                  }
+
+                  // Sort upcoming by date ASC (soonest first)
+                  upcomingGames.sort((a, b) =>
+                      (a.date ?? DateTime(2099))
+                          .compareTo(b.date ?? DateTime(2099)));
+                  // Sort recent by date DESC, limit 5
+                  recentRounds.sort((a, b) =>
+                      (b.date ?? DateTime(2000))
+                          .compareTo(a.date ?? DateTime(2000)));
+                  final displayRecent = recentRounds.take(5).toList();
+
+                  final hasNoGames =
+                      upcomingGames.isEmpty && displayRecent.isEmpty;
+
                   return RefreshIndicator(
                     color: AppColors.gold,
                     backgroundColor: AppColors.navyDark,
@@ -121,68 +149,71 @@ class _GamesJoinedWidgetState extends State<GamesJoinedWidget> {
                       ),
                       slivers: [
                         SliverPadding(
-                          padding: EdgeInsets.only(
-                            top: AppSpacing.md,
-                            // Account for bottom nav bar (56) + FAB (56) + spacing (16) + safe area
-                            bottom:
+                          padding: EdgeInsets.only(top: AppSpacing.md),
+                          sliver: const SliverToBoxAdapter(
+                              child: SizedBox.shrink()),
+                        ),
+                        if (hasNoGames)
+                          SliverToBoxAdapter(
+                            child: Padding(
+                              padding: EdgeInsets.symmetric(
+                                vertical: AppSpacing.xl,
+                              ),
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  AppEmptyStatePremium(
+                                    icon: AppPhosphorIcons.games,
+                                    title: 'No Games Yet',
+                                    message:
+                                        'Join or create a game to get started.',
+                                  ),
+                                  SizedBox(height: AppSpacing.lg),
+                                  SizedBox(
+                                    width: 220,
+                                    child: AppButtonEnhanced(
+                                      text: 'Create a game',
+                                      variant: AppButtonVariant.primary,
+                                      size: AppButtonSize.medium,
+                                      onPressed: () {
+                                        context.pushCreateGame(
+                                          transition: TransitionStandards
+                                              .detailTransition,
+                                        );
+                                      },
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        if (upcomingGames.isNotEmpty)
+                          GamesJoinedSection(
+                            title: 'Upcoming',
+                            games: upcomingGames,
+                            currentUserReference:
+                                currentUserDocument?.reference,
+                          ),
+                        if (upcomingGames.isNotEmpty &&
+                            displayRecent.isNotEmpty)
+                          SliverToBoxAdapter(
+                            child: SizedBox(height: AppSpacing.lg),
+                          ),
+                        if (displayRecent.isNotEmpty)
+                          GamesJoinedSection(
+                            title: 'Recent Rounds',
+                            games: displayRecent,
+                            currentUserReference:
+                                currentUserDocument?.reference,
+                            showRematchActions: true,
+                            animationIndexOffset: upcomingGames.length,
+                          ),
+                        // Bottom padding for nav bar
+                        SliverToBoxAdapter(
+                          child: SizedBox(
+                            height:
                                 MediaQuery.of(context).padding.bottom + 128.0,
                           ),
-                          sliver: visibleGames.isEmpty
-                              ? SliverToBoxAdapter(
-                                  child: Padding(
-                                    padding: EdgeInsets.symmetric(
-                                      vertical: AppSpacing.xl,
-                                    ),
-                                    child: Column(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.center,
-                                      children: [
-                                        AppEmptyStatePremium(
-                                          icon: AppPhosphorIcons.games,
-                                          title: 'No Games Yet',
-                                          message:
-                                              'Join or create a game to get started.',
-                                        ),
-                                        SizedBox(height: AppSpacing.lg),
-                                        SizedBox(
-                                          width: 220,
-                                          child: AppButtonEnhanced(
-                                            text: 'Create a game',
-                                            variant: AppButtonVariant.primary,
-                                            size: AppButtonSize.medium,
-                                            onPressed: () {
-                                              context.pushCreateGame(
-                                                transition: TransitionStandards
-                                                    .detailTransition,
-                                              );
-                                            },
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                )
-                              : SliverList(
-                                  delegate: SliverChildBuilderDelegate(
-                                    (context, listViewIndex) {
-                                      final game = visibleGames[listViewIndex];
-                                      return Padding(
-                                        padding: EdgeInsets.symmetric(
-                                          horizontal: AppSpacing.md,
-                                          vertical: AppSpacing.xs,
-                                        ),
-                                        child: UnifiedGameCard(
-                                          game: Game.fromRecord(game),
-                                          currentUserReference:
-                                              currentUserDocument?.reference,
-                                          showStatusBadge: true,
-                                          animationIndex: listViewIndex,
-                                        ),
-                                      );
-                                    },
-                                    childCount: visibleGames.length,
-                                  ),
-                                ),
                         ),
                       ],
                     ),

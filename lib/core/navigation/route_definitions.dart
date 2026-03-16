@@ -8,6 +8,7 @@ import '/chat_group/game_chat_details/game_chat_details_widget.dart';
 import '/friends/tab_friends/tab_friends_widget.dart';
 import '/main_function/community/community_widget.dart';
 import '/main_function/create_game/create_game_widget.dart';
+import '/main_function/create_game/models/create_game_form_data.dart';
 import '/main_function/game_joined_detailed/game_joined_detailed_widget.dart';
 import '/main_function/games_joined/games_joined_widget.dart';
 import '/main_function/games_list/games_list_widget.dart';
@@ -113,12 +114,19 @@ List<GoRoute> buildRoutes(AppStateNotifier appStateNotifier) => [
         name: CreateGameWidget.routeName,
         path: CreateGameWidget.routePath,
         redirect: buildRedirect(appStateNotifier, requireAuth: true),
-        pageBuilder: (context, state) => buildPageWithTransition(
-          context,
-          state,
-          appStateNotifier,
-          CreateGameWidget(),
-        ),
+        pageBuilder: (context, state) {
+          final extra = state.extra;
+          CreateGameFormData? prefill;
+          if (extra is Map<String, dynamic>) {
+            prefill = extra['prefillFormData'] as CreateGameFormData?;
+          }
+          return buildPageWithTransition(
+            context,
+            state,
+            appStateNotifier,
+            CreateGameWidget(prefillFormData: prefill),
+          );
+        },
       ),
       GoRoute(
         name: CommunityWidget.routeName,
