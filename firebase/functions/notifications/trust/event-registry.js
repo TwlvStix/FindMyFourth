@@ -51,6 +51,8 @@ const TrustEventType = Object.freeze({
   HOST_PRE_GAME_CONFIRM:    'host_pre_game_confirm',
   // Rematch prompt after round verification
   REMATCH_PROMPT:               'rematch_prompt',
+  // Challenge completion
+  CHALLENGE_COMPLETED:          'challenge_completed',
   // Friend-posted game alerts
   FRIEND_GAME_CREATED:          'friend_game_created',
   FRIEND_GAME_ALERT_DEFERRED:   'friend_game_alert_deferred',
@@ -319,6 +321,21 @@ const EVENT_REGISTRY = Object.freeze({
   },
 
   // ── Badges ─────────────────────────────────────────────────────────────────
+
+  [TrustEventType.CHALLENGE_COMPLETED]: {
+    priority:        NotificationPriority.HIGH,
+    category:        TrustCategory.BADGES,
+    maxDeliveries:   1,
+    timing:          'immediate',
+    template: {
+      title: 'Challenge complete',
+      body:  'You completed {challenge_name}.',
+    },
+    deepLink:         'findmyfourth://challenges',
+    threadId:         'challenges',
+    androidChannelId: 'important',
+    icon:             'emoji_events',
+  },
 
   [TrustEventType.BADGE_EARNED]: {
     priority:        NotificationPriority.HIGH,

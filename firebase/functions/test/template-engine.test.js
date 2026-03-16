@@ -82,6 +82,8 @@ const EVENT_DATA = {
   // Friend game alerts
   [TrustEventType.FRIEND_GAME_CREATED]: { creator_name: 'Alice', course_name: 'Pebble Beach', game_date: 'Saturday', spots_left: 3, game_id: GAME_ID },
   [TrustEventType.FRIEND_GAME_ALERT_DEFERRED]: { title: 'Alice posted a game', body: 'Pebble Beach \u00B7 Saturday \u00B7 3 spots left', gameId: GAME_ID },
+  // Challenge completion
+  [TrustEventType.CHALLENGE_COMPLETED]: { challenge_name: 'Branching Out' },
 };
 
 /** Interpolates {game_id} in a string, mirroring the engine's logic. */

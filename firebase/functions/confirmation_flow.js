@@ -37,6 +37,7 @@ const functions = require("firebase-functions/v1");
 const admin = require("firebase-admin");
 const trustProfile = require("./trust_profile");
 const streaks = require("./streaks");
+const challengeProgress = require("./challenge_progress");
 const { routeNotification } = require('./notifications/trust/router');
 const { onGameConfirmed, onHostCheckinCompleted, onGameCancelled } = require('./notifications/trust/hooks');
 const { onJoinRequestExpired } = require('./join_request_notifications');
@@ -1895,7 +1896,17 @@ async function _finalizeRoundVerification(db, roundRef, roundData, gameRef) {
     );
   }
 
-  // ── 8. Stage 7: send rematch prompt notification to present players ────────
+  // ── 8. Stage 7: evaluate challenge progress for verified round ─────────────
+  try {
+    await challengeProgress.onRoundVerified(db, gameRef, roundData, presentUids);
+  } catch (err) {
+    // Non-fatal: challenge tracking shouldn't block verification flow
+    console.warn(
+      `_finalizeRoundVerification: challenge progress failed for round ${roundRef.id}:`, err
+    );
+  }
+
+  // ── 9. Stage 8: send rematch prompt notification to present players ────────
   try {
     const gameSnap = await gameRef.get();
     const gameData = gameSnap.exists ? gameSnap.data() : {};
