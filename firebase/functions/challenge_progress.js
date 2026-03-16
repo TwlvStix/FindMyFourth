@@ -167,11 +167,25 @@ async function _processUserChallenges(db, uid, gameRef, gameData, roundData, pre
   // Write idempotency sentinel
   updatedProgress._lastProcessedRound = roundId;
 
+  // Track active user count for leaderboard visibility threshold
+  const currentRounds = userDoc.season_rounds_played || 0;
+
   // Write updated progress to user doc
   await userRef.update({
     challenge_progress: updatedProgress,
     season_rounds_played: admin.firestore.FieldValue.increment(1),
   });
+
+  // First round this season — increment global counter for leaderboard threshold
+  if (currentRounds === 0) {
+    try {
+      await db.collection('metadata').doc('season_stats').set({
+        active_user_count: admin.firestore.FieldValue.increment(1),
+      }, { merge: true });
+    } catch (err) {
+      console.warn('[Challenges] metadata counter increment failed:', err);
+    }
+  }
 
   // Send notifications for newly completed challenges
   for (const challenge of newlyCompleted) {

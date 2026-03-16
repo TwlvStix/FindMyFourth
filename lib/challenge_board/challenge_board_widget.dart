@@ -11,8 +11,13 @@ import '/core/widgets/premium_back_button.dart';
 import '/models/challenge.dart';
 import '/models/challenge_progress.dart';
 import '/providers/challenge_provider.dart';
+import '/providers/leaderboard_provider.dart';
+import '/services/challenge_analytics_service.dart';
+import 'components/challenge_board_empty_state.dart';
 import 'components/challenge_board_header.dart';
+import 'components/challenge_board_skeleton.dart';
 import 'components/challenge_category_section.dart';
+import 'components/leaderboard_section.dart';
 
 /// Full Challenge Board page showing all challenges grouped by category.
 class ChallengeBoardWidget extends StatefulWidget {
@@ -26,11 +31,21 @@ class ChallengeBoardWidget extends StatefulWidget {
 }
 
 class _ChallengeBoardWidgetState extends State<ChallengeBoardWidget> {
+  bool _analyticsLogged = false;
+  final ChallengeAnalyticsService _analytics = ChallengeAnalyticsService();
+
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
     // Warm cache on first load
     context.read<ChallengeProvider>().getMyProgress();
+    context.read<LeaderboardProvider>().loadLeaderboard();
+
+    // One-shot analytics
+    if (!_analyticsLogged) {
+      _analyticsLogged = true;
+      _analytics.logChallengeViewed();
+    }
   }
 
   @override
@@ -57,9 +72,16 @@ class _ChallengeBoardWidgetState extends State<ChallengeBoardWidget> {
           child: AppStreamBuilder<Map<String, ChallengeProgress>?>(
             stream: context.read<ChallengeProvider>().watchMyProgress(),
             initialData: context.read<ChallengeProvider>().currentProgress,
+            loadingBuilder: (_) => const ChallengeBoardSkeleton(),
             onRetry: () => setState(() {}),
             builder: (context, progressData) {
               final progress = progressData ?? {};
+
+              // Empty state when no progress at all
+              if (progress.isEmpty) {
+                return const ChallengeBoardEmptyState();
+              }
+
               final completed =
                   progress.values.where((p) => p.isCompleted).length;
               final total = Challenge.all.length;
@@ -74,6 +96,9 @@ class _ChallengeBoardWidgetState extends State<ChallengeBoardWidget> {
                       completed: completed,
                       total: total,
                     ),
+                  ),
+                  const SliverToBoxAdapter(
+                    child: LeaderboardSection(),
                   ),
                   SliverToBoxAdapter(
                     child: ChallengeCategorySection(

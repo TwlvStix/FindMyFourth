@@ -4,12 +4,14 @@ import 'package:provider/provider.dart';
 import '/auth/firebase_auth/auth_util.dart';
 import '/backend/backend.dart';
 import '/core/design_tokens/app_phosphor_icons.dart';
+import '/core/design_tokens/border_radius.dart';
 import '/core/design_tokens/colors.dart';
 import '/core/design_tokens/spacing.dart';
 import '/core/design_tokens/typography.dart';
 import '/core/utils/state_update.dart';
 import '/core/widgets/app_button_enhanced.dart';
 import '/core/widgets/app_empty_state_premium.dart';
+import '/core/widgets/premium_section_header.dart';
 import '/core/widgets/app_stream_builder.dart';
 import '/core/widgets/fairway_background.dart';
 import '/models/game.dart';
@@ -204,24 +206,61 @@ class _GamesJoinedWidgetState extends State<GamesJoinedWidget> {
                         if (!hasNoGames)
                           SliverToBoxAdapter(
                             child: Padding(
-                              padding: EdgeInsets.only(top: AppSpacing.lg),
+                              padding: EdgeInsets.only(top: AppSpacing.md),
                               child: const ChallengeTeaser(),
                             ),
                           ),
-                        if (upcomingGames.isNotEmpty &&
-                            displayRecent.isNotEmpty)
+                        if (!hasNoGames)
                           SliverToBoxAdapter(
-                            child: SizedBox(height: AppSpacing.lg),
+                            child: SizedBox(height: AppSpacing.md),
                           ),
-                        if (displayRecent.isNotEmpty)
-                          GamesJoinedSection(
-                            title: 'Recent Rounds',
-                            games: displayRecent,
-                            currentUserReference:
-                                currentUserDocument?.reference,
-                            showRematchActions: true,
-                            animationIndexOffset: upcomingGames.length,
-                          ),
+                        if (!hasNoGames) ...[
+                          if (displayRecent.isNotEmpty)
+                            GamesJoinedSection(
+                              title: 'Recent Rounds',
+                              games: displayRecent,
+                              currentUserReference:
+                                  currentUserDocument?.reference,
+                              showRematchActions: true,
+                              animationIndexOffset: upcomingGames.length,
+                            )
+                          else ...[
+                            SliverToBoxAdapter(
+                              child: Padding(
+                                padding: EdgeInsets.symmetric(
+                                  horizontal: AppSpacing.md,
+                                  vertical: AppSpacing.sm,
+                                ),
+                                child: PremiumSectionHeader(
+                                    title: 'Recent Rounds'),
+                              ),
+                            ),
+                            SliverToBoxAdapter(
+                              child: Padding(
+                                padding: EdgeInsets.symmetric(
+                                    horizontal: AppSpacing.md),
+                                child: Container(
+                                  padding: EdgeInsets.symmetric(
+                                    horizontal: AppSpacing.md,
+                                    vertical: AppSpacing.sm,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    border: Border.all(
+                                        color: AppColors.navyLight),
+                                    borderRadius: BorderRadius.circular(
+                                        AppBorderRadius.card),
+                                  ),
+                                  child: Text(
+                                    'Your completed rounds will appear here with options to play again.',
+                                    style: AppTypography.bodySmall.copyWith(
+                                      color: AppColors.textMuted,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ],
                         // Bottom padding for nav bar
                         SliverToBoxAdapter(
                           child: SizedBox(

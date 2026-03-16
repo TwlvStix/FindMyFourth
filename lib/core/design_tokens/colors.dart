@@ -320,6 +320,12 @@ class AppColors {
     end: Alignment.bottomCenter,
     colors: [mutualCardStart, mutualCardEnd],
   );
+
+  // CHALLENGE CATEGORY ACCENTS
+  static const Color challengeCourseExplorer = green;       // #1F6B4E
+  static const Color challengeStreaks = gold;                // #C9A24D
+  static const Color challengeSocial = info;                 // #5B8DBE
+  static const Color challengeFormats = Color(0xFFCB6B52);   // warm coral
 }
 
 // ============================================================================
@@ -516,6 +522,12 @@ class AppColorsDark {
     colors: [navyDark, navy, Color(0xFF071018)],
     stops: [0.0, 0.65, 1.0],
   );
+
+  // CHALLENGE CATEGORY ACCENTS
+  static const Color challengeCourseExplorer = green;
+  static const Color challengeStreaks = gold;
+  static const Color challengeSocial = info;
+  static const Color challengeFormats = Color(0xFFD47A62);   // lighter coral for dark
 }
 
 /// Utility for computing interaction states on arbitrary colors.

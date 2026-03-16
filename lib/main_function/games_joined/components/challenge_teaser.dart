@@ -26,18 +26,22 @@ class ChallengeTeaser extends StatelessWidget {
     final provider = context.watchChallengeProvider;
     final progress = provider.currentProgress;
     final completed = provider.completedCount;
-    final total = provider.totalCount;
+    final total = provider.visibleCount;
 
     return Padding(
       padding: EdgeInsets.symmetric(horizontal: AppSpacing.md),
       child: Container(
-        padding: AppSpacing.card,
+        padding: EdgeInsets.symmetric(
+          horizontal: AppSpacing.sm,
+          vertical: AppSpacing.sm,
+        ),
         decoration: BoxDecoration(
           color: AppColors.navy,
           borderRadius: BorderRadius.circular(AppBorderRadius.card),
           border: Border.all(color: AppColors.navyLight),
         ),
         child: Column(
+          mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Row(
@@ -69,20 +73,31 @@ class ChallengeTeaser extends StatelessWidget {
                 ),
               ],
             ),
-            SizedBox(height: AppSpacing.sm),
+            if (!provider.hasAnyProgress) ...[
+              Text(
+                'Complete your first round to start earning challenges.',
+                style: AppTypography.bodySmall.copyWith(
+                  color: AppColors.textSecondary,
+                ),
+              ),
+              SizedBox(height: AppSpacing.xs),
+            ] else
+              SizedBox(height: AppSpacing.xs),
             GridView.count(
               crossAxisCount: 2,
               shrinkWrap: true,
+              padding: EdgeInsets.zero,
               physics: const NeverScrollableScrollPhysics(),
               mainAxisSpacing: AppSpacing.xs,
               crossAxisSpacing: AppSpacing.xs,
-              childAspectRatio: 2.4,
+              childAspectRatio: 3.2,
               children: [
                 _CategoryCell(
                   icon: AppPhosphorIcons.challengeCourseExplorer,
                   label: ChallengeCategory.courseExplorer.label,
                   progress: progress,
                   category: ChallengeCategory.courseExplorer,
+                  accentColor: AppColors.challengeCourseExplorer,
                   closestProgress: provider.closestToCompletion(
                       ChallengeCategory.courseExplorer),
                 ),
@@ -91,6 +106,7 @@ class ChallengeTeaser extends StatelessWidget {
                   label: ChallengeCategory.streaks.label,
                   progress: progress,
                   category: ChallengeCategory.streaks,
+                  accentColor: AppColors.challengeStreaks,
                   closestProgress:
                       provider.closestToCompletion(ChallengeCategory.streaks),
                 ),
@@ -99,6 +115,7 @@ class ChallengeTeaser extends StatelessWidget {
                   label: ChallengeCategory.social.label,
                   progress: progress,
                   category: ChallengeCategory.social,
+                  accentColor: AppColors.challengeSocial,
                   closestProgress:
                       provider.closestToCompletion(ChallengeCategory.social),
                 ),
@@ -107,17 +124,19 @@ class ChallengeTeaser extends StatelessWidget {
                   label: ChallengeCategory.formats.label,
                   progress: progress,
                   category: ChallengeCategory.formats,
+                  accentColor: AppColors.challengeFormats,
                   closestProgress:
                       provider.closestToCompletion(ChallengeCategory.formats),
                 ),
               ],
             ),
-            SizedBox(height: AppSpacing.sm),
+            SizedBox(height: AppSpacing.xs),
             Center(
               child: AppButtonEnhanced(
                 text: 'View all challenges',
-                variant: AppButtonVariant.ghost,
+                variant: AppButtonVariant.ghostDark,
                 size: AppButtonSize.small,
+                trailingPhosphorIcon: AppPhosphorIcons.chevronRight,
                 onPressed: () => context.pushChallengeBoard(),
               ),
             ),
@@ -134,6 +153,7 @@ class _CategoryCell extends StatelessWidget {
     required this.label,
     required this.progress,
     required this.category,
+    required this.accentColor,
     this.closestProgress,
   });
 
@@ -141,16 +161,16 @@ class _CategoryCell extends StatelessWidget {
   final String label;
   final Map<String, ChallengeProgress> progress;
   final ChallengeCategory category;
+  final Color accentColor;
   final ChallengeProgress? closestProgress;
 
   @override
   Widget build(BuildContext context) {
-    final completedInCat = Challenge.all
-        .where((c) => c.category == category)
+    final visibleInCat = Challenge.visible.where((c) => c.category == category);
+    final completedInCat = visibleInCat
         .where((c) => progress[c.id]?.isCompleted ?? false)
         .length;
-    final totalInCat =
-        Challenge.all.where((c) => c.category == category).length;
+    final totalInCat = visibleInCat.length;
 
     final statusText = closestProgress != null
         ? '${closestProgress!.current}/${closestProgress!.target}'
@@ -161,42 +181,44 @@ class _CategoryCell extends StatelessWidget {
         AppIcon(
           icon: icon,
           size: AppIconSize.sm,
-          color: AppColors.green,
+          color: accentColor,
         ),
-        SizedBox(width: AppSpacing.xs),
+        SizedBox(width: AppSpacing.xxs),
         Expanded(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Text(
-                label,
-                style: AppTypography.labelSmall.copyWith(
-                  color: AppColors.textSecondary,
-                ),
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
+              Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      label,
+                      style: AppTypography.labelSmall.copyWith(
+                        color: AppColors.textSecondary,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                  Text(
+                    statusText,
+                    style: AppTypography.monoSmall.copyWith(
+                      color: AppColors.textMuted,
+                    ),
+                  ),
+                ],
               ),
               SizedBox(height: AppSpacing.xxs),
-              if (closestProgress != null)
-                ClipRRect(
-                  borderRadius:
-                      BorderRadius.circular(AppBorderRadius.xxs),
-                  child: LinearProgressIndicator(
-                    value: closestProgress!.progressPercent,
-                    minHeight: 3,
-                    backgroundColor: AppColors.navyLight,
-                    valueColor:
-                        AlwaysStoppedAnimation<Color>(AppColors.green),
-                  ),
-                )
-              else
-                SizedBox(height: 3),
-              SizedBox(height: AppSpacing.xxs),
-              Text(
-                statusText,
-                style: AppTypography.monoSmall.copyWith(
-                  color: AppColors.textMuted,
+              ClipRRect(
+                borderRadius:
+                    BorderRadius.circular(AppBorderRadius.xxs),
+                child: LinearProgressIndicator(
+                  value: closestProgress?.progressPercent ?? 0.0,
+                  minHeight: 3,
+                  backgroundColor: AppColors.textMuted.withValues(alpha: 0.15),
+                  valueColor:
+                      AlwaysStoppedAnimation<Color>(accentColor),
                 ),
               ),
             ],

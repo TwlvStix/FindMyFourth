@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 import 'package:intl/intl.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 
@@ -8,6 +9,7 @@ import '/core/design_tokens/colors.dart';
 import '/core/design_tokens/icon_size.dart';
 import '/core/design_tokens/spacing.dart';
 import '/core/design_tokens/typography.dart';
+import '/core/motion/reduced_motion.dart';
 import '/core/widgets/app_icon.dart';
 import '/models/challenge.dart';
 import '/models/challenge_progress.dart';
@@ -63,7 +65,7 @@ class ChallengeCard extends StatelessWidget {
     required ChallengeProgress? progress,
     required bool isCompleted,
   }) {
-    return Container(
+    Widget card = Container(
       padding: EdgeInsets.symmetric(
         horizontal: AppSpacing.md,
         vertical: AppSpacing.sm,
@@ -72,6 +74,15 @@ class ChallengeCard extends StatelessWidget {
         color: AppColors.navy,
         borderRadius: BorderRadius.circular(AppBorderRadius.card),
         border: Border.all(color: AppColors.navyLight),
+        boxShadow: isCompleted
+            ? [
+                BoxShadow(
+                  color: AppColors.gold.withValues(alpha: 0.15),
+                  blurRadius: 12,
+                  spreadRadius: 1,
+                ),
+              ]
+            : null,
       ),
       child: Row(
         children: [
@@ -138,6 +149,15 @@ class ChallengeCard extends StatelessWidget {
         ],
       ),
     );
+
+    // Subtle entrance animation for completed cards (one-time, not continuous)
+    if (isCompleted && !ReducedMotionService.isEnabled) {
+      card = card
+          .animate()
+          .fadeIn(duration: 300.ms, curve: Curves.easeOutCubic);
+    }
+
+    return card;
   }
 
   String _descriptionText(

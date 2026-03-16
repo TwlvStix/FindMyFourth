@@ -951,5 +951,11 @@ service cloud.firestore {
       allow read: if isSignedIn();
       allow write: if false;
     }
+
+    // metadata — season stats, readable by authenticated users, written by Cloud Functions only
+    match /metadata/{document} {
+      allow read: if isSignedIn();
+      allow write: if false;
+    }
   }
 }

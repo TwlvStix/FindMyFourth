@@ -2758,3 +2758,25 @@ exports.streakSeasonClose = functions
 
 exports.sendTestNotification = testHarness.sendTestNotification;
 exports.generateDeliveryReport = testHarness.generateDeliveryReport;
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Challenge Season Reset (March 1 annually)
+// ─────────────────────────────────────────────────────────────────────────────
+
+/**
+ * March 1 00:01 Vancouver: Archive and reset challenge progress for the ended season.
+ */
+exports.challengeSeasonReset = functions
+  .region("us-west2")
+  .runWith({ timeoutSeconds: 540, memory: "256MB" })
+  .pubsub.schedule("1 0 1 3 *") // March 1 00:01
+  .timeZone("America/Vancouver")
+  .onRun(async () => {
+    try {
+      const seasonReset = require("./season_reset");
+      const result = await seasonReset.challengeSeasonResetHandler();
+      console.log("[challengeSeasonReset]", result);
+    } catch (error) {
+      console.error("[challengeSeasonReset] failed:", error);
+    }
+  });

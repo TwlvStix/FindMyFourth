@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'challenge_provider.dart';
 import 'chat_provider.dart';
+import 'leaderboard_provider.dart';
 import 'geo_filter_provider.dart';
 import 'group_vibe_provider.dart';
 import 'game_provider.dart';
@@ -76,6 +77,13 @@ extension ProviderExtensions on BuildContext {
   /// Access ChallengeProvider and listen for changes
   ChallengeProvider get watchChallengeProvider => watch<ChallengeProvider>();
 
+  /// Access LeaderboardProvider without listening for changes
+  LeaderboardProvider get leaderboardProvider => read<LeaderboardProvider>();
+
+  /// Access LeaderboardProvider and listen for changes
+  LeaderboardProvider get watchLeaderboardProvider =>
+      watch<LeaderboardProvider>();
+
   /// Select specific data from UserProvider
   /// Only rebuilds when the selected data changes
   ///
@@ -139,6 +147,11 @@ extension ProviderExtensions on BuildContext {
   /// Select specific data from ChallengeProvider
   T selectChallenge<T>(T Function(ChallengeProvider provider) selector) {
     return select<ChallengeProvider, T>(selector);
+  }
+
+  /// Select specific data from LeaderboardProvider
+  T selectLeaderboard<T>(T Function(LeaderboardProvider provider) selector) {
+    return select<LeaderboardProvider, T>(selector);
   }
 
   // ========================================

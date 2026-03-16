@@ -32,6 +32,7 @@ import '/providers/profile_provider.dart';
 import '/providers/notification_provider.dart';
 import '/providers/notification_list_provider.dart';
 import '/providers/challenge_provider.dart';
+import '/providers/leaderboard_provider.dart';
 import '/providers/streak_provider.dart';
 import '/providers/trust_provider.dart';
 import '/services/notification_audit_service.dart';
@@ -102,6 +103,8 @@ Future<void> main() async {
               create: (_) => GroupVibeProvider()),
           ChangeNotifierProvider<ChallengeProvider>(
               create: (_) => ChallengeProvider()),
+          ChangeNotifierProvider<LeaderboardProvider>(
+              create: (_) => LeaderboardProvider()),
         ],
         child: MyApp(),
       ),
