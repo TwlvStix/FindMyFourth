@@ -253,6 +253,14 @@ PushRoute? resolveRouteFromType(Map<String, dynamic> data) {
     );
   }
 
+  // Challenge notifications → ChallengeBoard
+  if (type == 'challenge_completed') {
+    return const PushRoute(
+      pageName: 'ChallengeBoard',
+      parameterData: {},
+    );
+  }
+
   // Badge notifications → MainProfile
   if (type == 'badge_earned' || type == 'badge_progress') {
     return const PushRoute(

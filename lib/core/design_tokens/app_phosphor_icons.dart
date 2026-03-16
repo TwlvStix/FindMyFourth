@@ -292,6 +292,25 @@ class AppPhosphorIcons {
   static const uniquePlayers = PhosphorIconsRegular.userFocus;
 
   // ══════════════════════════════════════════════════════════════════════════
+  // CHALLENGES
+  // ══════════════════════════════════════════════════════════════════════════
+
+  /// Course Explorer category — map trifold
+  static const challengeCourseExplorer = PhosphorIconsRegular.mapTrifold;
+
+  /// Streaks category — flame
+  static const challengeStreaks = PhosphorIconsRegular.flame;
+
+  /// Social category — users three
+  static const challengeSocial = PhosphorIconsRegular.usersThree;
+
+  /// Formats category — trophy
+  static const challengeFormats = PhosphorIconsRegular.trophy;
+
+  /// Hidden challenge — question mark
+  static const challengeHidden = PhosphorIconsRegular.question;
+
+  // ══════════════════════════════════════════════════════════════════════════
   // STATUS & ACTIONS
   // ══════════════════════════════════════════════════════════════════════════
 

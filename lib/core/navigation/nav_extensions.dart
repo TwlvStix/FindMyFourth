@@ -38,6 +38,7 @@ class AppRouteNames {
   static const String hostCheckin = 'HostCheckin';
   static const String peerRating = 'PeerRating';
   static const String fallbackConfirmation = 'FallbackConfirmation';
+  static const String challengeBoard = 'ChallengeBoard';
 }
 
 /// Route-specific typed navigation helpers for widget call sites.
@@ -392,6 +393,15 @@ extension AppNavigationExtensions on BuildContext {
     pushWithTransition(
       AppRouteNames.fallbackConfirmation,
       extra: <String, dynamic>{'gameRef': gameRef},
+      transition: transition,
+    );
+  }
+
+  void pushChallengeBoard({
+    TransitionInfo transition = TransitionStandards.detailTransition,
+  }) {
+    pushWithTransition(
+      AppRouteNames.challengeBoard,
       transition: transition,
     );
   }

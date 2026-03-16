@@ -13,8 +13,10 @@ import '/core/widgets/app_empty_state_premium.dart';
 import '/core/widgets/app_stream_builder.dart';
 import '/core/widgets/fairway_background.dart';
 import '/models/game.dart';
+import '/providers/challenge_provider.dart';
 import '/providers/game_provider.dart';
 import '/utils/app_util.dart';
+import 'components/challenge_teaser.dart';
 import 'components/games_joined_section.dart';
 
 class GamesJoinedWidget extends StatefulWidget {
@@ -46,6 +48,11 @@ class _GamesJoinedWidgetState extends State<GamesJoinedWidget> {
     if (_cachedGames == null && currentUserUid.isNotEmpty) {
       final gameProvider = context.read<GameProvider>();
       _cachedGames = gameProvider.getCachedUserGames(currentUserUid);
+    }
+
+    // Warm challenge cache
+    if (currentUserUid.isNotEmpty) {
+      context.read<ChallengeProvider>().getMyProgress();
     }
   }
 
@@ -193,6 +200,13 @@ class _GamesJoinedWidgetState extends State<GamesJoinedWidget> {
                             games: upcomingGames,
                             currentUserReference:
                                 currentUserDocument?.reference,
+                          ),
+                        if (!hasNoGames)
+                          SliverToBoxAdapter(
+                            child: Padding(
+                              padding: EdgeInsets.only(top: AppSpacing.lg),
+                              child: const ChallengeTeaser(),
+                            ),
                           ),
                         if (upcomingGames.isNotEmpty &&
                             displayRecent.isNotEmpty)

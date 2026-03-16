@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'challenge_provider.dart';
 import 'chat_provider.dart';
 import 'geo_filter_provider.dart';
 import 'group_vibe_provider.dart';
@@ -69,6 +70,12 @@ extension ProviderExtensions on BuildContext {
   /// Access StreakProvider and listen for changes
   StreakProvider get watchStreakProvider => watch<StreakProvider>();
 
+  /// Access ChallengeProvider without listening for changes
+  ChallengeProvider get challengeProvider => read<ChallengeProvider>();
+
+  /// Access ChallengeProvider and listen for changes
+  ChallengeProvider get watchChallengeProvider => watch<ChallengeProvider>();
+
   /// Select specific data from UserProvider
   /// Only rebuilds when the selected data changes
   ///
@@ -127,6 +134,11 @@ extension ProviderExtensions on BuildContext {
   /// Select specific data from StreakProvider
   T selectStreak<T>(T Function(StreakProvider provider) selector) {
     return select<StreakProvider, T>(selector);
+  }
+
+  /// Select specific data from ChallengeProvider
+  T selectChallenge<T>(T Function(ChallengeProvider provider) selector) {
+    return select<ChallengeProvider, T>(selector);
   }
 
   // ========================================
