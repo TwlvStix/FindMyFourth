@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '/core/utils/state_update.dart';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 
 import '/backend/cloud_functions/cloud_functions.dart';
@@ -14,6 +15,7 @@ import '/core/motion/motion_tokens.dart';
 import '/core/utils/app_log.dart';
 import '/core/widgets/app_avatar.dart';
 import '/core/widgets/app_button_enhanced.dart';
+import '/main_function/games_joined/games_joined_widget.dart';
 import '/services/trust_flow_service.dart';
 
 /// HostCheckinScreen
@@ -78,6 +80,19 @@ class _HostCheckinScreenState extends State<HostCheckinScreen>
   void dispose() {
     _staggerController.dispose();
     super.dispose();
+  }
+
+  void _navigateToMyGames({String? message}) {
+    if (!mounted) return;
+    final messenger = ScaffoldMessenger.of(context);
+    context.go(GamesJoinedWidget.routePath);
+    if (message != null) {
+      messenger.showSnackBar(SnackBar(
+        content: Text(message, style: AppTypography.bodySmall.copyWith(color: AppColors.textPrimary)),
+        backgroundColor: AppColors.success,
+        duration: const Duration(milliseconds: 3000),
+      ));
+    }
   }
 
   void _buildStaggerAnimations() {
@@ -214,7 +229,7 @@ class _HostCheckinScreenState extends State<HostCheckinScreen>
         }
       }
     } catch (e) {
-      AppLog.d('HostCheckinScreen submit error: $e');
+      AppLog.d('❌ HostCheckinScreen submit error: $e');
       if (mounted) {
         updateState(this, () {
           _submitting = false;
@@ -258,7 +273,7 @@ class _HostCheckinScreenState extends State<HostCheckinScreen>
                   ),
                   SizedBox(height: AppSpacing.xxl),
                   AppButtonEnhanced(
-                    onPressed: () => Navigator.of(context).pop(),
+                    onPressed: () => _navigateToMyGames(),
                     text: 'Done',
                     variant: AppButtonVariant.primary,
                     size: AppButtonSize.large,
@@ -291,7 +306,7 @@ class _HostCheckinScreenState extends State<HostCheckinScreen>
                   ),
                   SizedBox(height: AppSpacing.xxl),
                   AppButtonEnhanced(
-                    onPressed: () => Navigator.of(context).pop(),
+                    onPressed: () => _navigateToMyGames(),
                     text: 'Done',
                     variant: AppButtonVariant.primary,
                     size: AppButtonSize.large,
@@ -324,7 +339,7 @@ class _HostCheckinScreenState extends State<HostCheckinScreen>
                   ),
                   SizedBox(height: AppSpacing.xxl),
                   AppButtonEnhanced(
-                    onPressed: () => Navigator.of(context).pop(),
+                    onPressed: () => _navigateToMyGames(),
                     text: 'Done',
                     variant: AppButtonVariant.primary,
                     size: AppButtonSize.large,
@@ -350,7 +365,7 @@ class _HostCheckinScreenState extends State<HostCheckinScreen>
         leading: IconButton(
           icon: PhosphorIcon(AppPhosphorIcons.back,
               color: AppColors.textPrimary),
-          onPressed: () => Navigator.of(context).pop(),
+          onPressed: () => _navigateToMyGames(),
         ),
       ),
       body: SafeArea(

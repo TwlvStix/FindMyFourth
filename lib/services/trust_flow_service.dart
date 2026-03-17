@@ -281,11 +281,10 @@ class TrustFlowService {
     if (currentUid == null) return ConfirmationStatus.pending;
 
     try {
-      final currentUserRef = _firestore.collection('users').doc(currentUid);
       final jobsSnap = await _firestore
           .collection('round_jobs')
           .where('game_ref', isEqualTo: gameRef)
-          .where('app_user_refs', arrayContains: currentUserRef)
+          .where('participant_uids', arrayContains: currentUid)
           .limit(1)
           .get();
 
@@ -313,21 +312,25 @@ class TrustFlowService {
     if (currentUid == null) return ConfirmationStatus.pending;
 
     try {
-      // Check window first
-      final currentUserRef = _firestore.collection('users').doc(currentUid);
-      final jobsSnap = await _firestore
-          .collection('round_jobs')
-          .where('game_ref', isEqualTo: gameRef)
-          .where('app_user_refs', arrayContains: currentUserRef)
-          .limit(1)
-          .get();
+      // Check window first (non-fatal — if this fails, still check pair_ratings)
+      try {
+        final jobsSnap = await _firestore
+            .collection('round_jobs')
+            .where('game_ref', isEqualTo: gameRef)
+            .where('participant_uids', arrayContains: currentUid)
+            .limit(1)
+            .get();
 
-      if (jobsSnap.docs.isNotEmpty) {
-        final job = jobsSnap.docs.first.data();
-        if (job['closed_at'] != null) return ConfirmationStatus.windowClosed;
+        if (jobsSnap.docs.isNotEmpty) {
+          final job = jobsSnap.docs.first.data();
+          if (job['closed_at'] != null) return ConfirmationStatus.windowClosed;
+        }
+      } on FirebaseException catch (e) {
+        AppLog.d('❌ TrustFlowService.checkPeerRatingStatus window check error: ${e.code}');
       }
 
       // Check for existing pair_ratings
+      final currentUserRef = _firestore.collection('users').doc(currentUid);
       final ratingsSnap = await _firestore
           .collection('pair_ratings')
           .where('rater_ref', isEqualTo: currentUserRef)
@@ -354,11 +357,10 @@ class TrustFlowService {
 
     try {
       // Check window first
-      final currentUserRef = _firestore.collection('users').doc(currentUid);
       final jobsSnap = await _firestore
           .collection('round_jobs')
           .where('game_ref', isEqualTo: gameRef)
-          .where('app_user_refs', arrayContains: currentUserRef)
+          .where('participant_uids', arrayContains: currentUid)
           .limit(1)
           .get();
 
@@ -397,11 +399,10 @@ class TrustFlowService {
     final currentUid = _auth.currentUser?.uid;
     if (currentUid == null) return <String, dynamic>{};
 
-    final currentUserRef = _firestore.collection('users').doc(currentUid);
     final jobsSnap = await _firestore
         .collection('round_jobs')
         .where('game_ref', isEqualTo: gameRef)
-        .where('app_user_refs', arrayContains: currentUserRef)
+        .where('participant_uids', arrayContains: currentUid)
         .limit(1)
         .get();
 

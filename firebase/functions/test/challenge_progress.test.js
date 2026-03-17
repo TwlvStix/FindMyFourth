@@ -310,35 +310,33 @@ describe('Read challenge (partners)', () => {
 });
 
 describe('Boolean challenge (all_strangers)', () => {
-  it('completes when no present player has prior partner_plays', async () => {
+  it('completes when 4 players and no prior partner_plays', async () => {
     const { db, gameRef, roundData } = makeMockDb({
       partnerPlays: [
         // play_count = 1 means they only played THIS round (partner_plays written before challenges)
         { id: 'user2', play_count: 1 },
+        { id: 'user3', play_count: 1 },
+        { id: 'user4', play_count: 1 },
       ],
     });
 
-    await challengeProgress.onRoundVerified(db, gameRef, roundData, ['user1', 'user2']);
+    await challengeProgress.onRoundVerified(db, gameRef, roundData, ['user1', 'user2', 'user3', 'user4']);
 
     const update = db._getCapturedUpdate();
     expect(update.challenge_progress.all_strangers.completed || update.challenge_progress.all_strangers.completedAt).toBeTruthy();
   });
 
   it('does not complete when a player has prior partner_plays', async () => {
-    // Use single user to avoid mock reuse issues across parallel user processing
     const { db, gameRef, roundData } = makeMockDb({
       partnerPlays: [
         { id: 'user2', play_count: 3 }, // played with user2 before
+        { id: 'user3', play_count: 1 },
+        { id: 'user4', play_count: 1 },
       ],
     });
 
-    await challengeProgress.onRoundVerified(db, gameRef, roundData, ['user1', 'user2']);
+    await challengeProgress.onRoundVerified(db, gameRef, roundData, ['user1', 'user2', 'user3', 'user4']);
 
-    // The first user (user1) has partner_plays showing play_count=3 with user2
-    // so all_strangers should not complete for user1.
-    // We verify by checking the first update captured — but our mock captures
-    // the last write. Instead, check that all_strangers was NOT completed
-    // by verifying that no challenge_completed notification was sent for all_strangers.
     const notifCalls = mockRouteNotification.mock.calls;
     const allStrangersNotif = notifCalls.find(
       (c) => c[0].eventType === 'challenge_completed' && c[0].data.challenge_id === 'all_strangers'
@@ -545,6 +543,141 @@ describe('Home course (hidden counter)', () => {
     expect(update.challenge_progress.home_course.data.home_c).toBe(5);
     expect(update.challenge_progress.home_course.current).toBe(5);
     expect(update.challenge_progress.home_course.completedAt).toBeTruthy();
+  });
+});
+
+describe('never_miss threshold (4 games minimum)', () => {
+  it('does NOT complete with 1 game and 0 cancellations', async () => {
+    const { db, gameRef, roundData } = makeMockDb({
+      hasCancellations: false,
+    });
+
+    await challengeProgress.onRoundVerified(db, gameRef, roundData, ['user1']);
+
+    const update = db._getCapturedUpdate();
+    expect(update.challenge_progress.never_miss.current).toBe(1);
+    expect(update.challenge_progress.never_miss.completedAt).toBeUndefined();
+  });
+
+  it('does NOT complete with 3 games and 0 cancellations', async () => {
+    const { db, gameRef, roundData } = makeMockDb({
+      hasCancellations: false,
+      userData: {
+        challenge_progress: {
+          never_miss: { current: 2, target: 4, data: { '2026-07': 2 } },
+        },
+      },
+    });
+
+    await challengeProgress.onRoundVerified(db, gameRef, roundData, ['user1']);
+
+    const update = db._getCapturedUpdate();
+    expect(update.challenge_progress.never_miss.current).toBe(3);
+    expect(update.challenge_progress.never_miss.completedAt).toBeUndefined();
+  });
+
+  it('completes with 4 games and 0 cancellations', async () => {
+    const { db, gameRef, roundData } = makeMockDb({
+      hasCancellations: false,
+      userData: {
+        challenge_progress: {
+          never_miss: { current: 3, target: 4, data: { '2026-07': 3 } },
+        },
+      },
+    });
+
+    await challengeProgress.onRoundVerified(db, gameRef, roundData, ['user1']);
+
+    const update = db._getCapturedUpdate();
+    expect(update.challenge_progress.never_miss.current).toBe(4);
+    expect(update.challenge_progress.never_miss.completedAt).toBeTruthy();
+  });
+
+  it('does NOT complete with 4 games and cancellations present', async () => {
+    const { db, gameRef, roundData } = makeMockDb({
+      hasCancellations: true,
+      userData: {
+        challenge_progress: {
+          never_miss: { current: 3, target: 4, data: { '2026-07': 3 } },
+        },
+      },
+    });
+
+    await challengeProgress.onRoundVerified(db, gameRef, roundData, ['user1']);
+
+    const update = db._getCapturedUpdate();
+    expect(update.challenge_progress.never_miss.current).toBe(4);
+    expect(update.challenge_progress.never_miss.completedAt).toBeUndefined();
+  });
+
+  it('tracks round count per month in data', async () => {
+    const { db, gameRef, roundData } = makeMockDb({
+      hasCancellations: false,
+      userData: {
+        challenge_progress: {
+          never_miss: { current: 1, target: 4, data: { '2026-06': 2, '2026-07': 1 } },
+        },
+      },
+    });
+
+    await challengeProgress.onRoundVerified(db, gameRef, roundData, ['user1']);
+
+    const update = db._getCapturedUpdate();
+    // July should increment from 1 to 2, June stays at 2
+    expect(update.challenge_progress.never_miss.data['2026-07']).toBe(2);
+    expect(update.challenge_progress.never_miss.data['2026-06']).toBe(2);
+  });
+});
+
+describe('all_strangers player count threshold', () => {
+  it('does NOT complete with only 1 other player (2 total)', async () => {
+    const { db, gameRef, roundData } = makeMockDb({
+      partnerPlays: [
+        { id: 'user2', play_count: 1 },
+      ],
+    });
+
+    await challengeProgress.onRoundVerified(db, gameRef, roundData, ['user1', 'user2']);
+
+    const notifCalls = mockRouteNotification.mock.calls;
+    const allStrangersNotif = notifCalls.find(
+      (c) => c[0].eventType === 'challenge_completed' && c[0].data.challenge_id === 'all_strangers'
+        && c[0].recipientUserId === 'user1'
+    );
+    expect(allStrangersNotif).toBeUndefined();
+  });
+
+  it('does NOT complete with 2 other players (3 total)', async () => {
+    const { db, gameRef, roundData } = makeMockDb({
+      partnerPlays: [
+        { id: 'user2', play_count: 1 },
+        { id: 'user3', play_count: 1 },
+      ],
+    });
+
+    await challengeProgress.onRoundVerified(db, gameRef, roundData, ['user1', 'user2', 'user3']);
+
+    const notifCalls = mockRouteNotification.mock.calls;
+    const allStrangersNotif = notifCalls.find(
+      (c) => c[0].eventType === 'challenge_completed' && c[0].data.challenge_id === 'all_strangers'
+        && c[0].recipientUserId === 'user1'
+    );
+    expect(allStrangersNotif).toBeUndefined();
+  });
+
+  it('completes with 3+ other strangers (4 total)', async () => {
+    const { db, gameRef, roundData } = makeMockDb({
+      partnerPlays: [
+        { id: 'user2', play_count: 1 },
+        { id: 'user3', play_count: 1 },
+        { id: 'user4', play_count: 1 },
+      ],
+    });
+
+    await challengeProgress.onRoundVerified(db, gameRef, roundData, ['user1', 'user2', 'user3', 'user4']);
+
+    const update = db._getCapturedUpdate();
+    expect(update.challenge_progress.all_strangers.completedAt).toBeTruthy();
   });
 });
 

@@ -152,6 +152,17 @@ class NotificationTapRouter {
       return;
     }
 
+    if (type == 'friend_game_created') {
+      await _handleGameNotification(
+        context: context,
+        provider: provider,
+        payload: payload,
+        currentUserRef: currentUserRef,
+        notificationType: type,
+      );
+      return;
+    }
+
     // Join request types
     if (type == 'join_request_new' || type == 'join_request_approved') {
       // Host receiving new request or player approved - show game details

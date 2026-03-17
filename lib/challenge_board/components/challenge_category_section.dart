@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 
+import '/core/design_patterns/premium_ui_patterns.dart';
+import '/core/design_tokens/border_radius.dart';
 import '/core/design_tokens/colors.dart';
-import '/core/design_tokens/icon_size.dart';
 import '/core/design_tokens/spacing.dart';
 import '/core/design_tokens/typography.dart';
-import '/core/widgets/app_icon.dart';
 import '/models/challenge.dart';
 import '/models/challenge_progress.dart';
 import 'challenge_card.dart';
@@ -18,12 +18,14 @@ class ChallengeCategorySection extends StatelessWidget {
     required this.icon,
     required this.challenges,
     required this.progress,
+    this.isFirst = false,
   });
 
   final ChallengeCategory category;
   final PhosphorIconData icon;
   final List<Challenge> challenges;
   final Map<String, ChallengeProgress> progress;
+  final bool isFirst;
 
   @override
   Widget build(BuildContext context) {
@@ -58,13 +60,22 @@ class ChallengeCategorySection extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          SizedBox(height: AppSpacing.lg),
+          if (!isFirst)
+            Container(
+              height: 1,
+              color: AppColors.glassSurface,
+              margin: EdgeInsets.only(bottom: AppSpacing.md),
+            ),
+          SizedBox(height: AppSpacing.xl),
           Row(
             children: [
-              AppIcon(
+              GradientIconBox(
                 icon: icon,
-                size: AppIconSize.button,
-                color: AppColors.green,
+                gradientColors: _gradientForCategory(category),
+                size: 36,
+                iconSize: 18,
+                borderRadius: 10,
+                withShadow: false,
               ),
               SizedBox(width: AppSpacing.xs),
               Expanded(
@@ -75,17 +86,27 @@ class ChallengeCategorySection extends StatelessWidget {
                   ),
                 ),
               ),
-              Text(
-                '$completedInCategory/${challenges.length}',
-                style: AppTypography.monoSmall.copyWith(
-                  color: AppColors.textMuted,
+              Container(
+                padding: EdgeInsets.symmetric(
+                  horizontal: AppSpacing.xs,
+                  vertical: AppSpacing.xxs,
+                ),
+                decoration: BoxDecoration(
+                  color: AppColors.navy.withValues(alpha: 0.4),
+                  borderRadius: BorderRadius.circular(AppBorderRadius.full),
+                ),
+                child: Text(
+                  '$completedInCategory/${challenges.length}',
+                  style: AppTypography.monoSmall.copyWith(
+                    color: AppColors.textMuted,
+                  ),
                 ),
               ),
             ],
           ),
           SizedBox(height: AppSpacing.sm),
           ...sorted.map((challenge) => Padding(
-                padding: EdgeInsets.only(bottom: AppSpacing.xs),
+                padding: EdgeInsets.only(bottom: AppSpacing.sm),
                 child: ChallengeCard(
                   challenge: challenge,
                   progress: progress[challenge.id],
@@ -94,5 +115,18 @@ class ChallengeCategorySection extends StatelessWidget {
         ],
       ),
     );
+  }
+
+  static List<Color> _gradientForCategory(ChallengeCategory category) {
+    switch (category) {
+      case ChallengeCategory.courseExplorer:
+        return [AppColors.green, AppColors.greenLight];
+      case ChallengeCategory.streaks:
+        return [AppColors.gold, AppColors.goldLight];
+      case ChallengeCategory.social:
+        return [AppColors.info, AppColors.info];
+      case ChallengeCategory.formats:
+        return [AppColors.warning, AppColors.warning];
+    }
   }
 }

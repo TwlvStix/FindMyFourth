@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '/core/design_tokens/app_phosphor_icons.dart';
 import '/core/design_tokens/colors.dart';
 import '/core/design_tokens/spacing.dart';
 import '/core/widgets/app_button_enhanced.dart';
@@ -48,8 +49,9 @@ class GameCardRematchActions extends StatelessWidget {
               Expanded(
                 child: AppButtonEnhanced(
                   text: 'Play Again',
-                  variant: AppButtonVariant.ghost,
+                  variant: AppButtonVariant.primary,
                   size: AppButtonSize.small,
+                  leadingPhosphorIcon: AppPhosphorIcons.refresh,
                   onPressed: () => _onPlayAgain(context),
                 ),
               ),
@@ -57,8 +59,9 @@ class GameCardRematchActions extends StatelessWidget {
               Expanded(
                 child: AppButtonEnhanced(
                   text: 'Switch Course',
-                  variant: AppButtonVariant.ghost,
+                  variant: AppButtonVariant.secondary,
                   size: AppButtonSize.small,
+                  leadingPhosphorIcon: AppPhosphorIcons.course,
                   onPressed: () => _onSwitchCourse(context),
                 ),
               ),

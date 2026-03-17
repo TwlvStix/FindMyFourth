@@ -572,6 +572,37 @@ describe('doesAlertSubMatchGame', () => {
     expect(doesAlertSubMatchGame(sub, { ...baseGame, member_discount: '1' })).toBe(false);
   });
 
+  // ── REGRESSION: Reported scenario ──────────────────────────────────────────
+  // User set alerts to "Low Stakes" + "High Stakes", another user created a
+  // "Low Stakes" game. The subscription should match.
+
+  it('matches Low Stakes game when subscription has Low Stakes + High Stakes', () => {
+    const sub = {
+      ...baseSubscription,
+      stakes: ['Low Stakes', 'High Stakes'],
+    };
+    const game = { ...baseGame, style_game: 'Low Stakes' };
+    expect(doesAlertSubMatchGame(sub, game)).toBe(true);
+  });
+
+  it('matches High Stakes game when subscription has Low Stakes + High Stakes', () => {
+    const sub = {
+      ...baseSubscription,
+      stakes: ['Low Stakes', 'High Stakes'],
+    };
+    const game = { ...baseGame, style_game: 'High Stakes' };
+    expect(doesAlertSubMatchGame(sub, game)).toBe(true);
+  });
+
+  it('does not match No Money game when subscription has only Low Stakes + High Stakes', () => {
+    const sub = {
+      ...baseSubscription,
+      stakes: ['Low Stakes', 'High Stakes'],
+    };
+    const game = { ...baseGame, style_game: 'No Money' };
+    expect(doesAlertSubMatchGame(sub, game)).toBe(false);
+  });
+
   it('requires all enabled special filters to pass', () => {
     const sub = {
       ...baseSubscription,

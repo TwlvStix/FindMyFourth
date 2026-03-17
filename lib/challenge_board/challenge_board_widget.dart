@@ -77,8 +77,8 @@ class _ChallengeBoardWidgetState extends State<ChallengeBoardWidget> {
             builder: (context, progressData) {
               final progress = progressData ?? {};
 
-              // Empty state when no progress at all
-              if (progress.isEmpty) {
+              // Empty state only if challenge definitions fail to load
+              if (Challenge.all.isEmpty) {
                 return const ChallengeBoardEmptyState();
               }
 
@@ -109,6 +109,7 @@ class _ChallengeBoardWidgetState extends State<ChallengeBoardWidget> {
                               c.category == ChallengeCategory.courseExplorer)
                           .toList(),
                       progress: progress,
+                      isFirst: true,
                     ),
                   ),
                   SliverToBoxAdapter(

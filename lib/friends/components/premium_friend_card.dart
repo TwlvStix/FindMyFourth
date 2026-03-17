@@ -310,12 +310,15 @@ class _PremiumFriendCardState extends State<PremiumFriendCard>
         children: [
           // Age · Town
           if (locationParts.isNotEmpty)
-            Text(
-              locationParts.join(' · '),
-              style: AppTypography.labelSmall.copyWith(
-                color: AppColors.textMuted,
-                fontSize: 12,
-                fontWeight: FontWeight.w400,
+            Flexible(
+              child: Text(
+                locationParts.join(' · '),
+                style: AppTypography.labelSmall.copyWith(
+                  color: AppColors.textMuted,
+                  fontSize: 12,
+                  fontWeight: FontWeight.w400,
+                ),
+                overflow: TextOverflow.ellipsis,
               ),
             ),
           // Vibe match chip

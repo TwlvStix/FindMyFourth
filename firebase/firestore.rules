@@ -923,13 +923,13 @@ service cloud.firestore {
     }
 
     // round_jobs — game participants can read to check confirmation status.
-    // Uses document-own fields (host_ref, app_user_refs) written by Cloud Functions
-    // at creation time, avoiding cross-collection get() calls to the game document.
+    // Uses string UID fields (host_uid, participant_uids) for unambiguous
+    // security-rule matching (DocumentReference vs path comparison fails).
     match /round_jobs/{jobId} {
       allow read: if isSignedIn() &&
-        (resource.data.host_ref == userRef(request.auth.uid) ||
-         (resource.data.app_user_refs is list &&
-          resource.data.app_user_refs.hasAny([userRef(request.auth.uid)])));
+        resource.data.host_uid == request.auth.uid;
+      allow read: if isSignedIn() &&
+        resource.data.participant_uids.hasAny([request.auth.uid]);
       allow write: if false;
     }
 

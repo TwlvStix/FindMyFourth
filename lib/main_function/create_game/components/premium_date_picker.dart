@@ -83,7 +83,9 @@ class PremiumDatePicker extends StatelessWidget {
                     ),
                   ),
                   child: CalendarDatePicker(
-                    initialDate: selectedDate ?? _tomorrow,
+                    initialDate: selectedDate != null && !selectedDate!.isBefore(_today)
+                        ? selectedDate!
+                        : _tomorrow,
                     firstDate: _today,
                     lastDate: DateTime(2050),
                     onDateChanged: (date) {

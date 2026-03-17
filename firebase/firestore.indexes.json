@@ -251,6 +251,14 @@
       ]
     },
     {
+      "collectionGroup": "round_jobs",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "game_ref", "order": "ASCENDING" },
+        { "fieldPath": "participant_uids", "arrayConfig": "CONTAINS" }
+      ]
+    },
+    {
       "collectionGroup": "cancellation_records",
       "queryScope": "COLLECTION",
       "fields": [

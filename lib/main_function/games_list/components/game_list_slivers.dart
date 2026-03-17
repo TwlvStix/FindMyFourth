@@ -24,32 +24,27 @@ class JoinableGamesSliverList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SliverPadding(
-      padding: EdgeInsets.symmetric(
-        horizontal: AppSpacing.screenPadding,
-      ),
-      sliver: SliverList(
-        delegate: SliverChildBuilderDelegate(
-          (context, index) {
-            final game = games[index];
-            final isLast = index == games.length - 1;
-            return Padding(
-              padding: EdgeInsets.only(
-                bottom: isLast && !hasMutualGames
-                    ? AppSpacing.md
-                    : AppSpacing.sm,
-              ),
-              child: UnifiedGameCard(
-                game: game,
-                currentUserReference: currentUserReference,
-                vibeScore: vibeScores[game.reference.id],
-                animationIndex: index,
-                showStatusBadge: true,
-              ),
-            );
-          },
-          childCount: games.length,
-        ),
+    return SliverList(
+      delegate: SliverChildBuilderDelegate(
+        (context, index) {
+          final game = games[index];
+          final isLast = index == games.length - 1;
+          return Padding(
+            padding: EdgeInsets.only(
+              bottom: isLast && !hasMutualGames
+                  ? AppSpacing.md
+                  : AppSpacing.sm,
+            ),
+            child: UnifiedGameCard(
+              game: game,
+              currentUserReference: currentUserReference,
+              vibeScore: vibeScores[game.reference.id],
+              animationIndex: index,
+              showStatusBadge: true,
+            ),
+          );
+        },
+        childCount: games.length,
       ),
     );
   }
@@ -80,48 +75,43 @@ class MutualGamesSliverList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SliverPadding(
-      padding: EdgeInsets.symmetric(
-        horizontal: AppSpacing.screenPadding,
-      ),
-      sliver: SliverList(
-        delegate: SliverChildBuilderDelegate(
-          (context, index) {
-            final game = games[index];
-            final hostId = game.userRef?.id ?? game.uid;
-            final mutualName = firstMutualFriendName[hostId] ?? 'a friend';
-            final mutualCount =
-                (mutualFriendsMap[hostId]?.length ?? 1) - 1;
-            final animationIndex = joinableGameCount + index;
-            return Padding(
-              padding: EdgeInsets.only(
-                bottom: index < games.length - 1
-                    ? AppSpacing.sm
-                    : AppSpacing.md,
-              ),
-              child: MutualGameCard(
-                game: game,
-                mutualFriendName: mutualName,
-                additionalMutualCount: mutualCount,
-                chatState: chatActionStates[hostId] ?? MutualActionState.idle,
-                friendState:
-                    friendActionStates[hostId] ?? MutualActionState.idle,
-                animationIndex: animationIndex,
-                onAskToChat: () {
-                  if (onAskToChat != null && game.userRef != null) {
-                    onAskToChat!(game.userRef!);
-                  }
-                },
-                onAddFriend: () {
-                  if (onAddFriendFromMutual != null && game.userRef != null) {
-                    onAddFriendFromMutual!(game.userRef!);
-                  }
-                },
-              ),
-            );
-          },
-          childCount: games.length,
-        ),
+    return SliverList(
+      delegate: SliverChildBuilderDelegate(
+        (context, index) {
+          final game = games[index];
+          final hostId = game.userRef?.id ?? game.uid;
+          final mutualName = firstMutualFriendName[hostId] ?? 'a friend';
+          final mutualCount =
+              (mutualFriendsMap[hostId]?.length ?? 1) - 1;
+          final animationIndex = joinableGameCount + index;
+          return Padding(
+            padding: EdgeInsets.only(
+              bottom: index < games.length - 1
+                  ? AppSpacing.sm
+                  : AppSpacing.md,
+            ),
+            child: MutualGameCard(
+              game: game,
+              mutualFriendName: mutualName,
+              additionalMutualCount: mutualCount,
+              chatState: chatActionStates[hostId] ?? MutualActionState.idle,
+              friendState:
+                  friendActionStates[hostId] ?? MutualActionState.idle,
+              animationIndex: animationIndex,
+              onAskToChat: () {
+                if (onAskToChat != null && game.userRef != null) {
+                  onAskToChat!(game.userRef!);
+                }
+              },
+              onAddFriend: () {
+                if (onAddFriendFromMutual != null && game.userRef != null) {
+                  onAddFriendFromMutual!(game.userRef!);
+                }
+              },
+            ),
+          );
+        },
+        childCount: games.length,
       ),
     );
   }

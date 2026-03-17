@@ -118,13 +118,12 @@ class _GamesJoinedWidgetState extends State<GamesJoinedWidget> {
 
                   for (final record in visibleGames) {
                     final game = Game.fromRecord(record);
-                    if (game.isActive) {
+                    if (game.isActive || game.isPlayed) {
                       upcomingGames.add(game);
-                    } else if (game.isPlayed ||
-                        game.isCompleted ||
-                        game.isExpired) {
+                    } else if (game.isCompleted) {
                       recentRounds.add(game);
                     }
+                    // expired games are hidden (not added to either list)
                   }
 
                   // Sort upcoming by date ASC (soonest first)

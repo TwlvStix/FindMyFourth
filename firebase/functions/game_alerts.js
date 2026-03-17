@@ -24,7 +24,7 @@ const { scheduleJob } = require("./notifications/trust/scheduler");
 const kAlertSubsCollection = "alertSubs";
 const kUserNotificationsCollection = "notifications";
 const kUserDevicesCollection = "devices";
-const kGameAlertCooldownMinutes = 60;
+const VERBOSE_ALERT_DEBUG = false;
 const kQuietHoursTimezone = "America/Vancouver";
 const firestore = admin.firestore();
 const vanWeekdayFormatter = new Intl.DateTimeFormat("en-US", {
@@ -690,11 +690,6 @@ exports.sendGameCreatedNotifications = functions
           // Add to dedup set so the filter-match loop won't also notify this user
           alreadyNotifiedUserIds.add(friendUid);
 
-          // Intentionally NO cooldown update here. Friend notifications should
-          // not consume the user's 60-min generic alert cooldown window. A user
-          // should still receive their next filter-matched game_created alert
-          // on schedule even if they just got a friend notification.
-
           // Quiet hours check
           const nowHHMM = getNowHHMMInVancouver(now);
           const friendInQuietHours =
@@ -824,6 +819,15 @@ exports.sendGameCreatedNotifications = functions
         console.log(`[GameAlerts] Friend pass complete: ${friendUids.length} friends, ${friendNotified} notified, ${friendSkipped} skipped`);
       }
 
+      let skippedCreator = 0;
+      let skippedNoMatch = 0;
+      let skippedGender = 0;
+      let skippedPushOff = 0;
+      let skippedAlertsOff = 0;
+      let skippedDigestOff = 0;
+      let skippedDedup = 0;
+      let skippedNoUser = 0;
+
       while (true) {
       const currentQuery = lastDoc ? baseQuery.startAfter(lastDoc) : baseQuery;
       const subsSnapshot = await currentQuery.get();
@@ -840,13 +844,22 @@ exports.sendGameCreatedNotifications = functions
 
         // Skip creator
         if (creatorUid && userId === creatorUid) {
+          skippedCreator++;
           continue;
         }
 
         // Check if subscription matches game
         const matches = doesAlertSubMatchGame(subscription, gameData);
 
+        if (VERBOSE_ALERT_DEBUG) {
+          console.log(`[GameAlerts][TRACE] Sub ${userId}: ` +
+            `stakes=${JSON.stringify(subscription.stakes)}, ` +
+            `game_stakes=${gameData.style_game}, ` +
+            `match=${matches}`);
+        }
+
         if (!matches) {
+          skippedNoMatch++;
           continue;
         }
 
@@ -859,6 +872,7 @@ exports.sendGameCreatedNotifications = functions
 
         if (!userSnap.exists) {
           console.log(`[GameAlerts] User ${userId} not found, skipping`);
+          skippedNoUser++;
           continue;
         }
 
@@ -869,6 +883,7 @@ exports.sendGameCreatedNotifications = functions
         const playerEligibility = gameData.player_eligibility || "open_to_all";
         if (!isUserEligibleByGender(userGender, playerEligibility)) {
           console.log(`[GameAlerts] User ${userId} (${userGender || "no gender"}) not eligible for ${playerEligibility} game, skipping`);
+          skippedGender++;
           continue;
         }
 
@@ -877,36 +892,28 @@ exports.sendGameCreatedNotifications = functions
         // Check if push notifications are enabled
         if (!prefs.pushEnabled) {
           console.log(`[GameAlerts] User ${userId} has push disabled, skipping`);
+          skippedPushOff++;
           continue;
         }
 
         // Check if game alerts are enabled in user preferences
         if (!prefs.gameAlertsEnabled) {
           console.log(`[GameAlerts] User ${userId} has game alerts disabled, skipping`);
+          skippedAlertsOff++;
           continue;
         }
 
         // Check digest mode
         if (prefs.digestMode === "off") {
           console.log(`[GameAlerts] User ${userId} has digest mode off, skipping`);
+          skippedDigestOff++;
           continue;
-        }
-
-        // Check cooldown (60 minutes between game alerts)
-        const state = userData.notification_state || {};
-        const lastGameAlert = state.last_game_alert;
-        if (lastGameAlert?.toDate) {
-          const lastDate = lastGameAlert.toDate();
-          const cooldownMs = kGameAlertCooldownMinutes * 60 * 1000;
-          if (now - lastDate < cooldownMs) {
-            console.log(`[GameAlerts] User ${userId} in cooldown, skipping`);
-            continue;
-          }
         }
 
         // Check dedup from upfront query
         if (alreadyNotifiedUserIds.has(userId)) {
           console.log(`[GameAlerts] Notification already sent to ${userId}, skipping`);
+          skippedDedup++;
           continue;
         }
 
@@ -931,16 +938,6 @@ exports.sendGameCreatedNotifications = functions
 
         // Track in dedup set to prevent intra-batch duplicates
         alreadyNotifiedUserIds.add(userId);
-
-        // Update cooldown timestamp
-        await userRef.set(
-          {
-            notification_state: {
-              last_game_alert: admin.firestore.FieldValue.serverTimestamp(),
-            },
-          },
-          { merge: true },
-        );
 
         // Check if we should send push notification now
         const nowHHMM = getNowHHMMInVancouver(now);
@@ -1092,7 +1089,11 @@ exports.sendGameCreatedNotifications = functions
       if (subsSnapshot.docs.length < ALERT_BATCH_SIZE) break;
       } // end pagination while loop
 
-      console.log(`[GameAlerts] Game ${gameId} complete: ${totalProcessed} subscriptions processed, ${matchedCount} matched, ${notifiedCount} notified`);
+      console.log(`[GameAlerts] Game ${gameId} complete: ${totalProcessed} subs, ` +
+        `${matchedCount} matched, ${notifiedCount} notified | ` +
+        `skipped: creator=${skippedCreator} noMatch=${skippedNoMatch} ` +
+        `gender=${skippedGender} pushOff=${skippedPushOff} alertsOff=${skippedAlertsOff} ` +
+        `digestOff=${skippedDigestOff} dedup=${skippedDedup} noUser=${skippedNoUser}`);
     } catch (error) {
       console.error(`[GameAlerts] Error processing game ${gameId}:`, error);
       throw error;
@@ -1165,21 +1166,43 @@ exports.onGameLastSpotUpdate = functions
       return;
     }
 
-    // Batch update all notification docs (chunk if >500)
+    // Extract participant UIDs to skip — participants should not see "Last spot!"
+    const participantUids = new Set();
+    if (Array.isArray(afterData.joined_players)) {
+      for (const ref of afterData.joined_players) {
+        if (ref && ref.id) participantUids.add(ref.id);
+      }
+    }
+    const creatorUid = afterData.userRef?.id || afterData.uid || null;
+    if (creatorUid) participantUids.add(creatorUid);
+
+    // Batch update notification docs, skipping participants (chunk if >500)
     const BATCH_LIMIT = 500;
+    let updateCount = 0;
     for (let i = 0; i < allDocs.length; i += BATCH_LIMIT) {
       const chunk = allDocs.slice(i, i + BATCH_LIMIT);
       const batch = firestore.batch();
+      let batchOps = 0;
       for (const doc of chunk) {
+        // Path: users/{userId}/notifications/{docId}
+        const userId = doc.ref.parent.parent.id;
+        if (participantUids.has(userId)) {
+          continue;
+        }
         batch.update(doc.ref, {
           body: lastSpotBody,
           updatedAt: admin.firestore.FieldValue.serverTimestamp(),
         });
+        batchOps++;
       }
-      await batch.commit();
+      if (batchOps > 0) {
+        await batch.commit();
+      }
+      updateCount += batchOps;
     }
 
-    console.log(`[GameAlerts] Updated ${allDocs.length} notification docs for game ${gameId} with last-spot body`);
+    const skipped = allDocs.length - updateCount;
+    console.log(`[GameAlerts] Updated ${updateCount} notification docs for game ${gameId} with last-spot body (skipped ${skipped} participants)`);
   });
 
 // Export for testing

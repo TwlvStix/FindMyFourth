@@ -55,6 +55,7 @@ class GamesJoinedSection extends StatelessWidget {
                   showStatusBadge: true,
                   showRematchActions: showRematchActions,
                   animationIndex: animationIndexOffset + index,
+                  onTap: showRematchActions ? () {} : null,
                 ),
               );
             },

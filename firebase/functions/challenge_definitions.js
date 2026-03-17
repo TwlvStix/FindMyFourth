@@ -289,11 +289,13 @@ const CHALLENGES = [
     type: 'boolean',
     target: 1,
     hidden: false,
-    description: 'Play a round where no one knew each other beforehand',
+    description: 'Play a full group (4 players) where no one knew each other beforehand',
     evaluate: async (ctx) => {
       // Check if any present player (excluding self) had prior partner_plays with this user
       const otherUids = ctx.presentUids.filter((u) => u !== ctx.uid);
-      if (otherUids.length === 0) return { current: 0, completed: false };
+
+      // Require at least 3 other players (4 total) for a full group of strangers
+      if (otherUids.length < 3) return { current: 0, completed: false };
 
       // Check partner_plays docs for this user — if none of the otherUids have
       // a play_count > 1 (meaning they already played before THIS round), it's all strangers.
@@ -591,31 +593,44 @@ const CHALLENGES = [
     name: 'Never Miss',
     category: 'streaks',
     type: 'special',
-    target: 1,
+    target: 4,
     hidden: true,
-    description: 'Attend every game in a calendar month (no cancellations)',
+    description: 'Play 4+ games in a calendar month with no cancellations',
     evaluate: async (ctx) => {
-      // Check if user had zero cancellations in the current month
-      // and at least 1 completed game
-      const teeTime = ctx.roundData.tee_time;
-      let monthStart, monthEnd;
+      const progress = ctx.currentProgress.never_miss || { current: 0, data: {} };
+      const dataMap = (typeof progress.data === 'object' && !Array.isArray(progress.data))
+        ? { ...progress.data }
+        : {};
 
+      // Parse tee_time to get month key
+      const teeTime = ctx.roundData.tee_time;
+      let monthKey, monthStart, monthEnd;
       if (teeTime && typeof teeTime.toDate === 'function') {
         const d = teeTime.toDate();
+        monthKey = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
         monthStart = new Date(d.getFullYear(), d.getMonth(), 1);
         monthEnd = new Date(d.getFullYear(), d.getMonth() + 1, 1);
       } else if (teeTime instanceof Date) {
+        monthKey = `${teeTime.getFullYear()}-${String(teeTime.getMonth() + 1).padStart(2, '0')}`;
         monthStart = new Date(teeTime.getFullYear(), teeTime.getMonth(), 1);
         monthEnd = new Date(teeTime.getFullYear(), teeTime.getMonth() + 1, 1);
       } else {
-        return { current: 0, completed: false };
+        return { current: 0, target: 4, data: dataMap, completed: false };
       }
 
-      // Query user's cancellations in this month
+      // Increment round count for this month
+      dataMap[monthKey] = (dataMap[monthKey] || 0) + 1;
+      const gamesThisMonth = dataMap[monthKey];
+
+      // Need at least 4 games in the month
+      if (gamesThisMonth < 4) {
+        return { current: gamesThisMonth, target: 4, data: dataMap, completed: false };
+      }
+
+      // Check cancellations
       try {
         const cancellationsSnap = await ctx.db
-          .collection('users')
-          .doc(ctx.uid)
+          .collection('users').doc(ctx.uid)
           .collection('cancellation_records')
           .where('cancelled_at', '>=', monthStart)
           .where('cancelled_at', '<', monthEnd)
@@ -623,18 +638,15 @@ const CHALLENGES = [
           .get();
 
         const hasCancellations = !cancellationsSnap.empty;
-        if (hasCancellations) {
-          return { current: 0, completed: false };
-        }
-
-        // User has completed this round and no cancellations this month
-        // Note: This is evaluated per-round, so we mark as completed.
-        // If a future cancellation occurs in the same month, it won't un-complete.
-        // That's acceptable — the challenge captures the "so far so good" moment.
-        return { current: 1, completed: true };
+        return {
+          current: gamesThisMonth,
+          target: 4,
+          data: dataMap,
+          completed: !hasCancellations,
+        };
       } catch (err) {
         console.warn(`[Challenges] never_miss evaluate failed for ${ctx.uid}:`, err);
-        return { current: 0, completed: false };
+        return { current: gamesThisMonth, target: 4, data: dataMap, completed: false };
       }
     },
   },

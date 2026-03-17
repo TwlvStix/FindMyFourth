@@ -855,7 +855,9 @@ async function _onGameStatusToPlayedHandler(change, context, db) {
         status: "pending",
         processing_state: "initializing",
         host_ref: hostRef,
+        host_uid: hostRef.id,
         app_user_refs: appUserRefs,
+        participant_uids: appUserRefs.map((r) => r.id),
         course_name: courseName,
 
         // Step tracking for crash-resume idempotency
@@ -1233,14 +1235,14 @@ async function _submitHostCheckinHandler(data, context, db) {
   //   - another player's peer ratings confirm the no-show was present (auto-resolved), OR
   //   - the 48h window closes with no corroboration (converted to active strikes)
   const pendingNoShowsUpdate = {};
-  for (const uid of noShowAppUserIds) {
+  await Promise.all(noShowAppUserIds.map(async (uid) => {
     pendingNoShowsUpdate[`pending_no_shows.${uid}`] = {
       recorded_at: nowTs,
       notified_at: null,
     };
     // Update game_participants status
     await _updateParticipantStatus(db, gameRef, uid, "no_show");
-  }
+  }));
 
   // ── Stage 4: record host as a verification signal ─────────────────────
   const hostUid = context.auth.uid;
@@ -1299,7 +1301,7 @@ async function _submitHostCheckinHandler(data, context, db) {
 
   // ── Send dispute notifications to flagged players ─────────────────────
   const gameDate = _formatGameDate(job.tee_time);
-  for (const uid of noShowAppUserIds) {
+  await Promise.all(noShowAppUserIds.map(async (uid) => {
     try {
       await routeNotification({
         eventId: randomUUID(),
@@ -1320,7 +1322,7 @@ async function _submitHostCheckinHandler(data, context, db) {
     } catch (err) {
       console.warn(`submitHostCheckin: failed to send no-show notification to ${uid}:`, err);
     }
-  }
+  }));
 
   // ── Stage 4: check for early verification (2+ signals already) ────────
   if (signalCount >= 2 && roundRef) {
@@ -1527,13 +1529,10 @@ async function _submitPeerRatingsHandler(data, context, db) {
     const courseName = typeof gameData.course_play === 'string' ? gameData.course_play : 'your course';
     const gameDate = _formatGameDate(gameData.date);
 
-    for (const noShowUid of pendingNoShowUids) {
-      if (noShowUid === context.auth.uid) continue; // can't self-resolve
-      // Check if rater submitted a rating (any value) for this no-show player
-      if (Object.prototype.hasOwnProperty.call(ratings, noShowUid)) {
-        await _resolvePendingNoShow(db, roundRef, noShowUid, context.auth.uid, courseName, gameDate);
-      }
-    }
+    await Promise.all(pendingNoShowUids
+      .filter(noShowUid => noShowUid !== context.auth.uid && Object.prototype.hasOwnProperty.call(ratings, noShowUid))
+      .map(noShowUid => _resolvePendingNoShow(db, roundRef, noShowUid, context.auth.uid, courseName, gameDate))
+    );
   }
 
   // ── Stage 4: check for early verification ────────────────────────────
@@ -1915,7 +1914,7 @@ async function _finalizeRoundVerification(db, roundRef, roundData, gameRef) {
       : 'your course';
     const gameId = gameRef.id;
 
-    for (const uid of presentUids) {
+    await Promise.all(presentUids.map(async (uid) => {
       try {
         await routeNotification({
           eventId:         randomUUID(),
@@ -1930,7 +1929,7 @@ async function _finalizeRoundVerification(db, roundRef, roundData, gameRef) {
           `_finalizeRoundVerification: rematch prompt failed for ${uid}:`, err
         );
       }
-    }
+    }));
   } catch (err) {
     console.warn(
       `_finalizeRoundVerification: rematch prompt step failed for round ${roundRef.id}:`, err
