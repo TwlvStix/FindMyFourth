@@ -151,6 +151,10 @@ class NotificationTypeHelpers {
     if (type == 'player_declined_spot') return AppPhosphorIcons.info;
     // Streak types
     if (isStreakNotification(type)) return AppPhosphorIcons.flame;
+    // Rematch prompt (round verified)
+    if (type == 'rematch_prompt') return AppPhosphorIcons.calendarCheck;
+    // Challenge completed
+    if (type == 'challenge_completed') return AppPhosphorIcons.trophy;
     return AppPhosphorIcons.notifications;
   }
 
@@ -177,6 +181,10 @@ class NotificationTypeHelpers {
     if (type == 'host_pre_game_confirm') return AppColors.green;
     // Streak types
     if (isStreakNotification(type)) return AppColors.gold;
+    // Rematch prompt (round verified)
+    if (type == 'rematch_prompt') return AppColors.green;
+    // Challenge completed
+    if (type == 'challenge_completed') return AppColors.gold;
     // Game alert deferred
     if (isGameAlertNotification(type)) return AppColors.navyDark;
     return AppColors.navyDark;

@@ -1275,12 +1275,13 @@ async function _submitHostCheckinHandler(data, context, db) {
     scheduled_peer_notify_at: peerNotifyAt,
   };
 
-  // Batch round_records + round_jobs updates
+  // Batch round_records + round_jobs + game status updates
   const batch = db.batch();
   if (roundRef) {
     batch.update(roundRef, roundUpdate);
   }
   batch.update(jobDoc.ref, jobUpdate);
+  batch.update(gameRef, { status: 'completed' });
   await batch.commit();
 
   // ── Trust System: cancel pending notification tasks + schedule ratings ──
@@ -2260,6 +2261,8 @@ async function _closeConfirmationWindow(db, jobRef, job, nowTs) {
   // ── Stage 4: evaluate final verification status ───────────────────────
   if (gameRef) {
     await _evaluateFinalVerificationStatus(db, roundRef, gameRef);
+    // Fallback: ensure game moves to 'completed' even if host never confirmed
+    await gameRef.update({ status: 'completed' });
   }
 
   console.log(

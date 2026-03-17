@@ -3,12 +3,13 @@ import 'package:flutter/material.dart';
 import '/core/design_tokens/app_phosphor_icons.dart';
 import '/core/design_tokens/colors.dart';
 import '/core/design_tokens/spacing.dart';
+import '/core/motion/motion_helpers.dart';
 import '/core/widgets/app_button_enhanced.dart';
 import '/models/game.dart';
-import '/services/rematch_service.dart';
-import '/utils/app_util.dart';
+import 'rebook_change_course_sheet.dart';
+import 'rebook_play_again_sheet.dart';
 
-/// "Play Again" and "Switch Course" action buttons for completed game cards.
+/// "Play Again" and "Change Course" action buttons for completed game cards.
 class GameCardRematchActions extends StatelessWidget {
   const GameCardRematchActions({
     super.key,
@@ -17,16 +18,38 @@ class GameCardRematchActions extends StatelessWidget {
 
   final Game game;
 
-  static final _rematchService = RematchService();
-
   void _onPlayAgain(BuildContext context) {
-    final formData = _rematchService.buildRematchForm(game);
-    context.pushCreateGameRematch(formData: formData);
+    showAppBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      builder: (_) => RebookPlayAgainSheet(
+        sourceGame: game,
+        onGameCreated: () {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Game created. Players have been invited.'),
+            ),
+          );
+        },
+      ),
+    );
   }
 
-  void _onSwitchCourse(BuildContext context) {
-    final formData = _rematchService.buildSwitchCourseForm(game);
-    context.pushCreateGameRematch(formData: formData);
+  void _onChangeCourse(BuildContext context) {
+    showAppBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      builder: (_) => RebookChangeCourseSheet(
+        sourceGame: game,
+        onGameCreated: () {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Game created. Players have been invited.'),
+            ),
+          );
+        },
+      ),
+    );
   }
 
   @override
@@ -58,11 +81,11 @@ class GameCardRematchActions extends StatelessWidget {
               SizedBox(width: AppSpacing.sm),
               Expanded(
                 child: AppButtonEnhanced(
-                  text: 'Switch Course',
+                  text: 'Change Course',
                   variant: AppButtonVariant.secondary,
                   size: AppButtonSize.small,
                   leadingPhosphorIcon: AppPhosphorIcons.course,
-                  onPressed: () => _onSwitchCourse(context),
+                  onPressed: () => _onChangeCourse(context),
                 ),
               ),
             ],

@@ -220,6 +220,18 @@ class NotificationTapRouter {
       return;
     }
 
+    // Rematch prompt after round verification → My Games
+    if (type == 'rematch_prompt') {
+      context.goGamesJoined();
+      return;
+    }
+
+    // Challenge completed → Challenge Board
+    if (type == 'challenge_completed') {
+      context.pushChallengeBoard();
+      return;
+    }
+
     // Deferred game alerts
     if (NotificationTypeHelpers.isGameAlertNotification(type)) {
       await _handleGameNotification(
