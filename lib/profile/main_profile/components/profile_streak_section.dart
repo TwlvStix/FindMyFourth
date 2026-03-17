@@ -84,6 +84,7 @@ class _ProfileStreakSectionState extends State<ProfileStreakSection> {
       child: StreakProfileSection(
         profile: _profile!,
         showFreezeStatus: true,
+        variant: StreakSectionVariant.dark,
       ),
     );
   }

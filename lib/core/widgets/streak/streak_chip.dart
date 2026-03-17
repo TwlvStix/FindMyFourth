@@ -121,19 +121,19 @@ class StreakChip extends StatelessWidget {
     // Gold for milestone tiers (Inferno, Legend)
     if (tier == StreakTier.inferno || tier == StreakTier.legend) {
       return (
-        background: AppColors.gold.withValues(alpha: 0.1),
+        background: AppColors.navy,
         iconColor: AppColors.gold,
-        textColor: AppColors.goldDark,
-        borderColor: AppColors.gold.withValues(alpha: 0.2),
+        textColor: AppColors.gold,
+        borderColor: AppColors.gold.withValues(alpha: 0.3),
       );
     }
 
     // Green for active streaks (Ember, Flame, Blaze)
     return (
-      background: AppColors.green.withValues(alpha: 0.1),
-      iconColor: AppColors.green,
-      textColor: AppColors.greenDark,
-      borderColor: AppColors.green.withValues(alpha: 0.2),
+      background: AppColors.navy,
+      iconColor: AppColors.greenLight,
+      textColor: AppColors.greenLight,
+      borderColor: AppColors.green.withValues(alpha: 0.3),
     );
   }
 }
@@ -269,19 +269,19 @@ class StreakChipExtended extends StatelessWidget {
     // Gold for milestone tiers (Inferno, Legend)
     if (tier == StreakTier.inferno || tier == StreakTier.legend) {
       return (
-        background: AppColors.gold.withValues(alpha: 0.1),
+        background: AppColors.navy,
         iconColor: AppColors.gold,
-        textColor: AppColors.goldDark,
-        borderColor: AppColors.gold.withValues(alpha: 0.2),
+        textColor: AppColors.gold,
+        borderColor: AppColors.gold.withValues(alpha: 0.3),
       );
     }
 
     // Green for active streaks (Ember, Flame, Blaze)
     return (
-      background: AppColors.green.withValues(alpha: 0.1),
-      iconColor: AppColors.green,
-      textColor: AppColors.greenDark,
-      borderColor: AppColors.green.withValues(alpha: 0.2),
+      background: AppColors.navy,
+      iconColor: AppColors.greenLight,
+      textColor: AppColors.greenLight,
+      borderColor: AppColors.green.withValues(alpha: 0.3),
     );
   }
 }

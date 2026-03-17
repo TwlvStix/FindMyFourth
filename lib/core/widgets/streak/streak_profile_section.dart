@@ -417,37 +417,37 @@ class StreakProfileSection extends StatelessWidget {
         );
       case StreakTier.ember:
         return (
-          background: AppColors.green.withValues(alpha: 0.05),
-          textColor: AppColors.greenDark,
-          borderColor: AppColors.green.withValues(alpha: 0.15),
+          background: AppColors.navyLight,
+          textColor: AppColors.greenLight,
+          borderColor: AppColors.green.withValues(alpha: 0.2),
           gradient: [AppColors.green, AppColors.greenLight],
         );
       case StreakTier.flame:
         return (
-          background: AppColors.green.withValues(alpha: 0.08),
-          textColor: AppColors.greenDark,
-          borderColor: AppColors.green.withValues(alpha: 0.2),
+          background: AppColors.navyLight,
+          textColor: AppColors.greenLight,
+          borderColor: AppColors.green.withValues(alpha: 0.25),
           gradient: [AppColors.greenDark, AppColors.green],
         );
       case StreakTier.blaze:
         return (
-          background: AppColors.green.withValues(alpha: 0.1),
-          textColor: AppColors.greenDark,
-          borderColor: AppColors.green.withValues(alpha: 0.25),
+          background: AppColors.navyLight,
+          textColor: AppColors.greenLight,
+          borderColor: AppColors.green.withValues(alpha: 0.35),
           gradient: [AppColors.greenDark, AppColors.greenLight],
         );
       case StreakTier.inferno:
         return (
-          background: AppColors.gold.withValues(alpha: 0.08),
-          textColor: AppColors.goldDark,
-          borderColor: AppColors.gold.withValues(alpha: 0.2),
+          background: AppColors.navyLight,
+          textColor: AppColors.gold,
+          borderColor: AppColors.gold.withValues(alpha: 0.25),
           gradient: [AppColors.gold, AppColors.goldLight],
         );
       case StreakTier.legend:
         return (
-          background: AppColors.gold.withValues(alpha: 0.12),
-          textColor: AppColors.goldDark,
-          borderColor: AppColors.gold.withValues(alpha: 0.3),
+          background: AppColors.navyLight,
+          textColor: AppColors.gold,
+          borderColor: AppColors.gold.withValues(alpha: 0.35),
           gradient: [AppColors.goldDark, AppColors.gold],
         );
     }

@@ -114,7 +114,7 @@ async function _computeWeightedRounds(db, uid) {
  *
  * @param {FirebaseFirestore.Firestore} db
  * @param {string} uid
- * @returns {Promise<{ showUpRate: number|null, denominator: number }>}
+ * @returns {Promise<{ showUpRate: number|null, denominator: number, verifiedRounds: number }>}
  */
 async function _computeShowUpRate(db, uid) {
   const playerRef = db.collection("users").doc(uid);
@@ -149,11 +149,11 @@ async function _computeShowUpRate(db, uid) {
   const denominator = verifiedRounds + noShowCount;
 
   if (denominator < SHOW_UP_RATE_MIN_ROUNDS) {
-    return { showUpRate: null, denominator };
+    return { showUpRate: null, denominator, verifiedRounds };
   }
 
   const showUpRate = verifiedRounds / denominator;
-  return { showUpRate, denominator };
+  return { showUpRate, denominator, verifiedRounds };
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -366,7 +366,7 @@ async function _updateTrustProfileHandler(db, uid) {
   ]);
 
   const { weightedRounds, uniqueCoPlayerCount } = weightedResult;
-  const { showUpRate, denominator: showUpDenominator } = showUpResult;
+  const { showUpRate, denominator: showUpDenominator, verifiedRounds: verifiedRoundCount } = showUpResult;
   const { cancellationRate } = cancelRateResult;
   const { hasWarning, warningCount } = warningResult;
   const { gamesHosted } = gamesHostedResult;
@@ -397,6 +397,7 @@ async function _updateTrustProfileHandler(db, uid) {
     unique_co_players: uniqueCoPlayersArray,
     games_hosted: gamesHosted,
     show_up_rate_denominator: showUpDenominator,
+    verified_round_count: verifiedRoundCount,
     trust_profile_updated_at: admin.firestore.FieldValue.serverTimestamp(),
   };
 
