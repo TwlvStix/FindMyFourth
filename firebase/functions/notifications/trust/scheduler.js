@@ -23,6 +23,7 @@
 const admin = require('firebase-admin');
 const { CloudTasksClient } = require('@google-cloud/tasks');
 const { routeNotification } = require('./router');
+const { classifyErrorStatus } = require('../../utils/error_classification');
 
 // ── Constants ─────────────────────────────────────────────────────────────────
 
@@ -222,84 +223,89 @@ async function processScheduledTrustNotificationHandler(req, res) {
     return res.status(400).send('Missing jobId or event');
   }
 
-  // 2. Read tracking doc
-  const docRef = db.collection(SCHEDULED_NOTIFICATIONS).doc(jobId);
-  const snap   = await docRef.get();
+  try {
+    // 2. Read tracking doc
+    const docRef = db.collection(SCHEDULED_NOTIFICATIONS).doc(jobId);
+    const snap   = await docRef.get();
 
-  if (!snap.exists) {
-    console.warn(`[Scheduler] Tracking doc not found for jobId ${jobId}`);
-    return res.status(200).send('NOT_FOUND');
-  }
+    if (!snap.exists) {
+      console.warn(`[Scheduler] Tracking doc not found for jobId ${jobId}`);
+      return res.status(200).send('NOT_FOUND');
+    }
 
-  // 3. If CANCELLED → 200 no-op (Cloud Tasks won't retry)
-  if (snap.data().status === 'CANCELLED') {
-    console.log(`[Scheduler] Job ${jobId} is CANCELLED — skipping`);
-    return res.status(200).send('CANCELLED');
-  }
+    // 3. If CANCELLED → 200 no-op (Cloud Tasks won't retry)
+    if (snap.data().status === 'CANCELLED') {
+      console.log(`[Scheduler] Job ${jobId} is CANCELLED — skipping`);
+      return res.status(200).send('CANCELLED');
+    }
 
-  // 4. Evaluate conditionCheck
-  const conditionCheck = event.conditionCheck || 'always';
+    // 4. Evaluate conditionCheck
+    const conditionCheck = event.conditionCheck || 'always';
 
-  if (conditionCheck === 'host_not_checked_in') {
-    const gameSnap = await db.collection('games').doc(event.sourceId).get();
-    if (gameSnap.exists) {
-      const gameData = gameSnap.data();
-      // NOTE: `hostCheckedIn` is a placeholder field name. Update to the real
-      // game document field once the host check-in write is implemented.
-      // If the field name is wrong the check silently passes and delivers the
-      // notification, which is the safer failure mode (false positive over
-      // false negative).
-      if (gameData.hostCheckedIn === true) {
-        console.log(`[Scheduler] Job ${jobId} condition not met (host checked in) — cancelling`);
-        await docRef.update({
-          status:      'CANCELLED',
-          cancelledAt: admin.firestore.FieldValue.serverTimestamp(),
-        });
-        return res.status(200).send('CONDITION_NOT_MET');
+    if (conditionCheck === 'host_not_checked_in') {
+      const gameSnap = await db.collection('games').doc(event.sourceId).get();
+      if (gameSnap.exists) {
+        const gameData = gameSnap.data();
+        // NOTE: `hostCheckedIn` is a placeholder field name. Update to the real
+        // game document field once the host check-in write is implemented.
+        // If the field name is wrong the check silently passes and delivers the
+        // notification, which is the safer failure mode (false positive over
+        // false negative).
+        if (gameData.hostCheckedIn === true) {
+          console.log(`[Scheduler] Job ${jobId} condition not met (host checked in) — cancelling`);
+          await docRef.update({
+            status:      'CANCELLED',
+            cancelledAt: admin.firestore.FieldValue.serverTimestamp(),
+          });
+          return res.status(200).send('CONDITION_NOT_MET');
+        }
       }
     }
-  }
 
-  if (conditionCheck === 'flexible_game_still_active') {
-    const gameSnap = await db.collection('games').doc(event.sourceId).get();
-    if (gameSnap.exists) {
-      const gameData = gameSnap.data();
-      // Game must still be flexible (not confirmed) with 2+ players
-      const isStillFlexible = gameData.schedule_type === 'flexible';
-      const hasEnoughPlayers = (gameData.joined_players?.length || 0) >= 2;
-      const isNotCancelled = gameData.status !== 'cancelled';
+    if (conditionCheck === 'flexible_game_still_active') {
+      const gameSnap = await db.collection('games').doc(event.sourceId).get();
+      if (gameSnap.exists) {
+        const gameData = gameSnap.data();
+        // Game must still be flexible (not confirmed) with 2+ players
+        const isStillFlexible = gameData.schedule_type === 'flexible';
+        const hasEnoughPlayers = (gameData.joined_players?.length || 0) >= 2;
+        const isNotCancelled = gameData.status !== 'cancelled';
 
-      if (!isStillFlexible || !hasEnoughPlayers || !isNotCancelled) {
-        console.log(`[Scheduler] Job ${jobId} condition not met (flexible=${isStillFlexible}, players=${hasEnoughPlayers}, notCancelled=${isNotCancelled}) — cancelling`);
-        await docRef.update({
-          status:      'CANCELLED',
-          cancelledAt: admin.firestore.FieldValue.serverTimestamp(),
-        });
-        return res.status(200).send('CONDITION_NOT_MET');
+        if (!isStillFlexible || !hasEnoughPlayers || !isNotCancelled) {
+          console.log(`[Scheduler] Job ${jobId} condition not met (flexible=${isStillFlexible}, players=${hasEnoughPlayers}, notCancelled=${isNotCancelled}) — cancelling`);
+          await docRef.update({
+            status:      'CANCELLED',
+            cancelledAt: admin.firestore.FieldValue.serverTimestamp(),
+          });
+          return res.status(200).send('CONDITION_NOT_MET');
+        }
       }
     }
+    // conditionCheck === 'always' falls through to delivery
+
+    // 5. Route notification through the full pipeline
+    // Flexible nudge events have their own handler with built-in condition re-checking
+    const FLEXIBLE_NUDGE_EVENT_TYPES = ['flexible_nudge_soft', 'flexible_nudge_urgent'];
+    if (FLEXIBLE_NUDGE_EVENT_TYPES.includes(event.eventType)) {
+      // Late require to avoid circular dependency (flexible_nudge imports from scheduler)
+      const { processFlexibleNudge } = require('../flexible_nudge');
+      await processFlexibleNudge(event, db);
+    } else {
+      await routeNotification(event, db);
+    }
+
+    // 6. Mark executed
+    await docRef.update({
+      status:      'EXECUTED',
+      executedAt:  admin.firestore.FieldValue.serverTimestamp(),
+    });
+
+    console.log(`[Scheduler] Job ${jobId} executed — eventType=${event.eventType}`);
+    return res.status(200).send('OK');
+  } catch (err) {
+    console.error(`[Scheduler] Error processing job ${jobId}:`, err);
+    return res.status(classifyErrorStatus(err)).send('ERROR');
   }
-  // conditionCheck === 'always' falls through to delivery
-
-  // 5. Route notification through the full pipeline
-  // Flexible nudge events have their own handler with built-in condition re-checking
-  const FLEXIBLE_NUDGE_EVENT_TYPES = ['flexible_nudge_soft', 'flexible_nudge_urgent'];
-  if (FLEXIBLE_NUDGE_EVENT_TYPES.includes(event.eventType)) {
-    // Late require to avoid circular dependency (flexible_nudge imports from scheduler)
-    const { processFlexibleNudge } = require('../flexible_nudge');
-    await processFlexibleNudge(event, db);
-  } else {
-    await routeNotification(event, db);
-  }
-
-  // 6. Mark executed
-  await docRef.update({
-    status:      'EXECUTED',
-    executedAt:  admin.firestore.FieldValue.serverTimestamp(),
-  });
-
-  console.log(`[Scheduler] Job ${jobId} executed — eventType=${event.eventType}`);
-  return res.status(200).send('OK');
 }
 
 // ── Exports ───────────────────────────────────────────────────────────────────

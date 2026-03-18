@@ -121,10 +121,12 @@ class UserProvider extends ChangeNotifier {
           _onboardingCompletedOverride = null;
         }
 
-        // Ensure friend_requests field exists for logged-in user
+        // Ensure friend_requests field exists for logged-in user.
+        // Awaited so the field exists before _scheduleNotify() fires,
+        // preventing UI from rendering before the field is initialized.
+        // Safe to await: the method catches its own errors and doesn't rethrow.
         if (isNowLoggedIn) {
-          // Run in background, don't block the login flow
-          _ensureFriendRequestsFieldExists(user);
+          await _ensureFriendRequestsFieldExists(user);
         }
 
         // If user logged out, clear all caches

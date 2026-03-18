@@ -20,6 +20,7 @@ const {
   isWithinQuietHours,
   buildChatMessagePreview,
 } = require('../utils/notification-helpers');
+const { classifyErrorStatus } = require('../utils/error_classification');
 
 // ── Constants ─────────────────────────────────────────────────────────────────
 
@@ -151,206 +152,211 @@ async function deliverChatNotificationHandler(req, res) {
     return res.status(400).send('Missing chatId or recipientUid');
   }
 
-  const docKey = `chat_${chatId}_${recipientUid}`;
-  const trackingRef = db.collection(PENDING_COLLECTION).doc(docKey);
-
-  // 2. Read tracking doc — if missing, this task was superseded or cleaned up
-  const trackingSnap = await trackingRef.get();
-  if (!trackingSnap.exists) {
-    console.log(`[ChatDebounce] Tracking doc not found for ${docKey}`);
-    return res.status(200).send('NOT_FOUND');
-  }
-
-  // 3. Check unread count — if 0, user already read the messages
-  const chatSnap = await db.collection('chats').doc(chatId).get();
-  if (chatSnap.exists) {
-    const chatData = chatSnap.data() || {};
-    const unreadCount = (chatData.unreadCountByUser || {})[recipientUid] || 0;
-    if (unreadCount === 0) {
-      console.log(`[ChatDebounce] Unread count is 0 for ${recipientUid} in chat ${chatId} — skipping`);
-      await trackingRef.delete();
-      return res.status(200).send('SKIPPED_READ');
-    }
-  }
-
-  // 4. Re-check user notification preferences
-  const userRef = db.collection('users').doc(recipientUid);
-  const userSnap = await userRef.get();
-  if (!userSnap.exists) {
-    await trackingRef.delete();
-    return res.status(200).send('SKIPPED_NO_USER');
-  }
-
-  const userData = userSnap.data() || {};
-  const prefs = getUserNotificationPrefs(userData);
-  const isDirect = chatType === 'direct';
-
-  if (!prefs.pushEnabled || !prefs.chatAlertsEnabled) {
-    await trackingRef.delete();
-    return res.status(200).send('PREFS_DISABLED');
-  }
-  if (prefs.mutedThreads.includes(chatId)) {
-    await trackingRef.delete();
-    return res.status(200).send('PREFS_DISABLED');
-  }
-  if (isDirect && !prefs.chatDirectEnabled) {
-    await trackingRef.delete();
-    return res.status(200).send('PREFS_DISABLED');
-  }
-  if (!isDirect && !prefs.chatGroupEnabled) {
-    await trackingRef.delete();
-    return res.status(200).send('PREFS_DISABLED');
-  }
-
-  const now = new Date();
-  const inQuietHours =
-    prefs.quietHoursEnabled &&
-    isWithinQuietHours(prefs.quietHoursStart, prefs.quietHoursEnd, now);
-  if (prefs.digestMode !== 'instant' || inQuietHours) {
-    await trackingRef.delete();
-    return res.status(200).send('PREFS_DISABLED');
-  }
-
-  // 5. Build notification content based on unread count
-  const unreadCount = chatSnap.exists
-    ? ((chatSnap.data() || {}).unreadCountByUser || {})[recipientUid] || 1
-    : 1;
-
-  let title;
-  let body;
-
-  if (isDirect) {
-    title = senderName || 'New message';
-    if (unreadCount > 1) {
-      body = `${senderName} sent you ${unreadCount} messages`;
-    } else {
-      body = latestMessagePreview || 'Sent a message';
-    }
-  } else {
-    title = chatType === 'game' ? 'Game chat' : 'Group chat';
-    if (unreadCount > 1) {
-      body = `${unreadCount} new messages`;
-    } else {
-      body = senderName
-        ? `${senderName}: ${latestMessagePreview || 'Sent a message'}`
-        : latestMessagePreview || 'Sent a message';
-    }
-  }
-
-  // 6. Write notification doc
-  const timestamp = Date.now();
-  const notificationRef = userRef
-    .collection('notifications')
-    .doc(`chat_${chatId}_debounced_${timestamp}`);
-
-  await notificationRef.set({
-    type: 'chat_message',
-    title,
-    body,
-    data: {
-      threadId: chatId,
-      senderId: senderId || '',
-    },
-    read: false,
-    createdAt: admin.firestore.FieldValue.serverTimestamp(),
-    dedupeKey: `chat:${chatId}:debounced:${timestamp}`,
-  });
-
-  // 7. Fetch FCM tokens and send
-  const deviceSnap = await userRef.collection('devices').get();
-  if (deviceSnap.empty) {
-    await trackingRef.delete();
-    return res.status(200).send('OK');
-  }
-
-  const deviceTokens = [];
-  deviceSnap.docs.forEach((doc) => {
-    const token = doc.data()?.fcmToken;
-    if (typeof token === 'string' && token.length > 0) {
-      deviceTokens.push({ token, ref: doc.ref });
-    }
-  });
-
-  if (deviceTokens.length === 0) {
-    await trackingRef.delete();
-    return res.status(200).send('OK');
-  }
-
-  const message = {
-    notification: { title, body },
-    data: {
-      initialPageName: 'ChatDetails',
-      parameterData: JSON.stringify({ chatId }),
-      type: 'chat_message',
-      threadId: chatId,
-    },
-    android: {
-      priority: 'high',
-      notification: {
-        channelId: 'fmm_general',
-        sound: 'default',
-      },
-    },
-    apns: {
-      headers: {
-        'apns-push-type': 'alert',
-        'apns-priority': '10',
-      },
-      payload: {
-        aps: {
-          sound: 'default',
-          badge: 1,
-          'mutable-content': 1,
-        },
-      },
-    },
-    tokens: deviceTokens.map((entry) => entry.token),
-  };
-
   try {
-    const response = await admin.messaging().sendEachForMulticast(message);
+    const docKey = `chat_${chatId}_${recipientUid}`;
+    const trackingRef = db.collection(PENDING_COLLECTION).doc(docKey);
 
-    // Record success
-    await userRef.update({
-      'notification_state.last_send_success': admin.firestore.FieldValue.serverTimestamp(),
+    // 2. Read tracking doc — if missing, this task was superseded or cleaned up
+    const trackingSnap = await trackingRef.get();
+    if (!trackingSnap.exists) {
+      console.log(`[ChatDebounce] Tracking doc not found for ${docKey}`);
+      return res.status(200).send('NOT_FOUND');
+    }
+
+    // 3. Check unread count — if 0, user already read the messages
+    const chatSnap = await db.collection('chats').doc(chatId).get();
+    if (chatSnap.exists) {
+      const chatData = chatSnap.data() || {};
+      const unreadCount = (chatData.unreadCountByUser || {})[recipientUid] || 0;
+      if (unreadCount === 0) {
+        console.log(`[ChatDebounce] Unread count is 0 for ${recipientUid} in chat ${chatId} — skipping`);
+        await trackingRef.delete();
+        return res.status(200).send('SKIPPED_READ');
+      }
+    }
+
+    // 4. Re-check user notification preferences
+    const userRef = db.collection('users').doc(recipientUid);
+    const userSnap = await userRef.get();
+    if (!userSnap.exists) {
+      await trackingRef.delete();
+      return res.status(200).send('SKIPPED_NO_USER');
+    }
+
+    const userData = userSnap.data() || {};
+    const prefs = getUserNotificationPrefs(userData);
+    const isDirect = chatType === 'direct';
+
+    if (!prefs.pushEnabled || !prefs.chatAlertsEnabled) {
+      await trackingRef.delete();
+      return res.status(200).send('PREFS_DISABLED');
+    }
+    if (prefs.mutedThreads.includes(chatId)) {
+      await trackingRef.delete();
+      return res.status(200).send('PREFS_DISABLED');
+    }
+    if (isDirect && !prefs.chatDirectEnabled) {
+      await trackingRef.delete();
+      return res.status(200).send('PREFS_DISABLED');
+    }
+    if (!isDirect && !prefs.chatGroupEnabled) {
+      await trackingRef.delete();
+      return res.status(200).send('PREFS_DISABLED');
+    }
+
+    const now = new Date();
+    const inQuietHours =
+      prefs.quietHoursEnabled &&
+      isWithinQuietHours(prefs.quietHoursStart, prefs.quietHoursEnd, now);
+    if (prefs.digestMode !== 'instant' || inQuietHours) {
+      await trackingRef.delete();
+      return res.status(200).send('PREFS_DISABLED');
+    }
+
+    // 5. Build notification content based on unread count
+    const unreadCount = chatSnap.exists
+      ? ((chatSnap.data() || {}).unreadCountByUser || {})[recipientUid] || 1
+      : 1;
+
+    let title;
+    let body;
+
+    if (isDirect) {
+      title = senderName || 'New message';
+      if (unreadCount > 1) {
+        body = `${senderName} sent you ${unreadCount} messages`;
+      } else {
+        body = latestMessagePreview || 'Sent a message';
+      }
+    } else {
+      title = chatType === 'game' ? 'Game chat' : 'Group chat';
+      if (unreadCount > 1) {
+        body = `${unreadCount} new messages`;
+      } else {
+        body = senderName
+          ? `${senderName}: ${latestMessagePreview || 'Sent a message'}`
+          : latestMessagePreview || 'Sent a message';
+      }
+    }
+
+    // 6. Write notification doc
+    const timestamp = Date.now();
+    const notificationRef = userRef
+      .collection('notifications')
+      .doc(`chat_${chatId}_debounced_${timestamp}`);
+
+    await notificationRef.set({
+      type: 'chat_message',
+      title,
+      body,
+      data: {
+        threadId: chatId,
+        senderId: senderId || '',
+      },
+      read: false,
+      createdAt: admin.firestore.FieldValue.serverTimestamp(),
+      dedupeKey: `chat:${chatId}:debounced:${timestamp}`,
     });
 
-    // Clean up invalid tokens
-    const invalidRefs = [];
-    response.responses.forEach((resp, index) => {
-      if (resp.success) return;
-      const code = resp.error?.code || '';
-      if (
-        code === 'messaging/registration-token-not-registered' ||
-        code === 'messaging/invalid-registration-token'
-      ) {
-        invalidRefs.push(deviceTokens[index]?.ref);
+    // 7. Fetch FCM tokens and send
+    const deviceSnap = await userRef.collection('devices').get();
+    if (deviceSnap.empty) {
+      await trackingRef.delete();
+      return res.status(200).send('OK');
+    }
+
+    const deviceTokens = [];
+    deviceSnap.docs.forEach((doc) => {
+      const token = doc.data()?.fcmToken;
+      if (typeof token === 'string' && token.length > 0) {
+        deviceTokens.push({ token, ref: doc.ref });
       }
     });
-    if (invalidRefs.length > 0) {
-      await Promise.all(
-        invalidRefs.filter((ref) => ref).map((ref) => ref.delete()),
-      );
+
+    if (deviceTokens.length === 0) {
+      await trackingRef.delete();
+      return res.status(200).send('OK');
     }
-  } catch (error) {
-    console.error('[ChatDebounce] Notification send failed', {
-      recipientUid,
-      error: error.message,
-    });
 
-    await userRef.update({
-      'notification_state.last_error': {
-        message: error.message || 'Failed to send notification',
-        code: error.code || 'unknown',
-        timestamp: admin.firestore.FieldValue.serverTimestamp(),
-        type: 'notification_send',
+    const message = {
+      notification: { title, body },
+      data: {
+        initialPageName: 'ChatDetails',
+        parameterData: JSON.stringify({ chatId }),
+        type: 'chat_message',
+        threadId: chatId,
       },
-    });
-  }
+      android: {
+        priority: 'high',
+        notification: {
+          channelId: 'fmm_general',
+          sound: 'default',
+        },
+      },
+      apns: {
+        headers: {
+          'apns-push-type': 'alert',
+          'apns-priority': '10',
+        },
+        payload: {
+          aps: {
+            sound: 'default',
+            badge: 1,
+            'mutable-content': 1,
+          },
+        },
+      },
+      tokens: deviceTokens.map((entry) => entry.token),
+    };
 
-  // 8. Clean up tracking doc
-  await trackingRef.delete();
-  return res.status(200).send('OK');
+    try {
+      const response = await admin.messaging().sendEachForMulticast(message);
+
+      // Record success
+      await userRef.update({
+        'notification_state.last_send_success': admin.firestore.FieldValue.serverTimestamp(),
+      });
+
+      // Clean up invalid tokens
+      const invalidRefs = [];
+      response.responses.forEach((resp, index) => {
+        if (resp.success) return;
+        const code = resp.error?.code || '';
+        if (
+          code === 'messaging/registration-token-not-registered' ||
+          code === 'messaging/invalid-registration-token'
+        ) {
+          invalidRefs.push(deviceTokens[index]?.ref);
+        }
+      });
+      if (invalidRefs.length > 0) {
+        await Promise.all(
+          invalidRefs.filter((ref) => ref).map((ref) => ref.delete()),
+        );
+      }
+    } catch (error) {
+      console.error('[ChatDebounce] Notification send failed', {
+        recipientUid,
+        error: error.message,
+      });
+
+      await userRef.update({
+        'notification_state.last_error': {
+          message: error.message || 'Failed to send notification',
+          code: error.code || 'unknown',
+          timestamp: admin.firestore.FieldValue.serverTimestamp(),
+          type: 'notification_send',
+        },
+      });
+    }
+
+    // 8. Clean up tracking doc
+    await trackingRef.delete();
+    return res.status(200).send('OK');
+  } catch (err) {
+    console.error(`[ChatDebounce] Error delivering notification for chat ${chatId}:`, err);
+    return res.status(classifyErrorStatus(err)).send('ERROR');
+  }
 }
 
 module.exports = {

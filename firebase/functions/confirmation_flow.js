@@ -43,6 +43,7 @@ const { onGameConfirmed, onHostCheckinCompleted, onGameCancelled } = require('./
 const { onJoinRequestExpired } = require('./join_request_notifications');
 const { randomUUID } = require('crypto');
 const { CloudTasksClient } = require('@google-cloud/tasks');
+const { classifyErrorStatus } = require('./utils/error_classification');
 
 // ─────────────────────────────────────────────────────────────────────────────
 // CONSTANTS
@@ -446,7 +447,7 @@ async function _processScheduledGameStatusChangeHandler(req, res, db = null) {
     return res.status(200).send('OK');
   } catch (err) {
     console.error(`processScheduledGameStatusChange: error for game ${gameId}:`, err);
-    return res.status(500).send('ERROR');
+    return res.status(classifyErrorStatus(err)).send('ERROR');
   }
 }
 
@@ -490,7 +491,7 @@ async function _processScheduledWindowCloseHandler(req, res, db = null) {
     return res.status(200).send('OK');
   } catch (err) {
     console.error(`processScheduledWindowClose: error for job ${jobId}:`, err);
-    return res.status(500).send('ERROR');
+    return res.status(classifyErrorStatus(err)).send('ERROR');
   }
 }
 
@@ -584,7 +585,7 @@ async function _processScheduledPreGameCheckHandler(req, res, db = null) {
     return res.status(200).send('OK');
   } catch (err) {
     console.error(`processScheduledPreGameCheck: error for game ${gameId}:`, err);
-    return res.status(500).send('ERROR');
+    return res.status(classifyErrorStatus(err)).send('ERROR');
   }
 }
 
@@ -623,7 +624,7 @@ async function _processScheduledPreGameTimeoutHandler(req, res, db = null) {
     return res.status(200).send('OK');
   } catch (err) {
     console.error(`processScheduledPreGameTimeout: error for game ${gameId}:`, err);
-    return res.status(500).send('ERROR');
+    return res.status(classifyErrorStatus(err)).send('ERROR');
   }
 }
 

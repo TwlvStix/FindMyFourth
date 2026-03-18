@@ -80,6 +80,15 @@ class _PushNotificationsHandlerState extends State<PushNotificationsHandler> {
           );
         } catch (e) {
           AppLog.d('🔔 PushNotificationsHandler: Error handling initial message: $e');
+          // Fallback: navigate to home screen so user isn't stuck
+          try {
+            final fallbackContext = appNavigatorKey.currentContext;
+            if (fallbackContext != null && fallbackContext.mounted) {
+              fallbackContext.pushNamed('GamesList');
+            }
+          } catch (fallbackError) {
+            AppLog.d('🔔 PushNotificationsHandler: Fallback navigation also failed: $fallbackError');
+          }
         }
       } else {
         AppLog.d('🔔 PushNotificationsHandler: No navigator context for initial message');
@@ -132,6 +141,15 @@ class _PushNotificationsHandlerState extends State<PushNotificationsHandler> {
       );
     } catch (e) {
       AppLog.d('🔔 PushNotificationsHandler: Error handling notification: $e');
+      // Fallback: navigate to home screen so user isn't stuck
+      try {
+        final fallbackContext = appNavigatorKey.currentContext;
+        if (fallbackContext != null && fallbackContext.mounted) {
+          fallbackContext.pushNamed('GamesList');
+        }
+      } catch (fallbackError) {
+        AppLog.d('🔔 PushNotificationsHandler: Fallback navigation also failed: $fallbackError');
+      }
     }
   }
 

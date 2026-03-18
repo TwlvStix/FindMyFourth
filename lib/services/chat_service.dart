@@ -65,7 +65,9 @@ class ChatService {
                     .map((doc) => Chat.fromDoc(doc))
                     .toList();
               })
-              .onErrorReturn(<Chat>[]);
+              .doOnError((error, stackTrace) {
+                AppLog.d('❌ ChatService.getChatListStream batch error: $error');
+              });
         });
 
         return Rx.combineLatestList<List<Chat>>(streams).map((batchResults) {
