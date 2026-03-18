@@ -28,8 +28,8 @@ class AppOpacity {
   /// Golf aesthetic: Morning mist on the fairway
   static const double light = 0.10;
 
-  /// 20% opacity - medium transparency for disabled states
-  /// Usage: Disabled text/icons, secondary overlays, subtle dividers
+  /// 20% opacity - medium transparency for overlays and glass effects
+  /// Usage: Secondary overlays, subtle dividers, glass surfaces
   /// Golf aesthetic: Faded yardage markers in the distance
   static const double medium = 0.20;
 
@@ -52,8 +52,9 @@ class AppOpacity {
   // SEMANTIC SHORTCUTS (USE CASE-SPECIFIC)
   // ============================================================================
 
-  /// Disabled state opacity - clear indication of non-interactive elements
-  static const double disabled = medium;
+  /// Disabled state opacity (0.38) - WCAG SC 1.4.11 compliant
+  /// Material Design 3 standard for non-interactive elements
+  static const double disabled = 0.38;
 
   /// Overlay opacity - modal/drawer backgrounds
   static const double overlay = strong;

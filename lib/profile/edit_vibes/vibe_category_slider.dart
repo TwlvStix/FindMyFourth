@@ -242,6 +242,10 @@ class _VibeCategorySliderState extends State<VibeCategorySlider> {
     );
   }
 
+  /// Semantic description for the dealbreaker badge
+  // Note: The badge container above is wrapped with visual indicators only;
+  // the Semantics wrapper on the entire card provides category context.
+
   /// Context-aware prompt text based on category and slider position
   String _dealbreakerPromptText(VibeCategory category, bool isMin) {
     switch (category) {
@@ -343,7 +347,9 @@ class _VibeCategorySliderState extends State<VibeCategorySlider> {
     final currentLabel = VibeLabels.labelFor(widget.category, _currentValue) ??
         _currentValue.toString();
 
-    return AppCard(
+    return Semantics(
+      label: '$title vibe preference',
+      child: AppCard(
       variant: AppCardVariant.darkSurface,
       margin: widget.margin,
       backgroundColor: AppColorsDark.navy.withValues(alpha: 0.4),
@@ -404,6 +410,10 @@ class _VibeCategorySliderState extends State<VibeCategorySlider> {
               value: _currentValue.toDouble(),
               min: VibePreference.minValue.toDouble(),
               max: VibePreference.maxValue.toDouble(),
+              semanticFormatterCallback: (value) {
+                final label = VibeLabels.labelFor(widget.category, value.round());
+                return label ?? '${value.round()} out of 5';
+              },
               onChanged: (value) {
                 _handleValueChanged(value);
               },
@@ -440,11 +450,15 @@ class _VibeCategorySliderState extends State<VibeCategorySlider> {
             child: _showDealbreakerPrompt
                 ? _buildDealbreakerPrompt()
                 : _dealbreakerConfirmed && _currentDealbreaker
-                    ? _buildDealbreakerBadge()
+                    ? Semantics(
+                        label: 'Dealbreaker set for $title',
+                        child: _buildDealbreakerBadge(),
+                      )
                     : const SizedBox.shrink(),
           ),
         ],
       ),
+    ),
     );
   }
 }

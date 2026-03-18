@@ -186,7 +186,6 @@ class FlexibleTimeSection extends StatelessWidget {
             child: Text(
               'No tee time yet? Pick when you\'re available — lock it in once you have your group.',
               style: AppTypography.bodySmall.copyWith(
-                fontSize: 13,
                 color: AppColors.textPrimary,
               ),
             ),
@@ -301,8 +300,7 @@ class FlexibleTimeSection extends StatelessWidget {
             ),
             child: Text(
               day['label'] as String,
-              style: AppTypography.labelSmall.copyWith(
-                fontSize: 13,
+              style: AppTypography.bodySmall.copyWith(
                 color: AppColors.textPrimary,
               ),
             ),
@@ -408,8 +406,7 @@ class FlexibleTimeSection extends StatelessWidget {
                 SizedBox(height: AppSpacing.xxs),
                 Text(
                   time['label'] as String,
-                  style: AppTypography.labelSmall.copyWith(
-                    fontSize: 11,
+                  style: AppTypography.labelMicro.copyWith(
                     fontWeight: isSelected ? FontWeight.w700 : FontWeight.w600,
                     color: AppColors.textPrimary,
                   ),
@@ -419,7 +416,6 @@ class FlexibleTimeSection extends StatelessWidget {
                 Text(
                   time['subtitle'] as String,
                   style: AppTypography.labelMicro.copyWith(
-                    fontSize: 9,
                     fontWeight: FontWeight.w400,
                     color: AppColors.glassTextSecondary,
                   ),

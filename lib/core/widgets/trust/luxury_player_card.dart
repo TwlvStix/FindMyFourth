@@ -142,9 +142,7 @@ class _CardBody extends StatelessWidget {
                         Flexible(
                           child: Text(
                             name,
-                            // TODO: fontSize 15 has no exact token match; using bodySmall + copyWith
                             style: AppTypography.bodySmall.copyWith(
-                              fontSize: 15,
                               fontWeight: AppTypography.semiBold,
                               color: _textPrimary,
                               letterSpacing: 0.2,

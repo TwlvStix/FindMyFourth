@@ -270,7 +270,6 @@ class _PremiumFriendCardState extends State<PremiumFriendCard>
           style: AppTypography.titleMedium.copyWith(
             color: PremiumFriendCard.textPrimary,
             fontWeight: FontWeight.w600,
-            fontSize: 18,
           ),
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
@@ -315,7 +314,6 @@ class _PremiumFriendCardState extends State<PremiumFriendCard>
                 locationParts.join(' · '),
                 style: AppTypography.labelSmall.copyWith(
                   color: AppColors.textMuted,
-                  fontSize: 12,
                   fontWeight: FontWeight.w400,
                 ),
                 overflow: TextOverflow.ellipsis,
@@ -330,7 +328,6 @@ class _PremiumFriendCardState extends State<PremiumFriendCard>
                   '·',
                   style: AppTypography.labelSmall.copyWith(
                     color: AppColors.textMuted,
-                    fontSize: 12,
                   ),
                 ),
               ),
@@ -344,7 +341,6 @@ class _PremiumFriendCardState extends State<PremiumFriendCard>
               '$vibePercent% match',
               style: AppTypography.labelSmall.copyWith(
                 color: AppColors.green,
-                fontSize: 12,
                 fontWeight: FontWeight.w500,
               ),
             ),
@@ -367,9 +363,8 @@ class _PremiumFriendCardState extends State<PremiumFriendCard>
           // HCP label
           Text(
             'HCP',
-            style: AppTypography.monoSmall.copyWith(
+            style: AppTypography.labelMicro.copyWith(
               color: AppColors.textSecondary,
-              fontSize: 9,
               fontWeight: FontWeight.w500,
               letterSpacing: 0.5,
             ),
@@ -377,9 +372,8 @@ class _PremiumFriendCardState extends State<PremiumFriendCard>
           // Handicap value
           Text(
             handicapText,
-            style: AppTypography.monoMedium.copyWith(
+            style: AppTypography.displaySmall.copyWith(
               color: AppColors.textPrimary,
-              fontSize: 32,
               fontWeight: FontWeight.w700,
               height: 1.0,
             ),

@@ -146,7 +146,9 @@ class _VibeSliderCardState extends State<VibeSliderCard> {
     final showAltHelper = widget.showAlternateHelper ??
         MediaQuery.sizeOf(context).width >= 380;
 
-    return AppCard(
+    return Semantics(
+      label: '$title vibe preference',
+      child: AppCard(
       variant: AppCardVariant.outlined,
       margin: widget.margin,
       padding: AppSpacing.card,
@@ -195,6 +197,10 @@ class _VibeSliderCardState extends State<VibeSliderCard> {
               min: VibePreference.minValue.toDouble(),
               max: VibePreference.maxValue.toDouble(),
               divisions: VibePreference.maxValue - VibePreference.minValue,
+              semanticFormatterCallback: (value) {
+                final label = VibeLabels.labelFor(widget.category, value.round());
+                return label ?? '${value.round()} out of 5';
+              },
               onChanged: _handleValueChanged,
               onChangeEnd: _handleValueChangeEnd,
             ),
@@ -234,16 +240,21 @@ class _VibeSliderCardState extends State<VibeSliderCard> {
                   ],
                 ),
               ),
-              Switch.adaptive(
-                value: _currentDealbreaker,
-                onChanged: _handleDealbreakerChanged,
-                activeTrackColor: AppColors.navy,
-                materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+              Semantics(
+                label: 'Dealbreaker for ${VibeLabels.titleFor(widget.category)}',
+                toggled: _currentDealbreaker,
+                child: Switch.adaptive(
+                  value: _currentDealbreaker,
+                  onChanged: _handleDealbreakerChanged,
+                  activeTrackColor: AppColors.navy,
+                  materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                ),
               ),
             ],
           ),
         ],
       ),
+    ),
     );
   }
 }

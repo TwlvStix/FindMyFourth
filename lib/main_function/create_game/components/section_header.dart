@@ -57,17 +57,15 @@ class SectionHeader extends StatelessWidget {
                     )
                   : Text(
                       emoji ?? '',
-                      style: TextStyle(fontSize: 18),
+                      style: AppTypography.titleMedium,
                     ),
             ),
           ),
           SizedBox(width: AppSpacing.sm),
           Text(
             title,
-            style: AppTypography.labelMedium.copyWith(
+            style: AppTypography.titleSmall.copyWith(
               color: AppColors.pure,
-              fontSize: 16,
-              fontWeight: FontWeight.w600,
             ),
           ),
           if (helpText != null && onHelpTap != null) ...[

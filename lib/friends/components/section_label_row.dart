@@ -30,8 +30,7 @@ class SectionLabelRow extends StatelessWidget {
         children: [
           Text(
             label.toUpperCase(),
-            style: AppTypography.labelSmall.copyWith(
-              fontSize: 11,
+            style: AppTypography.labelMicro.copyWith(
               letterSpacing: 0.8,
               color: AppColors.textMuted,
             ),

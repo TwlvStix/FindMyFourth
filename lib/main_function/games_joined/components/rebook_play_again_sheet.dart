@@ -134,7 +134,6 @@ class _RebookPlayAgainSheetState extends State<RebookPlayAgainSheet> {
                   Text(
                     'Play Again',
                     style: AppTypography.headlineMediumSans.copyWith(
-                      fontSize: 22,
                       color: AppColors.pure,
                     ),
                   ),

@@ -243,8 +243,7 @@ class _AddPlayerModalState extends State<AddPlayerModal> {
                   alignment: Alignment.centerLeft,
                   child: Text(
                     'Tap a player to add them to this slot',
-                    style: AppTypography.labelSmall.copyWith(
-                      fontSize: 13,
+                    style: AppTypography.bodySmall.copyWith(
                       color: AppColors.stone,
                     ),
                   ),

@@ -5,6 +5,7 @@ import '/core/design_tokens/colors.dart';
 import '/core/design_tokens/spacing.dart';
 import '/core/design_tokens/icon_size.dart';
 import '/core/design_tokens/border_radius.dart';
+import '/core/design_tokens/typography.dart';
 
 /// Swipeable wrapper for friend cards with quick actions
 /// Swipe right: Primary action (Accept/Message)
@@ -180,10 +181,9 @@ class _SwipeableFriendCardState extends State<SwipeableFriendCard>
                 if (label != null)
                   Text(
                     label,
-                    style: TextStyle(
+                    style: AppTypography.bodySmall.copyWith(
                       color: color.withValues(alpha:opacity),
                       fontWeight: FontWeight.w600,
-                      fontSize: 14,
                     ),
                   ),
               ],

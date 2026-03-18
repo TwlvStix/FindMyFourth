@@ -75,10 +75,9 @@ class _FriendsEmptyStateState extends State<FriendsEmptyState>
             // Title
             Text(
               _getTitle(),
-              style: AppTypography.titleLarge.copyWith(
+              style: AppTypography.headlineMediumSans.copyWith(
                 color: AppColors.textPrimary,
                 fontWeight: FontWeight.w700,
-                fontSize: 22,
               ),
               textAlign: TextAlign.center,
             ),
@@ -90,10 +89,9 @@ class _FriendsEmptyStateState extends State<FriendsEmptyState>
               padding: EdgeInsets.symmetric(horizontal: AppSpacing.lg),
               child: Text(
                 _getDescription(),
-                style: AppTypography.bodyMedium.copyWith(
+                style: AppTypography.bodySmall.copyWith(
                   color: AppColors.textSecondary,
                   height: 1.6,
-                  fontSize: 15,
                 ),
                 textAlign: TextAlign.center,
               ),

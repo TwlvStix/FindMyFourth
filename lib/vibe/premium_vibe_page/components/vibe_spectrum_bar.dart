@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:find_my_fourth/core/design_tokens/colors.dart';
 import 'package:find_my_fourth/core/design_tokens/typography.dart';
 import 'package:find_my_fourth/core/design_tokens/border_radius.dart';
+import 'package:find_my_fourth/models/vibe_labels.dart';
 import 'package:find_my_fourth/models/vibe_profile.dart';
 import 'package:find_my_fourth/vibe/premium_vibe_page/styles/premium_vibe_page_styles.dart';
 
@@ -40,9 +41,21 @@ class VibeSpectrumBar extends StatelessWidget {
   /// Dot size
   static const double _dotSize = 10.0;
 
+  /// Builds a semantic description of the spectrum bar for screen readers.
+  String _semanticDescription() {
+    final categoryName = VibeLabels.titleFor(category);
+    final matchText = myValue == theirValue ? ', exact match' : '';
+    final myDb = myIsDealbreaker ? ' (dealbreaker)' : '';
+    final theirDb = theirIsDealbreaker ? ' (dealbreaker)' : '';
+    return '$categoryName comparison: You at $myValue out of 5$myDb, them at $theirValue out of 5$theirDb$matchText';
+  }
+
   @override
   Widget build(BuildContext context) {
-    return LayoutBuilder(
+    return Semantics(
+      label: _semanticDescription(),
+      excludeSemantics: true,
+      child: LayoutBuilder(
       builder: (context, constraints) {
         final totalWidth = constraints.maxWidth;
         // Available width for spectrum, accounting for padding on both sides
@@ -126,6 +139,7 @@ class VibeSpectrumBar extends StatelessWidget {
           ),
         );
       },
+    ),
     );
   }
 

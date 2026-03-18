@@ -54,7 +54,6 @@ void showCreateGameHelpDialog(
             Text(
               title,
               style: AppTypography.headlineMediumSans.copyWith(
-                fontSize: 22,
                 color: AppColors.textPrimary,
               ),
               textAlign: TextAlign.center,

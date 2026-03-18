@@ -60,10 +60,9 @@ class FriendCardAvatar extends StatelessWidget {
         child: initials.isNotEmpty
             ? Text(
                 initials,
-                style: AppTypography.labelMedium.copyWith(
+                style: AppTypography.bodyMedium.copyWith(
                   color: AppColors.textMuted,
                   fontWeight: FontWeight.w600,
-                  fontSize: 16,
                 ),
               )
             : AppIcon(

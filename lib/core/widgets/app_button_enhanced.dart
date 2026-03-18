@@ -45,7 +45,7 @@ enum AppButtonVariant {
 
 /// Button size presets with proper touch targets
 enum AppButtonSize {
-  /// Small button (36px height) - compact UI elements
+  /// Small button (44px height) - compact UI, meets accessibility minimum
   small,
 
   /// Medium button (48px height) - standard size, meets accessibility
@@ -241,7 +241,7 @@ class _AppButtonEnhancedState extends State<AppButtonEnhanced>
   double get _height {
     switch (widget.size) {
       case AppButtonSize.small:
-        return 36.0;
+        return 44.0;
       case AppButtonSize.medium:
         return 48.0;
       case AppButtonSize.large:

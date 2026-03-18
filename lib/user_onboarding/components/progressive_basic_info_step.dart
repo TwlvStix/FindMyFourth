@@ -4,6 +4,7 @@ import '/core/design_tokens/border_radius.dart';
 import '/core/design_tokens/colors.dart';
 import '/core/design_tokens/spacing.dart';
 import '/core/design_tokens/typography.dart';
+import '/core/utils/input_sanitizer.dart';
 
 /// Data contract for BasicInfoStep props.
 class BasicInfoFormData {
@@ -162,6 +163,8 @@ class ProgressiveBasicInfoStep extends StatelessWidget {
               controller: data.username,
               focusNode: data.usernameFocus,
               obscureText: false,
+              maxLength: InputSanitizer.maxDisplayName,
+              buildCounter: (context, {required currentLength, required isFocused, maxLength}) => null,
               decoration: _buildInputDecoration(
                 labelText: 'Username',
                 hintText: 'Choose a unique username',

@@ -67,7 +67,6 @@ class PlayerSlotCard extends StatelessWidget {
                 child: Text(
                   slotLabel,
                   style: AppTypography.bodySmall.copyWith(
-                    fontSize: 15,
                     fontWeight: FontWeight.w500,
                     color: AppColors.textMuted,
                     letterSpacing: 0.2,
@@ -158,7 +157,6 @@ class PlayerSlotCard extends StatelessWidget {
                 Text(
                   playerData!.name,
                   style: AppTypography.labelMedium.copyWith(
-                    fontSize: 15,
                     color: AppColors.textPrimary,
                     letterSpacing: 0.2,
                   ),

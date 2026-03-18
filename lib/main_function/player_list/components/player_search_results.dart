@@ -88,8 +88,7 @@ class PlayerSearchResults extends StatelessWidget {
         padding: EdgeInsets.symmetric(vertical: AppSpacing.md),
         child: Text(
           'Type at least $minSearchChars characters to search members.',
-          style: AppTypography.labelSmall.copyWith(
-            fontSize: 13,
+          style: AppTypography.bodySmall.copyWith(
             color: AppColors.stone,
           ),
           textAlign: TextAlign.center,
@@ -113,8 +112,7 @@ class PlayerSearchResults extends StatelessWidget {
         padding: EdgeInsets.symmetric(vertical: AppSpacing.md),
         child: Text(
           'No members found.',
-          style: AppTypography.labelSmall.copyWith(
-            fontSize: 13,
+          style: AppTypography.bodySmall.copyWith(
             color: AppColors.stone,
           ),
           textAlign: TextAlign.center,

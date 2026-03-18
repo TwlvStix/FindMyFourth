@@ -286,9 +286,8 @@ class _PlayerListWidgetState extends State<PlayerListWidget> {
                                               ),
                                               Text(
                                                 'Tap a slot to add',
-                                                style: AppTypography.labelSmall
+                                                style: AppTypography.bodySmall
                                                     .copyWith(
-                                                  fontSize: 13,
                                                   color: AppColors.stone,
                                                 ),
                                               ),
@@ -322,9 +321,8 @@ class _PlayerListWidgetState extends State<PlayerListWidget> {
                                         if (remainingSlots == 0) ...[
                                           Text(
                                             'This game is already full.',
-                                            style: AppTypography.labelSmall
+                                            style: AppTypography.bodySmall
                                                 .copyWith(
-                                              fontSize: 13,
                                               color: AppColors.stone,
                                             ),
                                           ),

@@ -258,8 +258,7 @@ class _UnifiedGameCardState extends State<UnifiedGameCard>
                     ),
                     child: Text(
                       '\u26A1 FLEXIBLE',
-                      style: TextStyle(
-                        fontSize: 9,
+                      style: AppTypography.labelMicro.copyWith(
                         fontWeight: FontWeight.w700,
                         color: AppColors.green,
                         letterSpacing: 0.08,

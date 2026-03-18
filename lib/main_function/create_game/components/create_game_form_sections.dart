@@ -615,8 +615,7 @@ class CreateGameFormSections extends StatelessWidget {
                       children: [
                         Text(
                           'Game Summary',
-                          style: AppTypography.labelSmall.copyWith(
-                            fontSize: 13,
+                          style: AppTypography.bodySmall.copyWith(
                             fontWeight: FontWeight.w500,
                             color: AppColors.glassTextSecondary,
                           ),

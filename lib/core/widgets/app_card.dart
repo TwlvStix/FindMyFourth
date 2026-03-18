@@ -84,6 +84,7 @@ class AppCard extends StatefulWidget {
     this.elevation,
     this.borderColor,
     this.borderWidth,
+    this.semanticLabel,
   });
 
   /// Content to display inside the card
@@ -121,6 +122,9 @@ class AppCard extends StatefulWidget {
 
   /// Border width override (for outlined variant)
   final double? borderWidth;
+
+  /// Semantic label for screen readers
+  final String? semanticLabel;
 
   @override
   State<AppCard> createState() => _AppCardState();
@@ -243,6 +247,15 @@ class _AppCardState extends State<AppCard>
       );
     }
 
+    if (widget.semanticLabel != null) {
+      cardContent = Semantics(
+        label: widget.semanticLabel,
+        button: widget.onTap != null,
+        container: widget.onTap == null,
+        child: cardContent,
+      );
+    }
+
     return cardContent;
   }
 
@@ -344,6 +357,7 @@ class GameCard extends StatelessWidget {
     this.metadata,
     this.trailing,
     this.onTap,
+    this.semanticLabel,
   });
 
   final String title;
@@ -351,12 +365,14 @@ class GameCard extends StatelessWidget {
   final String? metadata;
   final Widget? trailing;
   final VoidCallback? onTap;
+  final String? semanticLabel;
 
   @override
   Widget build(BuildContext context) {
     return AppCard(
       variant: AppCardVariant.gradientAccent,
       onTap: onTap,
+      semanticLabel: semanticLabel ?? title,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -481,17 +497,20 @@ class SectionCard extends StatelessWidget {
     required this.child,
     this.subtitle,
     this.action,
+    this.semanticLabel,
   });
 
   final String title;
   final String? subtitle;
   final Widget child;
   final Widget? action;
+  final String? semanticLabel;
 
   @override
   Widget build(BuildContext context) {
     return AppCard(
       variant: AppCardVariant.elevated,
+      semanticLabel: semanticLabel ?? title,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [

@@ -67,7 +67,6 @@ class FirmItUpBanner extends StatelessWidget {
                     Text(
                       'Lock in your date, time, and course',
                       style: AppTypography.bodySmall.copyWith(
-                        fontSize: 13,
                         color: AppColors.textSecondary,
                       ),
                     ),

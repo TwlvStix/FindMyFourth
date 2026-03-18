@@ -8,6 +8,7 @@ import '/core/design_tokens/typography.dart';
 import '/core/design_tokens/app_phosphor_icons.dart';
 import '/core/form_field_controller.dart';
 import '/core/widgets/app_drop_down.dart';
+import '/core/utils/input_sanitizer.dart';
 import '/core/widgets/app_text_field.dart';
 import 'profile_date_picker_field.dart';
 import 'profile_hometown_dropdown.dart';
@@ -113,6 +114,8 @@ class PersonalInfoSection extends StatelessWidget {
             icon: AppPhosphorIcons.atSign,
             validator: validateUsername,
             focusNode: usernameFocusNode,
+            maxLength: InputSanitizer.maxDisplayName,
+            showCounter: false,
           ),
           SizedBox(height: AppSpacing.md),
 
@@ -176,6 +179,8 @@ class PersonalInfoSection extends StatelessWidget {
     TextInputType? keyboardType,
     List<TextInputFormatter>? inputFormatters,
     FocusNode? focusNode,
+    int? maxLength,
+    bool showCounter = true,
   }) {
     return AppTextField(
       label: label,
@@ -188,6 +193,8 @@ class PersonalInfoSection extends StatelessWidget {
       inputFormatters: inputFormatters,
       validator: validator != null ? (val) => validator(context, val) : null,
       focusNode: focusNode,
+      maxLength: maxLength,
+      showCounter: showCounter,
     );
   }
 

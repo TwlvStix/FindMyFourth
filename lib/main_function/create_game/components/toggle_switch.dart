@@ -63,7 +63,6 @@ class ToggleSwitch extends StatelessWidget {
                   description,
                   style: AppTypography.bodySmall.copyWith(
                     color: AppColors.glassTextSecondary,
-                    fontSize: 13,
                   ),
                 ),
               ],

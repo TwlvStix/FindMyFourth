@@ -43,6 +43,7 @@ class AppBadge extends StatelessWidget {
   final AppBadgeSize size;
   final IconData? icon;
   final PhosphorIconData? phosphorIcon;
+  final String? semanticLabel;
 
   const AppBadge({
     super.key,
@@ -51,6 +52,7 @@ class AppBadge extends StatelessWidget {
     this.size = AppBadgeSize.medium,
     this.icon,
     this.phosphorIcon,
+    this.semanticLabel,
   });
 
   @override
@@ -59,39 +61,44 @@ class AppBadge extends StatelessWidget {
     final textStyle = _getTextStyle();
     final padding = _getPadding();
 
-    return Container(
-      padding: padding,
-      decoration: BoxDecoration(
-        color: colors.background,
-        borderRadius: BorderRadius.circular(AppBorderRadius.full),
-        border: Border.all(
-          color: colors.borderColor,
-          width: 1,
-        ),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          if (phosphorIcon != null) ...[
-            AppIcon(
-              icon: phosphorIcon!,
-              color: colors.textColor,
-              size: _getIconSize(),
-            ),
-            SizedBox(width: AppSpacing.xxs),
-          ] else if (icon != null) ...[
-            Icon(
-              icon,
-              color: colors.textColor,
-              size: _getIconSize(),
-            ),
-            SizedBox(width: AppSpacing.xxs),
-          ],
-          Text(
-            label,
-            style: textStyle.copyWith(color: colors.textColor),
+    return Semantics(
+      label: semanticLabel ?? label,
+      container: true,
+      excludeSemantics: true,
+      child: Container(
+        padding: padding,
+        decoration: BoxDecoration(
+          color: colors.background,
+          borderRadius: BorderRadius.circular(AppBorderRadius.full),
+          border: Border.all(
+            color: colors.borderColor,
+            width: 1,
           ),
-        ],
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            if (phosphorIcon != null) ...[
+              AppIcon(
+                icon: phosphorIcon!,
+                color: colors.textColor,
+                size: _getIconSize(),
+              ),
+              SizedBox(width: AppSpacing.xxs),
+            ] else if (icon != null) ...[
+              Icon(
+                icon,
+                color: colors.textColor,
+                size: _getIconSize(),
+              ),
+              SizedBox(width: AppSpacing.xxs),
+            ],
+            Text(
+              label,
+              style: textStyle.copyWith(color: colors.textColor),
+            ),
+          ],
+        ),
       ),
     );
   }

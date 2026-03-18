@@ -196,7 +196,6 @@ class _RebookChangeCourseSheetState extends State<RebookChangeCourseSheet> {
                       Text(
                         'Change Course',
                         style: AppTypography.headlineMediumSans.copyWith(
-                          fontSize: 22,
                           color: AppColors.pure,
                         ),
                       ),

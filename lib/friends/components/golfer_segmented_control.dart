@@ -118,8 +118,7 @@ class GolferSegmentedControl extends StatelessWidget {
       ),
       child: Text(
         count > 99 ? '99+' : count.toString(),
-        style: AppTypography.labelSmall.copyWith(
-          fontSize: 11,
+        style: AppTypography.labelMicro.copyWith(
           fontWeight: FontWeight.w700,
           color: AppColors.navyDark,
           height: 1.2,

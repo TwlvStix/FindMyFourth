@@ -59,7 +59,6 @@ class PremiumDatePicker extends StatelessWidget {
                     Text(
                       'Pick a Date',
                       style: AppTypography.headlineMediumSans.copyWith(
-                        fontSize: 22,
                         color: AppColors.pure,
                       ),
                     ),

@@ -91,8 +91,7 @@ class CurrentUserCard extends StatelessWidget {
                     const SizedBox(height: 2.0),
                     Text(
                       'Game Creator',
-                      style: AppTypography.labelSmall.copyWith(
-                        fontSize: 13,
+                      style: AppTypography.bodySmall.copyWith(
                         color: AppColors.textMuted,
                       ),
                     ),

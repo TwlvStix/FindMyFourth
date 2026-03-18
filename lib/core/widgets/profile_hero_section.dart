@@ -5,6 +5,7 @@ import '/core/design_tokens/colors.dart';
 import '/core/design_tokens/elevation.dart';
 import '/core/design_tokens/icon_size.dart';
 import '/core/design_tokens/spacing.dart';
+import '/core/design_tokens/typography.dart';
 import '/core/widgets/app_icon.dart';
 
 /// Premium profile hero section with animated gradient ring around avatar.
@@ -195,8 +196,7 @@ class _ProfileHeroSectionState extends State<ProfileHeroSection>
               child: Text(
                 widget.displayName,
                 textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontSize: 28,
+                style: AppTypography.headlineMediumSans.copyWith(
                   fontWeight: FontWeight.w700,
                   color: AppColors.pure,
                   letterSpacing: -0.5,

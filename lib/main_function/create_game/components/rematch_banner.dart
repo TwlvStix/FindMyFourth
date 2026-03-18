@@ -76,7 +76,6 @@ class RematchBanner extends StatelessWidget {
                   subtitle,
                   style: AppTypography.bodySmall.copyWith(
                     color: AppColors.textSecondary,
-                    fontSize: 13,
                   ),
                 ),
               ],

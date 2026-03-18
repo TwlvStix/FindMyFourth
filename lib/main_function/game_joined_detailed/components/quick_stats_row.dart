@@ -98,7 +98,7 @@ class QuickStatsRow extends StatelessWidget {
                       size: AppIconSize.button,
                     ),
                     borderRadius: 8.0,
-                    buttonSize: 32.0,
+                    buttonSize: 44.0,
                     fillColor: AppColors.navy.withValues(alpha: 0.3),
                     onPressed: onEditPressed,
                     tooltip: 'Edit game details',

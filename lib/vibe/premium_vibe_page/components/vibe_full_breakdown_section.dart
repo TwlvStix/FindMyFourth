@@ -46,7 +46,12 @@ class VibeFullBreakdownSection extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // Tappable header row with chevron
-          GestureDetector(
+          Semantics(
+            button: true,
+            label: isExpanded
+                ? 'Collapse full category breakdown'
+                : 'Expand full category breakdown',
+            child: GestureDetector(
             onTap: onToggle,
             behavior: HitTestBehavior.opaque,
             child: Row(
@@ -66,6 +71,7 @@ class VibeFullBreakdownSection extends StatelessWidget {
                 ),
               ],
             ),
+          ),
           ),
 
           // Expanded content (all categories with spectrum bars)

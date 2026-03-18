@@ -44,8 +44,7 @@ class FriendCardVibeBadge extends StatelessWidget {
           AppSpacing.horizontalXxs,
           Text(
             '$score%',
-            style: AppTypography.labelSmall.copyWith(
-              fontSize: 11,
+            style: AppTypography.labelMicro.copyWith(
               color: AppColors.textSecondary,
               letterSpacing: 0.2,
             ),
@@ -84,8 +83,7 @@ class FriendCardHandicapBadge extends StatelessWidget {
       ),
       child: Text(
         'HCP $handicapText',
-        style: AppTypography.labelSmall.copyWith(
-          fontSize: 11,
+        style: AppTypography.labelMicro.copyWith(
           fontWeight: FontWeight.w600,
           color: AppColors.textSecondary,
           letterSpacing: 0.2,

@@ -244,7 +244,13 @@ Prefixed with `app_` and built on design tokens. Key widgets: `app_button_enhanc
 - Replace remaining `withOpacity()` calls with `Color.withValues(alpha:)` or pre-computed constants
 - Some files still use `AppTheme.of(context)` — migrate to direct tokens
 - `caption` token used in ~10 files — consolidate to `labelSmall`
-- ~5 flutter analyze issues remaining (unnecessary imports)
+- Remaining hardcoded `fontSize` (deferred — low-priority or intentional):
+  - `archetype_share_card.dart` (screenshot export, intentional fixed sizes)
+  - `cinematic_foursome_toast.dart`, `cinematic_notification_banner.dart` (onboarding animations)
+  - `cancellation_warning_modal.dart`, `trust_profile_section.dart` (trust screens)
+  - `quiet_hours_content.dart` (settings)
+  - `chat_reaction_picker.dart` (emoji size, intentional)
+  - `main.dart:476` (debug label)
 
 #### Microcopy & Content Guidelines (`lib/core/content/app_copy.dart`)
 
@@ -427,6 +433,13 @@ When adding a new feature, the typical file set is:
 - **Don't put direct Firebase calls in controllers or providers** — see the ⛔ HARD RULE block in the Architecture section above and `.claude/rules/services.md`
 - **`lib/custom_code/`** is excluded from analysis — avoid depending on it for new features
 - **`lib/app_state.dart`** is legacy — only holds SharedPreferences-backed cancelled game state; use domain providers instead
+
+## Accessibility
+
+- **Vibe sliders**: Use `semanticFormatterCallback` on all `Slider` widgets to announce descriptive labels (from `VibeLabels.labelFor()`) instead of raw numeric values
+- **Comparison visuals** (e.g., `VibeSpectrumBar`): Wrap in `Semantics(excludeSemantics: true, label: '...')` with a plain-language description of the comparison
+- **Expand/collapse toggles**: Wrap `GestureDetector` toggles in `Semantics(button: true, label: 'Expand/Collapse ...')`
+- **Dealbreaker switches**: Wrap in `Semantics(toggled: value, label: 'Dealbreaker for {category}')`
 
 ## Vibe System
 

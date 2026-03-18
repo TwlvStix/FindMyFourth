@@ -41,6 +41,7 @@ class AppAvatar extends StatelessWidget {
   final AppAvatarSize size;
   final AppAvatarShape shape;
   final Color? backgroundColor;
+  final String? semanticLabel;
 
   const AppAvatar({
     super.key,
@@ -49,6 +50,7 @@ class AppAvatar extends StatelessWidget {
     this.size = AppAvatarSize.medium,
     this.shape = AppAvatarShape.circle,
     this.backgroundColor,
+    this.semanticLabel,
   });
 
   @override
@@ -59,7 +61,7 @@ class AppAvatar extends StatelessWidget {
 
     final hasValidImage = imageUrl != null && imageUrl!.isNotEmpty;
 
-    return Container(
+    final container = Container(
       width: dimension,
       height: dimension,
       decoration: BoxDecoration(
@@ -83,6 +85,16 @@ class AppAvatar extends StatelessWidget {
             )
           : null,
     );
+
+    if (semanticLabel != null) {
+      return Semantics(
+        label: semanticLabel,
+        image: true,
+        child: container,
+      );
+    }
+
+    return ExcludeSemantics(child: container);
   }
 
   double _getDimension() {

@@ -64,7 +64,6 @@ class GameInProgressBanner extends StatelessWidget {
                 Text(
                   'Round in progress — game settings locked',
                   style: AppTypography.bodySmall.copyWith(
-                    fontSize: 13,
                     color: AppColors.textSecondary,
                   ),
                 ),

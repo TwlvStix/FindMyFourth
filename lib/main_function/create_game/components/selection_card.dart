@@ -100,7 +100,7 @@ class SelectionCard extends StatelessWidget {
                     )
                   : emoji != null
                       ? Center(
-                          child: Text(emoji!, style: AppTypography.bodyLarge.copyWith(fontSize: 18)),
+                          child: Text(emoji!, style: AppTypography.bodyLarge),
                         )
                       : icon != null
                           ? Icon(icon, color: AppColors.pure, size: AppIconSize.button)

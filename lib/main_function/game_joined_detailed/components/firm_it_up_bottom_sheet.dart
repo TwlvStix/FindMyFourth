@@ -106,7 +106,6 @@ class _FirmItUpBottomSheetState extends State<FirmItUpBottomSheet> {
               Text(
                 'Set Tee Time & Course',
                 style: AppTypography.headlineMediumSans.copyWith(
-                  fontSize: 22,
                   color: AppColors.pure,
                 ),
               ),
@@ -254,8 +253,8 @@ class _FirmItUpBottomSheetState extends State<FirmItUpBottomSheet> {
     );
   }
 
-  TextStyle _labelStyle(BuildContext context) => AppTypography.labelSmall.copyWith(
-    fontSize: 13,
+  TextStyle _labelStyle(BuildContext context) => AppTypography.bodySmall.copyWith(
+    fontWeight: AppTypography.semiBold,
     color: AppColors.pure,
   );
 }

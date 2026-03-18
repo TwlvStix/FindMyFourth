@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import '/core/utils/app_log.dart';
+import '/core/utils/input_sanitizer.dart';
 import '/models/chat_message.dart';
 import '/core/design_tokens/app_phosphor_icons.dart';
 import '/core/design_tokens/spacing.dart';
@@ -148,6 +149,10 @@ class ChatInputBar extends StatelessWidget {
                   keyboardType: TextInputType.multiline,
                   minLines: 1,
                   maxLines: 5,
+                  // TODO: Add server-side maxLength validation in Firestore security rules
+                  // Client-side maxLength is a UX guardrail, not a security boundary
+                  maxLength: InputSanitizer.maxChatMessage,
+                  buildCounter: (context, {required currentLength, required isFocused, maxLength}) => null,
                   enabled: enabled,
                   cursorColor: AppColors.textPrimary,
                   onChanged: (value) {

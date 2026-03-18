@@ -301,7 +301,6 @@ class BrandedGolfHeader extends StatelessWidget {
                     child: Text(
                       username,
                       style: AppTypography.headlineMediumSans.copyWith(
-                        fontSize: 26,
                         color: AppColors.pure,
                         letterSpacing: -0.5,
                         height: 1.2,
@@ -332,7 +331,6 @@ class BrandedGolfHeader extends StatelessWidget {
                       courseName,
                       textAlign: TextAlign.right,
                       style: AppTypography.bodySmall.copyWith(
-                        fontSize: 15,
                         fontWeight: FontWeight.w500,
                         color: AppColors.whiteStrong,
                         letterSpacing: 0.2,

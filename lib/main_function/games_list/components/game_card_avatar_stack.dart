@@ -149,8 +149,7 @@ class _StackedAvatar extends StatelessWidget {
           ? Center(
               child: Text(
                 initials,
-                style: TextStyle(
-                  fontSize: 9,
+                style: AppTypography.labelMicro.copyWith(
                   fontWeight: FontWeight.w700,
                   color: AppColors.pure,
                   letterSpacing: 0.02,

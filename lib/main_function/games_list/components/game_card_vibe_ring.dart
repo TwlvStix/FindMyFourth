@@ -136,8 +136,7 @@ class _GameCardVibeRingState extends State<GameCardVibeRing>
             children: [
               Text(
                 widget.vibeScore.round().toString(),
-                style: AppTypography.monoMedium.copyWith(
-                  fontSize: 13,
+                style: AppTypography.monoSmall.copyWith(
                   fontWeight: FontWeight.w700,
                   color: ringColor,
                   height: 1,
@@ -146,9 +145,7 @@ class _GameCardVibeRingState extends State<GameCardVibeRing>
               SizedBox(height: 1),
               Text(
                 'VIBE',
-                style: TextStyle(
-                  fontSize: 7.5,
-                  fontWeight: FontWeight.w500,
+                style: AppTypography.labelMicro.copyWith(
                   color: AppColors.textMuted,
                   letterSpacing: 0.04,
                 ),

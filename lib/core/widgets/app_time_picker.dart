@@ -183,9 +183,7 @@ class _AppTimePickerState extends State<AppTimePicker> {
               // Current time display
               Text(
                 '${_hour.toString().padLeft(2, '0')}:${_minute.toString().padLeft(2, '0')} ${_isPM ? 'PM' : 'AM'}',
-                style: AppTypography.headlineMediumSans.copyWith(
-                  fontSize: 40,
-                  fontWeight: FontWeight.w700,
+                style: AppTypography.displayMedium.copyWith(
                   color: AppColors.pure,
                   letterSpacing: 0.5,
                 ),
@@ -196,8 +194,7 @@ class _AppTimePickerState extends State<AppTimePicker> {
                 SizedBox(height: AppSpacing.xs),
                 Text(
                   _errorMessage!,
-                  style: AppTypography.errorText.copyWith(
-                    fontSize: 13,
+                  style: AppTypography.bodySmall.copyWith(
                     fontWeight: FontWeight.w500,
                     color: AppColors.error,
                   ),
@@ -228,8 +225,7 @@ class _AppTimePickerState extends State<AppTimePicker> {
                             padding: EdgeInsets.only(top: AppSpacing.xs, bottom: AppSpacing.xxs),
                             child: Text(
                               'Hour',
-                              style: AppTypography.overline.copyWith(
-                                fontSize: 11,
+                              style: AppTypography.labelMicro.copyWith(
                                 color: AppColors.pure,
                                 letterSpacing: 0.5,
                               ),
@@ -261,7 +257,6 @@ class _AppTimePickerState extends State<AppTimePicker> {
                                   child: Text(
                                     hour.toString().padLeft(2, '0'),
                                     style: AppTypography.headlineMediumSans.copyWith(
-                                      fontSize: 28,
                                       color: AppColors.pure,
                                     ),
                                   ),
@@ -279,7 +274,6 @@ class _AppTimePickerState extends State<AppTimePicker> {
                       child: Text(
                         ':',
                         style: AppTypography.headlineMediumSans.copyWith(
-                          fontSize: 28,
                           color: AppColors.pure,
                         ),
                       ),
@@ -294,8 +288,7 @@ class _AppTimePickerState extends State<AppTimePicker> {
                             padding: EdgeInsets.only(top: AppSpacing.xs, bottom: AppSpacing.xxs),
                             child: Text(
                               'Minutes',
-                              style: AppTypography.overline.copyWith(
-                                fontSize: 11,
+                              style: AppTypography.labelMicro.copyWith(
                                 color: AppColors.pure,
                                 letterSpacing: 0.5,
                               ),
@@ -327,7 +320,6 @@ class _AppTimePickerState extends State<AppTimePicker> {
                                   child: Text(
                                     minute.toString().padLeft(2, '0'),
                                     style: AppTypography.headlineMediumSans.copyWith(
-                                      fontSize: 28,
                                       color: AppColors.pure,
                                     ),
                                   ),
@@ -420,8 +412,7 @@ class _AppTimePickerState extends State<AppTimePicker> {
                 SizedBox(height: AppSpacing.md),
                 Text(
                   'Quick Adjust',
-                  style: AppTypography.labelSmall.copyWith(
-                    fontSize: 13,
+                  style: AppTypography.bodySmall.copyWith(
                     fontWeight: FontWeight.w500,
                     color: AppColors.pure,
                   ),

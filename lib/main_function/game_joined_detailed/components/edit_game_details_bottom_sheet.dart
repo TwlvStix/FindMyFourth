@@ -127,7 +127,6 @@ class _EditGameDetailsBottomSheetState
               Text(
                 'Edit Game Details',
                 style: AppTypography.headlineMediumSans.copyWith(
-                  fontSize: 22,
                   color: AppColors.pure,
                 ),
               ),
@@ -268,8 +267,8 @@ class _EditGameDetailsBottomSheetState
     );
   }
 
-  TextStyle _labelStyle(BuildContext context) => AppTypography.labelSmall.copyWith(
-        fontSize: 13,
+  TextStyle _labelStyle(BuildContext context) => AppTypography.bodySmall.copyWith(
+        fontWeight: AppTypography.semiBold,
         color: AppColors.pure,
       );
 }

@@ -54,7 +54,18 @@ class AppListTile extends StatelessWidget {
     this.variant = AppListTileVariant.standard,
     this.onTap,
     this.showDivider = true,
+    this.semanticLabel,
   });
+
+  final String? semanticLabel;
+
+  Widget _wrapWithSemantics(Widget child) {
+    return Semantics(
+      label: semanticLabel ?? title,
+      button: onTap != null,
+      child: child,
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -64,14 +75,16 @@ class AppListTile extends StatelessWidget {
       case AppListTileVariant.standard:
         return Column(
           children: [
-            InkWell(
-              onTap: onTap,
-              child: Padding(
-                padding: EdgeInsets.symmetric(
-                  horizontal: AppSpacing.md,
-                  vertical: AppSpacing.sm,
+            _wrapWithSemantics(
+              InkWell(
+                onTap: onTap,
+                child: Padding(
+                  padding: EdgeInsets.symmetric(
+                    horizontal: AppSpacing.md,
+                    vertical: AppSpacing.sm,
+                  ),
+                  child: content,
                 ),
-                child: content,
               ),
             ),
             if (showDivider)
@@ -88,14 +101,19 @@ class AppListTile extends StatelessWidget {
       case AppListTileVariant.compact:
         return Column(
           children: [
-            InkWell(
-              onTap: onTap,
-              child: Padding(
-                padding: EdgeInsets.symmetric(
-                  horizontal: AppSpacing.md,
-                  vertical: AppSpacing.xs,
+            _wrapWithSemantics(
+              ConstrainedBox(
+                constraints: const BoxConstraints(minHeight: 44),
+                child: InkWell(
+                  onTap: onTap,
+                  child: Padding(
+                    padding: EdgeInsets.symmetric(
+                      horizontal: AppSpacing.md,
+                      vertical: AppSpacing.xs,
+                    ),
+                    child: content,
+                  ),
                 ),
-                child: content,
               ),
             ),
             if (showDivider)
@@ -119,16 +137,18 @@ class AppListTile extends StatelessWidget {
             color: AppColors.pure,
             borderRadius: BorderRadius.circular(AppBorderRadius.md),
             elevation: 0,
-            child: InkWell(
-              onTap: onTap,
-              borderRadius: BorderRadius.circular(AppBorderRadius.md),
-              child: Container(
-                decoration: BoxDecoration(
-                  border: Border.all(color: AppColors.cloud),
-                  borderRadius: BorderRadius.circular(AppBorderRadius.md),
+            child: _wrapWithSemantics(
+              InkWell(
+                onTap: onTap,
+                borderRadius: BorderRadius.circular(AppBorderRadius.md),
+                child: Container(
+                  decoration: BoxDecoration(
+                    border: Border.all(color: AppColors.cloud),
+                    borderRadius: BorderRadius.circular(AppBorderRadius.md),
+                  ),
+                  padding: EdgeInsets.all(AppSpacing.md),
+                  child: content,
                 ),
-                padding: EdgeInsets.all(AppSpacing.md),
-                child: content,
               ),
             ),
           ),
@@ -143,18 +163,20 @@ class AppListTile extends StatelessWidget {
           child: Material(
             color: AppColors.navyLight.withValues(alpha: 0.1),
             borderRadius: BorderRadius.circular(AppBorderRadius.md),
-            child: InkWell(
-              onTap: onTap,
-              borderRadius: BorderRadius.circular(AppBorderRadius.md),
-              child: Container(
-                decoration: BoxDecoration(
-                  border: Border.all(
-                    color: AppColors.navy.withValues(alpha: 0.3),
+            child: _wrapWithSemantics(
+              InkWell(
+                onTap: onTap,
+                borderRadius: BorderRadius.circular(AppBorderRadius.md),
+                child: Container(
+                  decoration: BoxDecoration(
+                    border: Border.all(
+                      color: AppColors.navy.withValues(alpha: 0.3),
+                    ),
+                    borderRadius: BorderRadius.circular(AppBorderRadius.md),
                   ),
-                  borderRadius: BorderRadius.circular(AppBorderRadius.md),
+                  padding: EdgeInsets.all(AppSpacing.md),
+                  child: content,
                 ),
-                padding: EdgeInsets.all(AppSpacing.md),
-                child: content,
               ),
             ),
           ),

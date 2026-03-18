@@ -19,6 +19,7 @@ class AppIconButton extends StatefulWidget {
     this.hoverIconColor,
     this.hoverBorderColor,
     this.tooltip,
+    this.semanticLabel,
     this.onPressed,
     this.showLoadingIndicator = false,
     this.focusBorderSide,
@@ -35,6 +36,7 @@ class AppIconButton extends StatefulWidget {
   final Color? hoverIconColor;
   final Color? hoverBorderColor;
   final String? tooltip;
+  final String? semanticLabel;
   final Color? borderColor;
   final double? borderWidth;
   final bool showLoadingIndicator;
@@ -107,6 +109,13 @@ class _AppIconButtonState extends State<AppIconButton> {
 
   @override
   Widget build(BuildContext context) {
+    assert(
+      widget.buttonSize == null || widget.buttonSize! >= 44,
+      'AppIconButton buttonSize must be >= 44px for accessibility. Got: ${widget.buttonSize}',
+    );
+
+    final effectiveSize = widget.buttonSize ?? 48.0;
+
     ButtonStyle style = ButtonStyle(
       shape: WidgetStateProperty.resolveWith<OutlinedBorder>(
         (states) {
@@ -173,9 +182,9 @@ class _AppIconButtonState extends State<AppIconButton> {
       }),
     );
 
-    return SizedBox(
-      width: widget.buttonSize,
-      height: widget.buttonSize,
+    final button = SizedBox(
+      width: effectiveSize,
+      height: effectiveSize,
       child: Theme(
         data: ThemeData.from(
           colorScheme: Theme.of(context).colorScheme,
@@ -211,11 +220,23 @@ class _AppIconButtonState extends State<AppIconButton> {
                       }
                     }
                   },
-            splashRadius: widget.buttonSize,
+            splashRadius: effectiveSize,
             style: style,
           ),
         ),
       ),
     );
+
+    final effectiveLabel = widget.semanticLabel ?? widget.tooltip;
+    if (effectiveLabel != null) {
+      return Semantics(
+        label: effectiveLabel,
+        button: true,
+        excludeSemantics: true,
+        child: button,
+      );
+    }
+
+    return button;
   }
 }

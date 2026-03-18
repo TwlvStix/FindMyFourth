@@ -86,8 +86,7 @@ class AppSectionHeader extends StatelessWidget {
               children: [
                 Text(
                   title,
-                  style: AppTypography.titleLarge.copyWith(
-                    fontSize: 18,
+                  style: AppTypography.titleMedium.copyWith(
                     color: AppColors.onyx,
                   ),
                 ),

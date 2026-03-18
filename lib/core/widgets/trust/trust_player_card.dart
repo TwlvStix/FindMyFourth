@@ -97,8 +97,7 @@ class TrustPlayerCard extends StatelessWidget {
                     children: [
                       Text(
                         '$verifiedRounds',
-                        style: AppTypography.monoSmall.copyWith(
-                          fontSize: 12,
+                        style: AppTypography.labelSmall.copyWith(
                           color: AppColors.slate,
                         ),
                       ),
@@ -114,8 +113,7 @@ class TrustPlayerCard extends StatelessWidget {
                       ),
                       Text(
                         '$uniqueCoPlayers',
-                        style: AppTypography.monoSmall.copyWith(
-                          fontSize: 12,
+                        style: AppTypography.labelSmall.copyWith(
                           color: AppColors.slate,
                         ),
                       ),

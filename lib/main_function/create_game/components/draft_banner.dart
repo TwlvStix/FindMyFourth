@@ -71,7 +71,6 @@ class DraftBanner extends StatelessWidget {
                   'Your draft has been restored',
                   style: AppTypography.bodySmall.copyWith(
                     color: Colors.white.withValues(alpha: 0.8), // Keep: no 80% token
-                    fontSize: 13,
                   ),
                 ),
               ],

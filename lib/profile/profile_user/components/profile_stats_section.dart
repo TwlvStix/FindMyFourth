@@ -74,15 +74,20 @@ class ProfileStatsSection extends StatelessWidget {
                         )
                       : GestureDetector(
                           onTap: canOpenVibe ? onOpenVibe : null,
-                          child: AppStatCard(
-                            icon: AppPhosphorIcons.sparkle,
-                            value: vibeScore != null ? '$vibeScore%' : '...',
-                            label: 'Your Fit',
-                            variant: AppStatCardVariant.glass,
-                            iconGradient: [AppColors.gold, AppColors.goldLight],
-                            valueStyle: AppTypography.monoLarge.copyWith(
-                              color: vibeColor,
-                              fontWeight: FontWeight.w700,
+                          child: Semantics(
+                            label: vibeScore != null
+                                ? 'Vibe compatibility: $vibeScore%'
+                                : 'Vibe compatibility: loading',
+                            child: AppStatCard(
+                              icon: AppPhosphorIcons.sparkle,
+                              value: vibeScore != null ? '$vibeScore%' : '...',
+                              label: 'Your Fit',
+                              variant: AppStatCardVariant.glass,
+                              iconGradient: [AppColors.gold, AppColors.goldLight],
+                              valueStyle: AppTypography.monoLarge.copyWith(
+                                color: vibeColor,
+                                fontWeight: FontWeight.w700,
+                              ),
                             ),
                           ),
                         ),

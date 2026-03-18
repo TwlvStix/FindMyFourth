@@ -50,6 +50,7 @@ class AppTextField extends StatefulWidget {
   final PhosphorIconData? suffixPhosphorIcon;
   final VoidCallback? onSuffixIconTap;
   final FocusNode? focusNode;
+  final bool showCounter;
 
   const AppTextField({
     super.key,
@@ -76,6 +77,7 @@ class AppTextField extends StatefulWidget {
     this.suffixPhosphorIcon,
     this.onSuffixIconTap,
     this.focusNode,
+    this.showCounter = true,
   });
 
   @override
@@ -140,6 +142,9 @@ class _AppTextFieldState extends State<AppTextField> {
           readOnly: widget.readOnly,
           maxLines: widget.maxLines,
           maxLength: widget.maxLength,
+          buildCounter: widget.showCounter
+              ? null
+              : (context, {required currentLength, required isFocused, maxLength}) => null,
           keyboardType: widget.keyboardType,
           inputFormatters: widget.inputFormatters,
           validator: widget.validator,

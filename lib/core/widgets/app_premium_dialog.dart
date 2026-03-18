@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '/core/design_tokens/colors.dart';
 import '/core/design_tokens/spacing.dart';
+import '/core/design_tokens/typography.dart';
 
 /// Premium dialog variant types
 enum PremiumDialogVariant {
@@ -350,9 +351,7 @@ class _DialogButtonState extends State<_DialogButton> {
           child: Center(
             child: Text(
               widget.label,
-              style: TextStyle(
-                fontFamily: '.SF Pro Text',
-                fontSize: 15,
+              style: AppTypography.bodySmall.copyWith(
                 fontWeight: widget.fontWeight,
                 color: widget.textColor,
               ),
