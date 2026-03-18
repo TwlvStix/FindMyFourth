@@ -35,6 +35,7 @@ class PlayerSearchService {
   Future<PlayerSearchPage> searchPlayers({
     required String query,
     required int pageSize,
+    Set<String> blockedUserIds = const {},
     QueryDocumentSnapshot<Map<String, dynamic>>? startAfter,
   }) async {
     Query<Map<String, dynamic>> request = _firestore
@@ -52,6 +53,7 @@ class PlayerSearchService {
     final results = snapshot.docs
         .map(UserProfile.fromDoc)
         .where((profile) => profile.uid != currentUid)
+        .where((profile) => !blockedUserIds.contains(profile.uid))
         .toList();
 
     return PlayerSearchPage(

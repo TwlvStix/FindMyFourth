@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 
 import '/auth/firebase_auth/auth_util.dart';
 import '/backend/schema/users_record.dart';
+import '/core/content/report_copy.dart';
 import '/core/design_tokens/app_phosphor_icons.dart';
 import '/core/design_tokens/colors.dart';
 import '/core/design_tokens/icon_size.dart';
@@ -13,9 +14,12 @@ import '/core/motion/motion_helpers.dart';
 import '/core/navigation/nav_extensions.dart';
 import '/core/navigation/transition_standards.dart';
 import '/core/utils/state_update.dart';
+import '/core/widgets/app_premium_dialog.dart';
 import '/models/vibe_profile.dart';
 import '/profile/profile_user/components/mutual_friends_sheet.dart';
 import '/profile/profile_user/components/profile_user_content.dart';
+import '/profile/profile_user/components/report_user_bottom_sheet.dart';
+import '/providers/block_provider.dart';
 import '/profile/profile_user/components/profile_user_state_scaffold.dart';
 import '/profile/profile_user/controller/profile_user_controller.dart';
 import '/providers/chat_provider.dart';
@@ -224,6 +228,53 @@ class _ProfileUserFirebaseWidgetState extends State<ProfileUserFirebaseWidget>
     return age;
   }
 
+  void _showReportSheet(String displayName) {
+    showAppBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: AppColors.transparent,
+      enableDrag: true,
+      builder: (_) => ReportUserBottomSheet(
+        reportedUid: widget.userRef.id,
+        reportedDisplayName: displayName,
+      ),
+    );
+  }
+
+  Future<void> _handleBlock(String displayName) async {
+    final shouldBlock = await showPremiumDialog(
+      context: context,
+      variant: PremiumDialogVariant.destructive,
+      icon: AppPhosphorIcons.blocked,
+      title: ReportBlockCopy.blockTitle(displayName),
+      body: ReportBlockCopy.blockBody,
+      actionLabel: ReportBlockCopy.blockAction,
+    );
+
+    if (shouldBlock != true) return;
+    if (!mounted) return;
+
+    final currentUid = currentUserReference?.id;
+    if (currentUid == null) return;
+
+    try {
+      await context.read<BlockProvider>().blockUser(
+            currentUid: currentUid,
+            blockedUid: widget.userRef.id,
+          );
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text(ReportBlockCopy.userBlocked)),
+      );
+      Navigator.of(context).maybePop();
+    } catch (_) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text(ReportBlockCopy.blockFailed)),
+      );
+    }
+  }
+
   void _showMutualFriendsSheet(BuildContext context) {
     final friends = _mutualFriends;
     showAppBottomSheet(
@@ -382,6 +433,8 @@ class _ProfileUserFirebaseWidgetState extends State<ProfileUserFirebaseWidget>
             onOpenVibe: _openVibePage,
             onMessageTap: () => _openChatWithUser(widget.userRef),
             onMutualFriendsTap: () => _showMutualFriendsSheet(context),
+            onReport: isSelf ? null : () => _showReportSheet(displayName),
+            onBlock: isSelf ? null : () => _handleBlock(displayName),
           );
         },
       ),

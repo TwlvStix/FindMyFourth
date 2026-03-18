@@ -15,6 +15,7 @@ import '/core/design_tokens/icon_size.dart';
 import '/friends/components/premium_friend_card.dart';
 import '/friends/components/friend_section_header.dart';
 import '/friends/components/swipeable_friend_card.dart';
+import '/providers/block_provider.dart';
 import '/providers/profile_provider.dart';
 
 /// Grouped friends list that organizes friends into sections
@@ -110,7 +111,9 @@ class _GroupedFriendsListState extends State<GroupedFriendsList> {
     return Consumer<ProfileProvider>(
       builder: (context, profileProvider, _) {
         // Read all friends from cache
+        final blockedIds = context.watch<BlockProvider>().blockedUserIds;
         var allFriends = widget.friendRefs
+            .where((ref) => !blockedIds.contains(ref.id))
             .map((ref) => profileProvider.getCachedProfile(ref.id))
             .whereType<UsersRecord>()
             .toList();

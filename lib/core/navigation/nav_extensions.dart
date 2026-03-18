@@ -39,6 +39,7 @@ class AppRouteNames {
   static const String peerRating = 'PeerRating';
   static const String fallbackConfirmation = 'FallbackConfirmation';
   static const String challengeBoard = 'ChallengeBoard';
+  static const String blockedUsers = 'BlockedUsers';
 }
 
 /// Route-specific typed navigation helpers for widget call sites.
@@ -402,6 +403,15 @@ extension AppNavigationExtensions on BuildContext {
   }) {
     pushWithTransition(
       AppRouteNames.challengeBoard,
+      transition: transition,
+    );
+  }
+
+  void pushBlockedUsers({
+    TransitionInfo transition = TransitionStandards.detailTransition,
+  }) {
+    pushWithTransition(
+      AppRouteNames.blockedUsers,
       transition: transition,
     );
   }

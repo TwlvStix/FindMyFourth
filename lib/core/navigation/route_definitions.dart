@@ -41,6 +41,7 @@ import '/challenge_board/challenge_board_widget.dart';
 import '/debug/notification_audit_screen.dart';
 import '/debug/notification_routing_test_screen.dart';
 import '/debug/streak_debug_screen.dart';
+import '/settings/blocked_users/blocked_users_widget.dart';
 import '/settings/location_settings/location_settings_widget.dart';
 
 import '/core/navigation/app_router.dart'
@@ -607,6 +608,17 @@ List<GoRoute> buildRoutes(AppStateNotifier appStateNotifier) => [
           state,
           appStateNotifier,
           const ChallengeBoardWidget(),
+        ),
+      ),
+      GoRoute(
+        name: BlockedUsersWidget.routeName,
+        path: BlockedUsersWidget.routePath,
+        redirect: buildRedirect(appStateNotifier, requireAuth: true),
+        pageBuilder: (context, state) => buildPageWithTransition(
+          context,
+          state,
+          appStateNotifier,
+          const BlockedUsersWidget(),
         ),
       ),
       // Debug routes

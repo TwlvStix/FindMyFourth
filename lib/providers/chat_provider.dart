@@ -473,11 +473,13 @@ class ChatProvider extends ChangeNotifier {
   Stream<List<ChatRowViewModel>> chatRowsStream({
     required String currentUserId,
     required ProfileProvider profileProvider,
+    Set<String> blockedUserIds = const {},
     int limit = 50,
   }) =>
       _viewModelManager.chatRowsStream(
         currentUserId: currentUserId,
         profileProvider: profileProvider,
+        blockedUserIds: blockedUserIds,
         limit: limit,
       );
 

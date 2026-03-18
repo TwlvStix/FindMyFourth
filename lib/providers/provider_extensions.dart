@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'block_provider.dart';
 import 'challenge_provider.dart';
 import 'chat_provider.dart';
 import 'leaderboard_provider.dart';
@@ -152,6 +153,17 @@ extension ProviderExtensions on BuildContext {
   /// Select specific data from LeaderboardProvider
   T selectLeaderboard<T>(T Function(LeaderboardProvider provider) selector) {
     return select<LeaderboardProvider, T>(selector);
+  }
+
+  /// Access BlockProvider without listening for changes
+  BlockProvider get blockProvider => read<BlockProvider>();
+
+  /// Access BlockProvider and listen for changes
+  BlockProvider get watchBlockProvider => watch<BlockProvider>();
+
+  /// Select specific data from BlockProvider
+  T selectBlock<T>(T Function(BlockProvider provider) selector) {
+    return select<BlockProvider, T>(selector);
   }
 
   // ========================================

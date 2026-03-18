@@ -12,11 +12,13 @@ class ChatReactionPicker extends StatelessWidget {
     required this.message,
     required this.currentUserId,
     required this.onReactionToggled,
+    this.onReportMessage,
   });
 
   final ChatMessage message;
   final String currentUserId;
   final Future<void> Function(String emoji, bool hasReacted) onReactionToggled;
+  final VoidCallback? onReportMessage;
 
   @override
   Widget build(BuildContext context) {
@@ -85,6 +87,26 @@ class ChatReactionPicker extends StatelessWidget {
               );
             }).toList(),
           ),
+          if (onReportMessage != null && message.senderId != currentUserId) ...[
+            SizedBox(height: AppSpacing.sm),
+            Divider(color: AppColors.navyLight),
+            SizedBox(height: AppSpacing.xs),
+            GestureDetector(
+              onTap: () {
+                Navigator.of(context).pop();
+                onReportMessage!();
+              },
+              child: Padding(
+                padding: EdgeInsets.symmetric(vertical: AppSpacing.xs),
+                child: Text(
+                  'Report message',
+                  style: AppTypography.labelSmall.copyWith(
+                    color: AppColors.textMuted,
+                  ),
+                ),
+              ),
+            ),
+          ],
           SizedBox(height: AppSpacing.md),
         ],
       ),

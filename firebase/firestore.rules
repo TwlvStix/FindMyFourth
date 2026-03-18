@@ -643,6 +643,11 @@ service cloud.firestore {
         allow read: if request.auth.uid == document;
         allow update, delete: if false;
       }
+
+      // Blocked users — owner-only CRUD
+      match /blocked_users/{blockedUid} {
+        allow read, write: if isSignedIn() && request.auth.uid == document;
+      }
     }
 
     // ── Public reference data ──────────────────────────────────────────
@@ -796,6 +801,12 @@ service cloud.firestore {
     // Alert Subscriptions - users can read/write their own subscriptions
     match /alertSubs/{userId} {
       allow read, write: if request.auth != null && request.auth.uid == userId;
+    }
+
+    // Reports — any authenticated user can create, no client reads
+    match /reports/{reportId} {
+      allow create: if isSignedIn();
+      allow read, update, delete: if false;
     }
 
     // ── Trust System Collections ────────────────────────────────────────────

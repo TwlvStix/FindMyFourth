@@ -23,6 +23,7 @@ class ProfileSettingsSection extends StatelessWidget {
     required this.onPrivacyPolicy,
     required this.onTermsOfService,
     required this.onLogout,
+    this.onBlockedUsers,
     this.showDebugOptions = false,
     this.onDebugNotificationRouting,
     this.onDebugStreakPreview,
@@ -43,6 +44,9 @@ class ProfileSettingsSection extends StatelessWidget {
 
   /// Called when the user taps "Terms of Service".
   final VoidCallback onTermsOfService;
+
+  /// Called when the user taps "Blocked Users".
+  final VoidCallback? onBlockedUsers;
 
   /// Called when the user taps "Log Out".
   /// This should handle the confirmation dialog and logout flow.
@@ -128,6 +132,17 @@ class ProfileSettingsSection extends StatelessWidget {
                     onTermsOfService();
                   },
                 ),
+                if (onBlockedUsers != null) ...[
+                  Divider(height: 1, color: AppColors.navyLight, indent: 56),
+                  _buildSettingsRow(
+                    phosphorIcon: AppPhosphorIcons.blocked,
+                    label: 'Blocked Users',
+                    onTap: () {
+                      HapticFeedback.lightImpact();
+                      onBlockedUsers!();
+                    },
+                  ),
+                ],
                 // Debug options (only in debug mode)
                 if (showDebugOptions && kDebugMode) ...[
                   Divider(height: 1, color: AppColors.navyLight, indent: 56),

@@ -195,6 +195,7 @@ class PlayerListController {
     String rawValue, {
     required VoidCallback onStateChanged,
     void Function(String message)? onError,
+    Set<String> blockedUserIds = const {},
   }) {
     final query = rawValue.trim().toLowerCase();
     _searchDebounce?.cancel();
@@ -217,6 +218,7 @@ class PlayerListController {
         reset: true,
         onStateChanged: onStateChanged,
         onError: onError,
+        blockedUserIds: blockedUserIds,
       );
     });
   }
@@ -226,6 +228,7 @@ class PlayerListController {
     required bool reset,
     required VoidCallback onStateChanged,
     void Function(String message)? onError,
+    Set<String> blockedUserIds = const {},
   }) async {
     final searchToken = ++_searchToken;
 
@@ -247,6 +250,7 @@ class PlayerListController {
         query: query,
         pageSize: pageSize,
         startAfter: reset ? null : _searchState.lastDocument,
+        blockedUserIds: blockedUserIds,
       );
 
       if (searchToken != _searchToken) {
@@ -288,6 +292,7 @@ class PlayerListController {
   Future<void> loadMore({
     required VoidCallback onStateChanged,
     void Function(String message)? onError,
+    Set<String> blockedUserIds = const {},
   }) async {
     if (_searchState.isSearching || !_searchState.hasMoreResults) {
       return;
@@ -302,6 +307,7 @@ class PlayerListController {
       reset: false,
       onStateChanged: onStateChanged,
       onError: onError,
+      blockedUserIds: blockedUserIds,
     );
   }
 

@@ -2,9 +2,11 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 
 import '/backend/schema/users_record.dart';
+import '/core/design_tokens/app_phosphor_icons.dart';
 import '/core/design_tokens/border_radius.dart';
 import '/core/design_tokens/colors.dart';
 import '/core/design_tokens/spacing.dart';
+import '/core/widgets/app_popup_menu.dart';
 import '/core/widgets/fairway_background.dart';
 import '/core/widgets/premium_back_button.dart';
 import '/core/widgets/streak/streak_chip.dart';
@@ -43,6 +45,8 @@ class ProfileUserContent extends StatelessWidget {
     required this.onOpenVibe,
     required this.onMessageTap,
     required this.onMutualFriendsTap,
+    this.onReport,
+    this.onBlock,
   });
 
   final GlobalKey<ScaffoldState> scaffoldKey;
@@ -69,6 +73,8 @@ class ProfileUserContent extends StatelessWidget {
   final VoidCallback onOpenVibe;
   final VoidCallback onMessageTap;
   final VoidCallback onMutualFriendsTap;
+  final VoidCallback? onReport;
+  final VoidCallback? onBlock;
 
   /// Build streak chip from user record data.
   Widget _buildStreakChip() {
@@ -108,6 +114,30 @@ class ProfileUserContent extends StatelessWidget {
             Navigator.of(context).maybePop();
           },
         ),
+        actions: [
+          if (!isSelf)
+            AppPopupMenu(
+              icon: AppPhosphorIcons.more,
+              tooltip: 'More options',
+              items: [
+                AppPopupMenuItem(
+                  label: 'Report',
+                  value: 'report',
+                  icon: AppPhosphorIcons.securityWarning,
+                ),
+                AppPopupMenuItem(
+                  label: 'Block',
+                  value: 'block',
+                  icon: AppPhosphorIcons.blocked,
+                  isDestructive: true,
+                ),
+              ],
+              onSelected: (value) {
+                if (value == 'report') onReport?.call();
+                if (value == 'block') onBlock?.call();
+              },
+            ),
+        ],
       ),
       body: FairwayBackgroundDark(
         showOrganic: true,

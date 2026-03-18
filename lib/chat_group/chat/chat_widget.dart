@@ -18,6 +18,7 @@ import '/core/widgets/fairway_background.dart';
 import '/utils/app_util.dart';
 import '/backend/backend.dart';
 import '/chat_group/chat/components/suggested_golfers_section.dart';
+import '/providers/block_provider.dart';
 import '/providers/chat_provider.dart';
 import '/providers/profile_provider.dart';
 
@@ -283,6 +284,7 @@ class _ChatWidgetState extends State<ChatWidget> {
   Widget _buildChatContent(String currentUserId) {
     final profileProvider = context.read<ProfileProvider>();
     final chatProvider = context.read<ChatProvider>();
+    final blockedIds = context.watch<BlockProvider>().blockedUserIds;
 
     return CustomScrollView(
       slivers: [
@@ -313,7 +315,7 @@ class _ChatWidgetState extends State<ChatWidget> {
           ),
         ),
         // Lazy chat list using SliverList
-        _buildChatList(currentUserId, chatProvider, profileProvider),
+        _buildChatList(currentUserId, chatProvider, profileProvider, blockedIds),
         // Bottom padding
         SliverToBoxAdapter(
           child: SizedBox(height: AppSpacing.xxl),
@@ -326,11 +328,13 @@ class _ChatWidgetState extends State<ChatWidget> {
     String currentUserId,
     ChatProvider chatProvider,
     ProfileProvider profileProvider,
+    Set<String> blockedIds,
   ) {
     return StreamBuilder<List<ChatRowViewModel>>(
       stream: chatProvider.chatRowsStream(
         currentUserId: currentUserId,
         profileProvider: profileProvider,
+        blockedUserIds: blockedIds,
       ),
       builder: (context, snapshot) {
         AppLog.d('💬 ChatList: StreamBuilder called');

@@ -240,6 +240,7 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                               'https://www.twlvstix.com/privacy-policy-fm4'),
                           onTermsOfService: () => launchURL(
                               'https://www.twlvstix.com/terms-of-service-fm4'),
+                          onBlockedUsers: () => context.pushBlockedUsers(),
                           onLogout: _handleLogout,
                           showDebugOptions: kDebugMode,
                           onDebugNotificationRouting: () =>

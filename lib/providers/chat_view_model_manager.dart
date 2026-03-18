@@ -103,6 +103,7 @@ class ChatViewModelManager {
   Stream<List<ChatRowViewModel>> chatRowsStream({
     required String currentUserId,
     required ProfileProvider profileProvider,
+    Set<String> blockedUserIds = const {},
     int limit = 50,
   }) {
     if (kDebugMode) {
@@ -119,11 +120,23 @@ class ChatViewModelManager {
         return <ChatRowViewModel>[];
       }
 
+      // Filter out chats with blocked members
+      final filteredChats = blockedUserIds.isEmpty
+          ? chats
+          : chats
+              .where((chat) =>
+                  !chat.memberIds.any((id) => blockedUserIds.contains(id)))
+              .toList();
+
+      if (filteredChats.isEmpty) {
+        return <ChatRowViewModel>[];
+      }
+
       // Collect ALL member IDs from all chats for group avatar display.
       // For game chats, include the current user so their avatar appears
       // in the group split; for direct chats, exclude them.
       final allMemberIds = <String>{};
-      for (final chat in chats) {
+      for (final chat in filteredChats) {
         for (final memberId in chat.memberIds) {
           if (memberId.isEmpty) continue;
           if (chat.type == 'game' || memberId != currentUserId) {
@@ -134,7 +147,7 @@ class ChatViewModelManager {
 
       if (kDebugMode) {
         AppLog.d(
-            '💬 ChatViewModelManager: Chat rows VM emit - ${chats.length} chats, ${allMemberIds.length} member profiles needed');
+            '💬 ChatViewModelManager: Chat rows VM emit - ${filteredChats.length} chats, ${allMemberIds.length} member profiles needed');
       }
 
       // Fetch profiles using ProfileProvider's memoized cache
@@ -162,7 +175,7 @@ class ChatViewModelManager {
       }
 
       // Create view models
-      return chats.map((chat) {
+      return filteredChats.map((chat) {
         final unreadCount = chat.unreadCountByUser[currentUserId] ?? 0;
 
         String displayName;

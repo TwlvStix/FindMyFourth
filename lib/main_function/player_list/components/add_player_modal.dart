@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 import '/core/utils/state_update.dart';
 import '/core/design_tokens/app_phosphor_icons.dart';
@@ -12,6 +13,7 @@ import '/main_function/player_list/components/player_search_results.dart';
 import '/main_function/player_list/controller/player_list_controller.dart';
 import '/models/player_eligibility.dart';
 import '/models/user_profile.dart';
+import '/providers/block_provider.dart';
 
 typedef SelectPlayerCallback = AddPlayerAttemptResult Function({
   required int slotIndex,
@@ -74,17 +76,21 @@ class _AddPlayerModalState extends State<AddPlayerModal> {
   }
 
   void _onSearchChanged(String value) {
+    final blockedIds = context.read<BlockProvider>().blockedUserIds;
     widget.controller.onSearchChanged(
       value,
       onStateChanged: _refreshState,
       onError: _showError,
+      blockedUserIds: blockedIds,
     );
   }
 
   Future<void> _loadMore() async {
+    final blockedIds = context.read<BlockProvider>().blockedUserIds;
     await widget.controller.loadMore(
       onStateChanged: _refreshState,
       onError: _showError,
+      blockedUserIds: blockedIds,
     );
   }
 

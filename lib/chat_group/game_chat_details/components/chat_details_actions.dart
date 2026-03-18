@@ -11,9 +11,15 @@ class ChatDetailsActions extends StatelessWidget {
   const ChatDetailsActions({
     super.key,
     required this.onLeaveSelected,
+    this.onReportSelected,
+    this.onBlockSelected,
+    this.isDirect = false,
   });
 
   final VoidCallback onLeaveSelected;
+  final VoidCallback? onReportSelected;
+  final VoidCallback? onBlockSelected;
+  final bool isDirect;
 
   @override
   Widget build(BuildContext context) {
@@ -21,6 +27,19 @@ class ChatDetailsActions extends StatelessWidget {
       icon: AppPhosphorIcons.more,
       tooltip: 'More options',
       items: [
+        if (isDirect && onReportSelected != null)
+          AppPopupMenuItem(
+            label: 'Report User',
+            value: 'report',
+            icon: AppPhosphorIcons.securityWarning,
+          ),
+        if (isDirect && onBlockSelected != null)
+          AppPopupMenuItem(
+            label: 'Block User',
+            value: 'block',
+            icon: AppPhosphorIcons.blocked,
+            isDestructive: true,
+          ),
         AppPopupMenuItem(
           label: 'Leave Chat',
           value: 'leave',
@@ -29,9 +48,9 @@ class ChatDetailsActions extends StatelessWidget {
         ),
       ],
       onSelected: (value) {
-        if (value == 'leave') {
-          onLeaveSelected();
-        }
+        if (value == 'leave') onLeaveSelected();
+        if (value == 'report') onReportSelected?.call();
+        if (value == 'block') onBlockSelected?.call();
       },
     );
   }

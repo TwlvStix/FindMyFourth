@@ -40,3 +40,8 @@ class NetworkException extends AppException {
 class JoinRequestException extends AppException {
   JoinRequestException(super.message, {super.code, super.cause});
 }
+
+/// Block operation failures
+class BlockOperationException extends AppException {
+  BlockOperationException(super.message, {super.code, super.cause});
+}

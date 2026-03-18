@@ -112,6 +112,19 @@ List<Game> filterEligibleGames(
   }).toList();
 }
 
+/// Filters out games hosted by or containing blocked users.
+List<Game> filterBlockedUserGames(List<Game> games, Set<String> blockedUserIds) {
+  if (blockedUserIds.isEmpty) return games;
+  return games.where((game) {
+    final hostId = game.userRef?.id ?? game.uid;
+    if (blockedUserIds.contains(hostId)) return false;
+    for (final playerRef in game.joinedPlayers) {
+      if (blockedUserIds.contains(playerRef.id)) return false;
+    }
+    return true;
+  }).toList();
+}
+
 /// Result of partitioning games into joinable, mutual, and locked lists.
 ///
 /// - [joinable]: Games the user can join directly (public or friends with host)

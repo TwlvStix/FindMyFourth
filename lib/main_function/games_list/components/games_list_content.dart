@@ -22,6 +22,7 @@ import '/main_function/games_list/utils/game_filter_meta.dart';
 import '/main_function/games_list/utils/game_filtering.dart';
 import '/main_function/games_list/utils/games_list_pipeline.dart';
 import '/models/game.dart';
+import '/providers/block_provider.dart';
 
 /// Content widget for the games list that handles stream composition,
 /// game processing pipeline, and sliver layout.
@@ -143,8 +144,12 @@ class _GamesListContentState extends State<GamesListContent> {
         // Notify parent of filter meta update (no setState, just field update)
         widget.onFilterMetaChanged(filterMeta);
 
+        // Filter out games from blocked users
+        final blockedIds = context.select<BlockProvider, Set<String>>((p) => p.blockedUserIds);
+        final unblockedGames = filterBlockedUserGames(activeGames, blockedIds);
+
         // Apply user-selected filters from bottom sheet
-        var visibleGames = applyGameListFilters(activeGames, widget.filters);
+        var visibleGames = applyGameListFilters(unblockedGames, widget.filters);
 
         // Apply geo filter if enabled and has location
         final geoFilterEnabled = context.select<GeoFilterProvider, bool>((p) => p.isEnabled);

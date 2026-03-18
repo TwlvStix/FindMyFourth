@@ -7,13 +7,18 @@ import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 
 import '/auth/firebase_auth/auth_util.dart';
+import '/core/content/report_copy.dart';
+import '/core/design_tokens/app_phosphor_icons.dart';
 import '/core/design_tokens/colors.dart';
 import '/core/motion/motion_helpers.dart';
 import '/core/utils/app_log.dart';
 import '/core/utils/state_update.dart';
+import '/core/widgets/app_premium_dialog.dart';
 import '/core/widgets/app_text.dart';
 import '/core/widgets/fairway_background.dart';
 import '/core/widgets/premium_back_button.dart';
+import '/providers/block_provider.dart';
+import '/profile/profile_user/components/report_user_bottom_sheet.dart';
 import '/models/chat.dart';
 import '/models/chat_message.dart';
 import '/models/chat_message_view_model.dart';
@@ -264,6 +269,21 @@ class _GameChatDetailsWidgetState extends State<GameChatDetailsWidget>
         currentUserId: currentUserId,
         onReactionToggled: (emoji, hasReacted) =>
             _handleReaction(message, emoji, hasReacted),
+        onReportMessage: () {
+          showAppBottomSheet(
+            context: this.context,
+            isScrollControlled: true,
+            backgroundColor: AppColors.transparent,
+            enableDrag: true,
+            builder: (_) => ReportUserBottomSheet(
+              reportedUid: message.senderId,
+              reportedDisplayName: '',
+              reportContext: 'chat',
+              chatId: widget.chatId,
+              messageId: message.id,
+            ),
+          );
+        },
       ),
     );
   }
@@ -412,6 +432,71 @@ class _GameChatDetailsWidgetState extends State<GameChatDetailsWidget>
       visibleAfter: _visibleAfter,
       isMounted: () => mounted,
     );
+  }
+
+  /// Get the other user's UID in a direct chat.
+  String? _otherUserIdInDirectChat() {
+    final chat = _chatUi;
+    if (chat == null || chat.type != 'direct') return null;
+    final currentId = _currentUserId;
+    if (currentId == null) return null;
+    return chat.memberIds.firstWhere(
+      (id) => id != currentId,
+      orElse: () => '',
+    );
+  }
+
+  void _showReportUser() {
+    final otherUid = _otherUserIdInDirectChat();
+    if (otherUid == null || otherUid.isEmpty) return;
+    showAppBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: AppColors.transparent,
+      enableDrag: true,
+      builder: (_) => ReportUserBottomSheet(
+        reportedUid: otherUid,
+        reportedDisplayName: '',
+        reportContext: 'chat',
+        chatId: widget.chatId,
+      ),
+    );
+  }
+
+  Future<void> _handleBlockUser() async {
+    final otherUid = _otherUserIdInDirectChat();
+    if (otherUid == null || otherUid.isEmpty) return;
+    final currentUid = _currentUserId;
+    if (currentUid == null) return;
+
+    final shouldBlock = await showPremiumDialog(
+      context: context,
+      variant: PremiumDialogVariant.destructive,
+      icon: AppPhosphorIcons.blocked,
+      title: ReportBlockCopy.blockTitle('this user'),
+      body: ReportBlockCopy.blockBody,
+      actionLabel: ReportBlockCopy.blockAction,
+    );
+
+    if (shouldBlock != true) return;
+    if (!mounted) return;
+
+    try {
+      await context.read<BlockProvider>().blockUser(
+            currentUid: currentUid,
+            blockedUid: otherUid,
+          );
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text(ReportBlockCopy.userBlocked)),
+      );
+      Navigator.of(context).maybePop();
+    } catch (_) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text(ReportBlockCopy.blockFailed)),
+      );
+    }
   }
 
   Future<void> _showLeaveConfirmation() async {
@@ -582,6 +667,9 @@ class _GameChatDetailsWidgetState extends State<GameChatDetailsWidget>
                 : [
                     ChatDetailsActions(
                       onLeaveSelected: _showLeaveConfirmation,
+                      isDirect: _chatUi?.type == 'direct',
+                      onReportSelected: _showReportUser,
+                      onBlockSelected: _handleBlockUser,
                     ),
                   ],
           ),
