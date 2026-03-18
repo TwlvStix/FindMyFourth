@@ -34,6 +34,7 @@ class NotificationCrudService {
     return userRef
         .collection('notifications')
         .where('read', isEqualTo: false)
+        .limit(200)
         .snapshots();
   }
 

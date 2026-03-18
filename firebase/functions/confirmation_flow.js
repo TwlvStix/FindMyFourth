@@ -1827,46 +1827,43 @@ async function _finalizeRoundVerification(db, roundRef, roundData, gameRef) {
   await userCountBatch.commit();
 
   // ── 5. Write partner_plays entries for all present-user pairs ─────────────
-  const partnerBatch = db.batch();
+  const partnerOps = [];
   for (let i = 0; i < presentUids.length; i++) {
     for (let j = i + 1; j < presentUids.length; j++) {
       const uidA = presentUids[i];
       const uidB = presentUids[j];
+      const playData = {
+        play_count: admin.firestore.FieldValue.increment(1),
+        last_played_at: nowTs,
+        game_refs: admin.firestore.FieldValue.arrayUnion(gameRef),
+      };
 
-      // users/{uidA}/partner_plays/{uidB}
-      const refAB = db
-        .collection("users")
-        .doc(uidA)
-        .collection("partner_plays")
-        .doc(uidB);
-      partnerBatch.set(
-        refAB,
-        {
-          play_count: admin.firestore.FieldValue.increment(1),
-          last_played_at: nowTs,
-          game_refs: admin.firestore.FieldValue.arrayUnion(gameRef),
-        },
-        { merge: true }
-      );
-
-      // Mirror: users/{uidB}/partner_plays/{uidA}
-      const refBA = db
-        .collection("users")
-        .doc(uidB)
-        .collection("partner_plays")
-        .doc(uidA);
-      partnerBatch.set(
-        refBA,
-        {
-          play_count: admin.firestore.FieldValue.increment(1),
-          last_played_at: nowTs,
-          game_refs: admin.firestore.FieldValue.arrayUnion(gameRef),
-        },
-        { merge: true }
-      );
+      partnerOps.push({
+        ref: db.collection("users").doc(uidA).collection("partner_plays").doc(uidB),
+        data: playData,
+      });
+      partnerOps.push({
+        ref: db.collection("users").doc(uidB).collection("partner_plays").doc(uidA),
+        data: playData,
+      });
     }
   }
-  await partnerBatch.commit();
+
+  const kPartnerBatchLimit = 450;
+  for (let i = 0; i < partnerOps.length; i += kPartnerBatchLimit) {
+    if (i > 0) {
+      console.warn(
+        `_finalizeRoundVerification: partner_plays batch split required at op ${i} — ` +
+          `${partnerOps.length} total ops for round ${roundRef.id}`
+      );
+    }
+    const chunk = partnerOps.slice(i, i + kPartnerBatchLimit);
+    const batch = db.batch();
+    for (const { ref, data } of chunk) {
+      batch.set(ref, data, { merge: true });
+    }
+    await batch.commit();
+  }
 
   console.log(
     `_finalizeRoundVerification: round ${roundRef.id} verified. ` +

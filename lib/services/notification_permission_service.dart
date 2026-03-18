@@ -275,13 +275,16 @@ class NotificationPermissionService {
       return;
     }
 
-    _tokenRefreshSub = _messaging.onTokenRefresh.listen((token) {
-      if (token.isEmpty) {
-        return;
-      }
+    _tokenRefreshSub = _messaging.onTokenRefresh.listen((token) async {
+      if (token.isEmpty) return;
       AppLog.d(
           '[NotificationService] FCM token refreshed, updating backend (uid=$uid)');
-      _upsertDeviceToken(uid, token);
+      try {
+        await _upsertDeviceToken(uid, token);
+      } catch (e) {
+        AppLog.d(
+            '❌ [NotificationService] Token refresh write failed (uid=$uid, token=${token.substring(0, 10)}...): $e');
+      }
     });
 
     AppLog.d('[NotificationService] Token refresh listener attached');

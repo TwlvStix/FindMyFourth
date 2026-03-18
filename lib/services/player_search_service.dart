@@ -98,25 +98,29 @@ class PlayerSearchService {
     required List<String> guestPlayers,
   }) async {
     try {
+      final futures = <Future<DocumentReference>>[];
+
       for (final uid in joinedPlayerUids) {
-        await _firestore.collection('game_participants').add({
+        futures.add(_firestore.collection('game_participants').add({
           'game_ref': gameRef,
           'user_ref': userRefForUid(uid),
           'role': 'player',
           'status': 'joined',
           'joined_at': FieldValue.serverTimestamp(),
-        });
+        }));
       }
 
       for (final guestName in guestPlayers) {
-        await _firestore.collection('game_participants').add({
+        futures.add(_firestore.collection('game_participants').add({
           'game_ref': gameRef,
           'guest_name': guestName,
           'role': 'guest',
           'status': 'joined',
           'joined_at': FieldValue.serverTimestamp(),
-        });
+        }));
       }
+
+      await Future.wait(futures);
 
       AppLog.d('✅ PlayerSearchService: Created ${joinedPlayerUids.length} player + ${guestPlayers.length} guest participant docs');
     } on FirebaseException catch (e) {
