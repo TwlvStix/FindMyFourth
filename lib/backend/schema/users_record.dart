@@ -4,6 +4,7 @@ import 'package:collection/collection.dart';
 
 import '/backend/schema/util/firestore_util.dart';
 import '/backend/schema/util/schema_util.dart';
+import '/core/utils/input_sanitizer.dart';
 
 import 'index.dart';
 import '/utils/app_util.dart';
@@ -562,24 +563,31 @@ Map<String, dynamic> createUsersRecordData({
   String? archetype,
   int? seasonRoundsPlayed,
 }) {
-  final displayNameLower = displayName?.toLowerCase();
+  // Sanitize user-typed text fields before writing to Firestore.
+  final sanitizedDisplayName = InputSanitizer.displayName(displayName);
+  final sanitizedFirstName = InputSanitizer.firstName(firstName);
+  final sanitizedLastName = InputSanitizer.lastName(lastName);
+  final sanitizedBio = InputSanitizer.bio(shortDescription);
+  final sanitizedGolfCanadaNumber =
+      InputSanitizer.golfCanadaNumber(golfCanadaNumber);
+  final displayNameLower = sanitizedDisplayName?.toLowerCase();
   final firestoreData = mapToFirestore(
     <String, dynamic>{
       'photo_url': photoUrl,
       'created_time': createdTime,
       'last_active_time': lastActiveTime,
       'handicap': handicap,
-      'golf_canada_number': golfCanadaNumber,
+      'golf_canada_number': sanitizedGolfCanadaNumber,
       'home_course': homeCourse,
       'music': music,
       'drinks': drinks,
       'uid': uid,
-      'first_name': firstName,
-      'last_name': lastName,
-      'display_name': displayName,
+      'first_name': sanitizedFirstName,
+      'last_name': sanitizedLastName,
+      'display_name': sanitizedDisplayName,
       'display_name_lower': displayNameLower,
       'display_name_lowercase': displayNameLower,
-      'shortDescription': shortDescription,
+      'shortDescription': sanitizedBio,
       'role': role,
       'title': title,
       'notify_all': notifyAll,

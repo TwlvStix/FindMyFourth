@@ -241,6 +241,12 @@ class AppPhosphorIcons {
   /// Log out — sign out
   static const logOut = PhosphorIconsRegular.signOut;
 
+  /// Privacy policy — scroll (document feel)
+  static const privacyPolicy = PhosphorIconsRegular.scroll;
+
+  /// Terms of service — file text (formal document/agreement)
+  static const termsOfService = PhosphorIconsRegular.fileText;
+
   /// Friends (profile context)
   static const friends = PhosphorIconsRegular.usersThree;
 

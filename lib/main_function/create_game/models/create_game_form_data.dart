@@ -3,6 +3,7 @@ import 'dart:math';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 
+import '/core/utils/input_sanitizer.dart';
 import '/models/course.dart';
 import '/utils/flexible_week_resolver.dart';
 
@@ -277,7 +278,7 @@ class CreateGameFormData {
             : flexibleTimesOfDay.where((t) => t != 'anytime').join(',');
 
     return {
-      'name_game': resolvedName,
+      'name_game': InputSanitizer.gameName(resolvedName) ?? resolvedName,
       'date': scheduleType == 'confirmed' ? datePicked : null,
       'num_players': 1, // Default for backend compatibility
       'style_game': styleGameValue,

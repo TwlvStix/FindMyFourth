@@ -7,6 +7,7 @@ import 'package:rxdart/rxdart.dart';
 
 import '/core/exceptions/app_exceptions.dart';
 import '/core/utils/app_log.dart';
+import '/core/utils/input_sanitizer.dart';
 import '/models/chat.dart';
 import '/models/chat_message.dart';
 
@@ -255,13 +256,14 @@ class ChatService {
     required String gameId,
     required String gameName,
   }) async {
+    final sanitizedGameName = InputSanitizer.gameName(gameName) ?? '';
     final chatRef = _firestore.collection('chats').doc();
     await chatRef.set({
       'memberIds': [createdByUid],
       'users': [_firestore.collection('users').doc(createdByUid)],
       'type': 'game',
       'gameId': gameId,
-      'gameName': gameName,
+      'gameName': sanitizedGameName,
       'lastMessage': '',
       'isReadOnly': false,
       'pinnedMessage': '',
@@ -492,6 +494,7 @@ class ChatService {
     required String chatId,
     required String text,
   }) async {
+    final sanitizedText = InputSanitizer.chatMessage(text) ?? '';
     final chatRef = _firestore.collection('chats').doc(chatId);
     final messageRef = chatRef.collection('messages').doc();
 
@@ -505,7 +508,7 @@ class ChatService {
       // Create the system message
       transaction.set(messageRef, {
         'senderId': '',
-        'text': text,
+        'text': sanitizedText,
         'imageUrl': '',
         'videoUrl': '',
         'type': 'system',
@@ -561,6 +564,7 @@ class ChatService {
     double? imageWidth,
     double? imageHeight,
   }) async {
+    final sanitizedText = InputSanitizer.chatMessage(text) ?? '';
     final chatRef = _firestore.collection('chats').doc(chatId);
     final messageRef = chatRef.collection('messages').doc();
     await _firestore.runTransaction((transaction) async {
@@ -576,7 +580,7 @@ class ChatService {
               <String>[];
 
       final updates = <String, dynamic>{
-        'lastMessage': type == 'image' ? '📷 Photo' : text,
+        'lastMessage': type == 'image' ? '📷 Photo' : sanitizedText,
         'lastMessageAt': FieldValue.serverTimestamp(),
         'lastMessageSenderId': senderId,
         'updatedAt': FieldValue.serverTimestamp(),
@@ -601,7 +605,7 @@ class ChatService {
 
       transaction.set(messageRef, {
         'senderId': senderId,
-        'text': text,
+        'text': sanitizedText,
         'imageUrl': imageUrl,
         'videoUrl': videoUrl,
         'type': type,

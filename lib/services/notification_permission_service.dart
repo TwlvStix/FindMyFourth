@@ -408,6 +408,32 @@ class NotificationPermissionService {
     return 'unknown';
   }
 
+  /// Remove this device's FCM token from Firestore and unregister it.
+  /// Call BEFORE FirebaseAuth.signOut() while uid is still available.
+  Future<void> removeDeviceToken(String uid) async {
+    try {
+      final deviceId = await _getOrCreateDeviceId();
+      await _firestore
+          .collection('users')
+          .doc(uid)
+          .collection('devices')
+          .doc(deviceId)
+          .delete();
+      AppLog.d('[NotificationService] ✅ Device token removed from Firestore');
+    } catch (e) {
+      AppLog.d(
+          '[NotificationService] ⚠️ Failed to remove device token from Firestore: $e');
+    }
+
+    try {
+      await _messaging.deleteToken();
+      AppLog.d('[NotificationService] ✅ FCM token unregistered');
+    } catch (e) {
+      AppLog.d(
+          '[NotificationService] ⚠️ Failed to unregister FCM token: $e');
+    }
+  }
+
   /// Reset the service for account switch.
   ///
   /// This cancels the token refresh subscription (which was bound to the

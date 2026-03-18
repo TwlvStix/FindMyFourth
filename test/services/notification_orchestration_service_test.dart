@@ -15,6 +15,8 @@ class _RecordingPermissionCoordinator
 
   int initCalls = 0;
   int resetCalls = 0;
+  int removeDeviceTokenCalls = 0;
+  String? lastRemovedUid;
 
   @override
   Future<void> init(String uid) async {
@@ -23,6 +25,13 @@ class _RecordingPermissionCoordinator
     if (onInit != null) {
       await onInit!(uid);
     }
+  }
+
+  @override
+  Future<void> removeDeviceToken(String uid) async {
+    removeDeviceTokenCalls++;
+    lastRemovedUid = uid;
+    events.add('permission.removeDeviceToken:$uid');
   }
 
   @override
@@ -130,6 +139,7 @@ void main() {
       await service.onUserChanged('u2');
 
       expect(events, [
+        'permission.removeDeviceToken:u1',
         'fcm.dispose',
         'local.dispose',
         'permission.reset',
@@ -147,7 +157,25 @@ void main() {
       currentUid = null;
       await service.onUserChanged(null);
 
-      expect(events, ['fcm.dispose', 'local.dispose', 'permission.reset']);
+      expect(events, [
+        'permission.removeDeviceToken:u1',
+        'fcm.dispose',
+        'local.dispose',
+        'permission.reset',
+      ]);
+    });
+
+    test('removeDeviceToken is called with correct uid on shutdown', () async {
+      currentUid = 'u1';
+      await service.onUserChanged('u1');
+
+      currentUid = null;
+      await service.onUserChanged(null);
+      // Allow fire-and-forget future to complete
+      await Future<void>.delayed(Duration.zero);
+
+      expect(permissionCoordinator.removeDeviceTokenCalls, 1);
+      expect(permissionCoordinator.lastRemovedUid, 'u1');
     });
 
     test('stale initialization is aborted after rapid account switch',

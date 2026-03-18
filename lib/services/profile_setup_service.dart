@@ -3,6 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 
 import '/backend/backend.dart' as backend;
 import '/core/utils/app_log.dart';
+import '/core/utils/input_sanitizer.dart';
 
 /// Encapsulates profile/onboarding Firestore/Auth write flows so widgets stay UI-only.
 class ProfileSetupService {
@@ -70,7 +71,8 @@ class ProfileSetupService {
     required String username,
     required DocumentReference userRef,
   }) async {
-    final usernamesRef = _firestore.collection('usernames').doc(username);
+    final sanitizedUsername = InputSanitizer.username(username) ?? username;
+    final usernamesRef = _firestore.collection('usernames').doc(sanitizedUsername);
     await _firestore.runTransaction((transaction) async {
       final usernameSnap = await transaction.get(usernamesRef);
       if (usernameSnap.exists) {
@@ -111,11 +113,12 @@ class ProfileSetupService {
     required Map<String, dynamic> userData,
     String? phoneNumber,
   }) async {
+    final sanitizedPhone = InputSanitizer.phoneNumber(phoneNumber);
     await Future.wait([
       userRef.set(userData, SetOptions(merge: true)),
-      if (phoneNumber != null && phoneNumber.isNotEmpty)
+      if (sanitizedPhone != null && sanitizedPhone.isNotEmpty)
         userRef.collection('private').doc('info').set(
-          <String, dynamic>{'phone_number': phoneNumber},
+          <String, dynamic>{'phone_number': sanitizedPhone},
           SetOptions(merge: true),
         ),
     ]);
@@ -126,11 +129,12 @@ class ProfileSetupService {
     required Map<String, dynamic> userData,
     required String? phoneNumber,
   }) async {
+    final sanitizedPhone = InputSanitizer.phoneNumber(phoneNumber);
     await _firestore.runTransaction((transaction) async {
       transaction.update(userRef, userData);
       transaction.set(
         userRef.collection('private').doc('info'),
-        <String, dynamic>{'phone_number': phoneNumber ?? ''},
+        <String, dynamic>{'phone_number': sanitizedPhone ?? ''},
         SetOptions(merge: true),
       );
     });
@@ -142,6 +146,8 @@ class ProfileSetupService {
     required Map<String, dynamic> userData,
     String? phoneNumber,
   }) async {
+    final sanitizedPhone = InputSanitizer.phoneNumber(phoneNumber);
+
     // Step 1: Reserve the username in a separate transaction so Firestore
     // rules can see the committed username doc when evaluating the user
     // doc update (rules use get() which reads pre-transaction state).
@@ -150,10 +156,10 @@ class ProfileSetupService {
     // Step 2: Update the user doc + private info in a second transaction.
     await _firestore.runTransaction((transaction) async {
       transaction.update(userRef, userData);
-      if (phoneNumber != null && phoneNumber.isNotEmpty) {
+      if (sanitizedPhone != null && sanitizedPhone.isNotEmpty) {
         transaction.set(
           userRef.collection('private').doc('info'),
-          <String, dynamic>{'phone_number': phoneNumber},
+          <String, dynamic>{'phone_number': sanitizedPhone},
           SetOptions(merge: true),
         );
       }

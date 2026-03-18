@@ -459,8 +459,15 @@ const updateTrustProfile = functions
       );
     }
 
-    // Allow the user themselves, or unauthenticated internal backend calls
-    if (context.auth && context.auth.uid !== userId) {
+    // Require authentication — Admin SDK / Cloud Tasks callers should use
+    // _updateTrustProfileHandler() directly, not this callable.
+    if (!context.auth) {
+      throw new functions.https.HttpsError(
+        "unauthenticated",
+        "Authentication required."
+      );
+    }
+    if (context.auth.uid !== userId) {
       throw new functions.https.HttpsError(
         "permission-denied",
         "You can only update your own trust profile."

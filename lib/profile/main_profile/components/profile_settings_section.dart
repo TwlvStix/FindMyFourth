@@ -20,6 +20,8 @@ class ProfileSettingsSection extends StatelessWidget {
     required this.onNotifications,
     required this.onYourStanding,
     required this.onLocation,
+    required this.onPrivacyPolicy,
+    required this.onTermsOfService,
     required this.onLogout,
     this.showDebugOptions = false,
     this.onDebugNotificationRouting,
@@ -35,6 +37,12 @@ class ProfileSettingsSection extends StatelessWidget {
 
   /// Called when the user taps "Location".
   final VoidCallback onLocation;
+
+  /// Called when the user taps "Privacy Policy".
+  final VoidCallback onPrivacyPolicy;
+
+  /// Called when the user taps "Terms of Service".
+  final VoidCallback onTermsOfService;
 
   /// Called when the user taps "Log Out".
   /// This should handle the confirmation dialog and logout flow.
@@ -100,6 +108,24 @@ class ProfileSettingsSection extends StatelessWidget {
                   onTap: () {
                     HapticFeedback.lightImpact();
                     onLocation();
+                  },
+                ),
+                Divider(height: 1, color: AppColors.navyLight, indent: 56),
+                _buildSettingsRow(
+                  phosphorIcon: AppPhosphorIcons.privacyPolicy,
+                  label: 'Privacy Policy',
+                  onTap: () {
+                    HapticFeedback.lightImpact();
+                    onPrivacyPolicy();
+                  },
+                ),
+                Divider(height: 1, color: AppColors.navyLight, indent: 56),
+                _buildSettingsRow(
+                  phosphorIcon: AppPhosphorIcons.termsOfService,
+                  label: 'Terms of Service',
+                  onTap: () {
+                    HapticFeedback.lightImpact();
+                    onTermsOfService();
                   },
                 ),
                 // Debug options (only in debug mode)

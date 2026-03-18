@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:firebase_auth/firebase_auth.dart';
 
 import '/core/utils/app_log.dart';
@@ -7,6 +9,7 @@ import '/services/notification_permission_service.dart';
 
 abstract class NotificationPermissionCoordinator {
   Future<void> init(String uid);
+  Future<void> removeDeviceToken(String uid);
   void reset();
 }
 
@@ -28,6 +31,9 @@ class _DefaultPermissionCoordinator
 
   @override
   Future<void> init(String uid) => _service.init(uid);
+
+  @override
+  Future<void> removeDeviceToken(String uid) => _service.removeDeviceToken(uid);
 
   @override
   void reset() => _service.reset();
@@ -198,6 +204,11 @@ class NotificationOrchestrationService {
     _generation++;
     _activeUid = null;
     _initializingUid = null;
+
+    // Best-effort FCM token cleanup — fire-and-forget so shutdown stays sync
+    if (previousUid != null) {
+      unawaited(_permissionCoordinator.removeDeviceToken(previousUid));
+    }
 
     AppLog.d('[DIAG-ORCH] shutdown: calling fcmCoordinator.dispose()');
     _fcmCoordinator.dispose();

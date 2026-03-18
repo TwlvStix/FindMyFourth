@@ -86,10 +86,10 @@ class FcmNotificationService implements NotificationService {
     AppLog.d('🔔 [DIAG-FCM] onTapStream listener SUBSCRIBED');
 
     final apnsToken = await FirebaseMessaging.instance.getAPNSToken();
-    AppLog.d('🍎 APNs Token: $apnsToken');
+    AppLog.d('🍎 APNs Token: ${apnsToken != null && apnsToken.length > 8 ? '${apnsToken.substring(0, 8)}...' : apnsToken}');
 
     final token = await FirebaseMessaging.instance.getToken();
-    AppLog.d('🔔 FcmNotificationService: FCM Token: $token');
+    AppLog.d('🔔 FcmNotificationService: FCM Token: ${token != null && token.length > 8 ? '${token.substring(0, 8)}...' : token}');
 
     _initialized = true;
     AppLog.d('🔔 FcmNotificationService: Initialized successfully');

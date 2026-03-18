@@ -366,11 +366,9 @@ service cloud.firestore {
         'onboarding_completed',
         'golf_canada_number',
         'profile_completeness',
-        'total_verified_rounds',
-        'unique_co_players',
-        'games_hosted',
-        'show_up_rate',
-        'badge_level',
+        // trust-computed fields (badge_level, games_hosted, show_up_rate,
+        // unique_co_players, total_verified_rounds) are intentionally
+        // excluded — they are written only by Cloud Functions via Admin SDK.
         'location_source',
         'search_radius_km',
         'near_me_enabled',

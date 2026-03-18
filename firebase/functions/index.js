@@ -22,6 +22,53 @@ const testHarness = require("./test_harness");
 
 // Runtime options are set inline per function — see each trigger definition.
 
+// ── Cloud Task OIDC verification (defense-in-depth) ───────────────────────────
+// Firebase v1 onRequest functions are publicly accessible by default.
+// Cloud Tasks sends a Google-signed OIDC token in the Authorization header,
+// but the function must validate it. This wrapper verifies the token and
+// confirms it's from our App Engine default service account.
+const CLOUD_TASK_PROJECT = process.env.GCLOUD_PROJECT || "find-my-fourth";
+
+let _oidcClient;
+function _getOidcClient() {
+  if (!_oidcClient) {
+    const { OAuth2Client } = require("google-auth-library");
+    _oidcClient = new OAuth2Client();
+  }
+  return _oidcClient;
+}
+
+/**
+ * Wraps an onRequest handler with OIDC token verification.
+ * The raw handler is still exported on the module for unit tests
+ * (which call it directly without auth).
+ */
+function withCloudTaskAuth(handler) {
+  return async (req, res) => {
+    const authHeader = req.headers.authorization || "";
+    if (!authHeader.startsWith("Bearer ")) {
+      console.warn(`[CloudTaskAuth] Missing Bearer token on ${req.path}`);
+      return res.status(401).send("Unauthorized");
+    }
+
+    try {
+      const token = authHeader.split("Bearer ")[1];
+      const ticket = await _getOidcClient().verifyIdToken({ idToken: token });
+      const payload = ticket.getPayload();
+      const expectedEmail = `${CLOUD_TASK_PROJECT}@appspot.gserviceaccount.com`;
+      if (payload.email !== expectedEmail) {
+        console.warn(`[CloudTaskAuth] Unexpected email: ${payload.email}`);
+        return res.status(403).send("Forbidden");
+      }
+    } catch (err) {
+      console.warn(`[CloudTaskAuth] Token verification failed: ${err.message}`);
+      return res.status(401).send("Unauthorized");
+    }
+
+    return handler(req, res);
+  };
+}
+
 function extractUidFromJoinedEntry(entry) {
   if (!entry) {
     return null;
@@ -849,6 +896,16 @@ async function performAccountDeletion(
     source,
     usernameDeleted,
   });
+
+  // Delete profile photos from Storage
+  try {
+    const bucket = admin.storage().bucket();
+    await bucket.deleteFiles({ prefix: `users/${uid}/profile_photos/` });
+    console.log("accountDeletion storageDeleted", { uid, source });
+  } catch (error) {
+    // Storage cleanup is best-effort — don't fail the deletion
+    console.warn("accountDeletion storageFailed", { uid, source, error: error.message });
+  }
 
   await firestore.recursiveDelete(userRef);
   console.log("accountDeletion recursiveDeleteComplete", { uid, source });
@@ -1802,27 +1859,27 @@ exports.submitPeerRatings = confirmationFlow.submitPeerRatings;
 exports.submitFallbackConfirmation = confirmationFlow.submitFallbackConfirmation;
 exports.submitPreGameConfirmation = confirmationFlow.submitPreGameConfirmation;
 
-// Cloud Task receivers for confirmation flow
+// Cloud Task receivers for confirmation flow (OIDC-protected)
 exports.processScheduledGameStatusChange = functions
   .region('us-west2')
   .runWith({ timeoutSeconds: 60, memory: '256MB' })
-  .https.onRequest(confirmationFlow._processScheduledGameStatusChangeHandler);
+  .https.onRequest(withCloudTaskAuth(confirmationFlow._processScheduledGameStatusChangeHandler));
 
 exports.processScheduledWindowClose = functions
   .region('us-west2')
   .runWith({ timeoutSeconds: 540, memory: '512MB' })
-  .https.onRequest(confirmationFlow._processScheduledWindowCloseHandler);
+  .https.onRequest(withCloudTaskAuth(confirmationFlow._processScheduledWindowCloseHandler));
 
 // Pre-game confirmation (partial games only)
 exports.processScheduledPreGameCheck = functions
   .region('us-west2')
   .runWith({ timeoutSeconds: 60, memory: '256MB' })
-  .https.onRequest(confirmationFlow._processScheduledPreGameCheckHandler);
+  .https.onRequest(withCloudTaskAuth(confirmationFlow._processScheduledPreGameCheckHandler));
 
 exports.processScheduledPreGameTimeout = functions
   .region('us-west2')
   .runWith({ timeoutSeconds: 60, memory: '256MB' })
-  .https.onRequest(confirmationFlow._processScheduledPreGameTimeoutHandler);
+  .https.onRequest(withCloudTaskAuth(confirmationFlow._processScheduledPreGameTimeoutHandler));
 
 // Trust Profile — Stage 5
 exports.updateTrustProfile = trustProfileModule.updateTrustProfile;
@@ -1833,16 +1890,16 @@ const trustNotificationScheduler = require('./notifications/trust/scheduler');
 exports.processScheduledTrustNotification = functions
   .region('us-west2')
   .runWith({ timeoutSeconds: 60, memory: '256MB' })
-  .https.onRequest(trustNotificationScheduler.processScheduledTrustNotificationHandler);
+  .https.onRequest(withCloudTaskAuth(trustNotificationScheduler.processScheduledTrustNotificationHandler));
 
 // Chat Notification Debounce — delivers batched chat notifications after 8s window
 exports.deliverChatNotification = functions
   .region('us-west2')
   .runWith({ timeoutSeconds: 60, memory: '256MB' })
-  .https.onRequest((req, res) => {
+  .https.onRequest(withCloudTaskAuth((req, res) => {
     const { deliverChatNotificationHandler } = require("./notifications/chat_debounce");
     return deliverChatNotificationHandler(req, res);
-  });
+  }));
 
 // Flexible Game Nudge System
 // Schedules nudges when 2+ players join a flexible game, cancels when time confirmed
