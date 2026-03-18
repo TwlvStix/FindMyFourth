@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 
 import '/core/design_tokens/app_phosphor_icons.dart';
@@ -127,14 +128,15 @@ class PlayerSlotCard extends StatelessWidget {
             child: ClipRRect(
               borderRadius: BorderRadius.circular(AppBorderRadius.sm),
               child: (!isGuest && photoUrl != null && photoUrl.isNotEmpty)
-                  ? Image.network(
-                      photoUrl,
+                  ? CachedNetworkImage(
+                      imageUrl: photoUrl,
                       width: 48,
                       height: 48,
-                      cacheWidth: 144,
-                      cacheHeight: 144,
+                      memCacheWidth: 144,
+                      memCacheHeight: 144,
                       fit: BoxFit.cover,
-                      errorBuilder: (_, __, ___) => AppIcon(
+                      fadeInDuration: Duration.zero,
+                      errorWidget: (_, __, ___) => AppIcon(
                         icon: AppPhosphorIcons.profile,
                         color: AppColors.textMuted,
                         size: AppIconSize.md,

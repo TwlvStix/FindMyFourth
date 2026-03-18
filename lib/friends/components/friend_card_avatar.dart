@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import '/core/design_tokens/colors.dart';
 import '/core/design_tokens/border_radius.dart';
@@ -35,14 +36,15 @@ class FriendCardAvatar extends StatelessWidget {
       child: ClipRRect(
         borderRadius: BorderRadius.circular(AppBorderRadius.lg - 1),
         child: photoUrl.isNotEmpty
-            ? Image.network(
-                photoUrl,
+            ? CachedNetworkImage(
+                imageUrl: photoUrl,
                 width: size,
                 height: size,
-                cacheWidth: (size * 3).toInt(),
-                cacheHeight: (size * 3).toInt(),
+                memCacheWidth: (size * 3).toInt(),
+                memCacheHeight: (size * 3).toInt(),
                 fit: BoxFit.cover,
-                errorBuilder: (_, __, ___) => _buildFallback(),
+                fadeInDuration: Duration.zero,
+                errorWidget: (_, __, ___) => _buildFallback(),
               )
             : _buildFallback(),
       ),

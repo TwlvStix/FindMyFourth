@@ -14,6 +14,7 @@
 /// ═══════════════════════════════════════════════════════════════════════════
 library;
 
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
@@ -280,10 +281,11 @@ class _AnimatedAvatarRingState extends State<AnimatedAvatarRing>
           clipBehavior: Clip.antiAlias,
           decoration: BoxDecoration(shape: BoxShape.circle),
           child: widget.imageUrl != null && widget.imageUrl!.isNotEmpty
-              ? Image.network(
-                  widget.imageUrl!,
+              ? CachedNetworkImage(
+                  imageUrl: widget.imageUrl!,
                   fit: BoxFit.cover,
-                  errorBuilder: (context, error, stackTrace) => _buildFallback(),
+                  fadeInDuration: Duration.zero,
+                  errorWidget: (context, url, error) => _buildFallback(),
                 )
               : _buildFallback(),
         ),

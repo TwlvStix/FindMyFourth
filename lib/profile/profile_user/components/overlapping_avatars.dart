@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 
 import '/backend/schema/users_record.dart';
@@ -41,10 +42,11 @@ class OverlappingAvatars extends StatelessWidget {
               ),
               child: ClipOval(
                 child: friend.photoUrl.isNotEmpty
-                    ? Image.network(
-                        friend.photoUrl,
+                    ? CachedNetworkImage(
+                        imageUrl: friend.photoUrl,
                         fit: BoxFit.cover,
-                        errorBuilder: (_, __, ___) => Icon(
+                        fadeInDuration: Duration.zero,
+                        errorWidget: (_, __, ___) => Icon(
                           AppPhosphorIcons.profile,
                           size: AppIconSize.button,
                           color: AppColors.textSecondary,

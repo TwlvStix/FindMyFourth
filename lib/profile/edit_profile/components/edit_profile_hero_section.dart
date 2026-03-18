@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -102,16 +103,19 @@ class EditProfileHeroSection extends StatelessWidget {
               height: 132,
               clipBehavior: Clip.antiAlias,
               decoration: const BoxDecoration(shape: BoxShape.circle),
-              child: Image.network(
-                _effectivePhotoUrl,
-                fit: BoxFit.cover,
-                semanticLabel: 'Your profile photo',
-                errorBuilder: (context, error, stackTrace) => Container(
-                  color: AppColors.sand,
-                  child: Icon(
-                    AppPhosphorIcons.profile,
-                    size: AppIconSize.hero,
-                    color: AppColors.stone,
+              child: Semantics(
+                label: 'Your profile photo',
+                child: CachedNetworkImage(
+                  imageUrl: _effectivePhotoUrl,
+                  fit: BoxFit.cover,
+                  fadeInDuration: Duration.zero,
+                  errorWidget: (context, url, error) => Container(
+                    color: AppColors.sand,
+                    child: Icon(
+                      AppPhosphorIcons.profile,
+                      size: AppIconSize.hero,
+                      color: AppColors.stone,
+                    ),
                   ),
                 ),
               ),

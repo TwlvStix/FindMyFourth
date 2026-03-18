@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '/backend/backend.dart';
@@ -45,12 +46,13 @@ class HostInfoSection extends StatelessWidget {
             ),
             clipBehavior: Clip.antiAlias,
             child: hostUser.photoUrl.isNotEmpty
-                ? Image.network(
-                    hostUser.photoUrl,
+                ? CachedNetworkImage(
+                    imageUrl: hostUser.photoUrl,
                     fit: BoxFit.cover,
-                    cacheWidth: 96,
-                    cacheHeight: 96,
-                    errorBuilder: (_, __, ___) => AppIcon(
+                    memCacheWidth: 96,
+                    memCacheHeight: 96,
+                    fadeInDuration: Duration.zero,
+                    errorWidget: (_, __, ___) => AppIcon(
                       icon: AppPhosphorIcons.profile,
                       color: AppColors.pure,
                       size: AppIconSize.md,

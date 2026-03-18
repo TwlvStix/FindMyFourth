@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import '/core/design_tokens/colors.dart';
 import '/core/design_tokens/typography.dart';
@@ -67,14 +68,15 @@ class VibeRingAvatar extends StatelessWidget {
       ),
       child: ClipOval(
         child: photoUrl.isNotEmpty
-            ? Image.network(
-                photoUrl,
+            ? CachedNetworkImage(
+                imageUrl: photoUrl,
                 width: innerSize,
                 height: innerSize,
-                cacheWidth: (innerSize * 3).toInt(),
-                cacheHeight: (innerSize * 3).toInt(),
+                memCacheWidth: (innerSize * 3).toInt(),
+                memCacheHeight: (innerSize * 3).toInt(),
                 fit: BoxFit.cover,
-                errorBuilder: (_, __, ___) => _buildFallback(innerSize),
+                fadeInDuration: Duration.zero,
+                errorWidget: (_, __, ___) => _buildFallback(innerSize),
               )
             : _buildFallback(innerSize),
       ),

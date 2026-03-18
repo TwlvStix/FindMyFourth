@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import '/core/design_tokens/app_phosphor_icons.dart';
 import '/core/design_tokens/colors.dart';
@@ -128,14 +129,15 @@ class _ProfileHeroSectionState extends State<ProfileHeroSection>
                       ),
                       padding: AppSpacing.allXxs,
                       child: ClipOval(
-                        child: Image.network(
-                          widget.photoUrl.isNotEmpty
+                        child: CachedNetworkImage(
+                          imageUrl: widget.photoUrl.isNotEmpty
                               ? widget.photoUrl
                               : 'https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png',
                           width: 132,
                           height: 132,
                           fit: BoxFit.cover,
-                          errorBuilder: (context, error, stackTrace) =>
+                          fadeInDuration: Duration.zero,
+                          errorWidget: (context, url, error) =>
                               Container(
                             color: AppColors.cloud,
                             child: AppIcon(

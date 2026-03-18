@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import '../design_tokens/colors.dart';
 import '../design_tokens/typography.dart';
@@ -283,10 +284,11 @@ class _MemberSegment extends StatelessWidget {
     if (hasPhoto) {
       // Show profile photo with initials fallback on error
       return SizedBox.expand(
-        child: Image.network(
-          member.photoUrl!,
+        child: CachedNetworkImage(
+          imageUrl: member.photoUrl!,
           fit: BoxFit.cover,
-          errorBuilder: (_, __, ___) => _buildInitialsFallback(),
+          fadeInDuration: Duration.zero,
+          errorWidget: (_, __, ___) => _buildInitialsFallback(),
         ),
       );
     }

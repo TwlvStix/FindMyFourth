@@ -122,7 +122,7 @@ class ChatMessageBubble extends StatelessWidget {
                             .withValues(alpha: 0.3),
                         backgroundImage: senderPhotoUrl != null &&
                                 senderPhotoUrl!.isNotEmpty
-                            ? NetworkImage(senderPhotoUrl!)
+                            ? CachedNetworkImageProvider(senderPhotoUrl!)
                             : null,
                         child: senderPhotoUrl == null || senderPhotoUrl!.isEmpty
                             ? AppIcon(

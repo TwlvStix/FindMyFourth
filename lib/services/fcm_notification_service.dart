@@ -96,69 +96,74 @@ class FcmNotificationService implements NotificationService {
   }
 
   void _handleForegroundMessage(RemoteMessage message) {
-    AppLog.d('🔔 [DIAG-FG] Received: id=${message.messageId}, type=${message.data['type']}');
-    AppLog.d('🔔 [DIAG-FG] notification: ${message.notification?.title} / ${message.notification?.body}');
-    AppLog.d('🔔 [DIAG-FG] data keys: ${message.data.keys.toList()}');
-    AppLog.d(
-        '🔔 FcmNotificationService: Received foreground message id=${message.messageId}');
-
-    // Audit: Record foreground push received
-    final uid = FirebaseAuth.instance.currentUser?.uid;
-    if (uid != null) {
-      NotificationAuditService.instance.record(
-        NotificationReceiptEvent.foregroundReceived(
-          uid: uid,
-          messageId: message.messageId,
-          notificationType: message.data['type'] as String?,
-          payloadSummary: summarizePayload(message.data),
-        ),
-      );
-    }
-
-    final notification = message.notification;
-    if (notification == null) {
-      AppLog.d('🔔 FcmNotificationService: No notification payload, skipping');
-      return;
-    }
-
-    final title = notification.title ?? '';
-    final body = notification.body ?? '';
-
-    if (title.isEmpty && body.isEmpty) {
-      AppLog.d('🔔 FcmNotificationService: Empty title and body, skipping');
-      return;
-    }
-
-    // Create testable notification for stream
-    final testableNotification = TestableNotification(
-      title: title,
-      body: body,
-      data: message.data,
-    );
-
-    // Emit to received stream
-    _receivedController.add(testableNotification);
-
-    // Check if we should suppress this notification
-    if (_shouldSuppressNotification(testableNotification)) {
+    try {
+      AppLog.d('🔔 [DIAG-FG] Received: id=${message.messageId}, type=${message.data['type']}');
+      AppLog.d('🔔 [DIAG-FG] notification: ${message.notification?.title} / ${message.notification?.body}');
+      AppLog.d('🔔 [DIAG-FG] data keys: ${message.data.keys.toList()}');
       AppLog.d(
-          '🔔 FcmNotificationService: Suppressing notification (user on relevant screen)');
-      return;
+          '🔔 FcmNotificationService: Received foreground message id=${message.messageId}');
+
+      // Audit: Record foreground push received
+      final uid = FirebaseAuth.instance.currentUser?.uid;
+      if (uid != null) {
+        NotificationAuditService.instance.record(
+          NotificationReceiptEvent.foregroundReceived(
+            uid: uid,
+            messageId: message.messageId,
+            notificationType: message.data['type'] as String?,
+            payloadSummary: summarizePayload(message.data),
+          ),
+        );
+      }
+
+      final notification = message.notification;
+      if (notification == null) {
+        AppLog.d('🔔 FcmNotificationService: No notification payload, skipping');
+        return;
+      }
+
+      final title = notification.title ?? '';
+      final body = notification.body ?? '';
+
+      if (title.isEmpty && body.isEmpty) {
+        AppLog.d('🔔 FcmNotificationService: Empty title and body, skipping');
+        return;
+      }
+
+      // Create testable notification for stream
+      final testableNotification = TestableNotification(
+        title: title,
+        body: body,
+        data: message.data,
+      );
+
+      // Emit to received stream
+      _receivedController.add(testableNotification);
+
+      // Check if we should suppress this notification
+      if (_shouldSuppressNotification(testableNotification)) {
+        AppLog.d(
+            '🔔 FcmNotificationService: Suppressing notification (user on relevant screen)');
+        return;
+      }
+
+      // Prepare payload for tap handling
+      final payload = <String, dynamic>{
+        ...message.data,
+        '_messageId': message.messageId,
+      };
+
+      // Show local notification
+      AppLog.d('🔔 [DIAG-FG] Calling LocalNotificationsService.show(title: $title)');
+      LocalNotificationsService().show(
+        title: title,
+        body: body,
+        payload: jsonEncode(payload),
+      );
+    } catch (e, st) {
+      AppLog.d('❌ FcmNotificationService: Error handling foreground message '
+          'id=${message.messageId}: $e\n$st');
     }
-
-    // Prepare payload for tap handling
-    final payload = <String, dynamic>{
-      ...message.data,
-      '_messageId': message.messageId,
-    };
-
-    // Show local notification
-    AppLog.d('🔔 [DIAG-FG] Calling LocalNotificationsService.show(title: $title)');
-    LocalNotificationsService().show(
-      title: title,
-      body: body,
-      payload: jsonEncode(payload),
-    );
   }
 
   bool _shouldSuppressNotification(TestableNotification notification) {

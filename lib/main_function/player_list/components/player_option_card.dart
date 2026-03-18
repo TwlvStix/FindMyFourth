@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 
 import '/core/design_tokens/app_phosphor_icons.dart';
@@ -128,14 +129,15 @@ class _Avatar extends StatelessWidget {
       child: ClipRRect(
         borderRadius: BorderRadius.circular(AppBorderRadius.sm),
         child: (!isGuest && photoUrl != null && photoUrl!.isNotEmpty)
-            ? Image.network(
-                photoUrl!,
+            ? CachedNetworkImage(
+                imageUrl: photoUrl!,
                 width: 48,
                 height: 48,
                 fit: BoxFit.cover,
-                cacheWidth: 144,
-                cacheHeight: 144,
-                errorBuilder: (_, __, ___) => AppIcon(
+                memCacheWidth: 144,
+                memCacheHeight: 144,
+                fadeInDuration: Duration.zero,
+                errorWidget: (_, __, ___) => AppIcon(
                   icon: AppPhosphorIcons.profile,
                   color: AppColors.textMuted,
                   size: AppIconSize.md,

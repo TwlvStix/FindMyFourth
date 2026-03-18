@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 
 import '/core/design_tokens/app_phosphor_icons.dart';
@@ -27,22 +28,19 @@ class ChatImageViewer extends StatelessWidget {
             child: InteractiveViewer(
               minScale: 0.5,
               maxScale: 4.0,
-              child: Image.network(
-                imageUrl,
+              child: CachedNetworkImage(
+                imageUrl: imageUrl,
                 fit: BoxFit.contain,
-                loadingBuilder: (context, child, loadingProgress) {
-                  if (loadingProgress == null) return child;
+                fadeInDuration: Duration.zero,
+                progressIndicatorBuilder: (context, url, progress) {
                   return Center(
                     child: CircularProgressIndicator(
-                      value: loadingProgress.expectedTotalBytes != null
-                          ? loadingProgress.cumulativeBytesLoaded /
-                              loadingProgress.expectedTotalBytes!
-                          : null,
+                      value: progress.progress,
                       color: AppColors.pure,
                     ),
                   );
                 },
-                errorBuilder: (context, error, stackTrace) {
+                errorWidget: (context, url, error) {
                   return Center(
                     child: Column(
                       mainAxisSize: MainAxisSize.min,

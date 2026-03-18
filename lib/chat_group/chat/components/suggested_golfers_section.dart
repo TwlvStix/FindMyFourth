@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 
 import '/backend/backend.dart';
@@ -345,12 +346,13 @@ class _Avatar extends StatelessWidget {
       child: ClipRRect(
         borderRadius: BorderRadius.circular(AppBorderRadius.sm),
         child: photoUrl.isNotEmpty
-            ? Image.network(
-                photoUrl,
+            ? CachedNetworkImage(
+                imageUrl: photoUrl,
                 fit: BoxFit.cover,
-                cacheWidth: 88,
-                cacheHeight: 88,
-                errorBuilder: (context, error, stackTrace) => AppIcon(
+                memCacheWidth: 88,
+                memCacheHeight: 88,
+                fadeInDuration: Duration.zero,
+                errorWidget: (context, url, error) => AppIcon(
                   icon: AppPhosphorIcons.person,
                   color: AppColors.pure,
                   size: AppIconSize.md,

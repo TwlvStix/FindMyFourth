@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -139,7 +140,7 @@ class _StackedAvatar extends StatelessWidget {
         ),
         image: hasValidImage
             ? DecorationImage(
-                image: NetworkImage(imageUrl!),
+                image: CachedNetworkImageProvider(imageUrl!),
                 fit: BoxFit.cover,
               )
             : null,

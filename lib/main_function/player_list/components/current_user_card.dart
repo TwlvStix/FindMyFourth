@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 
@@ -53,14 +54,15 @@ class CurrentUserCard extends StatelessWidget {
                 child: ClipRRect(
                   borderRadius: BorderRadius.circular(AppBorderRadius.xxl),
                   child: profile?.photoUrl.isNotEmpty ?? false
-                      ? Image.network(
-                          profile!.photoUrl,
+                      ? CachedNetworkImage(
+                          imageUrl: profile!.photoUrl,
                           width: 48.0,
                           height: 48.0,
                           fit: BoxFit.cover,
-                          cacheWidth: 96,
-                          cacheHeight: 96,
-                          errorBuilder: (_, __, ___) => AppIcon(
+                          memCacheWidth: 96,
+                          memCacheHeight: 96,
+                          fadeInDuration: Duration.zero,
+                          errorWidget: (_, __, ___) => AppIcon(
                             icon: AppPhosphorIcons.profile,
                             color: AppColors.textMuted,
                             size: AppIconSize.md,

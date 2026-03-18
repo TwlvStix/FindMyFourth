@@ -288,53 +288,65 @@ class JoinRequestProvider extends ChangeNotifier {
   // NOTIFICATION HELPERS
   // ========================================
 
+  /// Sends a notification with a single retry on failure.
+  /// Never throws — the primary action already succeeded.
+  Future<void> _notifyWithRetry(
+    Future<void> Function() notificationCall,
+    String context,
+  ) async {
+    try {
+      await notificationCall();
+      AppLog.d('🔔 JoinRequestProvider: $context succeeded');
+    } catch (e) {
+      AppLog.d('❌ JoinRequestProvider: $context first attempt failed, retrying in 2s: $e');
+      await Future.delayed(const Duration(seconds: 2));
+      try {
+        await notificationCall();
+        AppLog.d('🔔 JoinRequestProvider: $context succeeded on retry');
+      } catch (retryError) {
+        AppLog.d('❌ JoinRequestProvider: $context failed after retry: $retryError');
+      }
+    }
+  }
+
   /// Notify owner about a new join request (fire and forget)
   void _notifyNewJoinRequest(String gameId, String ownerId, String requesterName) {
-    FirebaseFunctions.instanceFor(region: 'us-west2')
-        .httpsCallable('notifyNewJoinRequest')
-        .call({
-          'gameId': gameId,
-          'ownerId': ownerId,
-          'requesterName': requesterName,
-        })
-        .then((_) => AppLog.d('🔔 JoinRequestProvider: Sent new request notification to owner'))
-        .catchError((e) => AppLog.d('❌ JoinRequestProvider: New request notification failed: $e'));
+    _notifyWithRetry(
+      () => FirebaseFunctions.instanceFor(region: 'us-west2')
+          .httpsCallable('notifyNewJoinRequest')
+          .call({'gameId': gameId, 'ownerId': ownerId, 'requesterName': requesterName}),
+      'Sent new request notification to owner',
+    );
   }
 
   /// Notify player their request was approved (fire and forget)
   void _notifyRequestApproved(String gameId, String playerId) {
-    FirebaseFunctions.instanceFor(region: 'us-west2')
-        .httpsCallable('notifyJoinRequestApproved')
-        .call({
-          'gameId': gameId,
-          'playerId': playerId,
-        })
-        .then((_) => AppLog.d('🔔 JoinRequestProvider: Sent approval notification'))
-        .catchError((e) => AppLog.d('❌ JoinRequestProvider: Approval notification failed: $e'));
+    _notifyWithRetry(
+      () => FirebaseFunctions.instanceFor(region: 'us-west2')
+          .httpsCallable('notifyJoinRequestApproved')
+          .call({'gameId': gameId, 'playerId': playerId}),
+      'Sent approval notification',
+    );
   }
 
   /// Notify player their request was declined (fire and forget)
   void _notifyRequestDeclined(String gameId, String playerId) {
-    FirebaseFunctions.instanceFor(region: 'us-west2')
-        .httpsCallable('notifyJoinRequestDeclined')
-        .call({
-          'gameId': gameId,
-          'playerId': playerId,
-        })
-        .then((_) => AppLog.d('🔔 JoinRequestProvider: Sent decline notification'))
-        .catchError((e) => AppLog.d('❌ JoinRequestProvider: Decline notification failed: $e'));
+    _notifyWithRetry(
+      () => FirebaseFunctions.instanceFor(region: 'us-west2')
+          .httpsCallable('notifyJoinRequestDeclined')
+          .call({'gameId': gameId, 'playerId': playerId}),
+      'Sent decline notification',
+    );
   }
 
   /// Notify player the round filled before approval (fire and forget)
   void notifyRoundFilledBeforeApproval(String gameId, String playerId) {
-    FirebaseFunctions.instanceFor(region: 'us-west2')
-        .httpsCallable('notifyRoundFilledBeforeApproval')
-        .call({
-          'gameId': gameId,
-          'playerId': playerId,
-        })
-        .then((_) => AppLog.d('🔔 JoinRequestProvider: Sent round-filled notification'))
-        .catchError((e) => AppLog.d('❌ JoinRequestProvider: Round-filled notification failed: $e'));
+    _notifyWithRetry(
+      () => FirebaseFunctions.instanceFor(region: 'us-west2')
+          .httpsCallable('notifyRoundFilledBeforeApproval')
+          .call({'gameId': gameId, 'playerId': playerId}),
+      'Sent round-filled notification',
+    );
   }
 
   // ========================================

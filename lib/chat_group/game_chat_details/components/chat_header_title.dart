@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '/backend/backend.dart';
@@ -66,7 +67,7 @@ class ChatHeaderTitle extends StatelessWidget {
                   padding: EdgeInsets.only(right: AppSpacing.sm),
                   child: CircleAvatar(
                     radius: 18.0,
-                    backgroundImage: NetworkImage(photoUrl),
+                    backgroundImage: CachedNetworkImageProvider(photoUrl),
                   ),
                 ),
               AppText.cardTitle(displayName),

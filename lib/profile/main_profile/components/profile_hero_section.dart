@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -115,20 +116,23 @@ class ProfileHeroSection extends StatelessWidget {
                         child: SizedBox(
                           width: photoSize,
                           height: photoSize,
-                          child: Image.network(
-                            valueOrDefault<String>(
-                              currentUserPhoto,
-                              'https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png',
-                            ),
-                            fit: BoxFit.cover,
-                            semanticLabel: 'Your profile photo',
-                            errorBuilder: (context, error, stackTrace) =>
-                                Container(
-                              color: AppColors.sand,
-                              child: AppIcon(
-                                icon: AppPhosphorIcons.profile,
-                                size: iconSize,
-                                color: AppColors.stone,
+                          child: Semantics(
+                            label: 'Your profile photo',
+                            child: CachedNetworkImage(
+                              imageUrl: valueOrDefault<String>(
+                                currentUserPhoto,
+                                'https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png',
+                              ),
+                              fit: BoxFit.cover,
+                              fadeInDuration: Duration.zero,
+                              errorWidget: (context, url, error) =>
+                                  Container(
+                                color: AppColors.sand,
+                                child: AppIcon(
+                                  icon: AppPhosphorIcons.profile,
+                                  size: iconSize,
+                                  color: AppColors.stone,
+                                ),
                               ),
                             ),
                           ),

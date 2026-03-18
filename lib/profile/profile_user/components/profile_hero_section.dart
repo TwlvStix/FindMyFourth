@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 
@@ -103,10 +104,11 @@ class ProfileHeroSection extends StatelessWidget {
                 height: 132,
                 clipBehavior: Clip.antiAlias,
                 decoration: BoxDecoration(shape: BoxShape.circle),
-                child: Image.network(
-                  photoUrl,
+                child: CachedNetworkImage(
+                  imageUrl: photoUrl,
                   fit: BoxFit.cover,
-                  errorBuilder: (context, error, stackTrace) => Container(
+                  fadeInDuration: Duration.zero,
+                  errorWidget: (context, url, error) => Container(
                     color: AppColors.sand,
                     child: Icon(
                       AppPhosphorIcons.profile,

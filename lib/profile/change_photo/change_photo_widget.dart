@@ -11,6 +11,7 @@ import '/core/design_tokens/colors.dart';
 import '/core/design_tokens/typography.dart';
 import '/utils/upload_data.dart';
 import '/core/design_tokens/border_radius.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 
 class ChangePhotoWidget extends StatefulWidget {
@@ -112,14 +113,15 @@ class _ChangePhotoWidgetState extends State<ChangePhotoWidget> {
                               decoration: BoxDecoration(
                                 shape: BoxShape.circle,
                               ),
-                              child: Image.network(
-                                valueOrDefault<String>(
+                              child: CachedNetworkImage(
+                                imageUrl: valueOrDefault<String>(
                                   currentUserPhoto,
                                   'https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png',
                                 ),
                                 fit: BoxFit.cover,
-                                errorBuilder:
-                                    (context, error, stackTrace) =>
+                                fadeInDuration: Duration.zero,
+                                errorWidget:
+                                    (context, url, error) =>
                                         Container(
                                   color: AppColors.navyLight,
                                   child: Icon(
@@ -141,14 +143,15 @@ class _ChangePhotoWidgetState extends State<ChangePhotoWidget> {
                             decoration: BoxDecoration(
                               shape: BoxShape.circle,
                             ),
-                            child: Image.network(
-                              valueOrDefault<String>(
+                            child: CachedNetworkImage(
+                              imageUrl: valueOrDefault<String>(
                                 uploadedFileUrlUploadDataJ3j,
                                 'https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png',
                               ),
                               fit: BoxFit.cover,
-                              errorBuilder:
-                                  (context, error, stackTrace) =>
+                              fadeInDuration: Duration.zero,
+                              errorWidget:
+                                  (context, url, error) =>
                                       Container(
                                 color: AppColors.navyLight,
                                 child: Icon(

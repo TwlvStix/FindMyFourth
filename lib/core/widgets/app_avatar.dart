@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import '../design_tokens/colors.dart';
 import '../design_tokens/typography.dart';
@@ -66,7 +67,7 @@ class AppAvatar extends StatelessWidget {
         borderRadius: borderRadius,
         image: hasValidImage
             ? DecorationImage(
-                image: NetworkImage(imageUrl!),
+                image: CachedNetworkImageProvider(imageUrl!),
                 fit: BoxFit.cover,
               )
             : null,

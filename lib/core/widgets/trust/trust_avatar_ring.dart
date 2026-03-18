@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
@@ -123,12 +124,13 @@ class TrustAvatarRing extends StatelessWidget {
               child: ClipRRect(
                 borderRadius: BorderRadius.circular(borderRadius - 1),
                 child: imageUrl.isNotEmpty
-                    ? Image.network(
-                        imageUrl,
+                    ? CachedNetworkImage(
+                        imageUrl: imageUrl,
                         width: size,
                         height: size,
                         fit: BoxFit.cover,
-                        errorBuilder: (_, __, ___) =>
+                        fadeInDuration: Duration.zero,
+                        errorWidget: (_, __, ___) =>
                             _AvatarPlaceholder(size: size),
                       )
                     : _AvatarPlaceholder(size: size),
