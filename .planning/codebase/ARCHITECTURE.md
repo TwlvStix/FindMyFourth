@@ -1,196 +1,222 @@
 # Architecture
 
-**Analysis Date:** 2026-01-14
+## Overall Pattern
 
-## Pattern Overview
+Find My Fourth follows a **layered architecture** with strict separation of concerns:
 
-**Overall:** Feature-layered Clean Architecture with reactive state management
+```
+Widget Layer (UI)
+    ↓
+Provider Layer (State Management)
+    ↓
+Service Layer (Business Logic & Firestore Access)
+    ↓
+Backend/Firebase (Firestore, Auth, Cloud Functions)
+```
 
-**Key Characteristics:**
-- Flutter mobile app with Provider state management pattern
-- Firebase Firestore backend with real-time streams
-- Multi-layer architecture: UI, State, Services, Data
-- Reactive data flow using streams and StreamBuilder
-- Authentication via Firebase Auth with JWT tokens
-
-## Layers
-
-**Entry Point & App Setup:**
-- Purpose: App initialization and configuration
-- Contains: Firebase setup, Provider configuration, routing
-- Location: `lib/main.dart`, `lib/core/navigation/app_router.dart`
-- Depends on: Firebase SDK, Provider, GoRouter
-- Used by: Platform launcher (Android/iOS)
-
-**State Management Layer (Providers):**
-- Purpose: Global app state and cached data
-- Contains: Provider classes wrapping services
-- Location: `lib/providers/user_provider.dart`, `lib/providers/chat_provider.dart`
-- Depends on: Services layer, Firebase streams
-- Used by: UI widgets via Provider.of() or context.watch()
-- Pattern: Provider + ChangeNotifier + StreamRequestManager for caching
-
-**Service Layer (Business Logic):**
-- Purpose: Core business logic and Firestore operations
-- Contains: ChatService, VibeMatcher, VibeGroupMatcher, VibeRepository
-- Location: `lib/services/chat_service.dart`, `lib/services/vibe_matcher.dart`, `lib/services/vibe_group_matcher.dart`, `lib/services/vibe_repository.dart`
-- Depends on: Backend/Data layer, Firebase SDK
-- Used by: Providers, occasionally widgets directly
-- Pattern: Service classes with transaction-based Firestore operations
-
-**Data Access Layer (Backend):**
-- Purpose: Firestore query functions and schema definitions
-- Contains: Query builders, Record classes, Firebase config
-- Location: `lib/backend/backend.dart`, `lib/backend/schema/*.dart`, `lib/backend/firebase/firebase_config.dart`
-- Depends on: Firebase SDK only
-- Used by: Services layer
-- Pattern: Auto-generated Record classes with serialization
-
-**Authentication Layer:**
-- Purpose: User authentication and session management
-- Contains: Firebase Auth operations, social auth providers
-- Location: `lib/auth/firebase_auth/firebase_auth_manager.dart`, `lib/auth/firebase_auth/google_auth.dart`, `lib/auth/firebase_auth/apple_auth.dart`
-- Depends on: Firebase Auth SDK
-- Used by: AppStateNotifier for routing decisions
-- Pattern: Singleton auth manager with provider-specific implementations
-
-**UI Layer (Widgets/Screens):**
-- Purpose: User interface and interaction
-- Contains: Screens, widgets, forms
-- Location: `lib/main_function/*`, `lib/profile/*`, `lib/chat_group/*`, `lib/user_auth/*`
-- Depends on: Providers, theme, navigation
-- Used by: User interactions
-- Pattern: StatefulWidget with State classes, StreamBuilder for real-time updates
-
-**Core/Shared Components:**
-- Purpose: Reusable UI and utilities
-- Contains: Custom widgets, design tokens, theme config
-- Location: `lib/core/widgets/*`, `lib/core/design_tokens/*`, `lib/core/app_theme.dart`
-- Depends on: Flutter Material only
-- Used by: UI layer
-- Pattern: Reusable component library with consistent styling
-
-## Data Flow
-
-**Authentication Flow:**
-1. User starts app → `lib/main.dart` initializes Firebase and AppStateNotifier
-2. AppStateNotifier listens to `findMyFourthFirebaseUserStream()`
-3. Stream emits user changes → notifier updates and triggers navigation
-4. JWT token refreshed hourly via `jwtTokenStream`
-5. Auth state determines routing to sign-in or home screen
-
-**Game Query Flow:**
-1. Widget calls `UserProvider.getMyGames()` or `getAvailableGames()`
-2. Provider wraps request in `StreamRequestManager` for caching
-3. Manager executes query from `lib/backend/backend.dart` (queryGamesRecord)
-4. Query builder applies filters (joined_players, isCancelled, date)
-5. Firestore returns DocumentSnapshot stream
-6. GamesRecord converts docs to Game model objects
-7. Provider caches results, notifies listeners
-8. Widget rebuilds with new data
-
-**Chat Message Flow:**
-1. Widget calls `ChatProvider.sendMessage()`
-2. ChatProvider delegates to `ChatService.sendMessage()`
-3. Service writes to Firestore: `/chats/{chatId}/messages/{messageId}`
-4. Service updates parent chat's `lastMessage` and `lastMessageAt`
-5. Other users' ChatProvider streams emit updated messages
-6. Widgets rebuild via StreamBuilder listening to messagesStream
-
-**Vibe Matching Flow:**
-1. User sets vibe preferences in profile
-2. `VibeProfile` model stores preferences with thresholds and dealbreaker flags
-3. `VibeMatcher.matchScore()` compares user vibes with candidates
-4. `VibeGroupMatcher` checks group compatibility for games
-5. Matching scores inform recommendations and filters
-
-**State Management:**
-- Stream-based: Real-time Firestore data via Firebase streams
-- Cached: StreamRequestManager and FutureRequestManager for performance
-- Each Provider manages cache invalidation via `refresh*()` methods
-- All state updates trigger `notifyListeners()` to rebuild UI
-
-## Key Abstractions
-
-**Request Manager Pattern:**
-- Purpose: Cache stream queries with TTL
-- Examples: `StreamRequestManager<T>`, `FutureRequestManager<T>` in `lib/core/request_manager.dart`
-- Pattern: Wrapper around Firebase queries with manual cache invalidation
-- Used in: UserProvider to cache games, friends, courses
-
-**Record/Model Pattern:**
-- Purpose: Type-safe Firestore document representation
-- Examples: `UsersRecord`, `GamesRecord`, `ChatsRecord` in `lib/backend/schema/`
-- Pattern: Auto-generated classes with fromFirestore/toFirestore serialization
-- Separation: Backend Record classes vs domain Model classes (`lib/models/`)
-
-**Provider-as-Wrapper Pattern:**
-- Purpose: Expose only necessary methods to UI
-- Examples: `ChatProvider` wraps `ChatService`, `UserProvider` wraps backend queries
-- Pattern: ChangeNotifier providers delegate to service implementations
-- Benefit: Testing and service substitution
-
-**Stream-Based Reactivity:**
-- Purpose: Real-time updates without polling
-- Examples: Most Firestore queries return `Stream<T>` not `Future<T>`
-- Pattern: StreamBuilder widgets rebuild on new data
-- RxDart: Used for combining streams (e.g., chunking large friend lists)
-
-**Model Conversion:**
-- Purpose: Separate Firestore schema from business domain
-- Examples: `Game.fromRecord()`, `Chat.fromDoc()` in `lib/models/`
-- Pattern: Factory constructors convert Record → Model
-
-## Entry Points
-
-**Main Entry:**
-- Location: `lib/main.dart`
-- Triggers: Platform launcher (Android/iOS/Web)
-- Responsibilities: Initialize Firebase, create MultiProvider, configure theme/routing
-
-**Critical State Holders:**
-- `AppStateNotifier` (in `lib/core/navigation/app_router.dart`) - Singleton for auth state and navigation
-- `UserProvider` - Global user data and friend/game caches
-- `ChatProvider` - Chat-related state
-
-**Navigation Entry:**
-- `GoRouter` created in `_MyAppState.initState()`
-- Routes defined in `createRouter(AppStateNotifier)` in `lib/core/navigation/app_router.dart`
-- Auth state determines initial route (/gamesList or /signIn)
-
-## Error Handling
-
-**Strategy:** Try-catch with rethrow, FirebaseException handling
-
-**Patterns:**
-- Services throw errors with context
-- Providers catch and rethrow with additional context
-- Widgets catch and display user-friendly messages
-- Firebase-specific: FirebaseAuthException, FirebaseException with error codes
-
-## Cross-Cutting Concerns
-
-**Logging:**
-- Development: debugPrint() with emoji prefixes (💬, 📨, 🔧, ✅, ❌)
-- Production: debugPrint() automatically removed by Flutter
-- Example: `debugPrint('💬 ChatService: getChatListStream called');`
-
-**Validation:**
-- Form validation via GlobalKey<FormState>
-- Model validation in domain objects (VibeProfile)
-- Firestore security rules for server-side validation
-
-**Authentication:**
-- Firebase Auth with JWT tokens
-- Multi-provider support (Google, Apple, GitHub, Email, Anonymous)
-- AppStateNotifier manages auth-based routing
-
-**Navigation:**
-- GoRouter with auth-aware redirect logic
-- Named routes with type-safe parameters
-- Bottom nav bar (NavBarPage) with 5 tabs
+**Core rule**: Widget → Provider → Service → Firestore. No layer-skipping. Providers never access Firebase directly; services handle all Firestore operations.
 
 ---
 
-*Architecture analysis: 2026-01-14*
-*Update when major patterns change*
+## Layer Responsibilities
+
+### Widget Layer (`lib/` feature folders)
+- UI presentation only
+- No Firebase calls, no service instantiation
+- Access state via Provider extensions: `context.gameProvider`, `context.watchGameProvider`
+- Navigation via GoRouter with `go_router` 17.1.0
+- Routes defined as static `routeName`/`routePath` constants on widgets
+
+### Provider Layer (`lib/providers/`)
+- State management via `ChangeNotifier`
+- Wraps services with caching (5-minute TTL) and debouncing (50ms `_scheduleNotify()`)
+- Uses `StreamRequestManager` for reactive Firestore streams with `BehaviorSubject`
+- Checks `_disposed` flag before all `notifyListeners()` calls
+- Catches errors from services, logs, and rethrows to UI layer
+- Access: typed extensions in `lib/providers/provider_extensions.dart`
+
+### Service Layer (`lib/services/`)
+- Instance classes with optional `FirebaseFirestore` DI for testability
+- Pure Firestore operations (queries, mutations, streams)
+- Business logic (eligibility, vibe matching, trust calculations)
+- Catches `FirebaseException` specifically, logs with `AppLog.d()`, rethrows
+- Respects Firestore limits: 500-op batches, 10-item `whereIn` (chunking)
+
+### Backend/Firebase
+- **Firestore**: Main database (34+ collections)
+- **Firebase Auth**: 7 auth providers
+- **Cloud Functions**: Node.js 22, confirmation/notification/trust logic
+- **Cloud Storage**: Avatar and image uploads
+- **FCM**: Push notification delivery
+
+---
+
+## Key Providers
+
+| Provider | File | Responsibility |
+|----------|------|---------------|
+| **UserProvider** | `lib/providers/user_provider.dart` | Current user, auth, friends |
+| **GameProvider** | `lib/providers/game_provider.dart` | Game listings, joins, mutations |
+| **ChatProvider** | `lib/providers/chat_provider.dart` | Real-time chat, messages, reactions |
+| **ProfileProvider** | `lib/providers/profile_provider.dart` | User profiles, search, batch fetch |
+| **NotificationProvider** | `lib/providers/notification_provider.dart` | Push notification state, FCM tokens |
+| **NotificationListProvider** | `lib/providers/notification_list_provider.dart` | Notification history, filtering |
+| **TrustProvider** | `lib/providers/trust_provider.dart` | Trust scores, profiles, flow state |
+| **JoinRequestProvider** | `lib/providers/join_request_provider.dart` | Join requests (sent/received) |
+| **GroupVibeProvider** | `lib/providers/group_vibe_provider.dart` | Group vibe compatibility |
+| **GeoFilterProvider** | `lib/providers/geo_filter_provider.dart` | Geographic filtering |
+| **StreakProvider** | `lib/providers/streak_provider.dart` | Streak tracking, leaderboard |
+| **ChallengeProvider** | `lib/providers/challenge_provider.dart` | Challenge progress |
+| **LeaderboardProvider** | `lib/providers/leaderboard_provider.dart` | Leaderboard data |
+| **BlockProvider** | `lib/providers/block_provider.dart` | Blocked users |
+
+---
+
+## Key Services
+
+| Service | File | Responsibility |
+|---------|------|---------------|
+| **GameService** | `lib/services/game_service.dart` | Game CRUD, queries, join/leave, eligibility |
+| **ChatService** | `lib/services/chat_service.dart` | Message CRUD, typing, reactions, streams |
+| **FriendService** | `lib/services/friend_service.dart` | Friend add/remove, requests |
+| **ProfileService** | `lib/services/profile_service.dart` | Profile data fetching, batch ops |
+| **VibeMatcher** | `lib/services/vibe_matcher.dart` | Core vibe compatibility algorithm |
+| **VibeGroupMatcher** | `lib/services/vibe_group_matcher.dart` | Group compatibility |
+| **TrustFlowService** | `lib/services/trust_flow_service.dart` | Trust rating flows |
+| **TrustRepository** | `lib/services/trust_repository.dart` | Trust score queries, caching |
+| **JoinRequestService** | `lib/services/join_request_service.dart` | Join request lifecycle |
+| **AlertSubscriptionService** | `lib/services/alert_subscription_service.dart` | Game alert subscriptions |
+| **NotificationOrchestrationService** | `lib/services/notification_orchestration_service.dart` | Notification scheduling |
+| **FcmNotificationService** | `lib/services/fcm_notification_service.dart` | FCM token management |
+| **LocalNotificationsService** | `lib/services/local_notifications_service.dart` | Local push display |
+| **StreakService** | `lib/services/streak_service.dart` | Streak calculation |
+| **ChallengeService** | `lib/services/challenge_service.dart` | Challenge progress |
+| **BlockService** | `lib/services/block_service.dart` | Block/unblock operations |
+| **PlayerSearchService** | `lib/services/player_search_service.dart` | Player name search |
+| **RebookService** | `lib/services/rebook_service.dart` | Game rebook/reschedule |
+| **RemoteConfigService** | `lib/services/remote_config_service.dart` | Feature flags |
+| **CreateGameService** | `lib/services/create_game_service.dart` | Game creation |
+| **GameEligibilityService** | `lib/services/game_eligibility_service.dart` | Join eligibility checks |
+
+---
+
+## Data Models
+
+### Domain Models (`lib/models/`)
+| Model | Purpose |
+|-------|---------|
+| **Game** | Game with status resolution (active/expired/cancelled) |
+| **Chat** | Chat thread metadata |
+| **ChatMessage** | Individual message with reactions |
+| **UserProfile** | Minimal user representation |
+| **VibeProfile** | Vibe preferences and scores |
+| **JoinRequest** | Join request with status tracking |
+| **AlertSubscription** | Game alert preferences |
+| **Challenge** / **ChallengeProgress** | Challenge definitions and tracking |
+| **LeaderboardEntry** | Rankings data |
+| **StreakProfile** | Current/historical streak data |
+| **CancellationRecord** | Cancellation with reason |
+| **NotificationPreferences** | User notification settings |
+| **Course** | Golf course info |
+| **PlayerEligibility** | Join eligibility result |
+
+### Backend Schema Records (`lib/backend/schema/`)
+Firestore record classes extending `FirestoreRecord` (FlutterFlow legacy, deeply embedded):
+
+| Record | Collection |
+|--------|-----------|
+| **UsersRecord** | `users/` (29+ file references) |
+| **GamesRecord** | `games/` (13+ file references) |
+| **GameParticipantsRecord** | `games/{id}/game_participants/` |
+| **ChatsRecord** | `chats/` |
+| **ChatMessagesRecord** | `chats/{id}/messages/` |
+| **CancellationRecordsRecord** | `cancellation_records/` |
+| **RoundRecordsRecord** | `round_records/` |
+
+**Conversion**: `Game.fromRecord(gamesRecord)` bridges schema records to domain models.
+
+---
+
+## Entry Points & Bootstrap
+
+### `lib/main.dart` — App Entry
+```
+main()
+├─ WidgetsFlutterBinding.ensureInitialized()
+├─ initFirebase()
+│  ├─ Firebase.initializeApp()
+│  ├─ _initAppCheck()
+│  └─ Emulator setup (if debug + flag)
+├─ _setupErrorHandlers() → Crashlytics
+├─ AppState.initializePersistedState() (SharedPreferences)
+├─ RemoteConfigService.instance.ensureDefaults() (blocking, <1ms)
+├─ runApp(MultiProvider([all providers]))
+└─ addPostFrameCallback:
+   ├─ _initializeNonCriticalServices()
+   │  ├─ _configureCrashlyticsMetadata()
+   │  └─ RemoteConfigService.instance.initialize() (async fetch)
+   └─ AppBootstrapCoordinator.start()
+      ├─ Listen to auth state stream
+      ├─ Update AppStateNotifier
+      ├─ Initialize NotificationOrchestrationService
+      └─ Remove native splash when auth ready
+```
+
+### `lib/core/navigation/app_router.dart` — Navigation
+- `AppStateNotifier`: Singleton managing auth state and redirects
+- `createRouter()`: GoRouter with auth-aware guards via `buildRedirect()`
+- Route definitions centralized in `lib/core/navigation/route_definitions.dart`
+- Transitions via `TransitionStandards` presets (modal, detail, dismissal, tab)
+
+### `lib/core/bootstrap/app_bootstrap_coordinator.dart` — Auth Stream
+- Listens to Firebase auth state changes
+- Updates `AppStateNotifier` to trigger app refresh
+- Removes native splash when auth ready
+- Initializes notification service on user change
+
+---
+
+## Error Handling Strategy
+
+### Exception Hierarchy (`lib/core/exceptions/app_exceptions.dart`)
+```
+AppException (base: message, code?, cause?)
+├─ GameOperationException
+├─ FriendOperationException
+├─ ChatOperationException
+├─ PermissionException
+├─ NetworkException
+├─ JoinRequestException
+└─ BlockOperationException
+```
+
+### Pattern by Layer
+- **Services**: `on FirebaseException catch (e)` → log with `AppLog.d()` → rethrow
+- **Providers**: catch from services → log → rethrow to UI
+- **UI**: catch from providers → display via `AppSnackbar`
+- **Non-critical ops** (typing, membership sync): generic `catch` → log silently
+
+### Error Utilities
+- `lib/core/utils/error_messages.dart` — Firebase code → user message mapping
+- `lib/core/utils/firebase_error_utils.dart` — Firebase error helpers
+
+---
+
+## Cross-Cutting Concerns
+
+### Logging (`lib/core/utils/app_log.dart`)
+- `AppLog.d()` only — never `print()`/`debugPrint()`
+- Debug-mode only (assertion-based), redacts sensitive data
+- Emoji prefixes: ✅ success, ❌ error, 📖 info, 📱 chat ops, 🔵 streams, 💬 chat UI, 🔥 cache, 🆕 fetches
+
+### Design System (`lib/core/design_tokens/`)
+- Three color roles: Green (CTAs), Navy (structure), Gold (accent)
+- Three font families: Fraunces (serif), Manrope (sans), DM Mono (mono)
+- 8-point spacing grid with semantic tokens
+- Phosphor Icons primary, SVG deprecated
+- Motion tokens with reduced motion support
+
+### Notification System
+- FCM setup → Permission management → Orchestration → Local display → Audit trail
+- Quiet hours via Cloud Functions scheduling
+- Cloud Tasks for deferred delivery with OIDC verification

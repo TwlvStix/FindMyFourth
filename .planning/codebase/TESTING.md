@@ -1,212 +1,306 @@
-# Testing Patterns
+# Testing
 
-**Analysis Date:** 2026-01-14
+## Overview
 
-## Test Framework
-
-**Runner:**
-- flutter_test - Flutter SDK built-in testing framework
-- Configuration: Included in pubspec.yaml (flutter_test SDK dependency)
-
-**Assertion Library:**
-- Built-in expect() with matchers
-- Matchers: `toBe`, `toEqual`, `isNull`, `isTrue`, `isFalse`, `isEmpty`, `closeTo()`, `isNotNull`, `findsOneWidget`
-
-**Run Commands:**
-```bash
-flutter test                          # Run all tests
-flutter test --watch                  # Watch mode
-flutter test path/to/file_test.dart   # Single file
-flutter test --coverage               # Coverage report
-```
-
-## Test File Organization
-
-**Location:**
-- Test files in separate `test/` directory (not co-located with source)
-- Mirrors lib/ structure: `test/services/`, `test/models/`, `test/auth/`
-
-**Naming:**
-- All test files: `{name}_test.dart`
-- No distinction between unit/integration in filename
-
-**Structure:**
-```
-test/
-├── auth/
-│   └── firebase_auth_manager_test.dart
-├── models/
-│   └── vibe_profile_test.dart
-├── services/
-│   ├── vibe_matcher_test.dart
-│   └── vibe_group_matcher_test.dart
-└── widget_test.dart
-```
-
-**Coverage:**
-- Only 5 test files for 136 Dart library files
-- Critical gaps: `chat_service.dart`, `user_provider.dart`, most widgets
-
-## Test Structure
-
-**Suite Organization:**
-```dart
-import 'package:flutter_test/flutter_test.dart';
-import 'package:find_my_fourth/models/vibe_profile.dart';
-
-void main() {
-  group('VibeProfile', () {
-    test('defaults apply and are incomplete', () {
-      final profile = VibeProfile.defaults();
-      expect(profile.confirmedAt, isNull);
-      expect(profile.isIncomplete, isTrue);
-    });
-
-    test('serialization round-trip', () {
-      final original = VibeProfile(...);
-      final map = original.toFirestore();
-      final restored = VibeProfile.fromFirestore(map);
-      expect(restored.confirmedAt, original.confirmedAt);
-    });
-  });
-}
-```
-
-**Patterns:**
-- Use `group()` to organize related tests
-- Use `test()` for individual test cases
-- Use `testWidgets()` for widget tests (Flutter standard)
-- Helper functions prefixed with underscore (e.g., `_profileWithValues()`)
-- Clear, descriptive test names (e.g., `'exact match yields 100'`, `'serialization round-trip'`)
-
-## Mocking
-
-**Framework:**
-- No explicit mocking framework detected
-- Manual test data creation via helper functions
-
-**Patterns:**
-```dart
-// Helper function to create test data
-VibeProfile _profileWithValues(Map<VibeCategory, int> values) {
-  final prefs = <VibeCategory, VibePreference>{
-    for (final category in VibeCategory.values)
-      category: VibePreference.defaults(),
-  };
-  values.forEach((category, value) {
-    prefs[category] = prefs[category]!.copyWith(
-      value: value,
-      isDefault: false,
-    );
-  });
-  return VibeProfile(prefs: prefs);
-}
-```
-
-**What to Mock:**
-- Not detected (no Firebase mocking, no mock providers found)
-
-**What NOT to Mock:**
-- Business logic classes (tested with real implementations)
-- Model objects (use factory helpers instead)
-
-## Fixtures and Factories
-
-**Test Data:**
-- Factory functions in test files (e.g., `_profileWithValues()`)
-- Inline test data creation in test methods
-- No separate fixtures directory
-
-**Location:**
-- Factory functions: Defined in test file near usage
-- No shared fixtures directory detected
-
-## Coverage
-
-**Requirements:**
-- No enforced coverage target detected
-- No CI/CD coverage checks found
-
-**Configuration:**
-- Built-in Flutter coverage via `--coverage` flag
-- No coverage exclusions configured
-
-**View Coverage:**
-```bash
-flutter test --coverage
-# View: open coverage/lcov.info with coverage tools
-```
-
-## Test Types
-
-**Unit Tests:**
-- Scope: Test single class in isolation
-- Mocking: None detected (tests use real implementations)
-- Examples: `test/models/vibe_profile_test.dart`, `test/services/vibe_matcher_test.dart`
-
-**Widget Tests:**
-- Scope: Test widget rendering
-- Framework: `testWidgets()` from flutter_test
-- Example: `test/widget_test.dart` (basic smoke test only)
-
-**Integration Tests:**
-- Not detected (no integration test directory or files)
-
-**E2E Tests:**
-- Not detected (no E2E framework found)
-
-## Common Patterns
-
-**Async Testing:**
-```dart
-test('async operation', () async {
-  final result = await asyncFunction();
-  expect(result, expectedValue);
-});
-```
-
-**Error Testing:**
-```dart
-test('throws on invalid input', () {
-  expect(() => functionCall(), throwsA(isA<Exception>()));
-});
-```
-
-**Widget Testing:**
-```dart
-testWidgets('widget renders', (WidgetTester tester) async {
-  await tester.pumpWidget(MyApp());
-  expect(find.text('Hello'), findsOneWidget);
-});
-```
-
-**Matcher Usage:**
-- `closeTo()` for floating-point comparisons (e.g., vibe matching scores)
-- `isNull` / `isNotNull` for nullable values
-- `isTrue` / `isFalse` for booleans
-- `isEmpty` / `isNotEmpty` for collections
-
-**Snapshot Testing:**
-- Not used in this codebase
-
-## Test Coverage Gaps
-
-**Untested Critical Areas:**
-- `lib/services/chat_service.dart` - Complex transaction-based operations
-- `lib/providers/user_provider.dart` - Cache invalidation and stream handling
-- `lib/services/vibe_repository.dart` - Vibe data queries
-- Most widget files - Only basic smoke test exists
-- `lib/backend/push_notifications/push_notifications_handler.dart` - No notification tests
-- `lib/auth/firebase_auth/` - Only 1 basic auth manager test
-
-**Test Priority:**
-1. High: ChatService (critical business logic)
-2. High: Authentication flows (security critical)
-3. Medium: UserProvider (cache management)
-4. Medium: Widget rendering (user-facing)
-5. Low: Utility functions (low risk)
+| Area | Framework | Command | Location |
+|------|-----------|---------|----------|
+| Flutter app | `package:test` / `flutter_test` | `flutter test` | `test/` |
+| Cloud Functions | Jest 29.0.0 | `npm test` | `firebase/functions/test/` |
 
 ---
 
-*Testing analysis: 2026-01-14*
-*Update when test patterns change*
+## Flutter Tests
+
+### Directory Structure
+```
+test/
+├── vibe_scoring_test.dart              # Core vibe algorithm
+├── vibe_golden_pairs_test.dart         # Golden pair validation
+├── vibe_scoring_additional_test.dart   # Extended scoring
+├── vibe_floor_simulation_test.dart     # Floor threshold sim
+├── widget_test.dart                    # Basic widget test
+│
+├── services/                           # Service layer tests (17+)
+│   ├── alert_matcher_test.dart
+│   ├── friend_service_test.dart
+│   ├── game_eligibility_test.dart
+│   ├── create_game_service_test.dart
+│   ├── vibe_floor_service_test.dart
+│   ├── fcm_suppression_test.dart
+│   └── ...
+│
+├── providers/                          # Provider tests
+│   ├── geo_filter_provider_test.dart
+│   ├── vibe_provider_test.dart
+│   ├── group_vibe_provider_test.dart
+│   └── trust_provider_batch_test.dart
+│
+├── auth/                               # Auth tests
+├── backend/                            # Backend tests
+├── chat_group/                         # Chat tests
+├── main_function/                      # Game feature tests
+├── profile/                            # Profile tests
+├── utils/                              # Utility tests
+├── widgets/                            # Widget tests (7+ subdirs)
+└── vibe/                               # Vibe system tests
+```
+
+### Commands
+```bash
+flutter test                                          # All tests
+flutter test test/services/vibe_scoring_test.dart     # Single file
+flutter test --grep="pattern"                         # Filter by name
+```
+
+---
+
+## Cloud Functions Tests
+
+### Directory Structure
+```
+firebase/functions/test/
+├── confirmation_flow.test.js     # 119KB - comprehensive
+├── game_alerts.test.js           # 34KB
+├── hooks.test.js                 # 35KB
+├── integration.test.js           # 40KB
+├── router.test.js                # 47KB
+├── scheduler.test.js             # 23KB
+├── event-registry.test.js        # 23KB
+├── notification-load.test.js     # 31KB
+├── behavioral_dataset_test.js    # 13KB
+├── challenge_progress.test.js    # 24KB
+├── chat_debounce.test.js         # 20KB
+├── fcm-sender.test.js
+├── friend-callable.test.js
+├── onboarding-callable.test.js
+├── preferences-service.test.js
+├── signup-email.test.js
+├── streaks.test.js
+├── sync_game_chat.test.js
+├── template-engine.test.js
+├── test-harness.test.js
+├── word_filter.test.js
+├── workers.test.js
+│
+├── load-test.js                  # Load testing
+├── LOAD_TEST_README.md
+└── LOAD_TEST_QUICK_START.md
+```
+
+### Commands
+```bash
+npm test                                          # All tests
+npx jest test/game_alerts.test.js --verbose      # Single test
+npx jest test/confirmation_flow.test.js          # Confirmation tests
+npm run notif-load-test                          # Notification load test
+npm run notif-load-test:small                    # Small load test
+npm run load-test                                # Full load test
+npm run load-test:small                          # Small load test
+npm run load-test:cleanup                        # Cleanup test data
+npm run lint                                     # ESLint (max 30 warnings)
+```
+
+---
+
+## Mocking Patterns
+
+### Flutter Service Mocks
+
+**Manual mock implementing interface:**
+```dart
+class MockVibeRepository implements VibeRepository {
+  VibeProfile? profileToReturn;
+  bool shouldFailOnUpdate = false;
+  int updateCategoryCallCount = 0;
+
+  @override
+  Future<VibeProfile> getMyVibes() async {
+    if (shouldFailOnLoad) {
+      throw FirebaseException(plugin: 'firestore', code: 'unavailable');
+    }
+    return profileToReturn ?? VibeProfile.defaults();
+  }
+}
+
+// Usage in test setup
+setUp(() {
+  mockRepo = MockVibeRepository();
+  provider = VibeProvider(repository: mockRepo);
+});
+```
+
+**Fake DocumentReference:**
+```dart
+class _FakeDocumentReference implements DocumentReference<Map<String, dynamic>> {
+  _FakeDocumentReference(this.path, {this.onSet});
+  @override
+  final String path;
+  final Future<void> Function(Map<String, dynamic>)? onSet;
+
+  @override
+  Future<void> set(Map<String, dynamic> data, [SetOptions? options]) async {
+    if (onSet != null) await onSet!(data);
+  }
+
+  @override
+  dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
+}
+```
+
+**Dependencies:**
+- `fake_cloud_firestore` ^4.0.1 — Firestore mocking
+- `firebase_auth_mocks` ^0.15.1 — Auth mocking
+
+### JavaScript Mocks
+
+**Module-level mock state** (before `jest.mock()`):
+```javascript
+let mockSharedDb;
+let mockFcmSend;
+let mockCreateTask;
+
+jest.mock('firebase-admin', () => ({
+  firestore: () => mockSharedDb,
+  messaging: () => ({ send: (...args) => mockFcmSend(...args) }),
+}));
+```
+
+**Mock infrastructure classes:**
+```javascript
+class MockTimestamp {
+  constructor(ms) { this._ms = ms; }
+  toMillis() { return this._ms; }
+  static now() { return new MockTimestamp(Date.now()); }
+}
+
+class MockDocRef {
+  constructor(db, collectionName, id) {
+    this._db = db;
+    this._collection = collectionName;
+    this.id = id;
+    this.path = `${collectionName}/${id}`;
+  }
+}
+```
+
+**Setup/teardown:**
+```javascript
+beforeEach(() => {
+  mockSharedDb = new MockFirestore();
+  mockFcmSend = jest.fn().mockResolvedValue({ name: 'projects/x/messages/msg1' });
+});
+
+afterEach(() => {
+  jest.useRealTimers();
+  jest.clearAllMocks();
+});
+```
+
+---
+
+## Test Structure Pattern
+
+### Flutter
+```dart
+void main() {
+  group('FeatureService', () {
+    late FeatureService service;
+    late MockFirebaseFirestore mockFirestore;
+
+    setUp(() {
+      mockFirestore = MockFirebaseFirestore();
+      service = FeatureService(firestore: mockFirestore);
+    });
+
+    tearDown(() {
+      // Dispose if needed
+    });
+
+    group('methodName', () {
+      test('happy path description', () {
+        // Arrange, Act, Assert
+        expect(result, equals(expected));
+      });
+
+      test('error path description', () {
+        expect(() => service.method(), throwsA(isA<FirebaseException>()));
+      });
+    });
+  });
+}
+```
+
+### JavaScript
+```javascript
+describe('FeatureModule', () => {
+  beforeEach(() => { /* setup */ });
+  afterEach(() => { jest.clearAllMocks(); });
+
+  describe('functionName', () => {
+    it('should handle happy path', async () => {
+      const result = await functionName(input);
+      expect(result).toBeDefined();
+      expect(mockFn).toHaveBeenCalledWith(expected);
+    });
+
+    it('should handle error case', async () => {
+      await expect(functionName(bad)).rejects.toThrow();
+    });
+  });
+});
+```
+
+---
+
+## What Gets Tested
+
+### Required Coverage
+- All service methods (Firestore operations)
+- Provider state transitions and cache invalidation
+- Business logic in models (e.g., `Game.resolveGameStatus()`)
+- Vibe scoring algorithm changes
+- Error paths, not just happy paths
+- Firestore limit edge cases (>10 whereIn, >500 batch ops)
+
+### Test Strategies
+| Layer | Strategy |
+|-------|----------|
+| **Services** | Inject mock Firestore, test error handling, test limits |
+| **Providers** | Inject mock services, verify notifyListeners, test cache |
+| **Controllers** | Verify delegation to services |
+| **Widgets** | `pumpWidget` with providers, test interactions |
+| **Vibe system** | Comprehensive scoring with various category combinations |
+
+---
+
+## Coverage Gaps (Known)
+
+### Flutter
+- No integration tests for auth flows
+- No widget tests for large screens (games_list, game_joined_detailed)
+- No tests for `ChatService` (985 lines, critical)
+- Widget tests sparse overall
+- Single integration test: `integration_test/friend_notifications_test.dart`
+
+### Cloud Functions
+- Good coverage overall (28+ test files)
+- Load testing infrastructure in place
+- Behavioral dataset tests exist
+
+---
+
+## CI Integration
+
+```bash
+# Flutter
+flutter test
+flutter analyze
+
+# Cloud Functions
+cd firebase/functions
+npm test
+npm run lint    # ESLint, max 30 warnings
+
+# Hardcoded color check
+tool/check_hardcoded_colors.sh
+```
