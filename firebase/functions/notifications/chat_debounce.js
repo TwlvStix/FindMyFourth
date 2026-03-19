@@ -239,6 +239,17 @@ async function deliverChatNotificationHandler(req, res) {
       }
     }
 
+    // 5b. Check if the latest message was flagged by moderation
+    const latestMsgSnap = await db
+      .collection('chats').doc(chatId).collection('messages')
+      .orderBy('createdAt', 'desc').limit(1).get();
+    if (!latestMsgSnap.empty) {
+      const latestData = latestMsgSnap.docs[0].data() || {};
+      if (latestData.moderation && latestData.moderation.flagged === true) {
+        body = 'Sent a message';
+      }
+    }
+
     // 6. Write notification doc
     const timestamp = Date.now();
     const notificationRef = userRef

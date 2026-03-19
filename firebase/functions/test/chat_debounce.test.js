@@ -119,13 +119,20 @@ class MockCollectionRef {
   constructor(db, name) {
     this._db = db;
     this._name = name;
+    this._limitCount = null;
   }
   doc(id) {
     return new MockDocRef(this._db, this._name, id || `auto_${Date.now()}`);
   }
+  orderBy() { return this; }
+  limit(n) { this._limitCount = n; return this; }
   async get() {
     const col = this._db._collections[this._name] || {};
-    const docs = Object.entries(col).map(([id, data]) => ({
+    let entries = Object.entries(col);
+    if (this._limitCount != null) {
+      entries = entries.slice(0, this._limitCount);
+    }
+    const docs = entries.map(([id, data]) => ({
       id,
       ref: new MockDocRef(this._db, this._name, id),
       data: () => ({ ...data }),

@@ -12,6 +12,7 @@ class ChatMessage {
     required this.thumbnailUrl,
     this.imageWidth,
     this.imageHeight,
+    this.moderation,
   });
 
   final String id;
@@ -29,6 +30,10 @@ class ChatMessage {
   bool get isSystemMessage => type == 'system';
   final double? imageWidth; // stored pixel width for pre-sizing skeleton
   final double? imageHeight; // stored pixel height for pre-sizing skeleton
+  final Map<String, dynamic>? moderation;
+
+  /// True if this message was flagged by the server-side moderation filter.
+  bool get isFlagged => moderation?['flagged'] == true;
 
   static ChatMessage fromDoc(dynamic doc) {
     final data = _asMap(doc.data()) ?? <String, dynamic>{};
@@ -54,6 +59,7 @@ class ChatMessage {
       thumbnailUrl: (data['thumbnailUrl'] as String?) ?? '',
       imageWidth: (data['imageWidth'] as num?)?.toDouble(),
       imageHeight: (data['imageHeight'] as num?)?.toDouble(),
+      moderation: _asMap(data['moderation']),
     );
   }
 

@@ -270,7 +270,15 @@ class ChatMessageBubble extends StatelessWidget {
                               ),
                             ),
                           // Message text
-                          if (messageText.isNotEmpty)
+                          if (message.isFlagged)
+                            Text(
+                              'This message was filtered for inappropriate content.',
+                              style: AppTypography.bodySmall.copyWith(
+                                fontStyle: FontStyle.italic,
+                                color: AppColors.textSecondary,
+                              ),
+                            )
+                          else if (messageText.isNotEmpty)
                             Text(
                               messageText,
                               style: AppTypography.bodyMedium.copyWith(

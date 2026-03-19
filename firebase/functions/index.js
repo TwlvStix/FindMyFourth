@@ -393,6 +393,33 @@ exports.sendChatMessageNotifications = functions
     }
   });
 
+// ── Chat Content Moderation ─────────────────────────────────────────────────
+exports.moderateMessage = functions
+  .region("us-west2")
+  .runWith({ timeoutSeconds: 30, memory: "128MB" })
+  .firestore.document("chats/{chatId}/messages/{messageId}")
+  .onCreate(async (snapshot, context) => {
+    const messageData = snapshot.data() || {};
+    const type = messageData.type || "text";
+    if (type !== "text") return;
+    const text = typeof messageData.text === "string" ? messageData.text : "";
+    if (text.length === 0) return;
+
+    const { filterMessage } = require("./moderation/word_filter");
+    const result = filterMessage(text);
+
+    if (result.flagged) {
+      await snapshot.ref.update({
+        moderation: {
+          flagged: true,
+          reason: result.reason,
+          action: "filtered",
+          timestamp: admin.firestore.FieldValue.serverTimestamp(),
+        },
+      });
+    }
+  });
+
 exports.fetchReceiptants = functions
   .region("us-west2")
   .runWith({ minInstances: 0 })
