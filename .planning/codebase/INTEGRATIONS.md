@@ -1,238 +1,222 @@
-# External Integrations & Services
+# External Integrations
 
-## Firebase Services
+**Analysis Date:** 2026-03-19
 
-### Authentication (`firebase_auth` 6.2.0)
-- **Providers**: Email/Password, Google Sign-In, Apple Sign-In, Phone SMS, Anonymous, JWT, GitHub
-- **Files**:
-  - `lib/auth/firebase_auth/firebase_auth_manager.dart`
-  - `lib/auth/firebase_auth/google_auth.dart`
-  - `lib/auth/firebase_auth/apple_auth.dart`
-  - `lib/auth/firebase_auth/email_auth.dart`
-  - `lib/auth/firebase_auth/phone_auth.dart`
-  - `lib/auth/firebase_auth/anonymous_auth.dart`
-  - `lib/auth/firebase_auth/jwt_token_auth.dart`
-  - `lib/auth/firebase_auth/github_auth.dart`
+## APIs & External Services
 
-### Cloud Firestore (`cloud_firestore` 6.1.3)
-- Real-time database with security rules
-- Batch operations and transactions
-- Region: `us-west2`
+**Authentication & Identity:**
+- Google OAuth 2.0 - User sign-in via Google Account
+  - SDK: `google_sign_in` 7.2.0 (Flutter)
+  - Scope: email, profile, ID token
+  - Configured in Firebase Console with Android/iOS credentials
 
-### Cloud Functions (`cloud_functions` 6.0.7 / `firebase-functions` 7.0.6)
-- HTTPS callable functions
-- OnRequest HTTP handlers with OIDC verification
-- Event triggers (onCreate, onUpdate, onDelete)
-- Region: `us-west2`
+- Apple OAuth 2.0 - User sign-in via Apple ID
+  - SDK: `sign_in_with_apple` 7.0.1 (Flutter)
+  - Scope: email, fullName (if available)
+  - Requires App ID + Sign in with Apple capability
 
-**Main Function Modules**:
-| Module | Purpose |
-|--------|---------|
-| `index.js` | Entry point, exports all functions |
-| `confirmation_flow.js` | Game confirmation & round job processing |
-| `trust_system.js` | Trust score calculations |
-| `trust_profile.js` | Trust profile management |
-| `game_alerts.js` | Push notifications for new games |
-| `streaks.js` | Streak calculation & tracking |
-| `challenge_progress.js` | Challenge progress updates |
-| `host_add_notifications.js` | Host add notifications |
-| `join_request_notifications.js` | Join request notifications |
-| `avatar-generator.js` | Initials avatar generation |
-| `season_reset.js` | Seasonal resets |
-| `cleanup.js` | Data cleanup tasks |
+**Push Notifications & Messaging:**
+- Firebase Cloud Messaging (FCM) - Push notification delivery
+  - SDK: `firebase_messaging` 16.1.2 (Flutter), Firebase Admin SDK (Node.js)
+  - Flow: Cloud Functions send to FCM → FCM delivers to device
+  - Local display: `flutter_local_notifications` 21.0.0 (foreground handling)
+  - Collections: `fcm_tokens` (token storage), `push_notifications` (notification log)
+  - Quiet hours support: Timezone-aware scheduling (`America/Vancouver`)
 
-### Firebase Storage (`firebase_storage` 13.1.0)
-- User profile photos, game images, avatars, chat attachments
-- Bucket: `find-my-fourth.appspot.com`
+- Cloud Tasks - Scheduled notification delivery
+  - SDK: `@google-cloud/tasks` 6.2.1 (Node.js)
+  - Purpose: Deferred notification scheduling with OIDC auth verification
+  - Configuration: OIDC token validation from App Engine default service account
 
-### Push Notifications (`firebase_messaging` 16.1.2)
-- FCM token management per device
-- Foreground message handling
-- Quiet hours support (Vancouver timezone, default 22:00-07:00)
-- Delivery tracking via `notification_receipts` collection
-- **Files**:
-  - `lib/services/fcm_notification_service.dart`
-  - `lib/services/notification_orchestration_service.dart`
-  - `lib/services/local_notifications_service.dart`
-  - `lib/services/notification_permission_service.dart`
-  - `lib/services/notification_audit_service.dart`
+**Content & Moderation:**
+- Anthropic Claude (LLM) - Avatar generation and content filtering
+  - SDK: `@langchain/anthropic` 0.1.1 (Node.js)
+  - Framework: `@langchain/langgraph` 0.2.23 (LLM orchestration)
+  - Core: `@langchain/core` 0.3.19
+  - Usage: `firebase/functions/avatar-generator.js`, moderation in `firebase/functions/index.js` (lazy-required `moderation/word_filter`)
+  - Model: Text generation (avatar descriptions), content filtering
 
-### Firebase Crashlytics (`firebase_crashlytics` ^5.0.8)
-- Error tracking and crash reporting
-- Custom error logging
-- Toggle: `CRASHLYTICS_ENABLED` build flag
+**Media & Video:**
+- Mux - Video hosting platform (reserved, not currently active)
+  - SDK: `@mux/mux-node` 7.3.3 (Node.js)
+  - Purpose: Video content delivery (future-proofed in dependencies)
 
-### Firebase Analytics (`firebase_analytics` ^12.1.3)
-- Event and session tracking
+**Payment Processing:**
+- Stripe - Payment processing (reserved, not currently active)
+  - SDK: `stripe` 8.0.1 (Node.js)
+  - Purpose: Transactions for premium features (future-proofed)
 
-### Firebase Remote Config (`firebase_remote_config` ^6.2.0)
-- Vibe floor threshold (default: 30)
-- Dynamic feature flags
-- Cache management with async refresh
+- Razorpay - Payment gateway (reserved, not currently active)
+  - SDK: `razorpay` 2.8.4 (Node.js)
+  - Purpose: Alternative payment processor (future-proofed)
 
-### Firebase App Check (`firebase_app_check` ^0.4.1+5)
-- Android: PlayIntegrity (prod), Debug provider (dev)
-- Apple: AppAttest + DeviceCheck fallback (prod), Debug (dev)
-- Web: Intentionally disabled (reCAPTCHA not configured)
+- Braintree - Payment processor (reserved, not currently active)
+  - SDK: `braintree` 3.6.0 (Node.js)
+  - Purpose: PayPal + credit card processing (future-proofed)
 
-### Firebase Performance (`firebase_performance` 0.11.1+5)
-- Installed; not actively used for custom traces
+**Push Notification Services (Alternative):**
+- OneSignal - Multi-channel notification service (reserved, not currently active)
+  - SDK: `@onesignal/node-onesignal` 2.0.1-beta2 (Node.js)
+  - Purpose: Alternative notification provider (future-proofed)
+
+**Email Delivery:**
+- SendGrid - Transactional email service
+  - SDK: `@sendgrid/mail` 8.0.0 (Node.js)
+  - Usage: Signup confirmation emails, password resets, notifications
+  - Configuration: API key in Firebase environment or Cloud Function secret manager
+  - Test coverage: `firebase/functions/test/signup-email.test.js`
+
+**Geographic & Location:**
+- Geolocation API - Device location services
+  - SDK: `geolocator` 13.0.0 (Flutter)
+  - Purpose: Course/venue location filtering, distance calculation
+  - Permissions: Requires location permission on device
+
+**Other HTTP Services:**
+- Generic HTTP/REST APIs
+  - SDK: `axios` 1.12.0 (Node.js Cloud Functions)
+  - Config: `firebase/functions/api_manager.js` (route handler, currently empty callMap)
+
+## Data Storage
+
+**Databases:**
+- Firestore (Cloud Firestore) - Primary NoSQL document database
+  - Client: `cloud_firestore` 6.1.3 (Flutter)
+  - Admin: `firebase-admin` (Node.js)
+  - Collections: `users`, `games`, `chats`, `alertSubs`, `round_jobs`, `notifications`, `push_notifications`, `devices`, `fcm_tokens`, `user_push_notifications`, `cancellations`, `strikes`
+  - Subcollections: `games/{gameId}/game_participants`, `chats/{chatId}/messages`, `chats/{chatId}/typing_users`, `chats/{chatId}/reactions`
+  - Security: Document-level access control via Firestore security rules (`firebase/firestore.rules`)
+  - Transactions: Used for concurrent-safe operations (reactions, chat creation, game join)
+
+**Local Storage:**
+- SharedPreferences - Local key-value persistence
+  - SDK: `shared_preferences` 2.5.4 (Flutter)
+  - Usage: User preferences, onboarding flags, cancelled game state (`lib/app_state.dart`)
+
+- Device filesystem - Local file cache
+  - Providers: `path_provider` 2.1.5 (system directories)
+  - Use: Temporary downloads, image cache (`flutter_cache_manager` 3.4.1)
+
+**File Storage:**
+- Firebase Storage - Cloud object storage
+  - Client: `firebase_storage` 13.1.0 (Flutter)
+  - Admin: `firebase-admin` (Node.js)
+  - Purpose: User profile images, game photos, video content
+  - Integration: `firebase/functions` uses `sharp` 0.33.2 for image resizing
+
+**Caching:**
+- Runtime cache in providers - In-memory Firestore result caching
+  - Pattern: TTL-based invalidation (typically 5 minutes) via timestamp maps in providers
+  - Example: `UserProvider`, `GameProvider`, `ChatProvider` cache strategies
+
+- Flutter Cache Manager - HTTP asset cache
+  - SDK: `flutter_cache_manager` 3.4.1
+  - Purpose: Cached network image storage (`cached_network_image` 3.4.1)
+
+## Authentication & Identity
+
+**Auth Provider:**
+- Firebase Authentication - Multi-provider authentication
+  - Implementation: `lib/backend/firebase/firebase_config.dart` initializes Firebase Auth
+  - Providers configured:
+    - Email/password (native Firebase)
+    - Google OAuth (via `google_sign_in`)
+    - Apple OAuth (via `sign_in_with_apple`)
+  - Token management: Automatic Firebase token refresh
+  - Service: `lib/providers/user_provider.dart` manages current user state
+
+## Monitoring & Observability
+
+**Error Tracking:**
+- Firebase Crashlytics - Crash reporting and error tracking
+  - SDK: `firebase_crashlytics` 5.0.8 (Flutter)
+  - Purpose: Production error monitoring and stack trace collection
+
+**Performance Monitoring:**
+- Firebase Performance - App performance metrics
+  - SDK: `firebase_performance` 0.11.1+5 (Flutter)
+  - Purpose: Frame drops, screen render times, network latency
+
+**Logging:**
+- Custom logging - Application-level logging
+  - Service: `lib/core/utils/app_log.dart` (AppLog.d() method used throughout)
+  - Cloud Functions logging: `console.log()`, `console.warn()` (captured by Cloud Functions logs)
+  - View: `npm run logs` in Cloud Functions directory
+
+**Analytics:**
+- Firebase Analytics - Usage analytics and events
+  - SDK: `firebase_analytics` 12.1.3 (Flutter)
+  - Purpose: User behavior tracking, funnel analysis
+
+## CI/CD & Deployment
+
+**Hosting:**
+- Firebase (GCP) - Backend infrastructure
+  - Project: `find-my-fourth` (`us-west2` region)
+  - Services: Firestore, Auth, Functions, Storage, Messaging, Crashlytics, Analytics, Remote Config, App Check
+
+**Firebase Deployment:**
+- Firestore Rules: `firebase deploy --only firestore:rules`
+- Firestore Indexes: `firebase deploy --only firestore:indexes`
+- Cloud Functions: `firebase deploy --only functions` (or specific: `firebase deploy --only functions:functionName`)
+- All services: `firebase deploy`
+
+**App Distribution:**
+- iOS: App Store, TestFlight (via App Store Connect)
+- Android: Google Play Store, internal testing
+
+**Development & Testing:**
+- Firebase Emulator Suite - Local development
+  - Services: Auth emulator (port 9099), Firestore (8080), Functions (5001), Storage (9199)
+  - Activation: `USE_FIREBASE_EMULATOR=true` build flag in debug mode
+  - Command: `npm run serve` (Cloud Functions emulator start)
+
+## Environment Configuration
+
+**Required Environment Variables:**
+- Firebase credentials (automatic from GoogleService-Info.plist / google-services.json on native platforms)
+- SendGrid API key - `SENDGRID_API_KEY` (for email delivery in Cloud Functions)
+- Anthropic API key - `ANTHROPIC_API_KEY` (for avatar generation and moderation)
+- Cloud Tasks project - `GCLOUD_PROJECT` (defaults to "find-my-fourth")
+- Build flags: `APP_ENV={dev|staging|prod}`, `USE_FIREBASE_EMULATOR={true|false}`, `APP_CHECK_DEBUG_TOKEN` (optional, for debug builds)
+
+**Secrets Location:**
+- Firebase project console: Service accounts, API keys, environment variables
+- Cloud Functions runtime: Injected via build flags and Cloud Function secrets
+- Local development: Firebase emulator (no real credentials needed)
+- Production: GCP Secret Manager integration via Firebase Cloud Functions
+
+## Webhooks & Callbacks
+
+**Incoming (to Cloud Functions):**
+- Cloud Task HTTP callbacks - Notification scheduling system
+  - Endpoint: `sendTrustNotification` handler (validates OIDC token from Cloud Tasks)
+  - Purpose: Deliver trust-based notifications after delay
+  - Auth: OIDC token verification from App Engine service account
+
+- Firestore Triggers - Event-driven functions
+  - `onGameCreate` - Triggers on new game creation (validates app users)
+  - `onChatMessageWrite` - Triggers on chat message creation (debounces notifications, applies moderation)
+  - Chat member sync - Triggered on game join/leave (non-critical, errors swallowed)
+
+**Outgoing (from Cloud Functions):**
+- FCM push notifications - Sent to user devices via Firebase Messaging
+  - Targets: User-specific, topic-based, or condition-based subscriptions
+  - Flow: Cloud Function → Firebase Messaging API → FCM → Device
+
+- SendGrid email - Transactional email delivery
+  - Recipients: Signup confirmation, notifications, alerts
+  - Flow: Cloud Function → SendGrid API → Email provider → User inbox
+
+- Anthropic Claude API - Content generation and filtering
+  - Flow: Cloud Function → Anthropic API → Claude model → Response
+
+**Real-time Listeners (not webhooks):**
+- Firestore listeners - Client-side reactive streams
+  - Services: `lib/services/*_service.dart` use `firestore.collection().snapshots()` for live updates
+  - Providers: Wrap streams with `StreamRequestManager` for BehaviorSubject caching
+  - Example: `GameProvider.listenToMyGames()`, `ChatProvider.listenToChats()`
 
 ---
 
-## External Service Integrations
-
-### SendGrid (`@sendgrid/mail` ^8.0.0)
-- Transactional email (signup, welcome)
-- Config: `SENDGRID_API_KEY` environment variable
-- File: `firebase/functions/index.js`
-
-### Google Cloud Tasks (`@google-cloud/tasks` ^6.2.1)
-- Deferred notification scheduling
-- Deterministic task naming for idempotency
-- Queue: `trust-notification-scheduler`
-- Region: `us-west2`
-- OIDC token verification
-- Service account: `find-my-fourth@appspot.gserviceaccount.com`
-- Retries: 3 (10s-300s exponential backoff)
-- **Files**:
-  - `firebase/functions/notifications/trust/scheduler.js`
-  - `firebase/functions/confirmation_flow.js`
-
-### Sharp (`sharp` ^0.33.2)
-- Server-side image processing for avatar generation
-- File: `firebase/functions/avatar-generator.js`
-
-### LangChain AI Suite
-| Package | Version | Provider |
-|---------|---------|----------|
-| `@langchain/anthropic` | ^0.1.1 | Claude |
-| `@langchain/openai` | ^0.3.14 | OpenAI |
-| `@langchain/google-genai` | ^0.0.8 | Google AI |
-| `@langchain/langgraph` | ^0.2.23 | Agent workflows |
-| `@langchain/core` | ^0.3.19 | Core utilities |
-
-### Payment Processing (Installed, Not Active)
-- **Stripe** (^8.0.1) — installed, not integrated
-- **Razorpay** (^2.8.4) — installed, not integrated
-- **Braintree** (^3.6.0) — installed, not integrated
-
-### Other (Installed, Not Active)
-- **Mux** (`@mux/mux-node` ^7.3.3) — video processing, not active
-- **OneSignal** (`@onesignal/node-onesignal` ^2.0.1-beta2) — legacy, deprecated in favor of FCM
-
----
-
-## Firestore Collections
-
-### Primary Collections
-| Collection | Purpose |
-|-----------|---------|
-| `users` | User profiles, auth metadata, preferences |
-| `games` | Golf game postings |
-| `game_participants` | Subcollection: `games/{id}/game_participants/` |
-| `chats` | Chat threads (direct and game-based) |
-| `messages` | Subcollection: `chats/{id}/messages/` |
-| `notifications` | User notifications |
-| `alertSubs` | Game alert subscriptions with matching rules |
-
-### Trust & Social
-| Collection | Purpose |
-|-----------|---------|
-| `pair_ratings` | Pairwise player ratings |
-| `partner_plays` | Playing history with partners |
-| `challenge_history` | Challenge engagement tracking |
-| `strikes` | User violation/strike records |
-
-### Game Operations
-| Collection | Purpose |
-|-----------|---------|
-| `round_jobs` | Confirmation flow job queue |
-| `round_records` | Game/round history |
-| `round_events` | Event log for rounds |
-| `pairwiseMatches` | Match compatibility data |
-| `participants` | Round participants |
-| `feedback` | Post-round feedback |
-| `player_rounds` | Denormalized player-round view |
-| `join_requests` | Game join request queue |
-| `cancellation_records` | Game cancellation history |
-
-### Devices & Communication
-| Collection | Purpose |
-|-----------|---------|
-| `devices` | User device records |
-| `fcm_tokens` | FCM token management |
-| `user_push_notifications` | Push notification preferences |
-| `push_notifications` | Push delivery records |
-| `notification_receipts` | Delivery tracking |
-| `scheduledNotifications` | Cloud Tasks scheduled queue |
-| `notificationLog` | Notification audit log |
-
-### Metadata & Reference
-| Collection | Purpose |
-|-----------|---------|
-| `course` | Golf course database |
-| `hometown` | User hometown/location |
-| `usernames` | Username uniqueness tracking |
-| `metadata` | Chat/game metadata |
-| `chatRefs` | Chat reference mappings |
-| `posts` | User posts/activity |
-| `stats` | User statistics |
-| `reports` | User reports/complaints |
-
-### Private Data
-- `users/{userId}/private/info` — phone, email
-
-**Total**: 34+ primary collections plus subcollections
-
----
-
-## Notification Flow
-
-### Channels
-1. **Push** — FCM via `firebase_messaging`
-2. **Local** — `flutter_local_notifications`
-3. **Email** — SendGrid
-4. **In-app** — Firestore notification log
-
-### Features
-- Quiet hours (configurable per user, default 22:00-07:00 Vancouver)
-- Game alert matching (AND across categories, OR within)
-- Smart suppression and deduplication
-- Delivery tracking via `notification_receipts`
-
----
-
-## BigQuery Integration
-
-- **Status**: Planned for Phase 3 export
-- **File**: `firebase/functions/src/sync.js`
-- **Purpose**: Analytics and behavioral dataset export
-- **Source**: `round_jobs` collection (flat event log entries)
-- **Views**: `player_rounds` for fast trajectory queries
-
----
-
-## Environment & Deployment
-
-### Firebase Project
-- **Project ID**: `find-my-fourth`
-- **Region**: `us-west2`
-- **Environments**: dev, staging, prod (via `APP_ENV` build flag)
-
-### Required Environment Variables
-| Variable | Purpose |
-|----------|---------|
-| `SENDGRID_API_KEY` | Email delivery |
-| `GCLOUD_PROJECT` | Cloud Tasks project (defaults to `find-my-fourth`) |
-
-### Security Rules
-- Firestore: `firebase/firestore.rules` (37KB, comprehensive)
-- Storage: `firebase/storage.rules`
-
-### Firestore Security Patterns
-- `isSignedIn()` auth check
-- Role-based access (`isGameOwner`, `isGameParticipantByRef`)
-- Chat member validation (`isChatMember`)
-- Valid data structure checks
-- Self-scoped list updates
+*Integration audit: 2026-03-19*

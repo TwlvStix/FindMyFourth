@@ -1,285 +1,524 @@
-# Directory Structure
+# Codebase Structure
 
-## lib/ (2 Levels Deep)
+**Analysis Date:** 2026-03-19
 
-```
-lib/
-├─ main.dart                           # App entry point
-├─ app_state.dart                      # Legacy (SharedPreferences only)
-│
-├─ auth/                               # Authentication layer
-│  └─ firebase_auth/                   # Auth managers per provider
-│
-├─ backend/                            # Firebase config & Firestore records
-│  ├─ firebase/                        # Firebase init, emulator setup
-│  ├─ push_notifications/              # Push notification handlers
-│  ├─ cloud_functions/                 # Cloud function callables
-│  ├─ firebase_storage/                # Storage operations
-│  └─ schema/                          # Firestore record classes (*Record)
-│
-├─ core/                               # Cross-cutting concerns
-│  ├─ bootstrap/                       # Startup coordination
-│  ├─ config/                          # Build flags (APP_ENV, etc.)
-│  ├─ content/                         # Microcopy constants (app_copy.dart)
-│  ├─ design_tokens/                   # Design system source of truth
-│  ├─ design_patterns/                 # Reusable premium UI patterns
-│  ├─ exceptions/                      # Custom exception hierarchy
-│  ├─ motion/                          # Animation curves & durations
-│  ├─ navigation/                      # GoRouter, routes, transitions
-│  ├─ utils/                           # Logging, errors, formatting
-│  └─ widgets/                         # Reusable components (app_* prefixed)
-│     ├─ trust/                        # Trust-specific widgets
-│     ├─ vibe/                         # Vibe-specific widgets
-│     └─ streak/                       # Streak-specific widgets
-│
-├─ models/                             # Domain models with business logic
-├─ providers/                          # State management (ChangeNotifiers)
-├─ services/                           # Business logic & Firestore access
-├─ utils/                              # App-wide utilities
-│
-├─ user_auth/                          # Auth UI screens
-│  ├─ sign_in/
-│  ├─ sign_up_account/
-│  └─ recover_password/
-│
-├─ user_onboarding/                    # Onboarding flows
-│  ├─ components/
-│  ├─ controllers/
-│  └─ models/
-│
-├─ main_function/                      # Core game features
-│  ├─ games_list/                      # Game discovery
-│  │  ├─ components/
-│  │  ├─ managers/
-│  │  ├─ models/
-│  │  └─ utils/
-│  ├─ create_game/                     # Game creation
-│  │  ├─ components/
-│  │  └─ models/
-│  ├─ join_game/                       # Quick join
-│  ├─ join_game_detailed/              # Detailed game view (pre-join)
-│  ├─ games_joined/                    # Joined games list
-│  ├─ game_joined_detailed/            # Detailed joined game view
-│  ├─ player_list/                     # Player roster
-│  ├─ leave_game/                      # Leave game flow
-│  ├─ success_page/                    # Join success
-│  ├─ success_leave/                   # Leave success
-│  └─ community/                       # Community features
-│
-├─ profile/                            # User profile features
-│  ├─ main_profile/                    # Profile view
-│  ├─ create_profile/                  # New profile
-│  ├─ edit_profile/                    # Edit profile
-│  ├─ profile_user/                    # Other user's profile
-│  ├─ edit_vibes/                      # Vibe preferences
-│  ├─ edit_vibe_importance/            # Vibe importance weights
-│  └─ change_photo/                    # Photo management
-│
-├─ chat_group/                         # Chat features
-│  ├─ chat/                            # Chat list
-│  ├─ game_chat_details/               # Chat thread view
-│  │  └─ components/                   # Bubble, reactions, attachments
-│  └─ empty_state_simple/
-│
-├─ friends/                            # Social features
-│  ├─ tab_friends/
-│  └─ components/
-│
-├─ notifications/                      # Notification UI
-│  ├─ notifications_list/
-│  ├─ game_alerts_page/
-│  └─ components/
-│
-├─ notification_settings/              # Notification preferences
-├─ settings/                           # App settings
-│  ├─ blocked_users/
-│  └─ location_settings/
-│
-├─ vibe/                               # Vibe system
-│  └─ premium_vibe_page/
-│
-├─ challenge_board/                    # Challenges & leaderboard
-│  └─ components/
-│
-├─ screens/                            # Utility screens
-│  └─ confirmation/                    # Game confirmation flows
-│
-├─ debug/                              # Debug screens
-│
-└─ custom_code/                        # FlutterFlow legacy (excluded)
-```
-
-## firebase/functions/
+## Directory Layout
 
 ```
-firebase/functions/
-├─ package.json                        # Node.js 22 dependencies
-├─ .eslintrc.js
-├─ index.js                            # Entry point, exports all functions
+find_my_fourth/
+├── lib/                           # Application source code
+│   ├── main.dart                  # Entry point: Firebase init, provider tree, app state
+│   ├── app_state.dart             # Legacy: SharedPreferences-backed transient UI state
+│   │
+│   ├── core/                      # Cross-cutting infrastructure
+│   │   ├── app_theme.dart         # Legacy ThemeExtension bridge (migrate to tokens)
+│   │   ├── bootstrap/
+│   │   │   └── app_bootstrap_coordinator.dart  # Startup orchestration (auth, notifications, splash)
+│   │   ├── config/
+│   │   │   └── build_flags.dart   # Compile-time constants (APP_ENV, EMULATOR, DEV_UI, CRASHLYTICS)
+│   │   ├── content/
+│   │   │   └── app_copy.dart      # Microcopy constants & voice guidelines
+│   │   ├── design_patterns/
+│   │   │   └── premium_ui_patterns.dart  # Reusable premium components (GlassCard, etc.)
+│   │   ├── design_tokens/         # Source of truth for visual design (NEVER hardcode colors, sizes, fonts)
+│   │   │   ├── colors.dart        # "The Clubhouse" palette (green/navy/gold roles, trust tiers, semantic colors)
+│   │   │   ├── typography.dart    # Fraunces/Manrope/DM Mono text styles
+│   │   │   ├── spacing.dart       # 8-point grid (8px, 12px, 16px, 20px, 24px, 32px, etc.)
+│   │   │   ├── border_radius.dart # Semantic radius tokens (button=8, card=12, modal=16, avatar=999, etc.)
+│   │   │   ├── elevation.dart     # Shadow presets (xs/sm/md/lg/xl + semantic aliases)
+│   │   │   ├── opacity.dart       # Opacity scale (disabled=0.20, overlay=0.40, glass=0.10, etc.)
+│   │   │   ├── icon_size.dart     # Icon size tokens (xs/sm/md/lg/xl + semantic nav/button/listItem/section)
+│   │   │   ├── app_phosphor_icons.dart  # Phosphor Icon library integration
+│   │   │   ├── archetype_colors.dart    # Vibe archetype color mapping
+│   │   │   └── README.md          # Design system reference
+│   │   ├── exceptions/
+│   │   │   └── app_exceptions.dart  # Custom exception hierarchy (GameOperationException, ChatOperationException, etc.)
+│   │   ├── motion/
+│   │   │   ├── motion_tokens.dart # Animation durations, curves, scale factors
+│   │   │   └── reduced_motion.dart # Accessibility support for reduced motion
+│   │   ├── navigation/
+│   │   │   ├── app_router.dart    # GoRouter setup, AppStateNotifier, route building
+│   │   │   ├── route_definitions.dart  # List of all routes with redirects and transitions
+│   │   │   ├── nav_bar_page.dart  # Tab navigation wrapper
+│   │   │   ├── nav_extensions.dart # Navigation helper extensions
+│   │   │   ├── transition_standards.dart  # Preset transitions (modal, detail, dismissal, tab)
+│   │   │   └── route_param_utils.dart    # Parameter passing helpers
+│   │   ├── request_manager.dart   # StreamRequestManager<T>, FutureRequestManager<T> (caching)
+│   │   ├── utils/
+│   │   │   ├── app_log.dart       # AppLog.d() logging (never print or debugPrint)
+│   │   │   ├── firebase_error_utils.dart  # Firebase error code to message mapping
+│   │   │   ├── error_messages.dart # App-wide error message constants
+│   │   │   ├── input_sanitizer.dart # String validation, email validation, etc.
+│   │   │   ├── app_util.dart      # Utility functions and extensions
+│   │   │   └── state_update.dart  # State update helpers
+│   │   └── widgets/               # Reusable core components (prefixed 'app_')
+│   │       ├── app_button_enhanced.dart  # Button variants (primary, secondary, ghost, destructive, etc.)
+│   │       ├── app_card.dart      # Card component
+│   │       ├── app_text_field.dart # Input component
+│   │       ├── app_text.dart      # Text wrapper
+│   │       ├── app_badge.dart     # Badge component
+│   │       ├── app_avatar.dart    # Avatar with image/fallback
+│   │       ├── app_icon.dart      # Icon wrapper (Phosphor + legacy SVG support)
+│   │       ├── app_icon_badge.dart # Icon with colored badge
+│   │       ├── app_section_header.dart   # Section title
+│   │       ├── app_empty_state.dart     # Empty state UI
+│   │       ├── app_loading_state.dart   # Loading spinner
+│   │       ├── app_list_tile.dart      # List item
+│   │       ├── app_choice_chips.dart    # Choice chip group
+│   │       ├── app_info_grid.dart      # Info display grid
+│   │       ├── fairway_background.dart # Golf course background pattern
+│   │       ├── profile_hero_section.dart # Profile header
+│   │       ├── profile_card_section.dart # Profile card wrapper
+│   │       ├── vibe_slider_card.dart    # Vibe preference slider
+│   │       ├── premium_back_button.dart # Premium-styled back button
+│   │       ├── trust/            # Trust-specific widgets
+│   │       ├── vibe/             # Vibe-specific widgets
+│   │       └── streak/           # Streak-specific widgets
+│   │
+│   ├── providers/                # State management layer (each domain has one provider)
+│   │   ├── user_provider.dart
+│   │   ├── game_provider.dart
+│   │   ├── chat_provider.dart
+│   │   ├── profile_provider.dart
+│   │   ├── notification_provider.dart
+│   │   ├── notification_list_provider.dart
+│   │   ├── trust_provider.dart
+│   │   ├── geo_filter_provider.dart
+│   │   ├── join_request_provider.dart
+│   │   ├── group_vibe_provider.dart
+│   │   ├── challenge_provider.dart
+│   │   ├── leaderboard_provider.dart
+│   │   ├── block_provider.dart
+│   │   ├── streak_provider.dart
+│   │   ├── vibe_provider.dart
+│   │   ├── provider_extensions.dart  # Extensions for convenient provider access (context.gameProvider, etc.)
+│   │   ├── chat_view_model_manager.dart  # Extracted chat stream composition logic
+│   │   └── chat_view_model_helpers.dart  # Helper functions for chat view models
+│   │
+│   ├── services/                # Business logic & Firestore access (one per domain)
+│   │   ├── game_service.dart
+│   │   ├── chat_service.dart
+│   │   ├── profile_service.dart
+│   │   ├── user_profile_service.dart
+│   │   ├── friend_service.dart
+│   │   ├── trust_service.dart
+│   │   ├── trust_repository.dart
+│   │   ├── notification_crud_service.dart
+│   │   ├── notification_service.dart
+│   │   ├── notification_audit_service.dart
+│   │   ├── notification_orchestration_service.dart
+│   │   ├── notification_permission_service.dart
+│   │   ├── block_service.dart
+│   │   ├── join_request_service.dart
+│   │   ├── challenge_service.dart
+│   │   ├── leaderboard_service.dart
+│   │   ├── create_game_service.dart
+│   │   ├── create_game_draft_service.dart
+│   │   ├── game_eligibility_service.dart
+│   │   ├── cancellation_service.dart
+│   │   ├── alert_subscription_service.dart
+│   │   ├── player_search_service.dart
+│   │   ├── firestore_repository.dart
+│   │   ├── geo_location_service.dart
+│   │   ├── course_service.dart
+│   │   ├── vibe_matcher.dart      # Core vibe matching algorithm
+│   │   ├── vibe_group_matcher.dart # Group compatibility matching
+│   │   ├── vibe_floor_service.dart # Vibe eligibility floor calculations
+│   │   ├── vibe_provider.dart      # (Misplaced service, should be in providers/)
+│   │   ├── remote_config_service.dart  # Feature flags via Firebase Remote Config
+│   │   ├── app_badge_service.dart  # OS-level app badge management
+│   │   ├── local_notifications_service.dart  # Local notification scheduling
+│   │   ├── fcm_notification_service.dart    # FCM token and payload handling
+│   │   ├── notification_test_service.dart   # Test notification simulation
+│   │   └── fake_notification_service.dart   # Mock for testing
+│   │
+│   ├── models/                  # Domain model classes with business logic
+│   │   ├── game.dart            # Game domain model (status resolution, eligibility)
+│   │   ├── chat.dart            # Chat domain model
+│   │   ├── chat_message.dart    # Chat message domain model
+│   │   ├── user_profile.dart    # User profile domain model
+│   │   ├── vibe_profile.dart    # Vibe preference domain model
+│   │   ├── player_eligibility.dart  # Game join eligibility rules
+│   │   ├── join_game_result.dart    # Result object for join game mutation
+│   │   ├── challenge.dart       # Challenge domain model
+│   │   ├── challenge_progress.dart
+│   │   ├── leaderboard_entry.dart
+│   │   ├── streak_profile.dart
+│   │   ├── cancellation_record.dart
+│   │   ├── join_request.dart
+│   │   ├── alert_subscription.dart
+│   │   ├── course.dart
+│   │   ├── place.dart
+│   │   ├── notification_preferences.dart
+│   │   ├── notification_receipt_event.dart
+│   │   ├── lat_lng.dart
+│   │   ├── uploaded_file.dart
+│   │   ├── vibe_labels.dart     # Vibe archetype and label mappings
+│   │   └── chat_message_view_model.dart
+│   │
+│   ├── backend/                 # Firebase configuration & schema
+│   │   ├── firebase/
+│   │   │   ├── firebase_config.dart  # Firebase initialization, emulator config
+│   │   │   └── backend.dart     # Export barrel for all Firestore records
+│   │   ├── schema/              # Firestore record classes (legacy from FlutterFlow)
+│   │   │   ├── users_record.dart
+│   │   │   ├── games_record.dart
+│   │   │   ├── chats_record.dart
+│   │   │   ├── chat_messages_record.dart
+│   │   │   ├── course_record.dart
+│   │   │   ├── game_participants_record.dart
+│   │   │   ├── pair_ratings_record.dart
+│   │   │   ├── round_records_record.dart
+│   │   │   ├── cancellation_records_record.dart
+│   │   │   ├── trust_profile.dart
+│   │   │   ├── player_standing.dart
+│   │   │   ├── post_round.dart
+│   │   │   ├── hometown_record.dart
+│   │   │   ├── util/            # Firestore utility classes
+│   │   │   └── index.dart       # Export barrel
+│   │   ├── cloud_functions/     # Cloud Functions SDK integration
+│   │   ├── firebase_storage/    # Storage bucket operations
+│   │   └── push_notifications/
+│   │       ├── push_notifications_handler.dart  # FCM message routing
+│   │       └── local_notification_helper.dart
+│   │
+│   ├── auth/                    # Authentication layer
+│   │   ├── base_auth_user_provider.dart  # Base auth user interface
+│   │   └── firebase_auth/
+│   │       ├── firebase_user_provider.dart  # Firebase Auth wrapper
+│   │       ├── auth_util.dart   # Auth helpers (currentUser, auth streams)
+│   │       └── auth_state_manager.dart
+│   │
+│   ├── main_function/           # Primary game-related features
+│   │   ├── games_list/          # Browse available games
+│   │   │   ├── games_list_widget.dart  # Main screen (731 lines — tech debt)
+│   │   │   ├── components/      # Sub-widgets
+│   │   │   ├── managers/        # Extracted managers (profile warmer, mutual friends, filter handler, action handler)
+│   │   │   ├── models/          # Local models (QuickFilter, GameListFilters)
+│   │   │   └── utils/           # Utility functions
+│   │   ├── create_game/         # Create new game
+│   │   │   ├── create_game_widget.dart
+│   │   │   ├── components/
+│   │   │   ├── controllers/
+│   │   │   └── models/          # CreateGameFormData
+│   │   ├── join_game_detailed/  # Join game preview & confirmation
+│   │   ├── game_joined_detailed/ # Joined game details & participant list
+│   │   ├── games_joined/        # List of games user has joined
+│   │   ├── player_list/         # Game participant roster
+│   │   ├── join_game/           # (Legacy join flow)
+│   │   ├── leave_game/          # Leave game confirmation
+│   │   ├── success_page/        # Post-action success screen
+│   │   ├── success_leave/       # Leave game success
+│   │   └── community/           # Community/social feed
+│   │
+│   ├── chat_group/              # Chat & messaging
+│   │   ├── chat/                # Chat list screen
+│   │   │   ├── chat_widget.dart
+│   │   │   └── components/
+│   │   ├── game_chat_details/   # Per-game chat thread
+│   │   │   ├── game_chat_details_widget.dart
+│   │   │   ├── components/      # Chat bubble, input bar, reactions, attachments
+│   │   │   ├── controllers/     # Chat input controller
+│   │   │   └── helpers/         # Chat utilities
+│   │   └── empty_state_simple/  # Empty chat state
+│   │
+│   ├── profile/                 # User profile management
+│   │   ├── main_profile/        # Current user profile view
+│   │   ├── create_profile/      # Profile onboarding
+│   │   ├── edit_profile/        # Profile editing
+│   │   ├── edit_vibes/          # Vibe preference editing
+│   │   ├── edit_vibe_importance/ # Vibe importance weighting
+│   │   ├── change_photo/        # Photo upload
+│   │   └── profile_user/        # Other user profile view (read-only)
+│   │
+│   ├── user_onboarding/         # Onboarding flows
+│   │   ├── progressive_onboarding_widget.dart  # Main onboarding flow
+│   │   ├── cinematic_onboarding_widget.dart   # Splash onboarding
+│   │   ├── vibe_onboarding_widget.dart
+│   │   ├── vibe_archetype_reveal_widget.dart
+│   │   ├── components/
+│   │   ├── controllers/
+│   │   └── models/
+│   │
+│   ├── user_auth/               # Authentication screens
+│   │   ├── sign_in/
+│   │   ├── sign_up_account/
+│   │   └── recover_password/
+│   │
+│   ├── notifications/           # Notification management
+│   │   ├── notifications_list/  # Notification center
+│   │   ├── game_alerts_page/    # Game alert subscriptions
+│   │   └── components/
+│   │
+│   ├── notification_settings/   # Notification preferences
+│   │
+│   ├── vibe/                    # Vibe premium features
+│   │   └── premium_vibe_page/
+│   │       ├── premium_vibe_page_widget.dart
+│   │       ├── components/
+│   │       └── styles/
+│   │
+│   ├── friends/                 # Friend management
+│   │   ├── tab_friends/         # Friend list tab
+│   │   └── components/
+│   │       └── premium_friend_card/
+│   │
+│   ├── challenge_board/         # Challenge/competition features
+│   │   └── components/
+│   │
+│   ├── screens/                 # Modal & specialized screens
+│   │   ├── confirmation/        # Game confirmation flows
+│   │   │   ├── fallback_confirmation_screen.dart
+│   │   │   ├── host_checkin_screen.dart
+│   │   │   └── peer_rating_screen.dart
+│   │   └── trust/               # Trust system screens
+│   │       └── your_standing_screen.dart
+│   │
+│   ├── settings/                # User settings
+│   │   ├── blocked_users/       # Block/unblock users
+│   │   └── location_settings/   # Location preferences
+│   │
+│   ├── debug/                   # Debug-only features (excluded from analysis)
+│   │   ├── components/
+│   │   └── services/
+│   │
+│   ├── custom_code/             # Custom code (excluded from analysis)
+│   │   └── widgets/
+│   │
+│   └── utils/                   # App-wide utilities
+│       ├── app_util.dart
+│       ├── flexible_date_formatter.dart
+│       ├── serialization_util.dart
+│       └── ...
 │
-├─ [Main Modules]
-├─ confirmation_flow.js                # Game confirmation & round jobs
-├─ trust_system.js                     # Trust score calculations
-├─ trust_profile.js                    # Trust profile management
-├─ game_alerts.js                      # Push notifications for new games
-├─ streaks.js                          # Streak management
-├─ challenge_progress.js               # Challenge progress updates
-├─ challenge_definitions.js            # Challenge rules
-├─ host_add_notifications.js           # Host add notifications
-├─ join_request_notifications.js       # Join request notifications
-├─ avatar-generator.js                 # Initials avatar generation
-├─ season_reset.js                     # Seasonal resets
-├─ cleanup.js                          # Data cleanup
-├─ api_manager.js                      # API utilities
+├── firebase/                    # Cloud Functions & Firestore rules
+│   ├── functions/
+│   │   ├── index.js             # Entry point, exports all functions
+│   │   ├── package.json         # Node.js dependencies
+│   │   ├── confirmation_flow.js # Game confirmation & round processing
+│   │   ├── trust_system.js      # Trust score calculations
+│   │   ├── trust_profile.js     # Trust profile management
+│   │   ├── game_alerts.js       # Push notification generation
+│   │   ├── src/                 # Behavioral dataset modules
+│   │   │   ├── booking.js       # Round creation
+│   │   │   ├── lifecycle.js     # Game state transitions
+│   │   │   ├── matching.js      # Pairwise matching
+│   │   │   ├── feedback.js      # Post-round feedback
+│   │   │   └── sync.js          # Player sync & BigQuery export
+│   │   ├── notifications/       # Notification scheduling
+│   │   └── test/                # Jest test suite
+│   ├── firestore.rules          # Firestore security rules
+│   ├── firestore.indexes.json   # Firestore composite indexes
+│   └── .firebaserc              # Firebase project config
 │
-├─ src/                                # Behavioral dataset
-│  ├─ booking.js                       # Round creation
-│  ├─ lifecycle.js                     # Confirm/decline/cancel/checkin
-│  ├─ matching.js                      # Pairwise match generation
-│  ├─ feedback.js                      # Post-round feedback
-│  ├─ sync.js                          # Player round sync & BigQuery
-│  └─ utils.js                         # Shared utilities
+├── test/                        # Unit & widget tests (mirrors lib/ structure)
+│   ├── core/
+│   ├── services/
+│   ├── providers/
+│   ├── models/
+│   ├── widgets/
+│   ├── vibe_scoring_test.dart   # Vibe matching algorithm tests
+│   └── ...
 │
-├─ notifications/                      # Notification subsystem
-│  ├─ chat_debounce.js                 # Chat notification debouncing
-│  ├─ flexible_nudge.js                # Flexible nudge scheduling
-│  └─ trust/                           # Trust-related notifications
+├── integration_test/            # E2E tests
 │
-├─ utils/                              # Helper utilities
-│  ├─ notification-helpers.js
-│  ├─ avatar-utils.js
-│  ├─ error_classification.js
-│  └─ search-tokens.js
+├── web/                         # Web platform assets
+├── ios/                         # iOS platform code
+├── android/                     # Android platform code
 │
-├─ moderation/                         # Content moderation
+├── pubspec.yaml                 # Flutter dependencies
+├── pubspec.lock
+├── analysis_options.yaml        # Lint rules
+├── .firebase/                   # Emulator cache (local dev)
+├── .env*                        # Environment files (gitignored)
 │
-├─ test/                               # Jest test suite (28+ files)
-│  ├─ confirmation_flow.test.js
-│  ├─ game_alerts.test.js
-│  ├─ integration.test.js
-│  ├─ notification-load.test.js
-│  └─ ...
-│
-└─ scripts/                            # Build & deployment
+└── docs/                        # Documentation
+    ├── design-system/           # Design system reference
+    ├── migrations/              # Schema migration guides
+    ├── specs/                   # Feature specifications
+    ├── perf_baselines/          # Performance benchmarks
+    ├── testing/                 # Testing guides
+    └── debug/                   # Debug guides
 ```
 
----
+## Directory Purposes
 
-## Key File Locations by Domain
+**lib/**
+- Root of application source code; code organization follows domain-driven design (games, chat, profile, etc.)
 
-### Game Management
-- Widget: `lib/main_function/games_list/games_list_widget.dart`
-- Provider: `lib/providers/game_provider.dart`
-- Service: `lib/services/game_service.dart`
-- Model: `lib/models/game.dart`
-- Schema: `lib/backend/schema/games_record.dart`
-- Cloud Function: `firebase/functions/confirmation_flow.js`
+**lib/core/**
+- Infrastructure and shared utilities; includes design tokens, navigation, exceptions, and reusable widgets
+- No feature-specific logic; pure infrastructure
 
-### Chat & Messaging
-- Widget: `lib/chat_group/game_chat_details/game_chat_details_widget.dart`
-- Provider: `lib/providers/chat_provider.dart`
-- Service: `lib/services/chat_service.dart`
-- Model: `lib/models/chat.dart`, `lib/models/chat_message.dart`
-- Cloud Function: `firebase/functions/notifications/chat_debounce.js`
+**lib/providers/**
+- State management layer; one provider per domain for consistent caching and reactivity
+- Never call Firestore directly; always delegate to services
 
-### User Profiles & Onboarding
-- Widget: `lib/profile/main_profile/main_profile_widget.dart`
-- Provider: `lib/providers/profile_provider.dart`
-- Service: `lib/services/profile_service.dart`
-- Model: `lib/models/user_profile.dart`
-- Schema: `lib/backend/schema/users_record.dart`
-- Onboarding: `lib/user_onboarding/` (cinematic, progressive, vibe)
+**lib/services/**
+- Business logic and Firestore operations; pure functions, injected dependencies for testability
+- Catch `FirebaseException` specifically; log with `AppLog.d()` including error codes; rethrow
 
-### Vibe Matching System
-- Algorithm: `lib/services/vibe_matcher.dart`
-- Group: `lib/services/vibe_group_matcher.dart`
-- Model: `lib/models/vibe_profile.dart`
-- Tests: `test/services/vibe_scoring_test.dart`
+**lib/models/**
+- Domain objects with business logic; `fromDoc()`/`fromRecord()` factories; shared static methods for logic reuse
+- Lightweight — most logic lives in services
 
-### Trust System
-- Provider: `lib/providers/trust_provider.dart`
-- Service: `lib/services/trust_flow_service.dart`
-- Repository: `lib/services/trust_repository.dart`
-- Cloud Functions: `firebase/functions/trust_system.js`, `firebase/functions/trust_profile.js`
+**lib/backend/schema/**
+- Legacy Firestore record classes from FlutterFlow; cannot be removed; only updated when adding new Firestore fields
 
-### Notifications
-- Provider: `lib/providers/notification_provider.dart`
-- List Provider: `lib/providers/notification_list_provider.dart`
-- Services: `lib/services/notification_orchestration_service.dart`, `lib/services/fcm_notification_service.dart`, `lib/services/local_notifications_service.dart`
-- Cloud Functions: `firebase/functions/game_alerts.js`, `firebase/functions/notifications/`
+**lib/main_function/**
+- Games (create, browse, join, detail, list) — primary feature area
 
-### Design System
-- Tokens: `lib/core/design_tokens/` (colors, typography, spacing, elevation, border_radius, icon_size, opacity)
-- Icons: `lib/core/design_tokens/app_phosphor_icons.dart`
-- Motion: `lib/core/motion/motion_tokens.dart`
-- Widgets: `lib/core/widgets/` (all `app_` prefixed)
+**lib/chat_group/**
+- Chat and messaging; per-game threads and chat list
 
-### Navigation
-- Router: `lib/core/navigation/app_router.dart`
-- Routes: `lib/core/navigation/route_definitions.dart`
-- Transitions: `lib/core/navigation/transition_standards.dart`
-- Bootstrap: `lib/core/bootstrap/app_bootstrap_coordinator.dart`
+**lib/profile/**
+- User profile management; CRUD, vibe editing, viewing other users
 
----
+**lib/user_onboarding/**
+- Account creation and preference setup; cinematic and progressive flows
 
-## Feature Folder Pattern
+**lib/user_auth/**
+- Sign in, sign up, password recovery
 
-```
-lib/feature_name/
-├─ feature_widget.dart              # Main screen (max 300 lines)
-├─ components/                      # Sub-widgets
-├─ controllers/                     # Logic extraction (optional)
-├─ models/                          # Feature-specific models (optional)
-├─ managers/                        # Business logic helpers (optional)
-└─ utils/                           # Feature utilities (optional)
-```
+**lib/notifications/**
+- Notification center, game alert subscriptions, notification routing
 
----
+**lib/settings/**
+- User preferences; block list, location settings
+
+**lib/screens/**
+- Modal and specialized screens; confirmation flows, trust standings
+
+**lib/debug/**
+- Debug-only features; excluded from CI analysis and lint rules
+
+**lib/custom_code/**
+- Custom code (legacy, excluded from analysis)
+
+**firebase/functions/**
+- Cloud Functions source; Node.js; modules for confirmation, trust, notifications, booking, matching
+
+**firebase/**
+- Firestore rules and composite indexes
+
+**test/**
+- Unit and widget tests; mirrors lib/ structure for easy location
+
+## Key File Locations
+
+**Entry Points:**
+- `lib/main.dart` — Application startup, Firebase init, provider tree, error handlers
+- `lib/core/bootstrap/app_bootstrap_coordinator.dart` — Startup coordination (auth, notifications, splash removal)
+- `lib/core/navigation/app_router.dart` — GoRouter setup, auth redirects
+- `lib/core/navigation/route_definitions.dart` — Complete route list
+
+**Configuration:**
+- `lib/backend/firebase/firebase_config.dart` — Firebase project setup, emulator config
+- `lib/core/config/build_flags.dart` — Compile-time flags (APP_ENV, EMULATOR, DEV_UI)
+- `pubspec.yaml` — Dependencies and build configuration
+
+**Core Logic:**
+- `lib/services/game_service.dart` — Game queries, join/leave logic
+- `lib/services/chat_service.dart` — Chat streams, message CRUD, batch optimizations
+- `lib/providers/game_provider.dart` — Game state management with caching
+- `lib/providers/user_provider.dart` — User state, friend operations, profile queries
+- `lib/models/game.dart` — Game domain model with status resolution logic
+
+**Design System:**
+- `lib/core/design_tokens/colors.dart` — Color palette ("The Clubhouse" — green/navy/gold)
+- `lib/core/design_tokens/typography.dart` — Font families and text styles
+- `lib/core/design_tokens/spacing.dart` — 8-point grid system
+- `lib/core/design_tokens/app_phosphor_icons.dart` — Icon library
+
+**Widget Components:**
+- `lib/core/widgets/app_button_enhanced.dart` — Primary button variants
+- `lib/core/widgets/app_card.dart` — Card component
+- `lib/core/widgets/app_icon.dart` — Icon wrapper with Phosphor integration
+
+**Testing:**
+- `test/vibe_scoring_test.dart` — Vibe matching algorithm tests
+- `firebase/functions/test/` — Cloud Functions Jest tests
 
 ## Naming Conventions
 
-| Element | Convention | Example |
-|---------|-----------|---------|
-| Files | `snake_case` | `game_service.dart` |
-| Classes | `PascalCase` | `GameService` |
-| Widgets | `PascalCase` + `Widget` suffix | `GamesListWidget` |
-| Core widgets | `app_` prefix | `app_button_enhanced.dart` |
-| Providers | `PascalCase` + `Provider` suffix | `GameProvider` |
-| Services | `PascalCase` + `Service` suffix | `GameService` |
-| Models | Direct name | `Game`, `Chat` |
-| Schema records | `PascalCase` + `Record` suffix | `GamesRecord` |
-| Routes | Static `routeName` + `routePath` | `CreateGameWidget.routeName` |
-| Feature dirs | `snake_case` | `games_list/`, `create_game/` |
+**Files:**
+- Snake case: `games_list_widget.dart`, `game_service.dart`, `create_game_form_data.dart`
+- Feature widgets: `{feature}_widget.dart` (e.g., `games_list_widget.dart`, `chat_widget.dart`)
+- Services: `{domain}_service.dart` (e.g., `game_service.dart`, `chat_service.dart`)
+- Providers: `{domain}_provider.dart` (e.g., `game_provider.dart`, `user_provider.dart`)
+- Models: `{entity}.dart` (e.g., `game.dart`, `user_profile.dart`)
+- Core widgets: `app_{component}.dart` (e.g., `app_button_enhanced.dart`, `app_card.dart`)
+- Component sub-widgets: `{feature}_{component}.dart` (e.g., `games_list_app_bar.dart`, `game_joined_player_card.dart`)
+- Controllers: `{feature}_controller.dart` (e.g., `create_game_controller.dart`)
+- Managers: `{feature}_manager.dart` (e.g., `filter_handler.dart`)
+
+**Directories:**
+- Feature folders use feature name in plural or descriptive form: `main_function/`, `chat_group/`, `profile/`, `notifications/`
+- Sub-components live in `components/` subfolder of the feature
+- Extracted logic lives in `managers/`, `controllers/`, `helpers/`, `utils/`, or `models/` subfolders
+
+**Classes:**
+- PascalCase: `GameService`, `GamesListWidget`, `GameProvider`, `CreateGameFormData`
+- Feature components: `{Feature}{Component}` (e.g., `GamesListAppBar`, `GameJoinedPlayerCard`)
+- Core components: `App{Component}` (e.g., `AppButtonEnhanced`, `AppCard`)
+- Record classes: `{Entity}Record` (e.g., `GamesRecord`, `UsersRecord`)
+- Providers: `{Domain}Provider` (e.g., `GameProvider`, `ChatProvider`)
+- Services: `{Domain}Service` (e.g., `GameService`, `ChatService`)
+
+## Where to Add New Code
+
+**New Feature (e.g., "Leagues"):**
+1. Create directory: `lib/leagues/`
+2. Main screen: `lib/leagues/leagues_widget.dart` (with static `routeName`, `routePath`)
+3. Components: `lib/leagues/components/{LeaguesComponent}.dart`
+4. Model: `lib/models/league.dart` (if new data type)
+5. Service: `lib/services/league_service.dart` (Firestore operations)
+6. Provider: `lib/providers/league_provider.dart` (wraps service with caching)
+7. Firestore schema: `lib/backend/schema/leagues_record.dart` (if new collection)
+8. Route: Add entry to `lib/core/navigation/route_definitions.dart` with redirect and transition
+9. Tests: `test/leagues/`, `test/services/league_service_test.dart`
+
+**New Component/Module (reusable):**
+- If used in one feature: `lib/{feature}/components/{Feature}{Component}.dart`
+- If reused across features: `lib/core/widgets/app_{component}.dart` with `App` prefix
+
+**Utilities/Helpers:**
+- Shared utilities: `lib/core/utils/{utility}.dart`
+- Feature-specific: `lib/{feature}/utils/` or `lib/{feature}/helpers/`
+
+**Services:**
+- Domain-specific: `lib/services/{domain}_service.dart` (instance class, DI for testability)
+- Register: No central registry; create instance in provider constructor: `FeaturesService? service` with default `FeaturesService()`
+
+**Design Tokens:**
+- Never create new token files; add to existing: `colors.dart`, `typography.dart`, `spacing.dart`, etc.
+- CI enforces no hardcoded colors/sizes/fonts via `tool/check_hardcoded_colors.sh`
+
+**Tests:**
+- Unit tests: `test/{path_matching_lib}/{feature_test}.dart`
+- Widget tests: `test/{feature}/{component}_test.dart`
+- Service tests: `test/services/{service}_test.dart`
+
+## Special Directories
+
+**lib/backend/schema/**
+- Firestore record classes (auto-generated from FlutterFlow, manually maintained)
+- Committed to git; cannot be removed
+- Updated when adding new Firestore fields (run `flutterflow` CLI or add manually)
+- Example: `GamesRecord` is used by 13+ files; removing would break app
+
+**lib/custom_code/**
+- Excluded from lint analysis (`analysis_options.yaml` ignores this path)
+- Legacy custom code; avoid using for new features
+
+**lib/debug/**
+- Debug-only features, excluded from analysis and lint rules
+- Includes: notification routing tests, crash test overlay, streak debug screen
+
+**.planning/codebase/**
+- This document directory
+- Contains analysis documents: `ARCHITECTURE.md`, `STRUCTURE.md`, `CONVENTIONS.md`, `TESTING.md`, `STACK.md`, `INTEGRATIONS.md`, `CONCERNS.md`
 
 ---
 
-## Where to Add New Features
-
-### New Screen
-1. Create: `lib/[domain]/[feature]/[feature]_widget.dart`
-2. Components: `lib/[domain]/[feature]/components/`
-3. Route: Add to `lib/core/navigation/route_definitions.dart`
-4. Use `TransitionStandards` for transition type
-
-### New Service
-1. Create: `lib/services/[name]_service.dart` (instance class with `FirebaseFirestore?` DI)
-2. Error handling: `on FirebaseException catch (e)` → log → rethrow
-
-### New Provider
-1. Create: `lib/providers/[name]_provider.dart` (extend `ChangeNotifier`)
-2. Accept service via constructor with default
-3. Register in `lib/main.dart` `MultiProvider`
-4. Add extensions in `lib/providers/provider_extensions.dart`
-
-### New Model
-1. Create: `lib/models/[name].dart`
-2. Add `fromDoc()`/`fromRecord()` factory if needed
-
-### New Cloud Function
-1. Create: `firebase/functions/[feature].js`
-2. Export from `firebase/functions/index.js`
-3. Tests: `firebase/functions/test/[feature].test.js`
-
-### New Core Widget
-1. Create: `lib/core/widgets/app_[name].dart`
-2. Use design tokens directly — no hardcoded values
+*Structure analysis: 2026-03-19*

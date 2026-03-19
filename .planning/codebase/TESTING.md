@@ -1,306 +1,444 @@
-# Testing
+# Testing Patterns
 
-## Overview
+**Analysis Date:** 2026-03-19
 
-| Area | Framework | Command | Location |
-|------|-----------|---------|----------|
-| Flutter app | `package:test` / `flutter_test` | `flutter test` | `test/` |
-| Cloud Functions | Jest 29.0.0 | `npm test` | `firebase/functions/test/` |
+## Test Framework
 
----
+**Dart/Flutter Tests:**
+- Runner: `test` package 1.24.0
+- Assertion library: Built-in `expect()` from `test` package
+- Mocking: Manual mock classes implementing interfaces (no external mocking library)
+- Config: None (uses default test runner)
 
-## Flutter Tests
+**Cloud Functions Tests (JavaScript):**
+- Runner: Jest 29.0.0
+- Assertion library: Jest built-in matchers (`expect()`)
+- Mocking: Jest `jest.mock()` and `jest.fn()`
+- Config: Default Jest config (defined via package.json scripts)
 
-### Directory Structure
+**Run Commands:**
+```bash
+# Dart/Flutter tests
+flutter test                              # Run all tests
+flutter test test/vibe_scoring_test.dart  # Run single test file
+flutter test --watch                      # Watch mode
+
+# Cloud Functions tests
+cd firebase/functions
+npm test                                  # Run all tests matching test/
+npx jest test/hooks.test.js               # Run single test file
+npm run lint                              # ESLint validation
+
+# Load testing (Firebase)
+npm run load-test                         # Full load test
+npm run load-test:small                   # Small load test
+npm run notif-load-test                   # Notification load test
+```
+
+## Test File Organization
+
+**Location:**
+- Co-located with source code: `test/` directory mirrors `lib/` structure
+- Test files in same relative path as source: `test/providers/game_provider_test.dart` tests `lib/providers/game_provider.dart`
+- Firebase Functions: `firebase/functions/test/*.test.js`
+
+**Naming:**
+- Pattern: `*_test.dart` or `*.test.js`
+- Examples: `vibe_scoring_test.dart`, `game_provider_test.dart`, `hooks.test.js`, `preferences-service.test.js`
+
+**Structure:**
 ```
 test/
-├── vibe_scoring_test.dart              # Core vibe algorithm
-├── vibe_golden_pairs_test.dart         # Golden pair validation
-├── vibe_scoring_additional_test.dart   # Extended scoring
-├── vibe_floor_simulation_test.dart     # Floor threshold sim
-├── widget_test.dart                    # Basic widget test
-│
-├── services/                           # Service layer tests (17+)
-│   ├── alert_matcher_test.dart
-│   ├── friend_service_test.dart
-│   ├── game_eligibility_test.dart
-│   ├── create_game_service_test.dart
-│   ├── vibe_floor_service_test.dart
-│   ├── fcm_suppression_test.dart
-│   └── ...
-│
-├── providers/                          # Provider tests
+├── auth/
+│   └── firebase_auth_manager_test.dart
+├── core/
+│   ├── firebase_error_utils_test.dart
+│   ├── navigation/
+│   │   └── nav_extensions_test.dart
+│   └── utils/
+│       └── input_sanitizer_test.dart
+├── providers/
 │   ├── geo_filter_provider_test.dart
-│   ├── vibe_provider_test.dart
 │   ├── group_vibe_provider_test.dart
-│   └── trust_provider_batch_test.dart
-│
-├── auth/                               # Auth tests
-├── backend/                            # Backend tests
-├── chat_group/                         # Chat tests
-├── main_function/                      # Game feature tests
-├── profile/                            # Profile tests
-├── utils/                              # Utility tests
-├── widgets/                            # Widget tests (7+ subdirs)
-└── vibe/                               # Vibe system tests
+│   ├── trust_provider_batch_test.dart
+│   └── vibe_provider_test.dart
+├── main_function/
+│   ├── create_game/
+│   │   ├── components/
+│   │   │   └── flexible_time_section_test.dart
+│   │   ├── create_game_validator_test.dart
+│   │   └── models/
+│   │       └── create_game_form_data_test.dart
+│   └── games_list/
+│       ├── components/
+│       │   └── quick_filter_chips_test.dart
+│       └── models/
+│           └── quick_filter_test.dart
+├── vibe_scoring_test.dart
+├── vibe_floor_simulation_test.dart
+└── utils/
+    ├── availability_text_helper_test.dart
+    └── game_tag_helper_test.dart
 ```
 
-### Commands
-```bash
-flutter test                                          # All tests
-flutter test test/services/vibe_scoring_test.dart     # Single file
-flutter test --grep="pattern"                         # Filter by name
-```
+## Test Structure (Dart)
 
----
-
-## Cloud Functions Tests
-
-### Directory Structure
-```
-firebase/functions/test/
-├── confirmation_flow.test.js     # 119KB - comprehensive
-├── game_alerts.test.js           # 34KB
-├── hooks.test.js                 # 35KB
-├── integration.test.js           # 40KB
-├── router.test.js                # 47KB
-├── scheduler.test.js             # 23KB
-├── event-registry.test.js        # 23KB
-├── notification-load.test.js     # 31KB
-├── behavioral_dataset_test.js    # 13KB
-├── challenge_progress.test.js    # 24KB
-├── chat_debounce.test.js         # 20KB
-├── fcm-sender.test.js
-├── friend-callable.test.js
-├── onboarding-callable.test.js
-├── preferences-service.test.js
-├── signup-email.test.js
-├── streaks.test.js
-├── sync_game_chat.test.js
-├── template-engine.test.js
-├── test-harness.test.js
-├── word_filter.test.js
-├── workers.test.js
-│
-├── load-test.js                  # Load testing
-├── LOAD_TEST_README.md
-└── LOAD_TEST_QUICK_START.md
-```
-
-### Commands
-```bash
-npm test                                          # All tests
-npx jest test/game_alerts.test.js --verbose      # Single test
-npx jest test/confirmation_flow.test.js          # Confirmation tests
-npm run notif-load-test                          # Notification load test
-npm run notif-load-test:small                    # Small load test
-npm run load-test                                # Full load test
-npm run load-test:small                          # Small load test
-npm run load-test:cleanup                        # Cleanup test data
-npm run lint                                     # ESLint (max 30 warnings)
-```
-
----
-
-## Mocking Patterns
-
-### Flutter Service Mocks
-
-**Manual mock implementing interface:**
+**Suite Organization:**
 ```dart
-class MockVibeRepository implements VibeRepository {
-  VibeProfile? profileToReturn;
-  bool shouldFailOnUpdate = false;
-  int updateCategoryCallCount = 0;
+import 'package:test/test.dart';
+import 'package:find_my_fourth/models/vibe_profile.dart';
+import 'package:find_my_fourth/vibe/vibe_scoring.dart';
 
-  @override
-  Future<VibeProfile> getMyVibes() async {
-    if (shouldFailOnLoad) {
-      throw FirebaseException(plugin: 'firestore', code: 'unavailable');
-    }
-    return profileToReturn ?? VibeProfile.defaults();
-  }
+void main() {
+  test('simple test case', () {
+    final result = calculateScore(a, b);
+    expect(result, closeTo(expectedValue, 0.01));
+  });
+
+  group('grouped tests', () {
+    test('case 1', () {
+      expect(value, isTrue);
+    });
+
+    test('case 2', () {
+      expect(value, isFalse);
+    });
+  });
 }
-
-// Usage in test setup
-setUp(() {
-  mockRepo = MockVibeRepository();
-  provider = VibeProvider(repository: mockRepo);
-});
 ```
 
-**Fake DocumentReference:**
+**Patterns:**
+- Setup: `setUp()` block before `group()` for fixture initialization
+- Teardown: `tearDown()` block to clean up (dispose providers, clear mocks)
+- Grouping: `group()` to organize related tests and run shared setup/teardown
+- Skipping: `skip` suffix on test name (rarely used)
+
+**Example Provider Test:**
 ```dart
-class _FakeDocumentReference implements DocumentReference<Map<String, dynamic>> {
-  _FakeDocumentReference(this.path, {this.onSet});
-  @override
-  final String path;
-  final Future<void> Function(Map<String, dynamic>)? onSet;
+void main() {
+  group('GeoFilterProvider', () {
+    late GeoFilterProvider provider;
+    late MockGeoLocationService mockService;
+    bool skipTearDownDispose = false;
 
-  @override
-  Future<void> set(Map<String, dynamic> data, [SetOptions? options]) async {
-    if (onSet != null) await onSet!(data);
-  }
+    setUp(() {
+      mockService = MockGeoLocationService();
+      provider = GeoFilterProvider(service: mockService);
+      skipTearDownDispose = false;
+    });
 
-  @override
-  dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
+    tearDown(() {
+      if (!skipTearDownDispose) {
+        provider.dispose();
+      }
+    });
+
+    group('initial state', () {
+      test('starts with filter disabled', () {
+        expect(provider.isEnabled, isFalse);
+      });
+
+      test('starts with default radius of 40 km', () {
+        expect(provider.radiusKm, equals(40.0));
+      });
+    });
+
+    group('permission handling', () {
+      test('requests permission on demand', () async {
+        await provider.requestLocationPermission();
+        expect(mockService.requestPermissionCallCount, equals(1));
+      });
+    });
+  });
 }
 ```
 
-**Dependencies:**
-- `fake_cloud_firestore` ^4.0.1 — Firestore mocking
-- `firebase_auth_mocks` ^0.15.1 — Auth mocking
+## Test Structure (JavaScript)
 
-### JavaScript Mocks
-
-**Module-level mock state** (before `jest.mock()`):
+**Suite Organization (Jest):**
 ```javascript
-let mockSharedDb;
-let mockFcmSend;
-let mockCreateTask;
+'use strict';
 
-jest.mock('firebase-admin', () => ({
-  firestore: () => mockSharedDb,
-  messaging: () => ({ send: (...args) => mockFcmSend(...args) }),
-}));
-```
+// Mock dependencies first
+jest.mock('firebase-admin');
+jest.mock('../notifications/trust/scheduler');
 
-**Mock infrastructure classes:**
-```javascript
-class MockTimestamp {
-  constructor(ms) { this._ms = ms; }
-  toMillis() { return this._ms; }
-  static now() { return new MockTimestamp(Date.now()); }
-}
+// Import module under test
+const { onGameConfirmed } = require('../notifications/trust/hooks');
 
-class MockDocRef {
-  constructor(db, collectionName, id) {
-    this._db = db;
-    this._collection = collectionName;
-    this.id = id;
-    this.path = `${collectionName}/${id}`;
-  }
-}
-```
+// Constants
+const TEE_TIME_ISO = '2026-03-15T14:00:00.000Z';
+const HOST = 'user_host';
 
-**Setup/teardown:**
-```javascript
+// Shared setup
 beforeEach(() => {
-  mockSharedDb = new MockFirestore();
-  mockFcmSend = jest.fn().mockResolvedValue({ name: 'projects/x/messages/msg1' });
+  jest.clearAllMocks();
 });
 
 afterEach(() => {
   jest.useRealTimers();
-  jest.clearAllMocks();
+});
+
+// Test suite
+describe('onGameConfirmed', () => {
+  test('2-player game schedules exactly 4 jobs', async () => {
+    const { scheduleJob } = require('../notifications/trust/scheduler');
+    await onGameConfirmed(GAME_ID, TEE_TIME_ISO, HOST, [HOST, PLAYER_1], COURSE_NAME, GAME_DATE);
+    expect(scheduleJob).toHaveBeenCalledTimes(4);
+  });
+
+  test('schedules host_checkin_due with correct timing', async () => {
+    const { scheduleJob } = require('../notifications/trust/scheduler');
+    await onGameConfirmed(GAME_ID, TEE_TIME_ISO, HOST, [HOST, PLAYER_1], COURSE_NAME, GAME_DATE);
+
+    const calls = scheduleJob.mock.calls.map((c) => c[0]);
+    const initial = calls.find((e) => e.eventType === 'host_checkin_due' && e.conditionCheck === 'always');
+
+    expect(initial).toBeDefined();
+    expect(initial.recipientUserId).toBe(HOST);
+    expect(new Date(initial.scheduleTime).getTime()).toBe(TEE_TIME_MS + 5 * MS_IN_HOUR);
+  });
 });
 ```
 
----
+**Patterns:**
+- Clear mocks between tests: `jest.clearAllMocks()` in `beforeEach()`
+- Reset timers: `jest.useRealTimers()` in `afterEach()`
+- Setup mock implementations with `mockImplementation()` or `mockResolvedValue()`
+- Use `describe()` for test suites, `test()` for individual cases
 
-## Test Structure Pattern
+## Mocking
 
-### Flutter
+**Dart - Manual Mock Classes:**
+- Implement the service interface: `class MockVibeRepository implements VibeRepository`
+- Track call counts: `int updateCategoryCallCount = 0;`
+- Track last arguments: `VibeCategory? lastUpdatedCategory;`
+- Support failure injection: `bool shouldFailOnUpdate = false;` then throw in the method
+- Provide pre-configured return values: `VibeProfile? profileToReturn;` used by `getMyVibesCached()`
+
+**Example:**
 ```dart
-void main() {
-  group('FeatureService', () {
-    late FeatureService service;
-    late MockFirebaseFirestore mockFirestore;
-
-    setUp(() {
-      mockFirestore = MockFirebaseFirestore();
-      service = FeatureService(firestore: mockFirestore);
-    });
-
-    tearDown(() {
-      // Dispose if needed
-    });
-
-    group('methodName', () {
-      test('happy path description', () {
-        // Arrange, Act, Assert
-        expect(result, equals(expected));
-      });
-
-      test('error path description', () {
-        expect(() => service.method(), throwsA(isA<FirebaseException>()));
-      });
-    });
+class MockVibeRepository implements VibeRepository {
+  MockVibeRepository({
+    this.profileToReturn,
+    this.shouldFailOnUpdate = false,
   });
+
+  VibeProfile? profileToReturn;
+  bool shouldFailOnUpdate;
+  int updateCategoryCallCount = 0;
+  VibeCategory? lastUpdatedCategory;
+  int? lastUpdatedValue;
+
+  @override
+  Future<VibeProfile> getMyVibesCached({bool forceRefresh = false}) async {
+    return profileToReturn ?? VibeProfile.defaults();
+  }
+
+  @override
+  Future<void> updateCategory(VibeCategory category, int value) async {
+    updateCategoryCallCount++;
+    lastUpdatedCategory = category;
+    lastUpdatedValue = value;
+    if (shouldFailOnUpdate) {
+      throw FirebaseException(plugin: 'firestore', code: 'permission-denied');
+    }
+  }
 }
 ```
 
-### JavaScript
+**JavaScript - Jest Mocks:**
+- Mock at module level with `jest.mock(path)`
+- Inline mock implementation in `beforeEach()` with `jest.fn()`
+- Setup return values with `mockResolvedValue()`, `mockRejectedValue()`, `mockImplementation()`
+- Inspect calls with `.mock.calls`, `.toHaveBeenCalledTimes()`, `.toHaveBeenCalledWith()`
+
+**Example:**
 ```javascript
-describe('FeatureModule', () => {
-  beforeEach(() => { /* setup */ });
-  afterEach(() => { jest.clearAllMocks(); });
+jest.mock('crypto', () => ({
+  randomUUID: jest.fn(),
+}));
 
-  describe('functionName', () => {
-    it('should handle happy path', async () => {
-      const result = await functionName(input);
-      expect(result).toBeDefined();
-      expect(mockFn).toHaveBeenCalledWith(expected);
-    });
+jest.mock('../notifications/trust/scheduler', () => ({
+  scheduleJob: jest.fn(),
+  cancelGameJobs: jest.fn(),
+}));
 
-    it('should handle error case', async () => {
-      await expect(functionName(bad)).rejects.toThrow();
-    });
-  });
+beforeEach(() => {
+  const { randomUUID } = require('crypto');
+  randomUUID.mockImplementation(() => `uuid-${++counter}`);
+
+  const { scheduleJob } = require('../notifications/trust/scheduler');
+  scheduleJob.mockImplementation(async () => `job_${++jobNum}`);
+  scheduleJob.mockResolvedValue({ success: true });
 });
 ```
 
----
+**What to Mock:**
+- External services (Firestore, Firebase, APIs) - use `FirebaseException` for error injection
+- Dependencies passed to constructors for isolation
+- Time-based operations (use `jest.useFakeTimers()` in JavaScript)
 
-## What Gets Tested
+**What NOT to Mock:**
+- Business logic being tested (model methods, scoring algorithms, validation)
+- Utility functions (helpers, formatters)
+- Domain models that represent data
 
-### Required Coverage
-- All service methods (Firestore operations)
-- Provider state transitions and cache invalidation
-- Business logic in models (e.g., `Game.resolveGameStatus()`)
-- Vibe scoring algorithm changes
-- Error paths, not just happy paths
-- Firestore limit edge cases (>10 whereIn, >500 batch ops)
+## Fixtures and Factories
 
-### Test Strategies
-| Layer | Strategy |
-|-------|----------|
-| **Services** | Inject mock Firestore, test error handling, test limits |
-| **Providers** | Inject mock services, verify notifyListeners, test cache |
-| **Controllers** | Verify delegation to services |
-| **Widgets** | `pumpWidget` with providers, test interactions |
-| **Vibe system** | Comprehensive scoring with various category combinations |
+**Test Data (Dart):**
+- Create test doubles directly inline: `const VibePref(value: 3, tolerance: 2, weight: 10)`
+- Use model defaults for convenience: `VibeProfile.defaults()`
+- Pre-configured mock returns: `MockVibeRepository(profileToReturn: testProfile)`
 
----
+**Example:**
+```dart
+final base = VibePref(value: 3, tolerance: 2, weight: 10);
+final defaultPref = VibePref(
+  value: 3,
+  tolerance: 2,
+  weight: 10,
+  isDefault: true,
+);
 
-## Coverage Gaps (Known)
-
-### Flutter
-- No integration tests for auth flows
-- No widget tests for large screens (games_list, game_joined_detailed)
-- No tests for `ChatService` (985 lines, critical)
-- Widget tests sparse overall
-- Single integration test: `integration_test/friend_notifications_test.dart`
-
-### Cloud Functions
-- Good coverage overall (28+ test files)
-- Load testing infrastructure in place
-- Behavioral dataset tests exist
-
----
-
-## CI Integration
-
-```bash
-# Flutter
-flutter test
-flutter analyze
-
-# Cloud Functions
-cd firebase/functions
-npm test
-npm run lint    # ESLint, max 30 warnings
-
-# Hardcoded color check
-tool/check_hardcoded_colors.sh
+final baseWeight = categoryEffectiveWeight(base, base);
+final oneDefault = categoryEffectiveWeight(base, defaultPref);
 ```
+
+**Test Data (JavaScript):**
+- Define constants at module level: `const TEE_TIME_ISO = '2026-03-15T14:00:00.000Z';`
+- Use in multiple tests via closure: Tests reference constants defined in outer scope
+- Create composite objects inline: `const calls = scheduleJob.mock.calls.map((c) => c[0]);`
+
+**Location:**
+- Dart: Inline in test files or in mock class definitions
+- JavaScript: Constants at top of test file, mock objects constructed during test
+
+## Coverage
+
+**Requirements:**
+- No enforced coverage threshold (not measured by CI)
+- Manual decision per feature: new features should include tests before merging
+- Focus on critical paths: service layer (Firestore operations), provider state transitions, business logic
+
+**View Coverage (JavaScript):**
+```bash
+cd firebase/functions
+npm test -- --coverage
+```
+
+## Test Types
+
+**Unit Tests:**
+- Scope: Single function/method in isolation with mocked dependencies
+- Approach: Test with `FakeCloudFirestore` for services, mock service for providers
+- Examples: `vibe_scoring_test.dart` (pure scoring algorithms), `firebase_auth_manager_test.dart` (retry logic)
+
+**Service Tests (Dart):**
+- Inject mock `FirebaseFirestore` via constructor
+- Test happy path and error paths
+- Test Firestore limit edge cases: >10 items in `whereIn` (use chunking), >500 operations in batch
+- No unused local variables - if declared, it must be asserted
+
+**Provider Tests (Dart):**
+- Inject mock service via constructor
+- Verify `notifyListeners()` called appropriately (not for every stream callback)
+- Test cache invalidation after mutations
+- Test `dispose()` cleanup: subscriptions cancelled, timers cancelled, `_disposed` flag set
+- Use `setUp()`/`tearDown()` for consistent initialization and cleanup
+
+**Integration Tests:**
+- Not currently used in this codebase
+- Integration test file exists: `integration_test/friend_notifications_test.dart` (not actively maintained)
+
+**E2E Tests:**
+- Not used (Flutter app, would require device/emulator)
+- Firebase rules testing done via `firebase/rules-tests/` (separate from unit tests)
+
+## Common Patterns
+
+**Async Testing (Dart):**
+```dart
+test('loads vibe profile on initialization', () async {
+  final mock = MockVibeRepository(
+    profileToReturn: VibeProfile.defaults(),
+  );
+  final provider = VibeProvider(repository: mock);
+
+  await provider.loadMyVibes();
+
+  expect(provider.myProfile, isNotNull);
+  expect(mock.loadProfileCallCount, equals(1));
+});
+```
+
+**Error Testing (Dart):**
+```dart
+test('propagates Firestore errors', () async {
+  final mock = MockVibeRepository(shouldFailOnUpdate: true);
+  final provider = VibeProvider(repository: mock);
+
+  expect(
+    () => provider.updateCategory(VibeCategory.drinking, 5),
+    throwsA(isA<FirebaseException>()),
+  );
+});
+```
+
+**Mocking Streams (Dart):**
+```dart
+test('reacts to stream updates', () async {
+  final controller = StreamController<VibeProfile>();
+  // Set up stream in mock and verify listeners react
+  controller.add(testProfile);
+  // Assert state changes
+});
+```
+
+**Time-based Testing (JavaScript):**
+```javascript
+test('schedules job at correct time', async () => {
+  jest.useFakeTimers();
+  const futureDate = new Date(Date.now() + 5 * 60 * 60 * 1000); // +5h
+
+  await scheduleJob({ scheduleTime: futureDate.toISOString() });
+
+  expect(new Date(scheduled.scheduleTime).getTime()).toBe(futureDate.getTime());
+  jest.useRealTimers();
+});
+```
+
+**Assertion Helpers (Dart):**
+- `expect(value, isTrue)` / `expect(value, isFalse)`
+- `expect(value, equals(expected))`
+- `expect(value, closeTo(expected, tolerance))` — for floating point comparisons
+- `expect(value, inInclusiveRange(min, max))`
+- `expect(value, greaterThan(x))` / `expect(value, lessThan(x))`
+- `expect(value, isNull)` / `expect(value, isNotNull)`
+- `expect(value, isEmpty)` / `expect(value, isNotEmpty)`
+- `expect(list, contains(item))`
+- `expect(() => fn(), throwsA(isA<ExceptionType>()))`
+- `expectLater(() => fn(), throwsA(isA<ExceptionType>()))` — for async
+
+## What Needs Tests
+
+**Required:**
+- All service methods (Firestore CRUD operations)
+- Provider state transitions and cache management
+- Business logic in models: `Game.resolveGameStatus()`, vibe scoring algorithms
+- Vibe matching and eligibility logic
+- Error handling paths (Firebase exceptions, permission errors)
+- New features before merging
+
+**Nice to Have:**
+- Widget integration tests (requires emulator setup)
+- Widget accessibility validation (Semantics presence)
+- Cloud Functions load testing (via `npm run load-test`)
+
+**Legacy/Deferred:**
+- Full E2E coverage (complex to set up with emulator)
+- Performance benchmarks (not currently automated)
+
+---
+
+*Testing analysis: 2026-03-19*
