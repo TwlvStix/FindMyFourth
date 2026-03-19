@@ -149,8 +149,6 @@ class ChatInputBar extends StatelessWidget {
                   keyboardType: TextInputType.multiline,
                   minLines: 1,
                   maxLines: 5,
-                  // TODO: Add server-side maxLength validation in Firestore security rules
-                  // Client-side maxLength is a UX guardrail, not a security boundary
                   maxLength: InputSanitizer.maxChatMessage,
                   buildCounter: (context, {required currentLength, required isFocused, maxLength}) => null,
                   enabled: enabled,

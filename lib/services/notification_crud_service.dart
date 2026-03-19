@@ -156,7 +156,7 @@ class NotificationCrudService {
   Future<int> deleteAllNotifications(DocumentReference userRef) async {
     try {
       final allSnapshot =
-          await userRef.collection('notifications').orderBy('createdAt').get();
+          await userRef.collection('notifications').orderBy('createdAt').limit(200).get();
 
       if (allSnapshot.docs.isEmpty) {
         AppLog.d('📖 NotificationCrudService: No notifications to delete');

@@ -87,14 +87,14 @@ class PlayerSearchService {
     });
 
     // Create game_participants docs for host-added players and guests
-    await _createParticipantDocs(
+    await createParticipantDocs(
       gameRef: gameRef,
       joinedPlayerUids: joinedPlayerUids,
       guestPlayers: guestPlayers,
     );
   }
 
-  Future<void> _createParticipantDocs({
+  Future<void> createParticipantDocs({
     required DocumentReference gameRef,
     required List<String> joinedPlayerUids,
     required List<String> guestPlayers,

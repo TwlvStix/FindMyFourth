@@ -4,7 +4,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import '/core/utils/app_log.dart';
 import '/models/course.dart';
 import '/models/game.dart';
-import '/services/chat_service.dart';
+import '/services/chat_lifecycle_service.dart';
 import '/services/create_game_service.dart';
 import '/services/player_search_service.dart';
 import '/services/rematch_service.dart';
@@ -34,20 +34,20 @@ class RebookService {
   RebookService({
     CreateGameService? createGameService,
     PlayerSearchService? playerSearchService,
-    ChatService? chatService,
+    ChatLifecycleService? chatService,
     RematchService? rematchService,
     FirebaseFirestore? firestore,
     FirebaseAuth? auth,
   })  : _createGameService = createGameService ?? CreateGameService(),
         _playerSearchService = playerSearchService ?? PlayerSearchService(),
-        _chatService = chatService ?? ChatService(),
+        _chatService = chatService ?? ChatLifecycleService(),
         _rematchService = rematchService ?? RematchService(),
         _firestore = firestore ?? FirebaseFirestore.instance,
         _auth = auth ?? FirebaseAuth.instance;
 
   final CreateGameService _createGameService;
   final PlayerSearchService _playerSearchService;
-  final ChatService _chatService;
+  final ChatLifecycleService _chatService;
   final RematchService _rematchService;
   final FirebaseFirestore _firestore;
   final FirebaseAuth _auth;
@@ -82,29 +82,9 @@ class RebookService {
       }
       final userRef = _firestore.collection('users').doc(uid);
 
-      // Generate game ref first (chat needs the game ID)
-      final gameRef = _createGameService.generateGameRef();
-
-      // Create game chat
-      final gameName = formData.courseValue ?? 'Game';
-      final chatRef = await _chatService.createGameChat(
-        createdByUid: uid,
-        gameId: gameRef.id,
-        gameName: gameName,
-      );
-
-      // Create game document
-      await _createGameService.createGameWithRef(
-        gameRef: gameRef,
-        formData: formData,
-        uid: uid,
-        userRef: userRef,
-        chatRef: chatRef,
-      );
-
-      // Add original players (excluding the host)
+      // Collect original players (excluding the current user / new host)
       final nonHostPlayerUids = sourceGame.joinedPlayers
-          .where((ref) => ref.id != sourceGame.uid)
+          .where((ref) => ref.id != uid)
           .map((ref) => ref.id)
           .toList();
 
@@ -126,7 +106,37 @@ class RebookService {
         }
       }
 
-      await _playerSearchService.addPlayersToGame(
+      // Set pre-added players on form data so they're included in the
+      // initial game document write (atomic creation avoids duplicate
+      // notifications from separate onCreate/onUpdate triggers).
+      formData.preAddedPlayerUids = validPlayerUids;
+      formData.preAddedPlayerRefs = validPlayerUids
+          .map((pUid) => _firestore.collection('users').doc(pUid))
+          .toList();
+      formData.preAddedGuestNames = sourceGame.guestPlayers;
+
+      // Generate game ref first (chat needs the game ID)
+      final gameRef = _createGameService.generateGameRef();
+
+      // Create game chat
+      final gameName = formData.courseValue ?? 'Game';
+      final chatRef = await _chatService.createGameChat(
+        createdByUid: uid,
+        gameId: gameRef.id,
+        gameName: gameName,
+      );
+
+      // Create game document (includes pre-added players atomically)
+      await _createGameService.createGameWithRef(
+        gameRef: gameRef,
+        formData: formData,
+        uid: uid,
+        userRef: userRef,
+        chatRef: chatRef,
+      );
+
+      // Create participant docs for pre-added players (non-critical)
+      await _playerSearchService.createParticipantDocs(
         gameRef: gameRef,
         joinedPlayerUids: validPlayerUids,
         guestPlayers: sourceGame.guestPlayers,

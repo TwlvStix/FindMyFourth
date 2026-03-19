@@ -9,7 +9,7 @@ import '/services/game_eligibility_service.dart';
 
 /// GameService provides stateless, centralized access to game data in Firestore
 ///
-/// This service follows the established pattern from ChatService:
+/// This service follows the established service pattern:
 /// - Static methods only (no instance state)
 /// - Pure functions without UI dependencies
 /// - Firestore error handling with try-catch, AppLog.d(), and rethrow

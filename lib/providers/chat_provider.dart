@@ -9,16 +9,26 @@ import '/models/chat_message.dart';
 import '/models/chat_message_view_model.dart';
 import '/providers/chat_view_model_helpers.dart';
 import '/providers/profile_provider.dart';
-import '/services/chat_service.dart';
+import '/services/chat_interaction_service.dart';
+import '/services/chat_lifecycle_service.dart';
+import '/services/chat_message_service.dart';
 
 export 'chat_view_model_helpers.dart';
 
 import 'chat_view_model_manager.dart';
 
 class ChatProvider extends ChangeNotifier {
-  ChatProvider({ChatService? service}) : _service = service ?? ChatService();
+  ChatProvider({
+    ChatLifecycleService? lifecycleService,
+    ChatMessageService? messageService,
+    ChatInteractionService? interactionService,
+  })  : _lifecycleService = lifecycleService ?? ChatLifecycleService(),
+        _messageService = messageService ?? ChatMessageService(),
+        _interactionService = interactionService ?? ChatInteractionService();
 
-  final ChatService _service;
+  final ChatLifecycleService _lifecycleService;
+  final ChatMessageService _messageService;
+  final ChatInteractionService _interactionService;
 
   final Map<String, Chat> _chatCache = {};
   final Map<String, List<ChatMessage>> _messagesCache = {};
@@ -70,7 +80,7 @@ class ChatProvider extends ChangeNotifier {
     return _chatListStreamManagers[queryKey]!
         .performRequest(
       uniqueQueryKey: queryKey,
-      requestFn: () => _service.getChatListStream(uid: uid, limit: limit),
+      requestFn: () => _messageService.getChatListStream(uid: uid, limit: limit),
     )
         .map((chats) {
       _chatListCache[queryKey] = chats;
@@ -88,7 +98,7 @@ class ChatProvider extends ChangeNotifier {
   }
 
   Stream<Chat?> chatStream(String chatId) {
-    return _service.getChatStream(chatId: chatId).map((chat) {
+    return _messageService.getChatStream(chatId: chatId).map((chat) {
       if (chat != null) {
         _chatCache[chatId] = chat;
         _chatCacheTimestamps[chatId] = DateTime.now();
@@ -109,7 +119,7 @@ class ChatProvider extends ChangeNotifier {
     }
     return _messageStreamManagers[chatId]!.performRequest(
       uniqueQueryKey: 'messages_${chatId}_$limit',
-      requestFn: () => _service
+      requestFn: () => _messageService
           .getMessagesStream(
         chatId: chatId,
         limit: limit,
@@ -129,7 +139,7 @@ class ChatProvider extends ChangeNotifier {
     int limit = 50,
     DateTime? visibleAfter,
   }) {
-    return _service.getMessagesSnapshotStream(
+    return _messageService.getMessagesSnapshotStream(
       chatId: chatId,
       limit: limit,
       visibleAfter: visibleAfter,
@@ -142,7 +152,7 @@ class ChatProvider extends ChangeNotifier {
     DocumentSnapshot? startAfter,
     DateTime? visibleAfter,
   }) {
-    return _service.getMessagesPage(
+    return _messageService.getMessagesPage(
       chatId: chatId,
       limit: limit,
       startAfter: startAfter,
@@ -157,7 +167,7 @@ class ChatProvider extends ChangeNotifier {
     AppLog.d('📱 ChatProvider: createOrGetDirectChat called');
     AppLog.d('📱 ChatProvider: currentUid=$currentUid, otherUid=$otherUid');
     try {
-      final result = await _service.createOrGetDirectChat(
+      final result = await _lifecycleService.createOrGetDirectChat(
         currentUid: currentUid,
         otherUid: otherUid,
       );
@@ -175,7 +185,7 @@ class ChatProvider extends ChangeNotifier {
     required String gameId,
     required String gameName,
   }) {
-    return _service.createGameChat(
+    return _lifecycleService.createGameChat(
       createdByUid: createdByUid,
       gameId: gameId,
       gameName: gameName,
@@ -194,7 +204,7 @@ class ChatProvider extends ChangeNotifier {
     double? imageHeight,
   }) async {
     try {
-      await _service.sendMessage(
+      await _messageService.sendMessage(
         chatId: chatId,
         senderId: senderId,
         text: text,
@@ -236,7 +246,7 @@ class ChatProvider extends ChangeNotifier {
     required String uid,
   }) async {
     try {
-      await _service.markChatRead(chatId: chatId, uid: uid);
+      await _messageService.markChatRead(chatId: chatId, uid: uid);
       _chatCacheTimestamps.remove(chatId);
       _scheduleNotify();
     } catch (e) {
@@ -249,7 +259,7 @@ class ChatProvider extends ChangeNotifier {
     required String chatId,
     required String uid,
   }) async {
-    await _service.markChatNotificationsAsRead(chatId: chatId, uid: uid);
+    await _messageService.markChatNotificationsAsRead(chatId: chatId, uid: uid);
   }
 
   Future<void> deleteChat({
@@ -258,7 +268,7 @@ class ChatProvider extends ChangeNotifier {
   }) async {
     AppLog.d('📱 ChatProvider: deleteChat called, chatId=$chatId, uid=$uid');
     try {
-      await _service.deleteChat(chatId: chatId, uid: uid);
+      await _lifecycleService.deleteChat(chatId: chatId, uid: uid);
       _chatCache.remove(chatId);
       _chatCacheTimestamps.remove(chatId);
       _messagesCache.remove(chatId);
@@ -278,7 +288,7 @@ class ChatProvider extends ChangeNotifier {
     required String uid,
   }) async {
     try {
-      await _service.addMember(chatId: chatId, uid: uid);
+      await _lifecycleService.addMember(chatId: chatId, uid: uid);
       _chatCacheTimestamps.remove(chatId);
       _messagesCache.remove(chatId);
       _messagesCacheTimestamps.remove(chatId);
@@ -290,19 +300,19 @@ class ChatProvider extends ChangeNotifier {
   }
 
   /// Eagerly sync chat membership after joining a game.
-  /// Non-critical passthrough — see ChatService.ensureGameChatMembership.
+  /// Non-critical passthrough — see ChatLifecycleService.ensureGameChatMembership.
   Future<void> ensureGameChatMembership({
     required String chatId,
     required String uid,
   }) =>
-      _service.ensureGameChatMembership(chatId: chatId, uid: uid);
+      _lifecycleService.ensureGameChatMembership(chatId: chatId, uid: uid);
 
   Future<void> removeMember({
     required String chatId,
     required String uid,
   }) async {
     try {
-      await _service.removeMember(chatId: chatId, uid: uid);
+      await _lifecycleService.removeMember(chatId: chatId, uid: uid);
       _chatCacheTimestamps.remove(chatId);
       _scheduleNotify();
     } catch (e) {
@@ -316,7 +326,7 @@ class ChatProvider extends ChangeNotifier {
     required String text,
   }) async {
     try {
-      await _service.sendSystemMessage(chatId: chatId, text: text);
+      await _messageService.sendSystemMessage(chatId: chatId, text: text);
       _messagesCacheTimestamps.remove(chatId);
       _scheduleNotify();
     } catch (e) {
@@ -330,7 +340,7 @@ class ChatProvider extends ChangeNotifier {
     required String chatId,
     required String uid,
   }) {
-    return _service.isLastMember(chatId: chatId, uid: uid);
+    return _lifecycleService.isLastMember(chatId: chatId, uid: uid);
   }
 
   /// Leave a chat. Deletes if last member, otherwise just removes user.
@@ -340,7 +350,7 @@ class ChatProvider extends ChangeNotifier {
   }) async {
     AppLog.d('📱 ChatProvider: leaveChat called, chatId=$chatId, uid=$uid');
     try {
-      await _service.leaveChat(chatId: chatId, uid: uid);
+      await _lifecycleService.leaveChat(chatId: chatId, uid: uid);
       _chatCache.remove(chatId);
       _chatCacheTimestamps.remove(chatId);
       _messagesCache.remove(chatId);
@@ -403,7 +413,7 @@ class ChatProvider extends ChangeNotifier {
     required String uid,
     required bool isTyping,
   }) {
-    return _service.setTypingStatus(
+    return _interactionService.setTypingStatus(
         chatId: chatId, uid: uid, isTyping: isTyping);
   }
 
@@ -413,7 +423,7 @@ class ChatProvider extends ChangeNotifier {
     required String emoji,
     required String uid,
   }) {
-    return _service.addReaction(
+    return _interactionService.addReaction(
         chatId: chatId, messageId: messageId, emoji: emoji, uid: uid);
   }
 
@@ -423,7 +433,7 @@ class ChatProvider extends ChangeNotifier {
     required String emoji,
     required String uid,
   }) {
-    return _service.removeReaction(
+    return _interactionService.removeReaction(
         chatId: chatId, messageId: messageId, emoji: emoji, uid: uid);
   }
 
@@ -432,7 +442,7 @@ class ChatProvider extends ChangeNotifier {
     required String messageId,
     required String uid,
   }) {
-    return _service.markMessageAsRead(
+    return _messageService.markMessageAsRead(
         chatId: chatId, messageId: messageId, uid: uid);
   }
 
@@ -443,7 +453,7 @@ class ChatProvider extends ChangeNotifier {
     int limit = 100,
     DateTime? visibleAfter,
   }) {
-    return _service.markMessagesAsReadBatch(
+    return _messageService.markMessagesAsReadBatch(
       chatId: chatId,
       uid: uid,
       limit: limit,
@@ -452,7 +462,7 @@ class ChatProvider extends ChangeNotifier {
   }
 
   void logError(String message, Object error, StackTrace stackTrace) {
-    _service.logError(message, error, stackTrace);
+    _messageService.logError(message, error, stackTrace);
   }
 
   // View model streams (delegated to ChatViewModelManager)

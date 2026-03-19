@@ -1,5 +1,7 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import '/chat_group/game_chat_details/components/chat_bubble_image_attachment.dart';
+import '/chat_group/game_chat_details/components/chat_bubble_reactions.dart';
 import '/core/design_tokens/colors.dart';
 import '/core/design_tokens/spacing.dart';
 import '/core/design_tokens/typography.dart';
@@ -191,83 +193,14 @@ class ChatMessageBubble extends StatelessWidget {
                         children: [
                           // Image attachment
                           if (imageUrl.isNotEmpty)
-                            Padding(
-                              padding: EdgeInsets.only(
-                                  bottom: messageText.isNotEmpty
-                                      ? AppSpacing.xs
-                                      : 0),
-                              child: GestureDetector(
-                                onTap: onImageTap,
-                                child: ClipRRect(
-                                  borderRadius: BorderRadius.circular(AppBorderRadius.sm),
-                                  child: ConstrainedBox(
-                                    constraints: const BoxConstraints(
-                                      maxWidth: 250,
-                                      maxHeight: 300,
-                                    ),
-                                    child: CachedNetworkImage(
-                                      imageUrl: imageUrl,
-                                      fit: BoxFit.cover,
-                                      placeholder: (context, url) {
-                                        // Use stored dimensions for correct aspect-ratio skeleton
-                                        final double w = (imageWidth != null &&
-                                                imageHeight != null &&
-                                                imageWidth! > 0)
-                                            ? 220.0
-                                            : 200.0;
-                                        final double h = (imageWidth != null &&
-                                                imageHeight != null &&
-                                                imageWidth! > 0)
-                                            ? (220.0 * imageHeight! / imageWidth!)
-                                                .clamp(80.0, 300.0)
-                                            : 200.0;
-                                        return Container(
-                                          width: w,
-                                          height: h,
-                                          color: AppColors.stone.withValues(alpha: 0.2),
-                                          child: Center(
-                                            child: CircularProgressIndicator(
-                                              color: isSentByCurrentUser
-                                                  ? Colors.white
-                                                      .withValues(alpha: 0.8) // Keep: no 80% token
-                                                  : AppColors.navyDark,
-                                              strokeWidth: 2,
-                                            ),
-                                          ),
-                                        );
-                                      },
-                                      errorWidget: (context, url, error) {
-                                        return Container(
-                                          height: 150,
-                                          width: 200,
-                                          color: AppColors.stone.withValues(alpha: 0.2),
-                                          child: Column(
-                                            mainAxisAlignment:
-                                                MainAxisAlignment.center,
-                                            children: [
-                                              AppIcon(
-                                                icon: AppPhosphorIcons.imageBroken,
-                                                color: textColor
-                                                    .withValues(alpha: 0.6),
-                                                size: AppIconSize.xl,
-                                              ),
-                                              AppSpacing.verticalXsBox,
-                                              Text(
-                                                'Failed to load',
-                                                style: AppTypography.labelMicro
-                                                    .copyWith(
-                                                  color: textColor
-                                                      .withValues(alpha: 0.6),
-                                                ),
-                                              ),
-                                            ],
-                                          ),
-                                        );
-                                      },
-                                    ),
-                                  ),
-                                ),
-                              ),
+                            ChatBubbleImageAttachment(
+                              imageUrl: imageUrl,
+                              imageWidth: imageWidth,
+                              imageHeight: imageHeight,
+                              messageText: messageText,
+                              isSentByCurrentUser: isSentByCurrentUser,
+                              textColor: textColor,
+                              onImageTap: onImageTap,
                             ),
                           // Message text
                           if (message.isFlagged)
@@ -320,64 +253,11 @@ class ChatMessageBubble extends StatelessWidget {
                   // Reactions
                   if (message.reactions.isNotEmpty) ...[
                     AppSpacing.verticalXxs,
-                    Container(
-                      margin: EdgeInsets.only(
-                        left: isSentByCurrentUser ? 40 : AppSpacing.md + 40,
-                        right: isSentByCurrentUser ? AppSpacing.md : 40,
-                      ),
-                      child: Wrap(
-                        spacing: AppSpacing.xxs,
-                        runSpacing: AppSpacing.xxs,
-                        children: message.reactions.entries.map((entry) {
-                          final emoji = entry.key;
-                          final users = entry.value;
-                          final hasReacted = currentUserId != null &&
-                              users.contains(currentUserId);
-
-                          return GestureDetector(
-                            onTap: () => onReactionTap?.call(emoji, hasReacted),
-                            child: Container(
-                              padding: EdgeInsets.symmetric(
-                                horizontal: AppSpacing.xs,
-                                vertical: AppSpacing.xxs,
-                              ),
-                              decoration: BoxDecoration(
-                                color: hasReacted
-                                    ? AppColors.navyDark
-                                        .withValues(alpha: 0.3)
-                                    : AppColors.pure
-                                        .withValues(alpha: 0.6),
-                                borderRadius: BorderRadius.circular(AppBorderRadius.md),
-                                border: hasReacted
-                                    ? Border.all(
-                                        color: AppColors.navyDark,
-                                        width: 1.5,
-                                      )
-                                    : null,
-                              ),
-                              child: Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  Text(
-                                    emoji,
-                                    style: AppTypography.bodyMedium,
-                                  ),
-                                  if (users.length > 1) ...[
-                                    AppSpacing.horizontalXxs,
-                                    Text(
-                                      '${users.length}',
-                                      style: AppTypography.labelMicro.copyWith(
-                                        color: AppColors.textSecondary,
-                                        fontWeight: FontWeight.w600,
-                                      ),
-                                    ),
-                                  ],
-                                ],
-                              ),
-                            ),
-                          );
-                        }).toList(),
-                      ),
+                    ChatBubbleReactions(
+                      reactions: message.reactions,
+                      currentUserId: currentUserId,
+                      isSentByCurrentUser: isSentByCurrentUser,
+                      onReactionTap: onReactionTap,
                     ),
                   ],
                 ],

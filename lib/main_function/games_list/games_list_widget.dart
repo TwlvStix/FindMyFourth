@@ -190,12 +190,17 @@ class _GamesListWidgetState extends State<GamesListWidget> {
   }
 
   Future<void> _handleRefresh() async {
-    context.read<GameProvider>().invalidateAllGameCache();
+    final gameProvider = context.read<GameProvider>();
+    gameProvider.invalidateAllGameCache();
     // Clear mutual friend caches on refresh
     _mutualFriendsManager.clearCache();
-    await Future.delayed(Duration(milliseconds: 500));
+    // Force fresh Firestore re-subscription for pull-to-refresh
+    gameProvider.resetAvailableGamesStream();
     if (mounted) {
-      updateState(this, () {});
+      updateState(this, () {
+        _gamesStream = gameProvider.availableGamesStream().map((records) =>
+            records.map((record) => Game.fromRecord(record)).toList());
+      });
     }
   }
 

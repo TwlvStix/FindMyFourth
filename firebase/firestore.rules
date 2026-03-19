@@ -710,6 +710,9 @@ service cloud.firestore {
           // Regular user messages
           (request.resource.data.senderId == request.auth.uid &&
             request.resource.data.type in ['text', 'image'] &&
+            request.resource.data.text is string &&
+            request.resource.data.text.size() <= 2000 &&
+            (request.resource.data.type != 'text' || request.resource.data.text.size() > 0) &&
             (request.resource.data.type != 'image' ||
               (request.resource.data.imageUrl is string &&
                request.resource.data.imageUrl.matches('https://firebasestorage\\.googleapis\\.com/v0/b/find-my-fourth\\.appspot\\.com/o/chat_images%2F' + chatId + '%2F.*')))) ||

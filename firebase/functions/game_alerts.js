@@ -819,6 +819,51 @@ exports.sendGameCreatedNotifications = functions
         console.log(`[GameAlerts] Friend pass complete: ${friendUids.length} friends, ${friendNotified} notified, ${friendSkipped} skipped`);
       }
 
+      // ── Host-added player bypass (rebook / atomic creation) ──────────────
+      // When a game is created with host_added_players already present, send
+      // those players the correct "added by host" notification and add them to
+      // alreadyNotifiedUserIds so they don't also receive a generic game alert.
+      const hostAddedPlayerUids = Array.isArray(gameData.host_added_players)
+        ? gameData.host_added_players
+        : [];
+
+      if (hostAddedPlayerUids.length > 0 && creatorUid) {
+        const hostDoc = await firestore.collection("users").doc(creatorUid).get();
+        const hostData = hostDoc.exists ? hostDoc.data() || {} : {};
+        const hostName = hostData.display_name || "A host";
+        const hostAvatarUrl = hostData.photo_url || null;
+        const courseName = gameData.course_play || "a course";
+        const gameDate = formatGameDate(gameData) || "an upcoming game";
+
+        let hostAddedNotified = 0;
+        for (const addedUid of hostAddedPlayerUids) {
+          if (addedUid === creatorUid) continue;
+          if (alreadyNotifiedUserIds.has(addedUid)) continue;
+
+          try {
+            const { onPlayerAddedByHost } = require("./host_add_notifications");
+            await onPlayerAddedByHost(
+              addedUid,
+              creatorUid,
+              hostName,
+              gameId,
+              courseName,
+              gameDate,
+              hostAvatarUrl,
+              firestore,
+            );
+            hostAddedNotified++;
+          } catch (err) {
+            console.error(`[GameAlerts] Failed host-added notification for ${addedUid}:`, err.message);
+          }
+
+          // Prevent duplicate alert notification for this user
+          alreadyNotifiedUserIds.add(addedUid);
+        }
+
+        console.log(`[GameAlerts] Host-added pass complete: ${hostAddedPlayerUids.length} players, ${hostAddedNotified} notified`);
+      }
+
       let skippedCreator = 0;
       let skippedNoMatch = 0;
       let skippedGender = 0;

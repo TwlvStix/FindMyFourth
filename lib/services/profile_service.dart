@@ -3,7 +3,7 @@ import '/core/utils/app_log.dart';
 
 /// ProfileService provides stateless, centralized access to user profile data in Firestore
 ///
-/// This service follows the established pattern from ChatService and GameService:
+/// This service follows the established pattern from GameService:
 /// - Static methods only (no instance state)
 /// - Pure functions without UI dependencies
 /// - Firestore error handling with try-catch, AppLog.d(), and rethrow

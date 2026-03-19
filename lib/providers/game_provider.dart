@@ -429,25 +429,16 @@ class GameProvider extends ChangeNotifier {
       return;
     }
     final queryKey = 'user_games_$normalizedUserId';
-    _gameStreamManagers[queryKey]?.clear();
+    // Clear query result caches — live snapshot streams continue delivering updates
     _queryResultCache.remove(queryKey);
     _queryResultCacheTimestamps.remove(queryKey);
-    // No notify - stream consumers get fresh data when resubscribed
   }
 
   /// Invalidate available games cache (when filters change)
   void invalidateAvailableGamesCache() {
-    // Clear all available_* stream managers and query caches
-    _gameStreamManagers.removeWhere((key, value) {
-      if (key.startsWith('available_')) {
-        value.clear();
-        return true;
-      }
-      return false;
-    });
-    _queryResultCache.removeWhere((key, value) => key.startsWith('available_'));
-    _queryResultCacheTimestamps.removeWhere((key, value) => key.startsWith('available_'));
-    // No notify - stream consumers get fresh data when resubscribed
+    // Clear query result caches — live snapshot streams continue delivering updates
+    _queryResultCache.removeWhere((key, _) => key.startsWith('available_'));
+    _queryResultCacheTimestamps.removeWhere((key, _) => key.startsWith('available_'));
   }
 
   /// Invalidate all game caches
@@ -456,11 +447,20 @@ class GameProvider extends ChangeNotifier {
     _gameCacheTimestamps.clear();
     _queryResultCache.clear();
     _queryResultCacheTimestamps.clear();
-    for (final manager in _gameStreamManagers.values) {
-      manager.clear();
-    }
-    _gameStreamManagers.clear();
-    // No notify - stream consumers get fresh data when resubscribed
+    // Do NOT close live stream managers — Firestore snapshot listeners
+    // continue delivering updates automatically
+  }
+
+  /// Force-close available games streams so the next call creates a fresh Firestore listener.
+  /// Use only for explicit user-initiated refresh (pull-to-refresh).
+  void resetAvailableGamesStream() {
+    _gameStreamManagers.removeWhere((key, value) {
+      if (key.startsWith('available_')) {
+        value.clear();
+        return true;
+      }
+      return false;
+    });
   }
 
   /// Refresh a specific game (invalidate and refetch)

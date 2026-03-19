@@ -1171,8 +1171,11 @@ async function _onHostAddsPlayerHandler(change, context, db = firestore) {
   const courseName = after.course_play || "a course";
   const gameDate = _formatGameDateWithTime(after.date);
 
+  // Filter out host UID (safety net for rebook edge cases)
+  const filteredNewlyAdded = newlyHostAdded.filter(uid => uid !== hostUid);
+
   // Send notification to each newly host-added player
-  for (const addedUid of newlyHostAdded) {
+  for (const addedUid of filteredNewlyAdded) {
     try {
       const { onPlayerAddedByHost } = require("./host_add_notifications");
       await onPlayerAddedByHost(

@@ -53,6 +53,12 @@ class CreateGameFormData {
   String? sourceGameId;
   String? createdVia;
 
+  // Pre-added players for rebook flow (written at creation time to avoid
+  // duplicate notifications from separate onCreate/onUpdate triggers)
+  List<String> preAddedPlayerUids;
+  List<DocumentReference> preAddedPlayerRefs;
+  List<String> preAddedGuestNames;
+
   CreateGameFormData({
     this.friendsValue,
     this.courseValue,
@@ -79,9 +85,15 @@ class CreateGameFormData {
     this.memberDiscount = false,
     this.sourceGameId,
     this.createdVia,
+    List<String>? preAddedPlayerUids,
+    List<DocumentReference>? preAddedPlayerRefs,
+    List<String>? preAddedGuestNames,
   })  : selectedDays = selectedDays ?? {},
         flexibleTimesOfDay = flexibleTimesOfDay ?? {'anytime'},
         selectedGames = selectedGames ?? {},
+        preAddedPlayerUids = preAddedPlayerUids ?? [],
+        preAddedPlayerRefs = preAddedPlayerRefs ?? [],
+        preAddedGuestNames = preAddedGuestNames ?? [],
         gameName = gameName ?? _generateAutoGameName() {
     if (selectedCourse != null) {
       selectedCourseRefPath = selectedCourse!.reference.path;
@@ -300,8 +312,10 @@ class CreateGameFormData {
       },
       'isCancelled': false,
       'status': 'active',
-      'joined_players': [userRef],
-      'guest_players': [],
+      'joined_players': [userRef, ...preAddedPlayerRefs],
+      'guest_players': preAddedGuestNames,
+      if (preAddedPlayerUids.isNotEmpty)
+        'host_added_players': preAddedPlayerUids,
       'uid': uid,
       'is_fun_game': isJustForFun,
       'is_2v2': is2v2,
