@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:phosphor_flutter/phosphor_flutter.dart';
 
 import '/core/design_tokens/colors.dart';
 import '/core/design_tokens/icon_size.dart';
 import '/core/design_tokens/spacing.dart';
 import '/core/design_tokens/typography.dart';
 import '/core/design_tokens/app_phosphor_icons.dart';
+import '/core/widgets/app_icon.dart';
 
 /// Header section for the peer rating form.
 ///
@@ -27,8 +27,8 @@ class PeerRatingHeader extends StatelessWidget {
       ),
       child: Column(
         children: [
-          PhosphorIcon(
-            AppPhosphorIcons.thumbsUp,
+          AppIcon(
+            icon: AppPhosphorIcons.thumbsUp,
             color: AppColors.textSecondary,
             size: AppIconSize.xxl,
           ),
@@ -52,8 +52,8 @@ class PeerRatingHeader extends StatelessWidget {
           Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              PhosphorIcon(
-                AppPhosphorIcons.lock,
+              AppIcon(
+                icon: AppPhosphorIcons.lock,
                 size: AppIconSize.xs,
                 color: AppColors.textMuted,
               ),

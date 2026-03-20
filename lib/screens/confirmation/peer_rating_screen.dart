@@ -2,16 +2,17 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import '/core/utils/state_update.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:phosphor_flutter/phosphor_flutter.dart';
 
 import '/backend/cloud_functions/cloud_functions.dart';
 import '/core/design_tokens/colors.dart';
+import '/core/design_tokens/icon_size.dart';
 import '/core/design_tokens/spacing.dart';
 import '/core/design_tokens/typography.dart';
 import '/core/design_tokens/app_phosphor_icons.dart';
 import '/core/motion/motion_tokens.dart';
 import '/core/utils/app_log.dart';
 import '/core/widgets/app_button_enhanced.dart';
+import '/core/widgets/app_icon.dart';
 import '/main_function/games_joined/games_joined_widget.dart';
 import '/services/trust_flow_service.dart';
 import 'components/peer_rating_header.dart';
@@ -294,7 +295,7 @@ class _PeerRatingScreenState extends State<PeerRatingScreen>
         centerTitle: true,
         leading: IconButton(
           icon:
-              PhosphorIcon(AppPhosphorIcons.back, color: AppColors.textPrimary),
+              AppIcon(icon: AppPhosphorIcons.back, color: AppColors.textPrimary, size: AppIconSize.md),
           onPressed: () => _navigateToMyGames(),
         ),
       ),

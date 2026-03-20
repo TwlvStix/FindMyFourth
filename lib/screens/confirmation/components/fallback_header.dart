@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:phosphor_flutter/phosphor_flutter.dart';
 
 import '/core/design_tokens/colors.dart';
 import '/core/design_tokens/icon_size.dart';
 import '/core/design_tokens/spacing.dart';
 import '/core/design_tokens/typography.dart';
 import '/core/design_tokens/app_phosphor_icons.dart';
+import '/core/widgets/app_icon.dart';
 
 /// Header section for the fallback confirmation form showing course name
 /// and the "Did you play today?" prompt.
@@ -25,8 +25,8 @@ class FallbackHeader extends StatelessWidget {
       ),
       child: Column(
         children: [
-          PhosphorIcon(
-            AppPhosphorIcons.golfCourse,
+          AppIcon(
+            icon: AppPhosphorIcons.golfCourse,
             color: AppColors.textSecondary,
             size: AppIconSize.xxl,
           ),
