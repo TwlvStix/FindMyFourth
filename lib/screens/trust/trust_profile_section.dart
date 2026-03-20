@@ -1,17 +1,19 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
-import 'package:phosphor_flutter/phosphor_flutter.dart';
 
 import '/backend/schema/users_record.dart';
+import '/core/design_tokens/app_phosphor_icons.dart';
 import '/core/design_tokens/colors.dart';
 import '/core/design_tokens/spacing.dart';
 import '/core/design_tokens/typography.dart';
 import '/core/design_tokens/icon_size.dart';
 import '/core/design_tokens/border_radius.dart';
 import '/core/design_tokens/elevation.dart';
-import '/core/design_tokens/app_phosphor_icons.dart';
-import '/core/motion/motion_helpers.dart';
 import '/core/widgets/app_icon.dart';
+import 'components/trust_badge_banner.dart';
+import 'components/trust_stat_tile.dart';
+import 'components/journey_progress_bar.dart';
+import 'components/show_up_rate_card.dart';
+import 'components/cancellation_warning_card.dart';
 
 /// TrustProfileSection
 ///
@@ -34,30 +36,87 @@ class TrustProfileSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isNewMember = user.badgeLevel == 'new' || user.badgeLevel.isEmpty;
+    final joinYear =
+        user.createdTime != null ? '${user.createdTime!.year}' : '\u2014';
+
     return Padding(
-      padding: EdgeInsets.fromLTRB(
-          AppSpacing.lg, AppSpacing.lg, AppSpacing.lg, 0),
+      padding:
+          EdgeInsets.fromLTRB(AppSpacing.lg, AppSpacing.lg, AppSpacing.lg, 0),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           _buildSectionHeader(),
           SizedBox(height: AppSpacing.md),
           // Unified trust card (badge + progress bar + stats)
-          _buildUnifiedTrustCard(),
+          Container(
+            decoration: BoxDecoration(
+              color: AppColors.navyDark,
+              borderRadius: BorderRadius.circular(AppBorderRadius.xl),
+              border: Border.all(color: AppColors.navyLight),
+              boxShadow: [AppElevation.md],
+            ),
+            child: Column(
+              children: [
+                TrustBadgeBanner(
+                  badgeLevel: user.badgeLevel,
+                  joinedYear: joinYear,
+                ),
+                if (isNewMember)
+                  JourneyProgressBar(
+                    verifiedRoundCount: user.verifiedRoundCount,
+                  ),
+                Padding(
+                  padding: EdgeInsets.all(AppSpacing.sm),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: TrustStatTile(
+                          icon: AppPhosphorIcons.success,
+                          value: '${user.verifiedRoundCount}',
+                          label: 'ROUNDS',
+                        ),
+                      ),
+                      SizedBox(width: AppSpacing.xs),
+                      Expanded(
+                        child: TrustStatTile(
+                          icon: AppPhosphorIcons.users,
+                          value: '${user.uniqueCoPlayers.length}',
+                          label: 'NEW PLAYERS',
+                        ),
+                      ),
+                      SizedBox(width: AppSpacing.xs),
+                      Expanded(
+                        child: TrustStatTile(
+                          icon: AppPhosphorIcons.golf,
+                          value: '${user.gamesHosted}',
+                          label: 'HOSTED',
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
           if (user.showUpRate != null) ...[
             SizedBox(height: AppSpacing.sm),
-            _buildShowUpRateRow(),
+            ShowUpRateCard(
+              rate: user.showUpRate!,
+              denominator: user.showUpRateDenominator,
+            ),
           ],
           if (user.cancellationWarning) ...[
             SizedBox(height: AppSpacing.sm),
-            _buildWarningRow(context),
+            CancellationWarningCard(
+              warningCount: user.cancellationWarningCount,
+              isOwnProfile: isOwnProfile,
+            ),
           ],
         ],
       ),
     );
   }
-
-  // ── Section header ──────────────────────────────────────────────────────
 
   Widget _buildSectionHeader() {
     return Row(
@@ -74,13 +133,17 @@ class TrustProfileSection extends StatelessWidget {
             borderRadius: BorderRadius.circular(AppBorderRadius.sm),
             boxShadow: [
               BoxShadow(
-                color: AppColors.navy.withValues(alpha:0.3),
+                color: AppColors.navy.withValues(alpha: 0.3),
                 blurRadius: 8,
                 offset: Offset(0, 3),
               ),
             ],
           ),
-          child: AppIcon(icon: AppPhosphorIcons.shield, color: AppColors.pure, size: AppIconSize.xs),
+          child: AppIcon(
+            icon: AppPhosphorIcons.shield,
+            color: AppColors.pure,
+            size: AppIconSize.xs,
+          ),
         ),
         SizedBox(width: AppSpacing.sm),
         Text(
@@ -91,719 +154,6 @@ class TrustProfileSection extends StatelessWidget {
           ),
         ),
       ],
-    );
-  }
-
-  // ── Badge row ───────────────────────────────────────────────────────────
-
-  /// Badge row for use inside the unified card (no external container decoration)
-  /// Includes joined year on the right side
-  Widget _buildBadgeRowUnified() {
-    final info = _badgeInfo(user.badgeLevel);
-    final joinYear = user.createdTime != null
-        ? '${user.createdTime!.year}'
-        : '—';
-
-    return Container(
-      padding: EdgeInsets.all(AppSpacing.lg),
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: [
-            info.gradientStart,
-            info.gradientEnd,
-            info.gradientEnd.withValues(alpha: 0.93),
-          ],
-          stops: [0.0, 0.6, 1.0],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-        borderRadius: BorderRadius.only(
-          topLeft: Radius.circular(AppBorderRadius.xl),
-          topRight: Radius.circular(AppBorderRadius.xl),
-        ),
-      ),
-      child: Stack(
-        children: [
-          // Shine overlay
-          Positioned.fill(
-            child: Container(
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.only(
-                  topLeft: Radius.circular(AppBorderRadius.xl),
-                  topRight: Radius.circular(AppBorderRadius.xl),
-                ),
-                gradient: LinearGradient(
-                  colors: [
-                    AppColors.glassSurface,
-                    AppColors.transparent,
-                  ],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomCenter,
-                ),
-              ),
-            ),
-          ),
-          Row(
-            children: [
-              Container(
-                width: 52,
-                height: 52,
-                decoration: BoxDecoration(
-                  color: AppColors.glassBorder,
-                  borderRadius: BorderRadius.circular(AppBorderRadius.lg),
-                  border: Border.all(
-                    color: AppColors.glassTextTertiary,
-                    width: 1.5,
-                  ),
-                ),
-                child: PhosphorIcon(info.icon, color: AppColors.pure, size: AppIconSize.md),
-              ),
-              SizedBox(width: AppSpacing.md),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      info.label,
-                      style: AppTypography.titleSmall.copyWith(
-                        color: AppColors.pure,
-                        fontWeight: FontWeight.w700,
-                        letterSpacing: 0.2,
-                      ),
-                    ),
-                    SizedBox(height: AppSpacing.xxs),
-                    Text(
-                      info.description,
-                      style: AppTypography.labelSmall.copyWith(
-                        color: AppColors.glassTextSecondary,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              // Joined year badge on the right
-              Container(
-                padding: EdgeInsets.symmetric(
-                  horizontal: AppSpacing.md,
-                  vertical: AppSpacing.sm,
-                ),
-                decoration: BoxDecoration(
-                  color: AppColors.glassSurface,
-                  borderRadius: BorderRadius.circular(AppBorderRadius.md),
-                  border: Border.all(
-                    color: AppColors.glassSurface,
-                  ),
-                ),
-                child: Column(
-                  children: [
-                    Text(
-                      joinYear,
-                      style: AppTypography.titleSmall.copyWith(
-                        color: AppColors.pure,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                    Text(
-                      'JOINED',
-                      style: AppTypography.labelSmall.copyWith(
-                        color: AppColors.glassTextSecondary,
-                        fontSize: 9,
-                        fontWeight: FontWeight.w500,
-                        letterSpacing: 0.5,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-
-  // ── Unified Trust Card (badge + progress + stats) ──────────────────────
-
-  Widget _buildUnifiedTrustCard() {
-    final isNewMember = user.badgeLevel == 'new' || user.badgeLevel.isEmpty;
-
-    return Container(
-      decoration: BoxDecoration(
-        color: AppColors.navyDark,
-        borderRadius: BorderRadius.circular(AppBorderRadius.xl),
-        border: Border.all(color: AppColors.navyLight),
-        boxShadow: [AppElevation.md],
-      ),
-      child: Column(
-        children: [
-          // Badge bar (full width, gradient background, rounded top corners, includes joined year)
-          _buildBadgeRowUnified(),
-          // Progress bar (only for new members)
-          if (isNewMember) _buildJourneyProgressBar(),
-          // Stats grid (Rounds, Co-Players, Hosted)
-          Padding(
-            padding: EdgeInsets.all(AppSpacing.sm),
-            child: Row(
-              children: [
-                Expanded(
-                  child: _buildStatTileCompact(
-                    icon: AppPhosphorIcons.success,
-                    iconGradient: [AppColors.success, AppColors.navyLight],
-                    value: '${user.verifiedRoundCount}',
-                    label: 'ROUNDS',
-                  ),
-                ),
-                SizedBox(width: AppSpacing.xs),
-                Expanded(
-                  child: _buildStatTileCompact(
-                    icon: AppPhosphorIcons.users,
-                    iconGradient: [AppColors.navyLight, AppColors.navy],
-                    value: '${user.uniqueCoPlayers.length}',
-                    label: 'NEW PLAYERS',
-                  ),
-                ),
-                SizedBox(width: AppSpacing.xs),
-                Expanded(
-                  child: _buildStatTileCompact(
-                    icon: AppPhosphorIcons.golf,
-                    iconGradient: [AppColors.green, AppColors.greenLight],
-                    value: '${user.gamesHosted}',
-                    label: 'HOSTED',
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  /// Compact stat tile for use inside unified card
-  Widget _buildStatTileCompact({
-    required PhosphorIconData icon,
-    required List<Color> iconGradient,
-    required String value,
-    required String label,
-    bool isText = false,
-  }) {
-    // Show em dash for zero values (premium empty state)
-    final isZero = value == '0';
-    final displayValue = isZero ? '—' : value;
-
-    return Container(
-      padding: EdgeInsets.symmetric(
-        vertical: AppSpacing.sm,
-        horizontal: AppSpacing.xxs,
-      ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          // Just icon, no container background
-          PhosphorIcon(
-            icon,
-            color: AppColors.textMuted.withValues(alpha: 0.7),
-            size: AppIconSize.md,
-          ),
-          SizedBox(height: AppSpacing.xxs),
-          // Subtle horizontal bar under icon
-          Container(
-            width: 24,
-            height: 2,
-            decoration: BoxDecoration(
-              color: AppColors.navyLight,
-              borderRadius: BorderRadius.circular(1),
-            ),
-          ),
-          SizedBox(height: AppSpacing.xs),
-          Text(
-            displayValue,
-            style: isText
-                ? AppTypography.labelSmall.copyWith(
-                    color: AppColors.textPrimary,
-                    fontWeight: FontWeight.w600,
-                  )
-                : isZero
-                    ? AppTypography.monoLarge.copyWith(
-                        color: AppColors.textMuted,
-                        fontWeight: FontWeight.w300,
-                      )
-                    : AppTypography.monoLarge.copyWith(
-                        color: AppColors.textPrimary,
-                        fontWeight: FontWeight.w700,
-                      ),
-            textAlign: TextAlign.center,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-          ),
-          SizedBox(height: AppSpacing.xxs),
-          Text(
-            label,
-            style: AppTypography.labelSmall.copyWith(
-              color: AppColors.textMuted,
-              fontSize: 9,
-            ),
-            textAlign: TextAlign.center,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-          ),
-        ],
-      ),
-    );
-  }
-
-  // ── Show-up rate row ────────────────────────────────────────────────────
-
-  Widget _buildShowUpRateRow() {
-    final rate = user.showUpRate!;
-    final denominator = user.showUpRateDenominator;
-    final pct = (rate * 100).toStringAsFixed(0);
-    final color = rate >= 0.9
-        ? AppColors.success
-        : rate >= 0.75
-            ? AppColors.warning
-            : AppColors.error;
-    final gradientColors = rate >= 0.9
-        ? [AppColors.success, AppColors.navyLight]
-        : rate >= 0.75
-            ? [AppColors.warning, AppColors.goldLight]
-            : [AppColors.error, AppColors.error];
-
-    return Container(
-      padding: EdgeInsets.all(AppSpacing.md),
-      decoration: BoxDecoration(
-        color: AppColors.navy,
-        borderRadius: BorderRadius.circular(AppBorderRadius.lg),
-        border: Border.all(color: AppColors.navyLight),
-        boxShadow: [AppElevation.md],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Container(
-                width: 40,
-                height: 40,
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: gradientColors,
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                  ),
-                  borderRadius: BorderRadius.circular(AppBorderRadius.md),
-                  boxShadow: [
-                    BoxShadow(
-                      color: color.withValues(alpha:0.2),
-                      blurRadius: 4,
-                      offset: Offset(0, 2),
-                    ),
-                  ],
-                ),
-                child: PhosphorIcon(AppPhosphorIcons.successFill,
-                    color: AppColors.pure, size: AppIconSize.button),
-              ),
-              SizedBox(width: AppSpacing.md),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Show-Up Rate',
-                      style: AppTypography.labelSmall.copyWith(
-                        color: AppColors.textMuted,
-                      ),
-                    ),
-                    SizedBox(height: AppSpacing.xxs),
-                    Text(
-                      '$denominator game${denominator == 1 ? "" : "s"} played',
-                      style: AppTypography.bodySmall.copyWith(
-                        color: AppColors.textSecondary,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              Text(
-                '$pct%',
-                style: AppTypography.monoLarge.copyWith(
-                  color: color,
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
-            ],
-          ),
-          SizedBox(height: AppSpacing.sm),
-          ClipRRect(
-            borderRadius: BorderRadius.circular(AppBorderRadius.xs),
-            child: LinearProgressIndicator(
-              value: rate,
-              backgroundColor: AppColors.navyLight,
-              valueColor: AlwaysStoppedAnimation<Color>(color),
-              minHeight: 6,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  // ── Warning row ─────────────────────────────────────────────────────────
-
-  Widget _buildWarningRow(BuildContext context) {
-    return GestureDetector(
-      onTap: () {
-        HapticFeedback.lightImpact();
-        _showWarningBottomSheet(context);
-      },
-      child: Container(
-        padding: EdgeInsets.all(AppSpacing.md),
-        decoration: BoxDecoration(
-          color: AppColors.navy,
-          borderRadius: BorderRadius.circular(AppBorderRadius.lg),
-          border: Border.all(color: AppColors.warning.withValues(alpha:0.4)),
-          boxShadow: [AppElevation.sm],
-        ),
-        child: Row(
-          children: [
-            Container(
-              width: 40,
-              height: 40,
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [AppColors.warning, AppColors.goldLight],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                ),
-                borderRadius: BorderRadius.circular(AppBorderRadius.md),
-                boxShadow: [
-                  BoxShadow(
-                    color: AppColors.warning.withValues(alpha:0.2),
-                    blurRadius: 4,
-                    offset: Offset(0, 2),
-                  ),
-                ],
-              ),
-              child: PhosphorIcon(AppPhosphorIcons.warning,
-                  color: AppColors.pure, size: AppIconSize.button),
-            ),
-            SizedBox(width: AppSpacing.md),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Cancellation History',
-                    style: AppTypography.labelMedium.copyWith(
-                      color: AppColors.textSecondary,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                  SizedBox(height: AppSpacing.xxs),
-                  Text(
-                    'Tap for details',
-                    style: AppTypography.labelSmall.copyWith(
-                      color: AppColors.textMuted,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            PhosphorIcon(
-              AppPhosphorIcons.chevronRight,
-              color: AppColors.textMuted,
-              size: AppIconSize.button,
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  void _showWarningBottomSheet(BuildContext context) {
-    showAppBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: AppColors.transparent,
-      enableDrag: true,
-      builder: (context) => _WarningDetailSheet(
-        warningCount: user.cancellationWarningCount,
-        isOwnProfile: isOwnProfile,
-      ),
-    );
-  }
-
-  // ── Journey progress bar (new members only) ─────────────────────────────
-
-  Widget _buildJourneyProgressBar() {
-    // Calculate progress based on verified rounds (0 = 8%, 5 = 50%, 10+ = 100%)
-    final rounds = user.verifiedRoundCount;
-    final progress = rounds <= 0
-        ? 0.08
-        : rounds >= 10
-            ? 1.0
-            : 0.08 + (rounds / 10) * 0.92;
-
-    return Padding(
-      padding: EdgeInsets.symmetric(
-        horizontal: AppSpacing.lg,
-        vertical: AppSpacing.md,
-      ),
-      child: Column(
-        children: [
-          // Track bar with nodes
-          SizedBox(
-            height: 16,
-            child: Stack(
-              alignment: Alignment.center,
-              children: [
-                // Background track
-                Positioned(
-                  left: 7,
-                  right: 7,
-                  child: Container(
-                    height: 6,
-                    decoration: BoxDecoration(
-                      color: AppColors.navyLight.withValues(alpha: 0.6),
-                      borderRadius: BorderRadius.circular(AppBorderRadius.xxs),
-                    ),
-                  ),
-                ),
-                // Progress fill
-                Positioned(
-                  left: 7,
-                  right: 7,
-                  child: LayoutBuilder(
-                    builder: (context, constraints) {
-                      return Align(
-                        alignment: Alignment.centerLeft,
-                        child: Container(
-                          width: constraints.maxWidth * progress,
-                          height: 6,
-                          decoration: BoxDecoration(
-                            gradient: LinearGradient(
-                              colors: [AppColors.greenLight, AppColors.green],
-                            ),
-                            borderRadius: BorderRadius.circular(AppBorderRadius.xxs),
-                          ),
-                        ),
-                      );
-                    },
-                  ),
-                ),
-                // Nodes
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    // First Tee node (always active)
-                    _buildProgressNode(isActive: true),
-                    // 5 Rounds node
-                    _buildProgressNode(isActive: rounds >= 5),
-                    // Trusted node
-                    _buildProgressNode(isActive: rounds >= 10),
-                  ],
-                ),
-              ],
-            ),
-          ),
-          SizedBox(height: AppSpacing.sm),
-          // Milestone labels
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                'First Tee',
-                style: AppTypography.labelSmall.copyWith(
-                  color: AppColors.textPrimary,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-              Text(
-                '5 Rounds',
-                style: AppTypography.labelSmall.copyWith(
-                  color: rounds >= 5 ? AppColors.textPrimary : AppColors.textMuted,
-                  fontWeight: rounds >= 5 ? FontWeight.w600 : FontWeight.w400,
-                ),
-              ),
-              Text(
-                'Trusted',
-                style: AppTypography.labelSmall.copyWith(
-                  color: rounds >= 10 ? AppColors.textPrimary : AppColors.textMuted,
-                  fontWeight: rounds >= 10 ? FontWeight.w600 : FontWeight.w400,
-                ),
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildProgressNode({required bool isActive}) {
-    return Container(
-      width: isActive ? 14 : 11,
-      height: isActive ? 14 : 11,
-      decoration: BoxDecoration(
-        shape: BoxShape.circle,
-        color: isActive ? AppColors.green : AppColors.navyLight,
-        border: Border.all(
-          color: isActive ? AppColors.navy : AppColors.navyLight,
-          width: isActive ? 2 : 1,
-        ),
-        boxShadow: isActive
-            ? [
-                BoxShadow(
-                  color: AppColors.green.withValues(alpha: 0.3),
-                  blurRadius: 4,
-                  offset: Offset(0, 2),
-                ),
-              ]
-            : null,
-      ),
-    );
-  }
-
-  // ── Badge metadata ──────────────────────────────────────────────────────
-
-  ({
-    String label,
-    String description,
-    PhosphorIconData icon,
-    Color gradientStart,
-    Color gradientEnd,
-  }) _badgeInfo(String badgeLevel) {
-    // Badge gradients use navy (structural) + green (golf) hierarchy
-    // Higher tiers = deeper navy; green accent for golf identity
-    switch (badgeLevel) {
-      case 'anchor':
-        return (
-          label: 'Anchor',
-          description: 'Cornerstone of the community',
-          icon: AppPhosphorIcons.anchor,
-          gradientStart: AppColors.navyDark,
-          gradientEnd: AppColors.navy,
-        );
-      case 'starter':
-        return (
-          label: 'Starter',
-          description: 'Trusted regular golfer',
-          icon: AppPhosphorIcons.games, // flag icon
-          gradientStart: AppColors.navy,
-          gradientEnd: AppColors.navyLight,
-        );
-      case 'regular':
-        return (
-          label: 'Regular',
-          description: 'Established member',
-          icon: AppPhosphorIcons.golf,
-          gradientStart: AppColors.navyLight,
-          gradientEnd: AppColors.green,
-        );
-      case 'confirmed':
-        return (
-          label: 'Confirmed',
-          description: 'Verified by the community',
-          icon: AppPhosphorIcons.verified,
-          gradientStart: AppColors.green,
-          gradientEnd: AppColors.greenLight,
-        );
-      case 'new':
-      default:
-        return (
-          label: 'First Tee',
-          description: 'Your story begins here',
-          icon: AppPhosphorIcons.golfCourse,
-          gradientStart: AppColors.greenLight,
-          gradientEnd: AppColors.green,
-        );
-    }
-  }
-}
-
-// ─────────────────────────────────────────────────────────────────────────────
-// Warning Detail Bottom Sheet
-// ─────────────────────────────────────────────────────────────────────────────
-
-class _WarningDetailSheet extends StatelessWidget {
-  const _WarningDetailSheet({
-    required this.warningCount,
-    required this.isOwnProfile,
-  });
-
-  final int warningCount;
-  final bool isOwnProfile;
-
-  @override
-  Widget build(BuildContext context) {
-    final countLabel = warningCount == 1
-        ? '1 late or same-day cancellation'
-        : '$warningCount late or same-day cancellations';
-
-    return Container(
-      decoration: BoxDecoration(
-        color: AppColors.navy,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(AppBorderRadius.xxl)),
-        border: Border.all(color: AppColors.navyLight),
-      ),
-      padding: EdgeInsets.fromLTRB(
-        AppSpacing.xl,
-        AppSpacing.md,
-        AppSpacing.xl,
-        AppSpacing.xxxl,
-      ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Drag handle
-          Center(
-            child: Container(
-              width: 40,
-              height: 4,
-              decoration: BoxDecoration(
-                color: AppColors.navyLight,
-                borderRadius: BorderRadius.circular(AppBorderRadius.xxs),
-              ),
-            ),
-          ),
-          SizedBox(height: AppSpacing.lg),
-          Row(
-            children: [
-              PhosphorIcon(AppPhosphorIcons.warning,
-                  color: AppColors.warning, size: AppIconSize.md),
-              SizedBox(width: AppSpacing.sm),
-              Text(
-                'Cancellation Notice',
-                style: AppTypography.titleSmall.copyWith(
-                  color: AppColors.textPrimary,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ],
-          ),
-          SizedBox(height: AppSpacing.md),
-          Text(
-            '$countLabel in the last 90 days.',
-            style: AppTypography.bodyMedium.copyWith(
-              color: AppColors.textPrimary,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-          SizedBox(height: AppSpacing.sm),
-          Text(
-            isOwnProfile
-                ? 'Late cancellations and no-shows in the last 90 days trigger this notice. '
-                    'It clears automatically once the 90-day window passes.'
-                : 'This player has had recent late or same-day cancellations. '
-                    'This notice clears automatically once the 90-day window passes.',
-            style: AppTypography.bodySmall.copyWith(
-              color: AppColors.textSecondary,
-            ),
-          ),
-          SizedBox(height: AppSpacing.xl),
-        ],
-      ),
     );
   }
 }

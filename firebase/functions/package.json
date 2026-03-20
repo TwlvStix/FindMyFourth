@@ -40,7 +40,7 @@
     "notif-load-test:small": "NOTIF_LOAD_TEST_SMALL=true jest test/notification-load.test.js --testTimeout=60000"
   },
   "engines": {
-    "node": "22"
+    "node": "20"
   },
   "private": true
 }
