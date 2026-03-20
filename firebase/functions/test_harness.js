@@ -13,6 +13,7 @@
 
 const functions = require('firebase-functions/v1');
 const admin = require('firebase-admin');
+const { requireAppCheck } = require('./utils/app_check');
 const { TrustEventType } = require('./notifications/trust/event-registry');
 const { routeNotification } = require('./notifications/trust/router');
 
@@ -111,6 +112,7 @@ const sendTestNotification = functions
         'Authentication required.',
       );
     }
+    requireAppCheck(context, 'sendTestNotification');
 
     const { eventType, recipientUserId, testData } = data || {};
 
@@ -175,6 +177,7 @@ const generateDeliveryReport = functions
         'Authentication required.',
       );
     }
+    requireAppCheck(context, 'generateDeliveryReport');
 
     const { userId, since, limit } = data || {};
 

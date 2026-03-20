@@ -24,6 +24,7 @@
 
 const functions = require("firebase-functions/v1");
 const admin = require("firebase-admin");
+const { requireAppCheck } = require('./utils/app_check');
 
 // ─────────────────────────────────────────────────────────────────────────────
 // CONSTANTS
@@ -467,6 +468,7 @@ const updateTrustProfile = functions
         "Authentication required."
       );
     }
+    requireAppCheck(context, 'updateTrustProfile');
     if (context.auth.uid !== userId) {
       throw new functions.https.HttpsError(
         "permission-denied",
@@ -527,6 +529,7 @@ const getMyStanding = functions
         "Authentication required."
       );
     }
+    requireAppCheck(context, 'getMyStanding');
 
     const { userId } = data || {};
     if (!userId || typeof userId !== "string") {

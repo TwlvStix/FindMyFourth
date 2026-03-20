@@ -17,6 +17,7 @@ const trustProfileModule = require("./trust_profile");
 const gameAlerts = require("./game_alerts");
 const streaks = require("./streaks");
 const testHarness = require("./test_harness");
+const { requireAppCheck } = require('./utils/app_check');
 // Remaining modules are lazy-required inside their handlers to reduce cold start.
 // Node.js caches require() results, so repeated calls are free after the first load.
 
@@ -190,6 +191,7 @@ exports.addFcmToken = functions
         "Unauthenticated calls are not allowed.",
       );
     }
+    requireAppCheck(context, 'addFcmToken');
     const userDocPath = data?.userDocPath;
     const fcmToken = data?.fcmToken;
     const deviceType = data?.deviceType;
@@ -430,6 +432,7 @@ exports.fetchReceiptants = functions
         "Authentication required.",
       );
     }
+    requireAppCheck(context, 'fetchReceiptants');
 
     const userCollection = firestore.collection("users");
     const users = new Set();
@@ -516,6 +519,7 @@ exports.deleteAccount = functions
         },
       );
     }
+    requireAppCheck(context, 'deleteAccount');
 
     try {
       await performAccountDeletion(uid, {
@@ -572,6 +576,7 @@ exports.completeOnboarding = functions
   .runWith({ minInstances: 0 })
   .https.onCall(async (data, context) => {
     const uid = await resolveCallableUid(context, data, "completeOnboarding");
+    requireAppCheck(context, 'completeOnboarding');
     const userDocPath = data?.userDocPath;
     if (typeof userDocPath !== "string" || userDocPath.split("/").length !== 2) {
       throw new functions.https.HttpsError(
@@ -610,6 +615,7 @@ exports.checkOnboardingComplete = functions
       data,
       "checkOnboardingComplete",
     );
+    requireAppCheck(context, 'checkOnboardingComplete');
     const userDocPath = data?.userDocPath;
     if (typeof userDocPath !== "string" || userDocPath.split("/").length !== 2) {
       throw new functions.https.HttpsError(
@@ -1355,7 +1361,10 @@ exports._declineAddedSpotHandler = _declineAddedSpotHandler;
 exports.declineAddedSpot = functions
   .region("us-west2")
   .runWith({ minInstances: 0 })
-  .https.onCall((data, context) => _declineAddedSpotHandler(data, context));
+  .https.onCall((data, context) => {
+    requireAppCheck(context, 'declineAddedSpot');
+    return _declineAddedSpotHandler(data, context);
+  });
 
 /**
  * Handler logic for reconcileChatMembership.
@@ -1531,9 +1540,10 @@ exports._reconcileChatMembershipHandler = _reconcileChatMembershipHandler;
  */
 exports.reconcileChatMembership = functions
   .region("us-west2")
-  .https.onCall((data, context) =>
-    _reconcileChatMembershipHandler(data, context),
-  );
+  .https.onCall((data, context) => {
+    requireAppCheck(context, 'reconcileChatMembership');
+    return _reconcileChatMembershipHandler(data, context);
+  });
 
 exports.monitorUsernameChanges = functions
   .region("us-west2")
@@ -1751,6 +1761,7 @@ exports.sendSignupConfirmationEmail = functions
         "User must be authenticated to request signup email.",
       );
     }
+    requireAppCheck(context, 'sendSignupConfirmationEmail');
     const uid = context.auth.uid;
     return sendSignupConfirmationEmailForUid(uid, "callable");
   });
@@ -1766,6 +1777,7 @@ exports.deleteChat = functions
         "User must be authenticated to delete a chat.",
       );
     }
+    requireAppCheck(context, 'deleteChat');
 
     const { chatId } = data;
     const uid = context.auth.uid;
@@ -2014,6 +2026,7 @@ exports.notifyFriendRequestSent = functions
     if (!context.auth) {
       throw new functions.https.HttpsError('unauthenticated', 'Must be authenticated');
     }
+    requireAppCheck(context, 'notifyFriendRequestSent');
 
     const { recipientUserId, senderName } = data;
     if (!recipientUserId || !senderName) {
@@ -2049,6 +2062,7 @@ exports.notifyFriendRequestAccepted = functions
     if (!context.auth) {
       throw new functions.https.HttpsError('unauthenticated', 'Must be authenticated');
     }
+    requireAppCheck(context, 'notifyFriendRequestAccepted');
 
     const { requesterUserId, acceptorName } = data;
     if (!requesterUserId || !acceptorName) {
@@ -2086,6 +2100,7 @@ exports.notifyNewJoinRequest = functions
     if (!context.auth) {
       throw new functions.https.HttpsError('unauthenticated', 'Must be authenticated');
     }
+    requireAppCheck(context, 'notifyNewJoinRequest');
 
     const { gameId, ownerId, requesterName } = data;
     if (!gameId || !ownerId || !requesterName) {
@@ -2123,6 +2138,7 @@ exports.notifyJoinRequestApproved = functions
     if (!context.auth) {
       throw new functions.https.HttpsError('unauthenticated', 'Must be authenticated');
     }
+    requireAppCheck(context, 'notifyJoinRequestApproved');
 
     const { gameId, playerId } = data;
     if (!gameId || !playerId) {
@@ -2177,6 +2193,7 @@ exports.notifyJoinRequestDeclined = functions
     if (!context.auth) {
       throw new functions.https.HttpsError('unauthenticated', 'Must be authenticated');
     }
+    requireAppCheck(context, 'notifyJoinRequestDeclined');
 
     const { gameId, playerId } = data;
     if (!gameId || !playerId) {
@@ -2211,6 +2228,7 @@ exports.notifyRoundFilledBeforeApproval = functions
     if (!context.auth) {
       throw new functions.https.HttpsError('unauthenticated', 'Must be authenticated');
     }
+    requireAppCheck(context, 'notifyRoundFilledBeforeApproval');
 
     const { gameId, playerId } = data;
     if (!gameId || !playerId) {
@@ -2383,6 +2401,7 @@ exports.createNewRound = functions
   if (!context.auth) {
     throw new functions.https.HttpsError("unauthenticated", "Must be logged in");
   }
+  requireAppCheck(context, 'createNewRound');
 
   try {
     const { createRound } = require("./src/booking");
@@ -2413,6 +2432,7 @@ exports.joinRound = functions
   if (!context.auth) {
     throw new functions.https.HttpsError("unauthenticated", "Must be logged in");
   }
+  requireAppCheck(context, 'joinRound');
 
   try {
     const { addParticipant } = require("./src/booking");
@@ -2439,6 +2459,7 @@ exports.finalizeAndScore = functions
   if (!context.auth) {
     throw new functions.https.HttpsError("unauthenticated", "Must be logged in");
   }
+  requireAppCheck(context, 'finalizeAndScore');
 
   const roundId = data.round_id;
   if (typeof roundId !== "string" || roundId.length === 0) {
@@ -2485,6 +2506,7 @@ exports.confirmJoin = functions
   if (!context.auth) {
     throw new functions.https.HttpsError("unauthenticated", "Must be logged in");
   }
+  requireAppCheck(context, 'confirmJoin');
 
   try {
     const { confirmParticipant } = require("./src/lifecycle");
@@ -2505,6 +2527,7 @@ exports.declineInvitation = functions
   if (!context.auth) {
     throw new functions.https.HttpsError("unauthenticated", "Must be logged in");
   }
+  requireAppCheck(context, 'declineInvitation');
 
   try {
     const { declineParticipant } = require("./src/lifecycle");
@@ -2526,6 +2549,7 @@ exports.cancelJoin = functions
   if (!context.auth) {
     throw new functions.https.HttpsError("unauthenticated", "Must be logged in");
   }
+  requireAppCheck(context, 'cancelJoin');
 
   try {
     const { cancelParticipant } = require("./src/lifecycle");
@@ -2550,6 +2574,7 @@ exports.checkIn = functions
   if (!context.auth) {
     throw new functions.https.HttpsError("unauthenticated", "Must be logged in");
   }
+  requireAppCheck(context, 'checkIn');
 
   try {
     const { checkInParticipant } = require("./src/lifecycle");
@@ -2573,6 +2598,7 @@ exports.endRound = functions
   if (!context.auth) {
     throw new functions.https.HttpsError("unauthenticated", "Must be logged in");
   }
+  requireAppCheck(context, 'endRound');
 
   const roundId = data.round_id;
   if (typeof roundId !== "string" || roundId.length === 0) {
@@ -2617,6 +2643,7 @@ exports.submitRoundFeedback = functions
   if (!context.auth) {
     throw new functions.https.HttpsError("unauthenticated", "Must be logged in");
   }
+  requireAppCheck(context, 'submitRoundFeedback');
 
   try {
     const { submitFeedback } = require("./src/feedback");

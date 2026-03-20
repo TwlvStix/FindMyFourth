@@ -35,6 +35,7 @@
 
 const functions = require("firebase-functions/v1");
 const admin = require("firebase-admin");
+const { requireAppCheck } = require('./utils/app_check');
 const trustProfile = require("./trust_profile");
 const streaks = require("./streaks");
 const challengeProgress = require("./challenge_progress");
@@ -719,6 +720,7 @@ async function _submitPreGameConfirmationHandler(data, context, db) {
 const submitPreGameConfirmation = functions
   .region('us-west2')
   .https.onCall(async (data, context) => {
+    requireAppCheck(context, 'submitPreGameConfirmation');
     const db = admin.firestore();
     try {
       return await _submitPreGameConfirmationHandler(data, context, db);
@@ -1357,6 +1359,7 @@ const submitHostCheckin = functions
   .region("us-west2")
   .runWith({ minInstances: 0 })
   .https.onCall(async (data, context) => {
+    requireAppCheck(context, 'submitHostCheckin');
     const db = admin.firestore();
     try {
       return await _submitHostCheckinHandler(data, context, db);
@@ -1566,6 +1569,7 @@ const submitPeerRatings = functions
   .region("us-west2")
   .runWith({ minInstances: 0 })
   .https.onCall(async (data, context) => {
+    requireAppCheck(context, 'submitPeerRatings');
     const db = admin.firestore();
     try {
       return await _submitPeerRatingsHandler(data, context, db);
@@ -1697,6 +1701,7 @@ async function _submitFallbackConfirmationHandler(data, context, db) {
 const submitFallbackConfirmation = functions
   .region("us-west2")
   .https.onCall(async (data, context) => {
+    requireAppCheck(context, 'submitFallbackConfirmation');
     const db = admin.firestore();
     try {
       return await _submitFallbackConfirmationHandler(data, context, db);

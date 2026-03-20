@@ -38,6 +38,7 @@
 
 const functions = require("firebase-functions/v1");
 const admin = require("firebase-admin");
+const { requireAppCheck } = require('./utils/app_check');
 
 // admin is already initialized by index.js before this module is required.
 const firestore = admin.firestore;
@@ -113,6 +114,7 @@ const recordCancellation = functions
         "Authentication required."
       );
     }
+    requireAppCheck(context, 'recordCancellation');
 
     const { gameId, userId } = data || {};
 
@@ -480,6 +482,7 @@ const checkPlayerRestriction = functions
         "Authentication required."
       );
     }
+    requireAppCheck(context, 'checkPlayerRestriction');
 
     const userId = context.auth.uid;
 
@@ -589,6 +592,7 @@ const markGhostNoShow = functions
         "Authentication required."
       );
     }
+    requireAppCheck(context, 'markGhostNoShow');
 
     const { gameId, targetUserId } = data || {};
 

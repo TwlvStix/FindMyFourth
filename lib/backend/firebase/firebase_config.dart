@@ -66,29 +66,15 @@ Future<void> initFirebase() async {
 
 Future<void> _initAppCheck() async {
   if (kIsWeb) {
-    // ── App Check on Web — intentionally skipped ──────────────────────
-    // Why: reCAPTCHA Enterprise has not been configured for this project.
-    //      Activating App Check without a valid provider would cause all
-    //      web requests to be rejected by Firebase.
-    //
-    // Risk: Without App Check, automated abuse from authenticated web
-    //       sessions is theoretically possible.  However, all Firestore
-    //       and Storage security rules still enforce auth + ownership
-    //       checks, so the blast radius is limited to actions the
-    //       authenticated user is already allowed to perform.
-    //
-    // TODO: To enable App Check on web:
-    //   1. Set up reCAPTCHA Enterprise in the Google Cloud console.
-    //   2. Register the site key in Firebase Console → App Check.
-    //   3. Uncomment and update the activation code below:
-    //
-    //   await FirebaseAppCheck.instance.activate(
-    //     providerWeb: ReCaptchaEnterpriseProvider('YOUR_SITE_KEY'),
-    //   );
-    // ──────────────────────────────────────────────────────────────────
+    // Web App Check requires reCAPTCHA Enterprise — not yet configured.
+    // iOS/Android providers are active below. See firebase/APP_CHECK_SETUP.md.
     AppLog.d('ℹ️ App Check skipped on web (no reCAPTCHA provider configured).');
     return;
   }
+
+  // TODO: Enable Firestore rules enforcement after App Check is confirmed
+  // working end-to-end in production. Add to firestore.rules:
+  //   allow read, write: if request.auth != null && request.appCheck.token.verified;
 
   if (kUseFirebaseEmulator) {
     AppLog.d('ℹ️ App Check skipped while using Firebase emulators.');

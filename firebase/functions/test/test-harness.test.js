@@ -138,7 +138,7 @@ describe('sendTestNotification', () => {
     recipientUserId: 'user_abc',
   };
 
-  const authContext = { auth: { uid: 'caller_123' } };
+  const authContext = { auth: { uid: 'caller_123' }, app: {} };
   const noAuthContext = {};
 
   test('rejects unauthenticated calls', async () => {
@@ -263,7 +263,7 @@ describe('sendTestNotification', () => {
 
 describe('generateDeliveryReport', () => {
 
-  const authContext = { auth: { uid: 'caller_123' } };
+  const authContext = { auth: { uid: 'caller_123' }, app: {} };
   const noAuthContext = {};
 
   test('rejects unauthenticated calls', async () => {

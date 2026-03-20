@@ -33,6 +33,7 @@
 
 const functions = require("firebase-functions/v1");
 const admin = require("firebase-admin");
+const { requireAppCheck } = require('./utils/app_check');
 const { routeNotification } = require('./notifications/trust/router');
 const { randomUUID } = require('crypto');
 
@@ -713,6 +714,7 @@ async function _deployStreakFreezeHandler(data, context, db) {
 const deployStreakFreeze = functions
   .region("us-west2")
   .https.onCall(async (data, context) => {
+    requireAppCheck(context, 'deployStreakFreeze');
     const db = admin.firestore();
     try {
       return await _deployStreakFreezeHandler(data, context, db);
