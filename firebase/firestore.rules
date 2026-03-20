@@ -745,14 +745,12 @@ service cloud.firestore {
         maxPlayers(request.resource.data) >= totalPlayers(request.resource.data) &&
         isValidStatus(request.resource.data) &&
         isCancelStatusConsistent(request.resource.data);
-      // All reads require auth. Public games are visible to any signed-in user.
-      // Friends-only games are visible only to the owner, participants, or friends of the owner.
-      allow read: if isSignedIn() && (
-        isPublicGame(resource.data) ||
+      // Public games readable without auth (guest browse). Auth-gated games still require sign-in.
+      allow read: if isPublicGame(resource.data) || (isSignedIn() && (
         isOwner(resource.data) ||
         isParticipant(resource.data) ||
         isFriendOfOwner(resource.data)
-      );
+      ));
       allow update: if ownerUpdateAllowed() ||
         participantJoinAllowed() ||
         participantLeaveAllowed();

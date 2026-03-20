@@ -1197,6 +1197,10 @@ async function _submitHostCheckinHandler(data, context, db) {
     attendanceRecords[key] = isPresent ? "present" : "no_show";
   }
 
+  // Host is implicitly present (they submitted the form)
+  const hostUid = context.auth.uid;
+  attendanceRecords[hostUid] = attendanceRecords[hostUid] || "present";
+
   // ── Identify no-show app users (guests excluded — no accounts) ────────
   const joinedPlayers = Array.isArray(gameData.joined_players)
     ? gameData.joined_players
@@ -1246,7 +1250,6 @@ async function _submitHostCheckinHandler(data, context, db) {
   }));
 
   // ── Stage 4: record host as a verification signal ─────────────────────
-  const hostUid = context.auth.uid;
   const { newCount: signalCount } = await _recordVerificationSignal(
     db, roundRef, roundData, hostUid
   );

@@ -12,7 +12,12 @@ import 'components/cinematic_notification_banner.dart';
 import 'components/cinematic_foursome_toast.dart';
 
 class CinematicOnboardingWidget extends StatefulWidget {
-  const CinematicOnboardingWidget({super.key});
+  const CinematicOnboardingWidget({super.key, this.onComplete});
+
+  /// When non-null, the widget runs in standalone "How It Works" mode:
+  /// `_ensureUserRecord()` is skipped and this callback fires on finish
+  /// instead of navigating to the profile-creation flow.
+  final VoidCallback? onComplete;
 
   static const String routeName = 'UserOnboarding';
   static const String routePath = '/onboarding';
@@ -83,7 +88,9 @@ class _CinematicOnboardingWidgetState extends State<CinematicOnboardingWidget>
     super.initState();
     _pageController = PageController();
     _keyboardFocusNode = FocusNode();
-    _ensureUserRecord();
+    if (widget.onComplete == null) {
+      _ensureUserRecord();
+    }
     _createSlideControllers();
 
     // Start first slide animation
@@ -140,6 +147,11 @@ class _CinematicOnboardingWidgetState extends State<CinematicOnboardingWidget>
 
   Future<void> _handleFinish() async {
     if (!mounted) return;
+
+    if (widget.onComplete != null) {
+      widget.onComplete!();
+      return;
+    }
 
     final nextRoute = GoRouterState.of(context).uri.queryParameters['next'];
     final nextAfterProfile = nextRoute == null ||

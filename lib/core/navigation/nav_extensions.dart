@@ -40,6 +40,8 @@ class AppRouteNames {
   static const String fallbackConfirmation = 'FallbackConfirmation';
   static const String challengeBoard = 'ChallengeBoard';
   static const String blockedUsers = 'BlockedUsers';
+  static const String guestBrowse = 'GuestBrowse';
+  static const String howItWorks = 'HowItWorks';
 }
 
 /// Route-specific typed navigation helpers for widget call sites.
@@ -412,6 +414,24 @@ extension AppNavigationExtensions on BuildContext {
   }) {
     pushWithTransition(
       AppRouteNames.blockedUsers,
+      transition: transition,
+    );
+  }
+
+  void pushGuestBrowse({
+    TransitionInfo transition = TransitionStandards.detailTransition,
+  }) {
+    pushWithTransition(
+      AppRouteNames.guestBrowse,
+      transition: transition,
+    );
+  }
+
+  void pushHowItWorks({
+    TransitionInfo transition = TransitionStandards.detailTransition,
+  }) {
+    pushWithTransition(
+      AppRouteNames.howItWorks,
       transition: transition,
     );
   }

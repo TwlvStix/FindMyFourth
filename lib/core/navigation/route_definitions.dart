@@ -43,6 +43,8 @@ import '/debug/notification_routing_test_screen.dart';
 import '/debug/streak_debug_screen.dart';
 import '/settings/blocked_users/blocked_users_widget.dart';
 import '/settings/location_settings/location_settings_widget.dart';
+import '/guest/guest_browse_widget.dart';
+import '/guest/how_it_works_widget.dart';
 
 import '/core/navigation/app_router.dart'
     show AppStateNotifier, buildRedirect, buildPageWithTransition;
@@ -619,6 +621,29 @@ List<GoRoute> buildRoutes(AppStateNotifier appStateNotifier) => [
           state,
           appStateNotifier,
           const BlockedUsersWidget(),
+        ),
+      ),
+      // Guest routes (no auth required)
+      GoRoute(
+        name: GuestBrowseWidget.routeName,
+        path: GuestBrowseWidget.routePath,
+        redirect: buildRedirect(appStateNotifier),
+        pageBuilder: (context, state) => buildPageWithTransition(
+          context,
+          state,
+          appStateNotifier,
+          const GuestBrowseWidget(),
+        ),
+      ),
+      GoRoute(
+        name: HowItWorksWidget.routeName,
+        path: HowItWorksWidget.routePath,
+        redirect: buildRedirect(appStateNotifier),
+        pageBuilder: (context, state) => buildPageWithTransition(
+          context,
+          state,
+          appStateNotifier,
+          const HowItWorksWidget(),
         ),
       ),
       // Debug routes

@@ -546,6 +546,45 @@ class _SignInWidgetState extends State<SignInWidget> {
                                     ),
                                   ),
                                 ),
+                                Padding(
+                                  padding: EdgeInsets.only(top: AppSpacing.sm),
+                                  child: Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      GestureDetector(
+                                        onTap: () => context.pushGuestBrowse(),
+                                        child: Text(
+                                          'Browse games',
+                                          style: AppTypography.bodyMedium
+                                              .copyWith(
+                                            color: AppColors.textMuted,
+                                          ),
+                                        ),
+                                      ),
+                                      Padding(
+                                        padding: EdgeInsets.symmetric(
+                                            horizontal: AppSpacing.xs),
+                                        child: Text(
+                                          '·',
+                                          style: AppTypography.bodyMedium
+                                              .copyWith(
+                                            color: AppColors.textMuted,
+                                          ),
+                                        ),
+                                      ),
+                                      GestureDetector(
+                                        onTap: () => context.pushHowItWorks(),
+                                        child: Text(
+                                          'How it works',
+                                          style: AppTypography.bodyMedium
+                                              .copyWith(
+                                            color: AppColors.textMuted,
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
                               ],
                             ),
                           ),

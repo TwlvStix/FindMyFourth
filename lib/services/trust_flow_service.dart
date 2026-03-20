@@ -81,6 +81,8 @@ class TrustFlowService {
   Future<HostCheckinLoadData> loadHostCheckinParticipants({
     required DocumentReference gameRef,
   }) async {
+    final currentUid = _auth.currentUser?.uid;
+
     // 1. Read game doc (separate try-catch for diagnostics)
     final DocumentSnapshot gameSnap;
     try {
@@ -121,6 +123,10 @@ class TrustFlowService {
       final role = (data['role'] as String?) ?? 'player';
 
       if (userRef != null) {
+        if (currentUid != null && userRef.id == currentUid) {
+          AppLog.d('📖 TrustFlowService: skipping ${userRef.id} — current user (host), role=$role');
+          continue;
+        }
         final profile = await _resolveProfile(
           userRef: userRef,
           snapshotData: data['profile_snapshot'] as Map<String, dynamic>?,

@@ -78,6 +78,20 @@ class GameService {
     }
   }
 
+  /// Query public games for guest (unauthenticated) browsing.
+  ///
+  /// Uses only a single-field filter on [friend_game] to avoid requiring
+  /// a composite index. Filtering for future dates and sorting by date
+  /// is handled client-side by the caller.
+  Stream<List<GamesRecord>> queryPublicGames() {
+    return _firestore
+        .collection('games')
+        .where('friend_game', isEqualTo: 'public')
+        .snapshots()
+        .map((snapshot) =>
+            snapshot.docs.map((doc) => GamesRecord.fromSnapshot(doc)).toList());
+  }
+
   /// Query all games the user has joined
   ///
   /// Returns games where userId is in joined_players array
