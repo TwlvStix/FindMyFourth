@@ -412,7 +412,7 @@ class _UnifiedGameCardState extends State<UnifiedGameCard> {
       children: [
         AppIcon(
           icon: AppPhosphorIcons.calendar,
-          size: 12,
+          size: AppIconSize.xs,
           color: AppColors.textMuted,
         ),
         SizedBox(width: 4),
