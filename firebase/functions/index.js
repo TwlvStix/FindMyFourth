@@ -2440,11 +2440,30 @@ exports.finalizeAndScore = functions
     throw new functions.https.HttpsError("unauthenticated", "Must be logged in");
   }
 
+  const roundId = data.round_id;
+  if (typeof roundId !== "string" || roundId.length === 0) {
+    throw new functions.https.HttpsError(
+      "invalid-argument",
+      "A valid round_id is required."
+    );
+  }
+
+  const roundSnap = await firestore.collection("rounds").doc(roundId).get();
+  if (!roundSnap.exists) {
+    throw new functions.https.HttpsError("not-found", "Round not found.");
+  }
+  if (roundSnap.data().host_player_id !== context.auth.uid) {
+    throw new functions.https.HttpsError(
+      "permission-denied",
+      "Only the round host can finalize the group."
+    );
+  }
+
   try {
     const { finalizeGroup } = require("./src/booking");
     const { generatePairwiseMatches } = require("./src/matching");
-    const playerIds = await finalizeGroup(data.round_id);
-    const pairCount = await generatePairwiseMatches(data.round_id);
+    const playerIds = await finalizeGroup(roundId);
+    const pairCount = await generatePairwiseMatches(roundId);
 
     return {
       success: true,
@@ -2555,13 +2574,32 @@ exports.endRound = functions
     throw new functions.https.HttpsError("unauthenticated", "Must be logged in");
   }
 
+  const roundId = data.round_id;
+  if (typeof roundId !== "string" || roundId.length === 0) {
+    throw new functions.https.HttpsError(
+      "invalid-argument",
+      "A valid round_id is required."
+    );
+  }
+
+  const roundSnap = await firestore.collection("rounds").doc(roundId).get();
+  if (!roundSnap.exists) {
+    throw new functions.https.HttpsError("not-found", "Round not found.");
+  }
+  if (roundSnap.data().host_player_id !== context.auth.uid) {
+    throw new functions.https.HttpsError(
+      "permission-denied",
+      "Only the round host can end the round."
+    );
+  }
+
   try {
     const { completeRound } = require("./src/lifecycle");
     const { syncAllPlayerRounds } = require("./src/sync");
-    const result = await completeRound(data.round_id);
+    const result = await completeRound(roundId);
 
     // Sync all player_rounds for this round
-    await syncAllPlayerRounds(data.round_id);
+    await syncAllPlayerRounds(roundId);
 
     return { success: true, ...result };
   } catch (error) {

@@ -1581,6 +1581,20 @@ describe("submitFallbackConfirmation", () => {
     ).rejects.toMatchObject({ code: "failed-precondition" });
   });
 
+  test("throws permission-denied if caller is not a participant", async () => {
+    seedGame(mockDb, "g1");
+    seedRoundJob(mockDb, "job1", "g1");
+    seedRoundRecord(mockDb, "round_g1");
+
+    await expect(
+      confirmationFlow._submitFallbackConfirmationHandler(
+        { gameId: "g1", didPlay: true },
+        makeContext("random_outsider"),
+        mockDb
+      )
+    ).rejects.toMatchObject({ code: "permission-denied" });
+  });
+
   test("returns success without write when didPlay is false", async () => {
     seedGame(mockDb, "g1");
     seedRoundJob(mockDb, "job1", "g1");

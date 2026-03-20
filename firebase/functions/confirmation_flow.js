@@ -1624,6 +1624,17 @@ async function _submitFallbackConfirmationHandler(data, context, db) {
     );
   }
 
+  // Guard: caller must be a participant in this game
+  const participantUids = Array.isArray(job.participant_uids)
+    ? job.participant_uids
+    : [];
+  if (!participantUids.includes(context.auth.uid)) {
+    throw new HttpsError(
+      "permission-denied",
+      "You are not a participant in this game."
+    );
+  }
+
   if (!didPlay) {
     console.log(
       `submitFallbackConfirmation: user ${context.auth.uid} said they did NOT play in game ${gameId}`
