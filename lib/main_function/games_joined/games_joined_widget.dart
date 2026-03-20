@@ -19,6 +19,7 @@ import '/providers/challenge_provider.dart';
 import '/providers/game_provider.dart';
 import '/utils/app_util.dart';
 import 'components/challenge_teaser.dart';
+import '/core/widgets/app_skeleton_game_card.dart';
 import 'components/games_joined_section.dart';
 
 class GamesJoinedWidget extends StatefulWidget {
@@ -101,8 +102,35 @@ class _GamesJoinedWidgetState extends State<GamesJoinedWidget> {
                     : context
                         .read<GameProvider>()
                         .userGamesStream(currentUserUid),
-                initialData: _cachedGames ?? const <GamesRecord>[],
+                initialData: _cachedGames,
                 onRetry: () => updateState(this, () {}),
+                loadingBuilder: (context) => CustomScrollView(
+                  physics: const AlwaysScrollableScrollPhysics(
+                    parent: BouncingScrollPhysics(),
+                  ),
+                  slivers: [
+                    SliverPadding(
+                      padding: EdgeInsets.only(top: AppSpacing.md),
+                      sliver: SliverToBoxAdapter(
+                        child: Padding(
+                          padding: EdgeInsets.symmetric(
+                              horizontal: AppSpacing.md),
+                          child: Column(
+                            children: [
+                              for (int i = 0; i < 3; i++)
+                                Padding(
+                                  padding:
+                                      EdgeInsets.only(bottom: AppSpacing.xs),
+                                  child: AppSkeletonGameCard(
+                                      animationIndex: i),
+                                ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
                 builder: (context, listViewGamesRecordList) {
                   final visibleGames = listViewGamesRecordList.where((game) {
                     if (game.isCancelled) {
@@ -146,7 +174,6 @@ class _GamesJoinedWidgetState extends State<GamesJoinedWidget> {
                       context
                           .read<GameProvider>()
                           .invalidateUserGamesCache(currentUserUid);
-                      await Future.delayed(Duration(milliseconds: 500));
                       if (mounted) {
                         updateState(this, () {});
                       }

@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_spinkit/flutter_spinkit.dart';
 
 import '/backend/backend.dart';
 import '/core/design_tokens/colors.dart';
@@ -11,6 +10,7 @@ import '/core/navigation/nav_extensions.dart';
 import '/core/widgets/app_button_enhanced.dart';
 import '/core/widgets/app_icon.dart';
 import '/core/widgets/fairway_background.dart';
+import 'game_detail_skeleton.dart';
 import 'premium_app_bar.dart';
 
 /// Defines the state of game loading for GameJoinedDetailed screen.
@@ -155,27 +155,12 @@ class GameJoinedStateHandler extends StatelessWidget {
   Widget _buildLoadingState() {
     return Scaffold(
       extendBodyBehindAppBar: true,
-      appBar: const PremiumAppBar(title: 'Loading...'),
+      appBar: const PremiumAppBar(title: 'Game'),
       body: FairwayBackgroundDark(
         showOrganic: true,
         showTexture: true,
-        child: Center(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              SpinKitWanderingCubes(
-                color: AppColors.green,
-                size: 50.0,
-              ),
-              SizedBox(height: AppSpacing.md),
-              Text(
-                'Loading game details...',
-                style: AppTypography.bodySmall.copyWith(
-                  color: AppColors.glassTextSecondary,
-                ),
-              ),
-            ],
-          ),
+        child: SafeArea(
+          child: GameDetailSkeleton(),
         ),
       ),
     );

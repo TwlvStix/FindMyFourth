@@ -1,4 +1,5 @@
 import '/core/design_tokens/colors.dart';
+import '/core/motion/motion_tokens.dart';
 import '/core/utils/state_update.dart';
 import '/core/design_tokens/spacing.dart';
 import '/core/design_tokens/typography.dart';
@@ -173,10 +174,26 @@ class _CreateGameWidgetState extends State<CreateGameWidget> {
     }
 
     final chatProvider = context.read<ChatProvider>();
+    final isFormValid =
+        formKey.currentState != null && formKey.currentState!.validate();
+
+    if (!isFormValid) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) return;
+        final formContext = formKey.currentContext;
+        if (formContext != null) {
+          Scrollable.ensureVisible(
+            formContext,
+            duration: const Duration(milliseconds: 300),
+            curve: MotionTokens.curveEnter,
+          );
+        }
+      });
+    }
+
     final result = await _controller.submitGame(
       formData: _formData,
-      isFormValid:
-          formKey.currentState != null && formKey.currentState!.validate(),
+      isFormValid: isFormValid,
       currentUserRef: userProvider.currentUser?.reference,
       createGameChat: chatProvider.createGameChat,
       invalidateAvailableGamesCache:
@@ -213,6 +230,8 @@ class _CreateGameWidgetState extends State<CreateGameWidget> {
       _hasDraft = false;
     });
 
+    final messenger = ScaffoldMessenger.of(context);
+
     if (nextRoute == CreateGameNextRoute.gamesList) {
       context.pushGamesList(
         transition: TransitionStandards.modalTransition,
@@ -223,7 +242,8 @@ class _CreateGameWidgetState extends State<CreateGameWidget> {
       );
     }
 
-    ScaffoldMessenger.of(context).showSnackBar(
+    if (!mounted) return;
+    messenger.showSnackBar(
       SnackBar(
         content: Text(
           'You have created a game!',

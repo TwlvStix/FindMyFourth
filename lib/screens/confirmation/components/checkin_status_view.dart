@@ -6,6 +6,7 @@ import '/core/design_tokens/icon_size.dart';
 import '/core/design_tokens/spacing.dart';
 import '/core/design_tokens/typography.dart';
 import '/core/widgets/app_button_enhanced.dart';
+import '/core/widgets/premium_back_button.dart';
 
 /// Full-scaffold status view for the host check-in screen.
 ///
@@ -29,6 +30,11 @@ class CheckinStatusView extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.navyDark,
+      appBar: AppBar(
+        backgroundColor: AppColors.navyDark,
+        elevation: 0,
+        leading: const PremiumBackButton(),
+      ),
       body: SafeArea(
         child: Center(
           child: Padding(

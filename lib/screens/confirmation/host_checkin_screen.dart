@@ -265,11 +265,10 @@ class _HostCheckinScreenState extends State<HostCheckinScreen> {
                             top: AppSpacing.lg),
                         child: AppButtonEnhanced(
                           onPressed: _submitting ? null : _submit,
-                          text: _submitting
-                              ? 'Submitting...'
-                              : 'Confirm Attendance',
+                          text: 'Confirm Attendance',
                           variant: AppButtonVariant.primary,
                           size: AppButtonSize.large,
+                          isLoading: _submitting,
                         ),
                       ),
                     ],
