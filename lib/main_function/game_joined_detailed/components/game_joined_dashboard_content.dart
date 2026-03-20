@@ -78,21 +78,26 @@ class GameJoinedDashboardContent extends StatelessWidget {
   Widget build(BuildContext context) {
     return SafeArea(
       top: false,
-      child: SingleChildScrollView(
-        physics: BouncingScrollPhysics(),
-        child: Column(
-          mainAxisSize: MainAxisSize.max,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            SizedBox(height: MediaQuery.of(context).padding.top + 22),
-            GameJoinedDashboardOverviewSection(
+      child: CustomScrollView(
+        physics: const BouncingScrollPhysics(),
+        slivers: [
+          SliverToBoxAdapter(
+            child: SizedBox(height: MediaQuery.of(context).padding.top + 22),
+          ),
+          SliverToBoxAdapter(
+            child: GameJoinedDashboardOverviewSection(
               game: game,
               currentUserRef: currentUserRef,
               hasAnimated: hasAnimated,
               groupVibeCacheKey: groupVibeCacheKey,
               onEditGameDetails: onEditGameDetails,
             ),
-            GameJoinedDashboardDetailsPlayersSection(
+          ),
+          // Player list section: max 4 players + game details, FutureBuilder-driven --
+          // SliverToBoxAdapter is appropriate here (SliverList would require deep
+          // refactor of PlayerListSection for negligible gain on 4 items).
+          SliverToBoxAdapter(
+            child: GameJoinedDashboardDetailsPlayersSection(
               game: game,
               screenGameRef: screenGameRef,
               currentUserRef: currentUserRef,
@@ -108,14 +113,18 @@ class GameJoinedDashboardContent extends StatelessWidget {
               onShowRemovePlayerDialog: onShowRemovePlayerDialog,
               onOpenPremiumVibePage: onOpenPremiumVibePage,
             ),
-            GameJoinedDashboardActionsSection(
+          ),
+          SliverToBoxAdapter(
+            child: GameJoinedDashboardActionsSection(
               game: game,
               screenGameRef: screenGameRef,
               currentUserRef: currentUserRef,
             ),
-            SizedBox(height: AppSpacing.md),
-          ],
-        ),
+          ),
+          SliverToBoxAdapter(
+            child: SizedBox(height: AppSpacing.md),
+          ),
+        ],
       ),
     );
   }
