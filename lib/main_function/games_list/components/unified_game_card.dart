@@ -12,6 +12,7 @@ import '/core/motion/animated_scale_tap.dart';
 import '/core/motion/motion_tokens.dart';
 import '/core/widgets/app_icon.dart';
 import '/core/design_tokens/app_phosphor_icons.dart';
+import '/main_function/games_list/components/game_card_status_badge.dart';
 import '/auth/firebase_auth/auth_util.dart';
 import '/main_function/games_list/components/game_card_avatar_stack.dart';
 import '/main_function/games_list/components/game_card_detail_pills.dart';
@@ -277,112 +278,12 @@ class _UnifiedGameCardState extends State<UnifiedGameCard> {
     required bool isOwner,
     required bool isJoined,
   }) {
-    if (isCancelled) {
-      return Container(
-        padding: EdgeInsets.symmetric(
-          horizontal: AppSpacing.sm,
-          vertical: AppSpacing.xxs,
-        ),
-        decoration: BoxDecoration(
-          color: AppColors.error.withValues(alpha: 0.2),
-          borderRadius: BorderRadius.circular(AppBorderRadius.md),
-          border: Border.all(
-            color: AppColors.error.withValues(alpha: 0.3),
-          ),
-        ),
-        child: Text(
-          'Cancelled',
-          style: AppTypography.labelSmall.copyWith(
-            color: AppColors.error,
-            fontWeight: FontWeight.w600,
-          ),
-        ),
-      );
-    }
-
-    if (isExpired) {
-      return Container(
-        padding: EdgeInsets.symmetric(
-          horizontal: AppSpacing.sm,
-          vertical: AppSpacing.xxs,
-        ),
-        decoration: BoxDecoration(
-          color: AppColors.warning.withValues(alpha: 0.2),
-          borderRadius: BorderRadius.circular(AppBorderRadius.md),
-        ),
-        child: Text(
-          'Played',
-          style: AppTypography.labelSmall.copyWith(
-            color: AppColors.warning,
-            fontWeight: FontWeight.w600,
-          ),
-        ),
-      );
-    }
-
-    if (isOwner) {
-      return Container(
-        padding: EdgeInsets.symmetric(
-          horizontal: AppSpacing.sm,
-          vertical: AppSpacing.xxs,
-        ),
-        decoration: BoxDecoration(
-          color: AppColors.green.withValues(alpha: 0.9),
-          borderRadius: BorderRadius.circular(AppBorderRadius.md),
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            AppIcon(
-              icon: AppPhosphorIcons.owner,
-              color: AppColors.pure,
-              size: AppIconSize.xs,
-            ),
-            SizedBox(width: 4),
-            Text(
-              'Owner',
-              style: AppTypography.labelSmall.copyWith(
-                color: AppColors.pure,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-          ],
-        ),
-      );
-    }
-
-    // Only show Joined badge if the user actually joined this game
-    if (!isJoined) {
-      return SizedBox.shrink();
-    }
-
-    return Container(
-      padding: EdgeInsets.symmetric(
-        horizontal: AppSpacing.sm,
-        vertical: AppSpacing.xxs,
-      ),
-      decoration: BoxDecoration(
-        color: AppColors.stone.withValues(alpha: 0.85),
-        borderRadius: BorderRadius.circular(AppBorderRadius.md),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          AppIcon(
-            icon: AppPhosphorIcons.joined,
-            color: AppColors.pure,
-            size: AppIconSize.xs,
-          ),
-          SizedBox(width: 4),
-          Text(
-            'Joined',
-            style: AppTypography.labelSmall.copyWith(
-              color: AppColors.textPrimary,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-        ],
-      ),
+    return GameCardStatusBadge(
+      isCancelled: isCancelled,
+      isExpired: isExpired,
+      isOwner: isOwner,
+      isUserGame: isJoined,
+      expiredLabel: 'Played',
     );
   }
 

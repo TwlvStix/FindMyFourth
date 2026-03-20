@@ -90,7 +90,6 @@ class FixedGamesSectionBuilder {
                   onCancelledGameTap: onCancelledGameTap,
                   onFriendsOnlyTap: onFriendsOnlyTap,
                   animationIndex: index,
-                  staggerDelay: Duration(milliseconds: 24 * index),
                 ),
               );
             },
