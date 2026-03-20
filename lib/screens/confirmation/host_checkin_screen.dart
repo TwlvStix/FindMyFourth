@@ -206,77 +206,72 @@ class _HostCheckinScreenState extends State<HostCheckinScreen> {
         ),
       ),
       body: SafeArea(
-        child: LayoutBuilder(
-          builder: (context, constraints) {
-            return SingleChildScrollView(
-              child: ConstrainedBox(
-                constraints:
-                    BoxConstraints(minHeight: constraints.maxHeight),
-                child: IntrinsicHeight(
-                  child: Column(
-                    children: [
-                      const Spacer(flex: 1),
-                      _buildHeader(),
-                      SizedBox(height: AppSpacing.xxxl),
-                      Padding(
-                        padding: AppSpacing.symmetric(
-                            horizontal: AppSpacing.screenPadding),
-                        child: Column(
-                          children: [
-                            for (int i = 0;
-                                i < _participants.length;
-                                i++) ...[
-                              if (i > 0) SizedBox(height: AppSpacing.xxs),
-                              _buildParticipantRow(i),
-                            ],
-                          ],
-                        ),
-                      ),
-                      const Spacer(flex: 1),
-                      if (_error != null)
-                        Padding(
-                          padding: AppSpacing.symmetric(
-                              horizontal: AppSpacing.xl,
-                              vertical: AppSpacing.sm),
-                          child: Column(
-                            children: [
-                              Text(
-                                _error!,
-                                style: AppTypography.bodySmall.copyWith(
-                                  color: AppColors.error,
-                                ),
-                                textAlign: TextAlign.center,
-                              ),
-                              SizedBox(height: AppSpacing.sm),
-                              AppButtonEnhanced(
-                                text: 'Try again',
-                                variant: AppButtonVariant.secondary,
-                                size: AppButtonSize.small,
-                                onPressed: _retryLoad,
-                              ),
-                            ],
-                          ),
-                        ),
-                      Padding(
-                        padding: AppSpacing.only(
-                            left: AppSpacing.xl,
-                            right: AppSpacing.xl,
-                            bottom: AppSpacing.xxl,
-                            top: AppSpacing.lg),
-                        child: AppButtonEnhanced(
-                          onPressed: _submitting ? null : _submit,
-                          text: 'Confirm Attendance',
-                          variant: AppButtonVariant.primary,
-                          size: AppButtonSize.large,
-                          isLoading: _submitting,
-                        ),
-                      ),
-                    ],
+        child: CustomScrollView(
+          slivers: [
+            SliverFillRemaining(
+              hasScrollBody: false,
+              child: Column(
+                children: [
+                  const Spacer(flex: 1),
+                  _buildHeader(),
+                  SizedBox(height: AppSpacing.xxxl),
+                  Padding(
+                    padding: AppSpacing.symmetric(
+                        horizontal: AppSpacing.screenPadding),
+                    child: Column(
+                      children: [
+                        for (int i = 0;
+                            i < _participants.length;
+                            i++) ...[
+                          if (i > 0) SizedBox(height: AppSpacing.xxs),
+                          _buildParticipantRow(i),
+                        ],
+                      ],
+                    ),
                   ),
-                ),
+                  const Spacer(flex: 1),
+                  if (_error != null)
+                    Padding(
+                      padding: AppSpacing.symmetric(
+                          horizontal: AppSpacing.xl,
+                          vertical: AppSpacing.sm),
+                      child: Column(
+                        children: [
+                          Text(
+                            _error!,
+                            style: AppTypography.bodySmall.copyWith(
+                              color: AppColors.error,
+                            ),
+                            textAlign: TextAlign.center,
+                          ),
+                          SizedBox(height: AppSpacing.sm),
+                          AppButtonEnhanced(
+                            text: 'Try again',
+                            variant: AppButtonVariant.secondary,
+                            size: AppButtonSize.small,
+                            onPressed: _retryLoad,
+                          ),
+                        ],
+                      ),
+                    ),
+                  Padding(
+                    padding: AppSpacing.only(
+                        left: AppSpacing.xl,
+                        right: AppSpacing.xl,
+                        bottom: AppSpacing.xxl,
+                        top: AppSpacing.lg),
+                    child: AppButtonEnhanced(
+                      onPressed: _submitting ? null : _submit,
+                      text: 'Confirm Attendance',
+                      variant: AppButtonVariant.primary,
+                      size: AppButtonSize.large,
+                      isLoading: _submitting,
+                    ),
+                  ),
+                ],
               ),
-            );
-          },
+            ),
+          ],
         ),
       ),
     );
