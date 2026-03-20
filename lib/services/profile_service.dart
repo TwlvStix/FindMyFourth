@@ -1,5 +1,6 @@
 import '/backend/backend.dart';
 import '/core/utils/app_log.dart';
+import '/core/utils/list_utils.dart';
 
 /// ProfileService provides stateless, centralized access to user profile data in Firestore
 ///
@@ -204,11 +205,9 @@ class ProfileService {
 
       // Firestore 'in' query limit is 10 items, so batch in chunks
       final result = <String, UsersRecord>{};
+      final chunks = chunkList(userIds, 10);
 
-      for (var i = 0; i < userIds.length; i += 10) {
-        final end = (i + 10) > userIds.length ? userIds.length : i + 10;
-        final batchIds = userIds.sublist(i, end);
-
+      for (final batchIds in chunks) {
         final snapshot = await _firestore
             .collection('users')
             .where(FieldPath.documentId, whereIn: batchIds)
@@ -225,5 +224,50 @@ class ProfileService {
           'ProfileService.batchGetUserProfiles error: ${e.code} - ${e.message}');
       rethrow;
     }
+  }
+
+  /// Batch get user profiles with progressive chunk callbacks.
+  ///
+  /// Same as [batchGetUserProfiles] but invokes [onChunkComplete] after
+  /// each chunk of 10 resolves, enabling progressive UI updates.
+  /// On chunk error: logs and continues to next chunk (doesn't fail entire operation).
+  Future<Map<String, UsersRecord>> batchGetUserProfilesProgressive(
+    List<String> userIds, {
+    void Function(Map<String, UsersRecord>)? onChunkComplete,
+  }) async {
+    if (userIds.isEmpty) {
+      return {};
+    }
+
+    final result = <String, UsersRecord>{};
+
+    for (var i = 0; i < userIds.length; i += 10) {
+      final end = (i + 10) > userIds.length ? userIds.length : i + 10;
+      final batchIds = userIds.sublist(i, end);
+
+      try {
+        final snapshot = await _firestore
+            .collection('users')
+            .where(FieldPath.documentId, whereIn: batchIds)
+            .get();
+
+        final chunkResult = <String, UsersRecord>{};
+        for (final doc in snapshot.docs) {
+          final record = UsersRecord.fromSnapshot(doc);
+          chunkResult[doc.id] = record;
+          result[doc.id] = record;
+        }
+
+        if (onChunkComplete != null && chunkResult.isNotEmpty) {
+          onChunkComplete(chunkResult);
+        }
+      } on FirebaseException catch (e) {
+        AppLog.d(
+            'ProfileService.batchGetUserProfilesProgressive chunk error: ${e.code} - ${e.message}');
+        // Continue to next chunk - don't fail entire operation
+      }
+    }
+
+    return result;
   }
 }

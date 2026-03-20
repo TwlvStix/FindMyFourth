@@ -7,6 +7,14 @@ import '/core/exceptions/app_exceptions.dart';
 import '/models/player_eligibility.dart';
 import '/services/game_eligibility_service.dart';
 
+/// Result of a paginated game query.
+class GamesPage {
+  final List<GamesRecord> games;
+  final DocumentSnapshot? lastDocument;
+  final bool hasMore;
+  const GamesPage({required this.games, this.lastDocument, required this.hasMore});
+}
+
 /// GameService provides stateless, centralized access to game data in Firestore
 ///
 /// This service follows the established service pattern:
@@ -37,6 +45,7 @@ class GameService {
     String? courseFilter,
     String? styleFilter,
     DateTime? dateFilter,
+    int? limit,
   }) {
     try {
       Query baseQuery = _firestore.collection('games');
@@ -52,7 +61,10 @@ class GameService {
       }
 
       Stream<List<GamesRecord>> streamFromQuery(Query query) {
-        final ordered = query.orderBy('date');
+        Query ordered = query.orderBy('date');
+        if (limit != null) {
+          ordered = ordered.limit(limit);
+        }
         return ordered.snapshots().map((snapshot) =>
             snapshot.docs.map((doc) => GamesRecord.fromSnapshot(doc)).toList());
       }
@@ -74,6 +86,53 @@ class GameService {
     } on FirebaseException catch (e) {
       AppLog.d(
           'GameService.queryAvailableGames error: ${e.code} - ${e.message}');
+      rethrow;
+    }
+  }
+
+  /// Query a page of available games (one-time fetch for pagination).
+  ///
+  /// Uses the same query construction as [queryAvailableGames] but with
+  /// `.get()` instead of `.snapshots()` for pages beyond the first.
+  Future<GamesPage> queryAvailableGamesPage({
+    String? courseFilter,
+    String? styleFilter,
+    DateTime? dateFilter,
+    int pageSize = 50,
+    DocumentSnapshot? startAfterDocument,
+  }) async {
+    try {
+      Query baseQuery = _firestore.collection('games');
+
+      if (courseFilter != null && courseFilter.isNotEmpty) {
+        baseQuery = baseQuery.where('course', isEqualTo: courseFilter);
+      }
+      if (styleFilter != null && styleFilter.isNotEmpty) {
+        baseQuery = baseQuery.where('style_game', isEqualTo: styleFilter);
+      }
+      if (dateFilter != null) {
+        baseQuery = baseQuery.where('date', isGreaterThanOrEqualTo: dateFilter);
+      }
+
+      Query query = baseQuery.orderBy('date').limit(pageSize);
+
+      if (startAfterDocument != null) {
+        query = query.startAfterDocument(startAfterDocument);
+      }
+
+      final snapshot = await query.get();
+      final games = snapshot.docs
+          .map((doc) => GamesRecord.fromSnapshot(doc))
+          .toList();
+
+      return GamesPage(
+        games: games,
+        lastDocument: snapshot.docs.isNotEmpty ? snapshot.docs.last : null,
+        hasMore: snapshot.docs.length >= pageSize,
+      );
+    } on FirebaseException catch (e) {
+      AppLog.d(
+          'GameService.queryAvailableGamesPage error: ${e.code} - ${e.message}');
       rethrow;
     }
   }

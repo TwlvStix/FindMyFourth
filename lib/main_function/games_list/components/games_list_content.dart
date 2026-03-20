@@ -2,8 +2,8 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-import '/backend/schema/users_record.dart';
 import '/providers/geo_filter_provider.dart';
+import '/providers/user_provider.dart';
 import '/core/design_tokens/colors.dart';
 import '/core/design_tokens/spacing.dart';
 import '/core/widgets/app_stream_builder.dart';
@@ -50,6 +50,13 @@ class GamesListContent extends StatefulWidget {
     required this.onRefresh,
     required this.onRetry,
     required this.onNavigateToStanding,
+    // Pagination
+    this.additionalGames = const [],
+    this.isLoadingMore = false,
+    this.hasMorePages = true,
+    this.onLoadMore,
+    // Vibe score request
+    this.onVibeScoreRequest,
     // Mutual friend data
     this.mutualFriendHostIds = const {},
     this.firstMutualFriendName = const {},
@@ -81,6 +88,15 @@ class GamesListContent extends StatefulWidget {
   final VoidCallback onRetry;
   final VoidCallback onNavigateToStanding;
 
+  // Pagination
+  final List<Game> additionalGames;
+  final bool isLoadingMore;
+  final bool hasMorePages;
+  final Future<void> Function()? onLoadMore;
+
+  // Vibe score request (lazy computation)
+  final void Function(String gameRefId, String ownerUid)? onVibeScoreRequest;
+
   // Mutual friend data for amber cards
   final Set<String> mutualFriendHostIds;
   final Map<String, String> firstMutualFriendName;
@@ -96,41 +112,71 @@ class GamesListContent extends StatefulWidget {
 }
 
 class _GamesListContentState extends State<GamesListContent> {
-  /// Cached user stream to prevent re-subscriptions on every build.
-  Stream<UsersRecord?>? _userStream;
-  DocumentReference? _cachedUserRef;
+  final ScrollController _scrollController = ScrollController();
 
   @override
   void initState() {
     super.initState();
-    _updateUserStream();
+    _scrollController.addListener(_onScroll);
   }
 
   @override
-  void didUpdateWidget(GamesListContent oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    // Only recreate stream if user reference changed
-    if (widget.currentUserReference != oldWidget.currentUserReference) {
-      _updateUserStream();
+  void dispose() {
+    _scrollController.removeListener(_onScroll);
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  void _onScroll() {
+    if (_scrollController.position.extentAfter < 300 &&
+        widget.hasMorePages &&
+        !widget.isLoadingMore &&
+        widget.onLoadMore != null) {
+      widget.onLoadMore!();
     }
   }
 
-  void _updateUserStream() {
-    final userRef = widget.currentUserReference;
-    if (userRef != _cachedUserRef) {
-      _cachedUserRef = userRef;
-      _userStream = userRef == null ? null : UsersRecord.getDocument(userRef);
+  /// Merge first-page stream games with additional paginated games,
+  /// deduplicating by document ID (prefer stream version).
+  List<Game> _mergeAndDeduplicate(List<Game> streamGames) {
+    if (widget.additionalGames.isEmpty) return streamGames;
+
+    final seenIds = <String>{};
+    final merged = <Game>[];
+
+    // Stream games take priority (real-time updates)
+    for (final game in streamGames) {
+      if (seenIds.add(game.reference.id)) {
+        merged.add(game);
+      }
     }
+
+    // Add additional page games that aren't already in stream
+    for (final game in widget.additionalGames) {
+      if (seenIds.add(game.reference.id)) {
+        merged.add(game);
+      }
+    }
+
+    return merged;
   }
 
   @override
   Widget build(BuildContext context) {
+    // Get friend IDs and gender from UserProvider (replaces inner StreamBuilder)
+    final userProvider = context.watch<UserProvider>();
+    final friendIds = friendIdsFromRecord(userProvider.currentUser);
+    final userGender = userProvider.currentUser?.gender;
+
     return AppStreamBuilder<List<Game>>(
       stream: widget.gamesStream,
       initialData: widget.initialGames,
       onRetry: widget.onRetry,
       builder: (context, gamesList) {
-        final activeGames = filterActiveGames(gamesList);
+        // Merge stream page with additional paginated pages
+        final mergedGames = _mergeAndDeduplicate(gamesList);
+
+        final activeGames = filterActiveGames(mergedGames);
 
         // Compute filter metadata once from the active games snapshot
         final filterMeta = GameFilterMeta.fromGames(
@@ -166,135 +212,150 @@ class _GamesListContentState extends State<GamesListContent> {
 
         final quickFilteredGames = widget.quickFilter.apply(visibleGames);
         final userRef = widget.currentUserReference;
-        return StreamBuilder<UsersRecord?>(
-          stream: _userStream,
-          builder: (context, userSnapshot) {
-            final friendIds = friendIdsFromRecord(userSnapshot.data);
-            final userGender = userSnapshot.data?.gender;
 
-            // Filter out gender-restricted games
-            final eligibleGames = filterEligibleGames(
-              quickFilteredGames,
-              currentUserReference: userRef,
-              userGender: userGender,
-            );
+        // Filter out gender-restricted games
+        final eligibleGames = filterEligibleGames(
+          quickFilteredGames,
+          currentUserReference: userRef,
+          userGender: userGender,
+        );
 
-            // Partition into joinable, mutual, and locked
-            final partitioned = partitionJoinableAndLockedGames(
-              eligibleGames,
-              currentUserReference: userRef,
-              friendIds: friendIds,
-              mutualFriendHostIds: widget.mutualFriendHostIds,
-            );
+        // Partition into joinable, mutual, and locked
+        final partitioned = partitionJoinableAndLockedGames(
+          eligibleGames,
+          currentUserReference: userRef,
+          friendIds: friendIds,
+          mutualFriendHostIds: widget.mutualFriendHostIds,
+        );
 
-            // Sort joinable games
-            final sortedJoinableGames = widget.sortOption.sort(
-              partitioned.joinable,
-              vibeScores: widget.vibeScores,
-            );
+        // Sort joinable games
+        final sortedJoinableGames = widget.sortOption.sort(
+          partitioned.joinable,
+          vibeScores: widget.vibeScores,
+        );
 
-            // Sort mutual games by date (they always come last)
-            final sortedMutualGames = widget.sortOption.sort(
-              partitioned.mutual,
-              vibeScores: widget.vibeScores,
-            );
+        // Sort mutual games by date (they always come last)
+        final sortedMutualGames = widget.sortOption.sort(
+          partitioned.mutual,
+          vibeScores: widget.vibeScores,
+        );
 
-            // Schedule profile warming for all game owners
-            final ownerUids = [...sortedJoinableGames, ...sortedMutualGames]
-                .map((game) => game.userRef?.id)
-                .whereType<String>()
-                .toSet();
-            if (ownerUids.isNotEmpty) {
-              widget.onOwnerUidsReady(ownerUids);
-            }
+        // Schedule profile warming for all game owners
+        final ownerUids = [...sortedJoinableGames, ...sortedMutualGames]
+            .map((game) => game.userRef?.id)
+            .whereType<String>()
+            .toSet();
+        if (ownerUids.isNotEmpty) {
+          widget.onOwnerUidsReady(ownerUids);
+        }
 
-            // Schedule mutual friend fetching for hosts of locked friends-only games
-            // (These are potential mutual games we haven't fetched data for yet)
-            final lockedHostIds = partitioned.locked
-                .map((g) => g.userRef?.id ?? g.uid)
-                .whereType<String>()
-                .toSet();
-            if (lockedHostIds.isNotEmpty && widget.onMutualHostsReady != null) {
-              widget.onMutualHostsReady!(lockedHostIds);
-            }
+        // Schedule mutual friend fetching for hosts of locked friends-only games
+        // (Deferred to avoid blocking initial render)
+        final lockedHostIds = partitioned.locked
+            .map((g) => g.userRef?.id ?? g.uid)
+            .whereType<String>()
+            .toSet();
+        if (lockedHostIds.isNotEmpty && widget.onMutualHostsReady != null) {
+          Future.delayed(const Duration(milliseconds: 500), () {
+            if (!mounted) return;
+            widget.onMutualHostsReady!(lockedHostIds);
+          });
+        }
 
-            // Combined game count for sort bar
-            final totalGameCount = sortedJoinableGames.length + sortedMutualGames.length;
+        // Combined game count for sort bar
+        final totalGameCount = sortedJoinableGames.length + sortedMutualGames.length;
 
-            return RefreshIndicator(
-              onRefresh: widget.onRefresh,
-              child: CustomScrollView(
-                physics: const AlwaysScrollableScrollPhysics(),
-                slivers: [
-                  // RestrictionBanner (uses selector for fine-grained rebuilds)
-                  SliverToBoxAdapter(
-                    child: RestrictionBannerSelector(
-                      onNavigateToStanding: widget.onNavigateToStanding,
-                    ),
-                  ),
-                  // Quick Filter Chips with Near Me toggle
-                  SliverToBoxAdapter(
-                    child: Padding(
-                      padding: EdgeInsets.symmetric(
-                        vertical: AppSpacing.sm,
-                      ),
-                      child: QuickFilterChips(
-                        selectedFilter: widget.quickFilter,
-                        onFilterChanged: widget.onQuickFilterChanged,
-                        trailing: const NearMeChip(),
-                      ),
-                    ),
-                  ),
-                  // Divider
-                  SliverToBoxAdapter(
-                    child: Container(
-                      height: 1,
-                      color: AppColors.navyLight.withValues(alpha: 0.3),
-                    ),
-                  ),
-                  // Sort Bar
-                  SliverToBoxAdapter(
-                    child: GamesSortBar(
-                      gameCount: totalGameCount,
-                      sortOption: widget.sortOption,
-                      onSortChanged: widget.onSortChanged,
-                    ),
-                  ),
-                  // Global Empty State
-                  if (sortedJoinableGames.isEmpty && sortedMutualGames.isEmpty)
-                    SliverToBoxAdapter(
-                      child: GamesListEmptyState(
-                        onCreateGame: widget.onCreateGame,
-                      ),
-                    ),
-                  // Joinable Games List
-                  if (sortedJoinableGames.isNotEmpty)
-                    JoinableGamesSliverList(
-                      games: sortedJoinableGames,
-                      currentUserReference: widget.currentUserReference,
-                      vibeScores: widget.vibeScores,
-                      hasMutualGames: sortedMutualGames.isNotEmpty,
-                    ),
-                  // Mutual Games List (amber cards, rendered inline after joinable)
-                  if (sortedMutualGames.isNotEmpty)
-                    MutualGamesSliverList(
-                      games: sortedMutualGames,
-                      firstMutualFriendName: widget.firstMutualFriendName,
-                      mutualFriendsMap: widget.mutualFriendsMap,
-                      chatActionStates: widget.chatActionStates,
-                      friendActionStates: widget.friendActionStates,
-                      joinableGameCount: sortedJoinableGames.length,
-                      onAskToChat: widget.onAskToChat,
-                      onAddFriendFromMutual: widget.onAddFriendFromMutual,
-                    ),
-                  // Bottom padding for FAB
-                  SliverToBoxAdapter(
-                    child: SizedBox(height: 100),
-                  ),
-                ],
+        return RefreshIndicator(
+          onRefresh: widget.onRefresh,
+          child: CustomScrollView(
+            controller: _scrollController,
+            physics: const AlwaysScrollableScrollPhysics(),
+            slivers: [
+              // RestrictionBanner (uses selector for fine-grained rebuilds)
+              SliverToBoxAdapter(
+                child: RestrictionBannerSelector(
+                  onNavigateToStanding: widget.onNavigateToStanding,
+                ),
               ),
-            );
-          },
+              // Quick Filter Chips with Near Me toggle
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding: EdgeInsets.symmetric(
+                    vertical: AppSpacing.sm,
+                  ),
+                  child: QuickFilterChips(
+                    selectedFilter: widget.quickFilter,
+                    onFilterChanged: widget.onQuickFilterChanged,
+                    trailing: const NearMeChip(),
+                  ),
+                ),
+              ),
+              // Divider
+              SliverToBoxAdapter(
+                child: Container(
+                  height: 1,
+                  color: AppColors.navyLight.withValues(alpha: 0.3),
+                ),
+              ),
+              // Sort Bar
+              SliverToBoxAdapter(
+                child: GamesSortBar(
+                  gameCount: totalGameCount,
+                  sortOption: widget.sortOption,
+                  onSortChanged: widget.onSortChanged,
+                ),
+              ),
+              // Global Empty State
+              if (sortedJoinableGames.isEmpty && sortedMutualGames.isEmpty)
+                SliverToBoxAdapter(
+                  child: GamesListEmptyState(
+                    onCreateGame: widget.onCreateGame,
+                  ),
+                ),
+              // Joinable Games List
+              if (sortedJoinableGames.isNotEmpty)
+                JoinableGamesSliverList(
+                  games: sortedJoinableGames,
+                  currentUserReference: widget.currentUserReference,
+                  vibeScores: widget.vibeScores,
+                  hasMutualGames: sortedMutualGames.isNotEmpty,
+                  onVibeScoreRequest: widget.onVibeScoreRequest,
+                ),
+              // Mutual Games List (amber cards, rendered inline after joinable)
+              if (sortedMutualGames.isNotEmpty)
+                MutualGamesSliverList(
+                  games: sortedMutualGames,
+                  firstMutualFriendName: widget.firstMutualFriendName,
+                  mutualFriendsMap: widget.mutualFriendsMap,
+                  chatActionStates: widget.chatActionStates,
+                  friendActionStates: widget.friendActionStates,
+                  joinableGameCount: sortedJoinableGames.length,
+                  onAskToChat: widget.onAskToChat,
+                  onAddFriendFromMutual: widget.onAddFriendFromMutual,
+                ),
+              // Loading indicator for pagination
+              if (widget.isLoadingMore)
+                SliverToBoxAdapter(
+                  child: Padding(
+                    padding: EdgeInsets.all(AppSpacing.md),
+                    child: Center(
+                      child: SizedBox(
+                        width: 24,
+                        height: 24,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: AppColors.textMuted,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              // Bottom padding for FAB
+              SliverToBoxAdapter(
+                child: SizedBox(height: 100),
+              ),
+            ],
+          ),
         );
       },
     );

@@ -63,6 +63,31 @@ class GameProvider extends ChangeNotifier {
   bool _disposed = false;
 
   // ========================================
+  // PAGINATION STATE
+  // ========================================
+
+  // Cursor for fetching subsequent pages
+  DocumentSnapshot? _lastPageCursor;
+
+  // Whether more pages are available
+  bool _hasMorePages = true;
+
+  // Whether a page load is in progress
+  bool _isLoadingMore = false;
+
+  // Games from pages 2+ (merged with stream page 1 in UI)
+  List<GamesRecord> _additionalPages = [];
+
+  /// Whether more pages of games are available to load.
+  bool get hasMorePages => _hasMorePages;
+
+  /// Whether a page load is currently in progress.
+  bool get isLoadingMore => _isLoadingMore;
+
+  /// Games fetched from pages beyond the first (stream) page.
+  List<GamesRecord> get additionalPageGames => _additionalPages;
+
+  // ========================================
   // CACHE GETTERS
   // ========================================
 
@@ -141,6 +166,7 @@ class GameProvider extends ChangeNotifier {
     String? courseFilter,
     String? styleFilter,
     DateTime? dateFilter,
+    int? limit,
     bool overrideCache = false,
   }) {
     // Create unique query key based on filters
@@ -160,6 +186,7 @@ class GameProvider extends ChangeNotifier {
         courseFilter: courseFilter,
         styleFilter: styleFilter,
         dateFilter: dateFilter,
+        limit: limit,
       ),
     ).map((games) {
       // Cache query results when they come through the stream
@@ -411,6 +438,52 @@ class GameProvider extends ChangeNotifier {
   }
 
   // ========================================
+  // PAGINATION METHODS
+  // ========================================
+
+  /// Load the next page of available games.
+  ///
+  /// Fetches the next server page using cursor-based pagination,
+  /// appends results to [_additionalPages], and updates the cursor.
+  Future<void> loadMoreAvailableGames({
+    String? courseFilter,
+    String? styleFilter,
+    DateTime? dateFilter,
+  }) async {
+    if (_isLoadingMore || !_hasMorePages) return;
+
+    _isLoadingMore = true;
+    _scheduleNotify();
+
+    try {
+      final page = await _service.queryAvailableGamesPage(
+        courseFilter: courseFilter,
+        styleFilter: styleFilter,
+        dateFilter: dateFilter,
+        pageSize: 50,
+        startAfterDocument: _lastPageCursor,
+      );
+
+      _additionalPages = [..._additionalPages, ...page.games];
+      _lastPageCursor = page.lastDocument;
+      _hasMorePages = page.hasMore;
+    } catch (e) {
+      AppLog.d('❌ GameProvider.loadMoreAvailableGames error: $e');
+    } finally {
+      _isLoadingMore = false;
+      _scheduleNotify();
+    }
+  }
+
+  /// Reset pagination state (on pull-to-refresh or filter change).
+  void resetPagination() {
+    _lastPageCursor = null;
+    _hasMorePages = true;
+    _isLoadingMore = false;
+    _additionalPages = [];
+  }
+
+  // ========================================
   // CACHE INVALIDATION METHODS
   // ========================================
 
@@ -447,6 +520,7 @@ class GameProvider extends ChangeNotifier {
     _gameCacheTimestamps.clear();
     _queryResultCache.clear();
     _queryResultCacheTimestamps.clear();
+    resetPagination();
     // Do NOT close live stream managers — Firestore snapshot listeners
     // continue delivering updates automatically
   }
@@ -461,6 +535,7 @@ class GameProvider extends ChangeNotifier {
       }
       return false;
     });
+    resetPagination();
   }
 
   /// Refresh a specific game (invalidate and refetch)

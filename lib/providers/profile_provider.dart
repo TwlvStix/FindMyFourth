@@ -257,15 +257,17 @@ class ProfileProvider extends ChangeNotifier {
     }());
 
     try {
-      final fetched = await _service.batchGetUserProfiles(missingIds);
-
-      // Cache all fetched profiles
-      fetched.forEach((userId, profile) {
-        _profileCache[userId] = profile;
-        _profileCacheTimestamps[userId] = DateTime.now();
-      });
-
-      _scheduleNotify();
+      final fetched = await _service.batchGetUserProfilesProgressive(
+        missingIds,
+        onChunkComplete: (chunkProfiles) {
+          // Cache chunk profiles and notify UI progressively
+          chunkProfiles.forEach((userId, profile) {
+            _profileCache[userId] = profile;
+            _profileCacheTimestamps[userId] = DateTime.now();
+          });
+          _scheduleNotify();
+        },
+      );
 
       assert(() {
         AppLog.d('✅ ProfileProvider.warmProfiles: Cached ${fetched.length} profiles');

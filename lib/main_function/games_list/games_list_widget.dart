@@ -16,6 +16,7 @@ import '/main_function/games_list/managers/filter_handler.dart';
 import '/main_function/games_list/managers/mutual_action_handler.dart';
 import '/main_function/games_list/managers/mutual_friends_manager.dart';
 import '/main_function/games_list/managers/profile_warmer.dart';
+import '/main_function/games_list/managers/vibe_score_manager.dart';
 import '/main_function/games_list/models/quick_filter.dart';
 import '/main_function/games_list/utils/cancelled_game_handler.dart';
 import '/main_function/games_list/utils/game_filter_meta.dart';
@@ -46,7 +47,7 @@ class _GamesListWidgetState extends State<GamesListWidget> {
   QuickFilter _quickFilter = QuickFilter.all;
   GameSortOption _sortOption = GameSortOption.soonest;
 
-  // Vibe scores cache (game reference ID -> score 0-100)
+  // Vibe scores cache (owner UID -> score 0-100)
   final Map<String, double> _vibeScores = {};
 
   // Cache for the last computed filter metadata (not state - updated during build)
@@ -59,6 +60,7 @@ class _GamesListWidgetState extends State<GamesListWidget> {
   late final GamesListMutualFriendsManager _mutualFriendsManager;
   late final GamesListMutualActionHandler _mutualActionHandler;
   late final GamesListFilterHandler _filterHandler;
+  late final GamesListVibeScoreManager _vibeScoreManager;
 
   @override
   void initState() {
@@ -85,6 +87,10 @@ class _GamesListWidgetState extends State<GamesListWidget> {
       getFilterMeta: () => _lastFilterMeta,
       cancelledGameHandlingByGame: _cancelledGameHandlingByGame,
     );
+    _vibeScoreManager = GamesListVibeScoreManager(
+      state: this,
+      vibeScoresCache: _vibeScores,
+    );
   }
 
   @override
@@ -101,8 +107,9 @@ class _GamesListWidgetState extends State<GamesListWidget> {
             cachedRecords.map((record) => Game.fromRecord(record)).toList();
       }
 
-      _gamesStream = gameProvider.availableGamesStream().map((records) =>
-          records.map((record) => Game.fromRecord(record)).toList());
+      _gamesStream = gameProvider.availableGamesStream(limit: 50).map(
+          (records) =>
+              records.map((record) => Game.fromRecord(record)).toList());
 
       // Initialize GeoFilterProvider with user's location settings
       _initGeoFilterFromUser();
@@ -141,8 +148,9 @@ class _GamesListWidgetState extends State<GamesListWidget> {
   void _retryGamesStream() {
     final gameProvider = context.read<GameProvider>();
     updateState(this, () {
-      _gamesStream = gameProvider.availableGamesStream().map((records) =>
-          records.map((record) => Game.fromRecord(record)).toList());
+      _gamesStream = gameProvider.availableGamesStream(limit: 50).map(
+          (records) =>
+              records.map((record) => Game.fromRecord(record)).toList());
     });
   }
 
@@ -189,17 +197,24 @@ class _GamesListWidgetState extends State<GamesListWidget> {
     });
   }
 
+  Future<void> _handleLoadMore() async {
+    await context.read<GameProvider>().loadMoreAvailableGames();
+  }
+
   Future<void> _handleRefresh() async {
     final gameProvider = context.read<GameProvider>();
     gameProvider.invalidateAllGameCache();
     // Clear mutual friend caches on refresh
     _mutualFriendsManager.clearCache();
+    // Clear vibe score caches on refresh
+    _vibeScoreManager.clearCache();
     // Force fresh Firestore re-subscription for pull-to-refresh
     gameProvider.resetAvailableGamesStream();
     if (mounted) {
       updateState(this, () {
-        _gamesStream = gameProvider.availableGamesStream().map((records) =>
-            records.map((record) => Game.fromRecord(record)).toList());
+        _gamesStream = gameProvider.availableGamesStream(limit: 50).map(
+            (records) =>
+                records.map((record) => Game.fromRecord(record)).toList());
       });
     }
   }
@@ -210,6 +225,12 @@ class _GamesListWidgetState extends State<GamesListWidget> {
         context.select<UserProvider, DocumentReference?>(
       (p) => p.currentUser?.reference,
     );
+
+    // Read pagination state from GameProvider
+    final gameProvider = context.watch<GameProvider>();
+    final additionalGames = gameProvider.additionalPageGames
+        .map((record) => Game.fromRecord(record))
+        .toList();
 
     return GestureDetector(
       onTap: () {
@@ -258,6 +279,13 @@ class _GamesListWidgetState extends State<GamesListWidget> {
                 onRefresh: _handleRefresh,
                 onRetry: _retryGamesStream,
                 onNavigateToStanding: () => context.pushYourStanding(),
+                // Pagination
+                additionalGames: additionalGames,
+                isLoadingMore: gameProvider.isLoadingMore,
+                hasMorePages: gameProvider.hasMorePages,
+                onLoadMore: _handleLoadMore,
+                // Vibe score request
+                onVibeScoreRequest: _vibeScoreManager.requestScore,
                 // Mutual friend data
                 mutualFriendHostIds: _mutualFriendsManager.mutualFriendHostIds,
                 firstMutualFriendName: _mutualFriendsManager.firstMutualFriendName,
