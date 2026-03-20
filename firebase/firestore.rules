@@ -571,6 +571,15 @@ service cloud.firestore {
         );
     }
 
+    function participantRebookAllowed() {
+      let changed = request.resource.data.diff(resource.data).changedKeys();
+      return isSignedIn() &&
+        isParticipant(resource.data) &&
+        changed.hasOnly(['rebooked', 'rebooked_at']) &&
+        request.resource.data.rebooked == true &&
+        resource.data.status == 'completed';
+    }
+
     // ── Behavioral Dataset Helper Functions ──────────────────────────────────
 
     // Is the requesting user this specific player?
@@ -753,7 +762,8 @@ service cloud.firestore {
       ));
       allow update: if ownerUpdateAllowed() ||
         participantJoinAllowed() ||
-        participantLeaveAllowed();
+        participantLeaveAllowed() ||
+        participantRebookAllowed();
       allow delete: if false;
 
       // Join Requests — vibe floor approval flow

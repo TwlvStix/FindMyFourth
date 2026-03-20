@@ -34,7 +34,9 @@ class RebookPlayAgainSheet extends StatefulWidget {
 }
 
 class _RebookPlayAgainSheetState extends State<RebookPlayAgainSheet> {
-  DateTime? _selectedDate;
+  // Pre-select tomorrow to match CalendarDatePicker's initialDate so the
+  // Create Game button is enabled without requiring an explicit tap.
+  DateTime? _selectedDate = DateTime.now().add(const Duration(days: 1));
   TimeOfDay _selectedTime = const TimeOfDay(hour: 9, minute: 0);
   bool _isSubmitting = false;
   String? _errorMessage;

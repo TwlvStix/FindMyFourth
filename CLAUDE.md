@@ -211,6 +211,10 @@ Prefixed with `app_` and built on design tokens. Key widgets: `app_button_enhanc
 
 **Rule**: Most screens need 1 green CTA, 0-1 gold elements. Gold (`premium`) is earned, not sprinkled — use only for onboarding completion or premium upsells.
 
+> **⛔ UI UX Pro Max Skill**: Only use `--domain ux` and `--stack flutter` searches. 
+> Never use `--design-system`, `--domain style`, `--domain color`, or `--domain typography`. 
+> The Clubhouse design system in `lib/core/design_tokens/` is the sole source of truth for all visual design decisions.
+
 #### Quick Reference
 ```dart
 // Typography: AppTypography.headlineMediumSans, .titleLarge, .bodyMedium, .labelLarge, .labelMicro, .monoDisplay

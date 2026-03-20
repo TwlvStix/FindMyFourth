@@ -126,7 +126,7 @@ class RebookService {
         gameName: gameName,
       );
 
-      // Create game document (includes pre-added players atomically)
+      // Create game + host participant doc via proven CreateGameService path
       await _createGameService.createGameWithRef(
         gameRef: gameRef,
         formData: formData,
@@ -134,6 +134,16 @@ class RebookService {
         userRef: userRef,
         chatRef: chatRef,
       );
+
+      // Mark source game as rebooked (non-critical — rules may not be deployed)
+      try {
+        await sourceGame.reference.update({
+          'rebooked': true,
+          'rebooked_at': FieldValue.serverTimestamp(),
+        });
+      } catch (e) {
+        AppLog.d('📖 RebookService: rebook marking failed (rules may not be deployed): $e');
+      }
 
       // Create participant docs for pre-added players (non-critical)
       await _playerSearchService.createParticipantDocs(

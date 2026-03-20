@@ -49,6 +49,8 @@ class Game {
     this.flexibleWeek,
     this.flexibleStartDate,
     this.flexibleEndDate,
+    this.rebooked = false,
+    this.rebookedAt,
   });
 
   final DocumentReference reference;
@@ -88,6 +90,8 @@ class Game {
   final String? flexibleWeek;
   final DateTime? flexibleStartDate;
   final DateTime? flexibleEndDate;
+  final bool rebooked;
+  final DateTime? rebookedAt;
 
   static String resolveGameStatus({
     required String rawStatus,
@@ -221,6 +225,8 @@ class Game {
       flexibleWeek: data['flexible_week'] as String?,
       flexibleStartDate: flexibleStartDate,
       flexibleEndDate: flexibleEndDate,
+      rebooked: (data['rebooked'] as bool?) ?? false,
+      rebookedAt: (data['rebooked_at'] as Timestamp?)?.toDate(),
     );
   }
 
@@ -278,6 +284,8 @@ class Game {
       flexibleWeek: record.flexibleWeek,
       flexibleStartDate: record.flexibleStartDate,
       flexibleEndDate: record.flexibleEndDate,
+      rebooked: record.rebooked,
+      rebookedAt: record.rebookedAt,
     );
   }
 
@@ -287,6 +295,7 @@ class Game {
   bool get isExpired => status == 'expired';
   bool get isCompleted => status == 'completed';
   bool get isPlayed => status == 'played';
+  bool get isRebooked => rebooked;
   bool get isFlexible => scheduleType == 'flexible';
   bool get isConfirmed => scheduleType == 'confirmed';
 

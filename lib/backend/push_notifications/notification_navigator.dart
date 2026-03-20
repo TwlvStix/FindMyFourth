@@ -101,6 +101,22 @@ Future<void> handleNotificationNavigation(
         data['game_date'] ?? data['gameDate'] ?? 'your upcoming round';
 
     if (gameId is String && gameId.isNotEmpty) {
+      // Check if confirmation is still relevant
+      final shouldSkip = await _shouldSkipPreGameConfirmation(gameId);
+      if (shouldSkip) {
+        AppLog.d('🔔 [DIAG-NAV] host_pre_game_confirm: stale, navigating to game detail');
+        final navContext = context.mounted ? context : appNavigatorKey.currentContext;
+        if (navContext != null && navContext.mounted) {
+          navContext.pushNamed(
+            'GameJoinedDetailed',
+            extra: {
+              'gameRef': FirebaseFirestore.instance.doc('games/$gameId'),
+            },
+          );
+        }
+        return;
+      }
+
       final shown = await showBottomSheetWithRetry(
         showSheet: (ctx) => showPreGameConfirmBottomSheet(
           context: ctx,
@@ -281,6 +297,42 @@ Future<bool> showBottomSheetWithRetry({
     }
   }
   return false;
+}
+
+/// Returns true if the pre-game confirmation is stale (already handled or
+/// tee time passed). Returns false on failure (fail-open).
+Future<bool> _shouldSkipPreGameConfirmation(String gameId) async {
+  try {
+    final gameSnap = await FirebaseFirestore.instance
+        .collection('games')
+        .doc(gameId)
+        .get();
+
+    if (!gameSnap.exists) return true;
+    final data = gameSnap.data();
+    if (data == null) return true;
+
+    // Already resolved (timeout, confirmed, or cancelled)
+    final hostConfirmation = data['hostConfirmation'] as String?;
+    if (hostConfirmation != null && hostConfirmation != 'pending') {
+      AppLog.d('🔔 _shouldSkipPreGameConfirmation: game $gameId hostConfirmation=$hostConfirmation');
+      return true;
+    }
+
+    // Tee time has passed
+    final dateTimestamp = data['date'] as Timestamp?;
+    if (dateTimestamp != null && DateTime.now().isAfter(dateTimestamp.toDate())) {
+      AppLog.d('🔔 _shouldSkipPreGameConfirmation: game $gameId tee time passed');
+      return true;
+    }
+
+    return false;
+  } on FirebaseException catch (e) {
+    AppLog.d('❌ _shouldSkipPreGameConfirmation: ${e.code} - ${e.message}');
+    return false; // Fail-open
+  } catch (_) {
+    return false; // Fail-open
+  }
 }
 
 /// Show the friends-only game blocking dialog.

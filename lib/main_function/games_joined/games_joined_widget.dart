@@ -120,7 +120,7 @@ class _GamesJoinedWidgetState extends State<GamesJoinedWidget> {
                     final game = Game.fromRecord(record);
                     if (game.isActive || game.isPlayed) {
                       upcomingGames.add(game);
-                    } else if (game.isCompleted) {
+                    } else if (game.isCompleted && !game.isRebooked) {
                       recentRounds.add(game);
                     }
                     // expired games are hidden (not added to either list)

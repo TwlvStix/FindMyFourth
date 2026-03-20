@@ -44,7 +44,8 @@ class _RebookChangeCourseSheetState extends State<RebookChangeCourseSheet> {
   bool _isLoadingCourses = true;
 
   Course? _selectedCourse;
-  DateTime? _selectedDate;
+  // Pre-select tomorrow to match CalendarDatePicker's initialDate.
+  DateTime? _selectedDate = DateTime.now().add(const Duration(days: 1));
   TimeOfDay _selectedTime = const TimeOfDay(hour: 9, minute: 0);
   bool _isSubmitting = false;
   String? _errorMessage;

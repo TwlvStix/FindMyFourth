@@ -19,13 +19,14 @@ class GameCardRematchActions extends StatelessWidget {
   final Game game;
 
   void _onPlayAgain(BuildContext context) {
+    final messenger = ScaffoldMessenger.of(context);
     showAppBottomSheet(
       context: context,
       isScrollControlled: true,
       builder: (_) => RebookPlayAgainSheet(
         sourceGame: game,
         onGameCreated: () {
-          ScaffoldMessenger.of(context).showSnackBar(
+          messenger.showSnackBar(
             const SnackBar(
               content: Text('Game created. Players have been invited.'),
             ),
@@ -36,13 +37,14 @@ class GameCardRematchActions extends StatelessWidget {
   }
 
   void _onChangeCourse(BuildContext context) {
+    final messenger = ScaffoldMessenger.of(context);
     showAppBottomSheet(
       context: context,
       isScrollControlled: true,
       builder: (_) => RebookChangeCourseSheet(
         sourceGame: game,
         onGameCreated: () {
-          ScaffoldMessenger.of(context).showSnackBar(
+          messenger.showSnackBar(
             const SnackBar(
               content: Text('Game created. Players have been invited.'),
             ),

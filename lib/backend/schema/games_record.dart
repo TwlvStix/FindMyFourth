@@ -222,6 +222,16 @@ class GamesRecord extends FirestoreRecord {
   String? get createdVia => _createdVia;
   bool hasCreatedVia() => _createdVia != null;
 
+  // "rebooked" field. True when a new game has been created from this completed round.
+  bool? _rebooked;
+  bool get rebooked => _rebooked ?? false;
+  bool hasRebooked() => _rebooked != null;
+
+  // "rebooked_at" field. Timestamp when the round was rebooked.
+  DateTime? _rebookedAt;
+  DateTime? get rebookedAt => _rebookedAt;
+  bool hasRebookedAt() => _rebookedAt != null;
+
   void _initializeFields() {
     _nameGame = snapshotData['name_game'] as String?;
     _date = snapshotData['date'] as DateTime?;
@@ -264,6 +274,8 @@ class GamesRecord extends FirestoreRecord {
     _sideGameTags = getDataList(snapshotData['side_game_tags']);
     _sourceGameId = snapshotData['source_game_id'] as String?;
     _createdVia = snapshotData['created_via'] as String?;
+    _rebooked = snapshotData['rebooked'] as bool?;
+    _rebookedAt = snapshotData['rebooked_at'] as DateTime?;
   }
 
   static CollectionReference get collection =>
@@ -340,6 +352,8 @@ Map<String, dynamic> createGamesRecordData({
   List<String>? sideGameTags,
   String? sourceGameId,
   String? createdVia,
+  bool? rebooked,
+  DateTime? rebookedAt,
 }) {
   final firestoreData = mapToFirestore(
     <String, dynamic>{
@@ -383,6 +397,8 @@ Map<String, dynamic> createGamesRecordData({
       'side_game_tags': sideGameTags,
       'source_game_id': sourceGameId,
       'created_via': createdVia,
+      'rebooked': rebooked,
+      'rebooked_at': rebookedAt,
     }.withoutNulls,
   );
 
@@ -430,7 +446,9 @@ class GamesRecordDocumentEquality implements Equality<GamesRecord> {
         e1?.playerEligibility == e2?.playerEligibility &&
         listEquality.equals(e1?.sideGameTags, e2?.sideGameTags) &&
         e1?.sourceGameId == e2?.sourceGameId &&
-        e1?.createdVia == e2?.createdVia;
+        e1?.createdVia == e2?.createdVia &&
+        e1?.rebooked == e2?.rebooked &&
+        e1?.rebookedAt == e2?.rebookedAt;
   }
 
   @override
@@ -471,6 +489,8 @@ class GamesRecordDocumentEquality implements Equality<GamesRecord> {
         e?.sideGameTags,
         e?.sourceGameId,
         e?.createdVia,
+        e?.rebooked,
+        e?.rebookedAt,
       ]);
 
   @override
