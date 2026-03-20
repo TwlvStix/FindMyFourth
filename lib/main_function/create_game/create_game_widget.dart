@@ -60,6 +60,8 @@ class _CreateGameWidgetState extends State<CreateGameWidget> {
   bool _hasDraft = false;
   bool _isRematch = false;
   bool _hasAnimated = false;
+  bool _submitting = false;
+  int _courseRetryCount = 0;
 
   @override
   void initState() {
@@ -145,6 +147,19 @@ class _CreateGameWidgetState extends State<CreateGameWidget> {
   }
 
   Future<void> _submitGame() async {
+    if (_submitting) return;
+    updateState(this, () => _submitting = true);
+
+    try {
+      await _submitGameInner();
+    } finally {
+      if (mounted) {
+        updateState(this, () => _submitting = false);
+      }
+    }
+  }
+
+  Future<void> _submitGameInner() async {
     final userProvider = context.userProvider;
     final userId = userProvider.userIdOrNull;
     if (!userProvider.isAuthReady || userId == null) {
@@ -375,12 +390,16 @@ class _CreateGameWidgetState extends State<CreateGameWidget> {
                                 courseValueController: courseValueController,
                                 courseService: _courseService,
                                 hasAnimated: _hasAnimated,
+                                isSubmitting: _submitting,
                                 updateFormState: _updateFormState,
                                 saveDraft: _saveDraft,
                                 submitGame: _submitGame,
                                 onWeekChanged: _onWeekChanged,
                                 getFilteredEligibilityOptions:
                                     _getFilteredEligibilityOptions,
+                                courseStreamKey: ValueKey(_courseRetryCount),
+                                onCourseRetry: () => updateState(
+                                    this, () => _courseRetryCount++),
                               ),
                             ),
                           ],

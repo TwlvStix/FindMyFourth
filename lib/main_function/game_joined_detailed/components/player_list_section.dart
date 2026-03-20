@@ -184,33 +184,37 @@ class _PlayerListSectionState extends State<PlayerListSection> {
                 final userRef = profile?.reference ?? playerRef;
                 final photoUrl = profile?.photoUrl ?? '';
 
-                return _RegisteredPlayerCard(
-                  playerRef: playerRef,
-                  displayName: displayName,
-                  photoUrl: photoUrl,
-                  userRef: userRef,
-                  isPlayerOwner: isPlayerOwner,
-                  isViewerOwner: widget.isOwner,
-                  memberMatch: widget.memberMatchesById[playerRef.id],
-                  trustProfile: trustProfilesById[playerRef.id],
-                  staggerIndex: index,
-                  hasAnimated: widget.hasAnimated,
-                  onRemove: widget.onRemovePlayer != null
-                      ? () => widget.onRemovePlayer!(
-                            playerName: displayName,
-                            playerRef: playerRef,
-                            isGuest: false,
-                          )
-                      : null,
-                  onTap: () => widget.onPlayerTap(userRef),
-                  onMatchChipTap: widget.onMatchChipTap != null
-                      ? () => widget.onMatchChipTap!(
-                            userRef,
-                            displayName,
-                            photoUrl,
-                            widget.memberMatchesById[playerRef.id],
-                          )
-                      : null,
+                return Semantics(
+                  button: true,
+                  label: '$displayName${isPlayerOwner ? ', host' : ''}, tap to view profile',
+                  child: _RegisteredPlayerCard(
+                    playerRef: playerRef,
+                    displayName: displayName,
+                    photoUrl: photoUrl,
+                    userRef: userRef,
+                    isPlayerOwner: isPlayerOwner,
+                    isViewerOwner: widget.isOwner,
+                    memberMatch: widget.memberMatchesById[playerRef.id],
+                    trustProfile: trustProfilesById[playerRef.id],
+                    staggerIndex: index,
+                    hasAnimated: widget.hasAnimated,
+                    onRemove: widget.onRemovePlayer != null
+                        ? () => widget.onRemovePlayer!(
+                              playerName: displayName,
+                              playerRef: playerRef,
+                              isGuest: false,
+                            )
+                        : null,
+                    onTap: () => widget.onPlayerTap(userRef),
+                    onMatchChipTap: widget.onMatchChipTap != null
+                        ? () => widget.onMatchChipTap!(
+                              userRef,
+                              displayName,
+                              photoUrl,
+                              widget.memberMatchesById[playerRef.id],
+                            )
+                        : null,
+                  ),
                 );
               }),
 
@@ -220,19 +224,22 @@ class _PlayerListSectionState extends State<PlayerListSection> {
                 final guestName = entry.value;
                 final combinedIndex = groupPlayers.length + guestIndex;
 
-                return _GuestPlayerCard(
-                  guestName: guestName,
-                  isViewerOwner: widget.isOwner,
-                  staggerIndex: combinedIndex,
-                  hasAnimated: widget.hasAnimated,
-                  onRemove: widget.onRemovePlayer != null
-                      ? () => widget.onRemovePlayer!(
-                            playerName: guestName,
-                            playerRef: null,
-                            isGuest: true,
-                            guestName: guestName,
-                          )
-                      : null,
+                return Semantics(
+                  label: '$guestName, guest player',
+                  child: _GuestPlayerCard(
+                    guestName: guestName,
+                    isViewerOwner: widget.isOwner,
+                    staggerIndex: combinedIndex,
+                    hasAnimated: widget.hasAnimated,
+                    onRemove: widget.onRemovePlayer != null
+                        ? () => widget.onRemovePlayer!(
+                              playerName: guestName,
+                              playerRef: null,
+                              isGuest: true,
+                              guestName: guestName,
+                            )
+                        : null,
+                  ),
                 );
               }),
             ],

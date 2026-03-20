@@ -68,12 +68,16 @@ class _ToggleSegment extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
+    return Semantics(
+      button: true,
+      toggled: selected,
+      label: 'Mark as $label',
+      child: GestureDetector(
       onTap: onTap,
       child: AnimatedContainer(
         duration: MotionTokens.microInteraction,
         curve: MotionTokens.curveEnter,
-        height: 32,
+        height: 44,
         padding: EdgeInsets.symmetric(horizontal: AppSpacing.sm),
         decoration: BoxDecoration(
           color: selected ? selectedColor : AppColors.navyLight,
@@ -87,6 +91,7 @@ class _ToggleSegment extends StatelessWidget {
           ),
         ),
       ),
+    ),
     );
   }
 }

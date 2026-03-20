@@ -170,11 +170,14 @@ class _GamesJoinedWidgetState extends State<GamesJoinedWidget> {
                               child: Column(
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
-                                  AppEmptyStatePremium(
-                                    icon: AppPhosphorIcons.games,
-                                    title: 'No Games Yet',
-                                    message:
-                                        'Join or create a game to get started.',
+                                  Semantics(
+                                    label: 'No games yet. Join or create a game to get started.',
+                                    child: AppEmptyStatePremium(
+                                      icon: AppPhosphorIcons.games,
+                                      title: 'No Games Yet',
+                                      message:
+                                          'Join or create a game to get started.',
+                                    ),
                                   ),
                                   SizedBox(height: AppSpacing.lg),
                                   SizedBox(

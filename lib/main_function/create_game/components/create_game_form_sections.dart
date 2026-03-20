@@ -46,11 +46,14 @@ class CreateGameFormSections extends StatelessWidget {
     required this.courseValueController,
     required this.courseService,
     required this.hasAnimated,
+    this.isSubmitting = false,
     required this.updateFormState,
     required this.saveDraft,
     required this.submitGame,
     required this.onWeekChanged,
     required this.getFilteredEligibilityOptions,
+    this.courseStreamKey,
+    this.onCourseRetry,
   });
 
   final GlobalKey<FormState> formKey;
@@ -60,11 +63,14 @@ class CreateGameFormSections extends StatelessWidget {
   final FormFieldController<String> courseValueController;
   final CourseService courseService;
   final bool hasAnimated;
+  final bool isSubmitting;
   final FormStateUpdater updateFormState;
   final VoidCallback saveDraft;
   final VoidCallback submitGame;
   final void Function(String weekValue) onWeekChanged;
   final EligibilityOptionsResolver getFilteredEligibilityOptions;
+  final Key? courseStreamKey;
+  final VoidCallback? onCourseRetry;
 
   @override
   Widget build(BuildContext context) {
@@ -123,7 +129,9 @@ class CreateGameFormSections extends StatelessWidget {
             ),
             Padding(
               padding: EdgeInsets.only(top: AppSpacing.xxs),
-              child: SegmentedControl(
+              child: Semantics(
+                label: 'Schedule type: ${formData.scheduleType == 'confirmed' ? 'I have a tee time' : 'Flexible time'}',
+                child: SegmentedControl(
                 options: [
                   {
                     'value': 'confirmed',
@@ -151,6 +159,7 @@ class CreateGameFormSections extends StatelessWidget {
                   saveDraft();
                 },
               ),
+              ),
             ),
             if (formData.scheduleType == 'confirmed') ...[
               Padding(
@@ -167,7 +176,10 @@ class CreateGameFormSections extends StatelessWidget {
               ),
               if (formData.datePicked != null) ...[
                 SizedBox(height: AppSpacing.sm),
-                InkWell(
+                Semantics(
+                  button: true,
+                  label: 'Tee time: ${dateTimeFormat('jm', formData.datePicked)}, tap to change',
+                  child: InkWell(
                   onTap: () {
                     showTeeTimePicker(
                       context: context,
@@ -220,6 +232,7 @@ class CreateGameFormSections extends StatelessWidget {
                       ],
                     ),
                   ),
+                ),
                 ),
               ],
               if (formData.datePicked != null) ...[
@@ -295,26 +308,29 @@ class CreateGameFormSections extends StatelessWidget {
             ),
             Padding(
               padding: EdgeInsets.only(top: AppSpacing.xxs),
-              child: SegmentedControl(
-                options: [
-                  {
-                    'value': 'Friends',
-                    'label': 'Friends',
-                    'phosphorIcon': AppPhosphorIcons.people,
+              child: Semantics(
+                label: 'Visibility: ${formData.friendsValue}',
+                child: SegmentedControl(
+                  options: [
+                    {
+                      'value': 'Friends',
+                      'label': 'Friends',
+                      'phosphorIcon': AppPhosphorIcons.people,
+                    },
+                    {
+                      'value': 'Public',
+                      'label': 'Public',
+                      'phosphorIcon': AppPhosphorIcons.publicVisibility,
+                    },
+                  ],
+                  selectedValue: formData.friendsValue,
+                  onChanged: (val) {
+                    updateFormState(() {
+                      formData.friendsValue = val;
+                    });
+                    saveDraft();
                   },
-                  {
-                    'value': 'Public',
-                    'label': 'Public',
-                    'phosphorIcon': AppPhosphorIcons.publicVisibility,
-                  },
-                ],
-                selectedValue: formData.friendsValue,
-                onChanged: (val) {
-                  updateFormState(() {
-                    formData.friendsValue = val;
-                  });
-                  saveDraft();
-                },
+                ),
               ),
             ),
             buildAnimatedSection(
@@ -359,17 +375,21 @@ class CreateGameFormSections extends StatelessWidget {
               hasAnimated: hasAnimated,
               child: Padding(
                 padding: EdgeInsets.only(top: AppSpacing.md),
-                child: ToggleSwitch(
+                child: Semantics(
+                  toggled: formData.requireVibeMatch,
                   label: 'Require vibe match',
-                  description:
-                      'Players with a different play style will need your approval',
-                  value: formData.requireVibeMatch,
-                  onChanged: (val) {
-                    updateFormState(() {
-                      formData.requireVibeMatch = val;
-                    });
-                    saveDraft();
-                  },
+                  child: ToggleSwitch(
+                    label: 'Require vibe match',
+                    description:
+                        'Players with a different play style will need your approval',
+                    value: formData.requireVibeMatch,
+                    onChanged: (val) {
+                      updateFormState(() {
+                        formData.requireVibeMatch = val;
+                      });
+                      saveDraft();
+                    },
+                  ),
                 ),
               ),
             ),
@@ -386,8 +406,12 @@ class CreateGameFormSections extends StatelessWidget {
               child: Padding(
                 padding: EdgeInsets.only(top: AppSpacing.xxs),
                 child: StreamBuilder<List<Course>>(
+                  key: courseStreamKey,
                   stream: courseService.streamAllCourses(),
                   builder: (context, snapshot) {
+                    if (snapshot.hasError) {
+                      return _buildCourseErrorState();
+                    }
                     if (!snapshot.hasData) {
                       return Center(
                         child: SizedBox(
@@ -484,29 +508,37 @@ class CreateGameFormSections extends StatelessWidget {
               ),
             ),
             SizedBox(height: AppSpacing.md),
-            ToggleSwitch(
-              label: 'Member Guest Rate',
-              description:
-                  'This game is created by a course member who can offer guest-rate pricing.',
-              value: formData.memberDiscount,
-              onChanged: (val) {
-                updateFormState(() {
-                  formData.memberDiscount = val;
-                  formData.memberValue = val ? 'Yes' : 'No';
-                });
-                saveDraft();
-              },
+            Semantics(
+              toggled: formData.memberDiscount,
+              label: 'Member guest rate',
+              child: ToggleSwitch(
+                label: 'Member Guest Rate',
+                description:
+                    'This game is created by a course member who can offer guest-rate pricing.',
+                value: formData.memberDiscount,
+                onChanged: (val) {
+                  updateFormState(() {
+                    formData.memberDiscount = val;
+                    formData.memberValue = val ? 'Yes' : 'No';
+                  });
+                  saveDraft();
+                },
+              ),
             ),
-            ToggleSwitch(
-              label: 'Just for Fun',
-              description: 'Skip all the details. Just show up and play.',
-              value: formData.isJustForFun,
-              onChanged: (val) {
-                updateFormState(() {
-                  formData.isJustForFun = val;
-                });
-                saveDraft();
-              },
+            Semantics(
+              toggled: formData.isJustForFun,
+              label: 'Just for fun',
+              child: ToggleSwitch(
+                label: 'Just for Fun',
+                description: 'Skip all the details. Just show up and play.',
+                value: formData.isJustForFun,
+                onChanged: (val) {
+                  updateFormState(() {
+                    formData.isJustForFun = val;
+                  });
+                  saveDraft();
+                },
+              ),
             ),
             if (!formData.isJustForFun) ...[
               GameFormatSection(
@@ -640,12 +672,17 @@ class CreateGameFormSections extends StatelessWidget {
                 builder: (context, trust, _) {
                   final isRestricted =
                       trust.myStanding?.currentRestriction != null;
-                  return AppButtonEnhanced(
-                    text: 'Submit Game',
-                    variant: AppButtonVariant.primary,
-                    size: AppButtonSize.large,
-                    onPressed: isRestricted ? null : submitGame,
-                    enabled: !isRestricted,
+                  return Semantics(
+                    button: true,
+                    label: isSubmitting ? 'Submitting game' : 'Submit game',
+                    child: AppButtonEnhanced(
+                      text: 'Submit Game',
+                      variant: AppButtonVariant.primary,
+                      size: AppButtonSize.large,
+                      onPressed: isRestricted || isSubmitting ? null : submitGame,
+                      enabled: !isRestricted && !isSubmitting,
+                      isLoading: isSubmitting,
+                    ),
                   );
                 },
               ),
@@ -655,6 +692,44 @@ class CreateGameFormSections extends StatelessWidget {
               .addToStart(SizedBox(height: AppSpacing.xs))
               .addToEnd(SizedBox(height: AppSpacing.xs)),
         ),
+      ),
+    );
+  }
+
+  Widget _buildCourseErrorState() {
+    return Container(
+      padding: EdgeInsets.all(AppSpacing.lg),
+      decoration: BoxDecoration(
+        color: AppColors.navy.withValues(alpha: 0.2),
+        borderRadius: BorderRadius.circular(AppBorderRadius.md),
+        border: Border.all(
+          color: AppColors.navyLight.withValues(alpha: 0.3),
+        ),
+      ),
+      child: Column(
+        children: [
+          AppIcon(
+            icon: AppPhosphorIcons.warning,
+            size: AppIconSize.xl,
+            color: AppColors.textMuted,
+          ),
+          SizedBox(height: AppSpacing.sm),
+          Text(
+            'Unable to load courses',
+            style: AppTypography.bodySmall.copyWith(
+              color: AppColors.glassTextSecondary,
+            ),
+          ),
+          if (onCourseRetry != null) ...[
+            SizedBox(height: AppSpacing.md),
+            AppButtonEnhanced(
+              text: 'Try again',
+              variant: AppButtonVariant.secondary,
+              size: AppButtonSize.small,
+              onPressed: onCourseRetry,
+            ),
+          ],
+        ],
       ),
     );
   }

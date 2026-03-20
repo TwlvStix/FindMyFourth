@@ -99,6 +99,18 @@ class _GameJoinedDetailedWidgetState extends State<GameJoinedDetailedWidget>
     super.dispose();
   }
 
+  void _retryGameSubscription() {
+    _streamController.resetAndCancel();
+    updateState(this, () {
+      _gamesRecord = null;
+      _hasStreamError = false;
+      _pendingRequests = [];
+      _ownerVibeProfile = null;
+      _expandedRequestId = null;
+    });
+    _initGameSubscription();
+  }
+
   void _initGameSubscription() {
     final gameRef = widget.gameRef;
     if (gameRef == null) return;
@@ -162,6 +174,7 @@ class _GameJoinedDetailedWidgetState extends State<GameJoinedDetailedWidget>
           hasData: false,
           isDataNull: false,
           errorMessage: 'Please try again later.',
+          onRetry: _retryGameSubscription,
           child: const SizedBox.shrink(),
         ),
       );

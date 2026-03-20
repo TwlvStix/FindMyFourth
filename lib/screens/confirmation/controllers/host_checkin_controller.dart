@@ -1,8 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:flutter/animation.dart';
 
 import '/backend/cloud_functions/cloud_functions.dart';
-import '/core/motion/motion_tokens.dart';
 import '/core/utils/app_log.dart';
 import '/screens/confirmation/components/checkin_participant_entry.dart';
 import '/services/trust_flow_service.dart';
@@ -115,45 +113,4 @@ class HostCheckinController {
     }
   }
 
-  /// Builds fade and slide animations for staggered participant entrance.
-  ({List<Animation<double>> fades, List<Animation<Offset>> slides})
-      buildStaggerAnimations(
-    AnimationController controller,
-    int participantCount,
-  ) {
-    final fades = <Animation<double>>[];
-    final slides = <Animation<Offset>>[];
-
-    final itemCount =
-        participantCount.clamp(0, MotionTokens.staggerMaxItems);
-    if (itemCount == 0) return (fades: fades, slides: slides);
-
-    for (int i = 0; i < participantCount; i++) {
-      final staggerIndex = i.clamp(0, MotionTokens.staggerMaxItems - 1);
-      final startFraction = (staggerIndex * 24) / 600;
-      final endFraction = (startFraction + 0.4).clamp(0.0, 1.0);
-
-      fades.add(
-        Tween<double>(begin: 0.0, end: 1.0).animate(
-          CurvedAnimation(
-            parent: controller,
-            curve: Interval(startFraction, endFraction,
-                curve: MotionTokens.curveEnter),
-          ),
-        ),
-      );
-
-      slides.add(
-        Tween<Offset>(begin: const Offset(0, 0.08), end: Offset.zero).animate(
-          CurvedAnimation(
-            parent: controller,
-            curve: Interval(startFraction, endFraction,
-                curve: MotionTokens.curveEnter),
-          ),
-        ),
-      );
-    }
-
-    return (fades: fades, slides: slides);
-  }
 }

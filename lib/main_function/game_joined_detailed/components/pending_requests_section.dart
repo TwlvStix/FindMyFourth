@@ -185,6 +185,11 @@ class _PendingRequestsSectionState extends State<PendingRequestsSection> {
                           VibeProfile.defaults();
                   final isExpanded = request.id == widget.expandedRequestId;
 
+                  final requesterName =
+                      requesterProfile.displayName.isNotEmpty
+                          ? requesterProfile.displayName
+                          : 'Player';
+
                   // Build expanded card or collapsed row with animation
                   return AnimatedSize(
                     duration: ReducedMotionService.adjust(
@@ -193,19 +198,26 @@ class _PendingRequestsSectionState extends State<PendingRequestsSection> {
                     curve: MotionTokens.curveEnter,
                     alignment: Alignment.topCenter,
                     child: isExpanded
-                        ? _ExpandedRequestCard(
-                            request: request,
-                            requesterProfile: requesterProfile,
-                            ownerVibeProfile: widget.ownerVibeProfile,
-                            requesterVibeProfile: requesterVibeProfile,
-                            onApprove: () => widget.onApprove(request),
-                            onDecline: () => widget.onDecline(request),
-                            onRemoved: () => widget.onRemoved(request.id),
+                        ? Semantics(
+                            label: 'Join request from $requesterName, expanded',
+                            child: _ExpandedRequestCard(
+                              request: request,
+                              requesterProfile: requesterProfile,
+                              ownerVibeProfile: widget.ownerVibeProfile,
+                              requesterVibeProfile: requesterVibeProfile,
+                              onApprove: () => widget.onApprove(request),
+                              onDecline: () => widget.onDecline(request),
+                              onRemoved: () => widget.onRemoved(request.id),
+                            ),
                           )
-                        : _CollapsedRequestRow(
-                            request: request,
-                            requesterProfile: requesterProfile,
-                            onTap: () => widget.onExpandRequest(request.id),
+                        : Semantics(
+                            button: true,
+                            label: 'Join request from $requesterName, tap to expand',
+                            child: _CollapsedRequestRow(
+                              request: request,
+                              requesterProfile: requesterProfile,
+                              onTap: () => widget.onExpandRequest(request.id),
+                            ),
                           ),
                   );
                 }).toList(),

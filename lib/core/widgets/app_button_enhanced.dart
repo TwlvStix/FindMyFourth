@@ -175,13 +175,12 @@ class _AppButtonEnhancedState extends State<AppButtonEnhanced>
       vsync: this,
     );
 
-    _scaleAnimation = Tween<double>(
-      begin: 1.0,
-      end: 0.96,
-    ).animate(CurvedAnimation(
-      parent: _animationController,
-      curve: Curves.easeOut,
-    ));
+    _scaleAnimation = ReducedMotionService.shouldScale
+        ? Tween<double>(begin: 1.0, end: 0.96).animate(CurvedAnimation(
+            parent: _animationController,
+            curve: Curves.easeOut,
+          ))
+        : const AlwaysStoppedAnimation(1.0);
   }
 
   @override

@@ -7,6 +7,8 @@ import '/core/design_tokens/icon_size.dart';
 import '/core/design_tokens/spacing.dart';
 import '/core/design_tokens/typography.dart';
 import '/core/design_tokens/app_phosphor_icons.dart';
+import '/core/navigation/nav_extensions.dart';
+import '/core/widgets/app_button_enhanced.dart';
 import '/core/widgets/app_icon.dart';
 import '/core/widgets/fairway_background.dart';
 import 'premium_app_bar.dart';
@@ -36,6 +38,7 @@ class GameJoinedStateProps {
   final bool hasData;
   final bool isDataNull;
   final String? errorMessage;
+  final VoidCallback? onRetry;
   final Widget child;
 
   const GameJoinedStateProps({
@@ -44,6 +47,7 @@ class GameJoinedStateProps {
     required this.hasData,
     required this.isDataNull,
     this.errorMessage,
+    this.onRetry,
     required this.child,
   });
 
@@ -84,7 +88,7 @@ class GameJoinedStateHandler extends StatelessWidget {
       case GameJoinedLoadState.loading:
         return _buildLoadingState();
       case GameJoinedLoadState.notFound:
-        return _buildNotFoundState();
+        return _buildNotFoundState(context);
       case GameJoinedLoadState.ready:
         return props.child;
     }
@@ -132,6 +136,15 @@ class GameJoinedStateHandler extends StatelessWidget {
                   color: Colors.white.withValues(alpha: 0.6), // Keep: no 60% token
                 ),
               ),
+              if (props.onRetry != null) ...[
+                SizedBox(height: AppSpacing.lg),
+                AppButtonEnhanced(
+                  text: 'Try again',
+                  variant: AppButtonVariant.secondary,
+                  size: AppButtonSize.medium,
+                  onPressed: props.onRetry,
+                ),
+              ],
             ],
           ),
         ),
@@ -168,14 +181,53 @@ class GameJoinedStateHandler extends StatelessWidget {
     );
   }
 
-  Widget _buildNotFoundState() {
+  Widget _buildNotFoundState(BuildContext context) {
     return Scaffold(
+      extendBodyBehindAppBar: true,
       appBar: const PremiumAppBar(title: 'Game'),
-      body: Center(
-        child: Text(
-          'Game not found',
-          style: AppTypography.bodyMedium.copyWith(
-            color: AppColors.textPrimary,
+      body: FairwayBackgroundDark(
+        showOrganic: true,
+        showTexture: true,
+        child: Center(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 80,
+                height: 80,
+                decoration: BoxDecoration(
+                  color: AppColors.navy.withValues(alpha: 0.3),
+                  shape: BoxShape.circle,
+                ),
+                child: AppIcon(
+                  icon: AppPhosphorIcons.error,
+                  color: AppColors.pure.withValues(alpha: 0.5),
+                  size: AppIconSize.xl,
+                ),
+              ),
+              SizedBox(height: AppSpacing.md),
+              Text(
+                'Game not found',
+                style: AppTypography.titleSmall.copyWith(
+                  color: AppColors.pure,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              SizedBox(height: AppSpacing.xs),
+              Text(
+                'This game may have been removed.',
+                style: AppTypography.bodySmall.copyWith(
+                  color: Colors.white.withValues(alpha: 0.6), // Keep: no 60% token
+                ),
+              ),
+              SizedBox(height: AppSpacing.lg),
+              AppButtonEnhanced(
+                text: 'Go to My Games',
+                variant: AppButtonVariant.primary,
+                size: AppButtonSize.medium,
+                onPressed: () => context.goGamesList(),
+              ),
+            ],
           ),
         ),
       ),

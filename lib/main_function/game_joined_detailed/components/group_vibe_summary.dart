@@ -26,7 +26,11 @@ class GroupVibeSummary extends StatelessWidget {
     final groupScore = result?.groupFitScore.round() ?? 0;
     final hasResult = result != null;
 
-    return Container(
+    return Semantics(
+      label: hasResult
+          ? 'Group vibe match: $groupScore percent'
+          : 'Group vibe match: calculating',
+      child: Container(
       padding: EdgeInsets.all(AppSpacing.md),
       decoration: BoxDecoration(
         gradient: LinearGradient(
@@ -89,7 +93,10 @@ class GroupVibeSummary extends StatelessWidget {
               ),
               // DETAILS button
               if (hasResult)
-                GestureDetector(
+                Semantics(
+                  button: true,
+                  label: 'View vibe match details',
+                  child: GestureDetector(
                   onTap: onViewBreakdown,
                   child: Container(
                     padding: EdgeInsets.symmetric(
@@ -121,6 +128,7 @@ class GroupVibeSummary extends StatelessWidget {
                       ],
                     ),
                   ),
+                ),
                 ),
             ],
           ),
@@ -160,6 +168,7 @@ class GroupVibeSummary extends StatelessWidget {
           ],
         ],
       ),
+    ),
     );
   }
 

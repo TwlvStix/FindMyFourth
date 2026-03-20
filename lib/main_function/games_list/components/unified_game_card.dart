@@ -7,6 +7,8 @@ import '/core/design_tokens/elevation.dart';
 import '/core/design_tokens/icon_size.dart';
 import '/core/design_tokens/spacing.dart';
 import '/core/design_tokens/typography.dart';
+import '/core/motion/animated_entrance.dart';
+import '/core/motion/animated_scale_tap.dart';
 import '/core/motion/motion_tokens.dart';
 import '/core/widgets/app_icon.dart';
 import '/core/design_tokens/app_phosphor_icons.dart';
@@ -64,60 +66,12 @@ class UnifiedGameCard extends StatefulWidget {
   State<UnifiedGameCard> createState() => _UnifiedGameCardState();
 }
 
-class _UnifiedGameCardState extends State<UnifiedGameCard>
-    with SingleTickerProviderStateMixin {
-  late AnimationController _controller;
-  late Animation<double> _fadeAnimation;
-  late Animation<Offset> _slideAnimation;
-  bool _isPressed = false;
-
-  @override
-  void initState() {
-    super.initState();
-
-    // Cap stagger at max items
-    final effectiveIndex =
-        widget.animationIndex.clamp(0, MotionTokens.staggerMaxItems - 1);
-    final staggerDelay = MotionTokens.staggerDelay * effectiveIndex;
-
-    _controller = AnimationController(
-      duration: MotionTokens.contentReveal,
-      vsync: this,
-    );
-
-    _fadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
-      CurvedAnimation(parent: _controller, curve: MotionTokens.curveEnter),
-    );
-
-    _slideAnimation = Tween<Offset>(
-      begin: const Offset(0, 0.08),
-      end: Offset.zero,
-    ).animate(
-      CurvedAnimation(parent: _controller, curve: MotionTokens.curveEnter),
-    );
-
-    // Start animation after stagger delay
-    Future.delayed(staggerDelay, () {
-      if (mounted) {
-        _controller.forward();
-      }
-    });
-  }
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
-
+class _UnifiedGameCardState extends State<UnifiedGameCard> {
   @override
   Widget build(BuildContext context) {
-    return FadeTransition(
-      opacity: _fadeAnimation,
-      child: SlideTransition(
-        position: _slideAnimation,
-        child: _buildCard(context),
-      ),
+    return AnimatedEntrance(
+      animationIndex: widget.animationIndex,
+      child: _buildCard(context),
     );
   }
 
@@ -136,10 +90,24 @@ class _UnifiedGameCardState extends State<UnifiedGameCard>
         (game.userRef == currentUserReference ||
             game.joinedPlayers.contains(currentUserReference));
 
-    return GestureDetector(
-      onTapDown: (_) => setState(() => _isPressed = true),
-      onTapUp: (_) => setState(() => _isPressed = false),
-      onTapCancel: () => setState(() => _isPressed = false),
+    // Build accessibility label
+    final semanticParts = <String>[];
+    if (game.coursePlay.isNotEmpty) semanticParts.add(game.coursePlay);
+    if (game.isFlexible) {
+      semanticParts.add('Flexible schedule');
+    } else if (game.date != null) {
+      final d = game.date!;
+      semanticParts.add(
+        '${_getDayOfWeek(d.weekday)}, ${_getMonth(d.month)} ${d.day} at ${_formatTime(d)}',
+      );
+    }
+    semanticParts.add('$spotsLeft spots left');
+    if (isCancelled) semanticParts.add('Cancelled');
+
+    return Semantics(
+      button: true,
+      label: semanticParts.join(', '),
+      child: AnimatedScaleTap(
       onTap: () {
         if (widget.onTap != null) {
           widget.onTap!();
@@ -152,13 +120,8 @@ class _UnifiedGameCardState extends State<UnifiedGameCard>
           context.pushJoinGameDetailed(gameRef: game.reference);
         }
       },
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 120),
-        curve: Curves.easeOut,
-        transform: _isPressed
-            ? (Matrix4.identity()..setEntry(0, 0, 0.982)..setEntry(1, 1, 0.982))
-            : Matrix4.identity(),
-        child: Opacity(
+      scaleFactor: MotionTokens.pressScaleSubtle,
+      child: Opacity(
           opacity: isCancelled ? 0.65 : 1.0,
           child: Container(
             clipBehavior: Clip.antiAlias,
@@ -221,6 +184,7 @@ class _UnifiedGameCardState extends State<UnifiedGameCard>
       ),
     );
   }
+
 
   Widget _buildHeaderRow({
     required bool isFlexible,

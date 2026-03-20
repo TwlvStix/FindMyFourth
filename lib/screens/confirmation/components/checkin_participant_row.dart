@@ -23,7 +23,14 @@ class CheckinParticipantRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
+    final roleLabel = participant.role == 'host'
+        ? ', host'
+        : participant.isGuest
+            ? ', guest'
+            : '';
+    return Semantics(
+      label: '${participant.displayName}$roleLabel, ${isPresent ? 'marked present' : 'marked no-show'}',
+      child: Container(
       padding: EdgeInsets.symmetric(
         horizontal: AppSpacing.md,
         vertical: AppSpacing.sm,
@@ -78,6 +85,7 @@ class CheckinParticipantRow extends StatelessWidget {
           ),
         ],
       ),
+    ),
     );
   }
 
@@ -113,7 +121,9 @@ class CheckinParticipantRow extends StatelessWidget {
 class _HostBadge extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return Container(
+    return Semantics(
+      label: 'Host',
+      child: Container(
       padding: EdgeInsets.symmetric(
         horizontal: AppSpacing.xs,
         vertical: 2,
@@ -133,6 +143,7 @@ class _HostBadge extends StatelessWidget {
           fontWeight: FontWeight.w600,
         ),
       ),
+    ),
     );
   }
 }

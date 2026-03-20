@@ -2,14 +2,15 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import '/core/utils/state_update.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:phosphor_flutter/phosphor_flutter.dart';
 
 import '/core/design_tokens/colors.dart';
 import '/core/design_tokens/spacing.dart';
 import '/core/design_tokens/typography.dart';
 import '/core/design_tokens/icon_size.dart';
 import '/core/design_tokens/app_phosphor_icons.dart';
+import '/core/motion/animated_entrance.dart';
 import '/core/widgets/app_button_enhanced.dart';
+import '/core/widgets/app_icon.dart';
 import '/main_function/games_joined/games_joined_widget.dart';
 import 'components/checkin_participant_entry.dart';
 import 'components/checkin_participant_row.dart';
@@ -36,8 +37,7 @@ class HostCheckinScreen extends StatefulWidget {
   State<HostCheckinScreen> createState() => _HostCheckinScreenState();
 }
 
-class _HostCheckinScreenState extends State<HostCheckinScreen>
-    with TickerProviderStateMixin {
+class _HostCheckinScreenState extends State<HostCheckinScreen> {
   final _controller = HostCheckinController();
 
   bool _loading = true;
@@ -51,24 +51,10 @@ class _HostCheckinScreenState extends State<HostCheckinScreen>
   final List<CheckinParticipantEntry> _participants = [];
   final Map<String, bool> _attendance = {};
 
-  late AnimationController _staggerController;
-  List<Animation<double>> _fadeAnimations = [];
-  List<Animation<Offset>> _slideAnimations = [];
-
   @override
   void initState() {
     super.initState();
-    _staggerController = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 600),
-    );
     _loadParticipants();
-  }
-
-  @override
-  void dispose() {
-    _staggerController.dispose();
-    super.dispose();
   }
 
   void _navigateToMyGames({String? message}) {
@@ -118,13 +104,6 @@ class _HostCheckinScreenState extends State<HostCheckinScreen>
           _attendance.addAll(defaultAttendance);
           _loading = false;
         });
-        final anims = _controller.buildStaggerAnimations(
-          _staggerController,
-          _participants.length,
-        );
-        _fadeAnimations = anims.fades;
-        _slideAnimations = anims.slides;
-        _staggerController.forward();
     }
   }
 
@@ -152,6 +131,16 @@ class _HostCheckinScreenState extends State<HostCheckinScreen>
           _error = message;
         });
     }
+  }
+
+  void _retryLoad() {
+    updateState(this, () {
+      _error = null;
+      _loading = true;
+      _participants.clear();
+      _attendance.clear();
+    });
+    _loadParticipants();
   }
 
   @override
@@ -207,9 +196,13 @@ class _HostCheckinScreenState extends State<HostCheckinScreen>
         title: Text('Confirm Attendance', style: AppTypography.titleMedium),
         centerTitle: true,
         leading: IconButton(
-          icon: PhosphorIcon(AppPhosphorIcons.back,
-              color: AppColors.textPrimary),
+          icon: AppIcon(
+            icon: AppPhosphorIcons.back,
+            color: AppColors.textPrimary,
+            size: AppIconSize.md,
+          ),
           onPressed: () => _navigateToMyGames(),
+          tooltip: 'Back to My Games',
         ),
       ),
       body: SafeArea(
@@ -245,12 +238,23 @@ class _HostCheckinScreenState extends State<HostCheckinScreen>
                           padding: AppSpacing.symmetric(
                               horizontal: AppSpacing.xl,
                               vertical: AppSpacing.sm),
-                          child: Text(
-                            _error!,
-                            style: AppTypography.bodySmall.copyWith(
-                              color: AppColors.error,
-                            ),
-                            textAlign: TextAlign.center,
+                          child: Column(
+                            children: [
+                              Text(
+                                _error!,
+                                style: AppTypography.bodySmall.copyWith(
+                                  color: AppColors.error,
+                                ),
+                                textAlign: TextAlign.center,
+                              ),
+                              SizedBox(height: AppSpacing.sm),
+                              AppButtonEnhanced(
+                                text: 'Try again',
+                                variant: AppButtonVariant.secondary,
+                                size: AppButtonSize.small,
+                                onPressed: _retryLoad,
+                              ),
+                            ],
                           ),
                         ),
                       Padding(
@@ -283,31 +287,18 @@ class _HostCheckinScreenState extends State<HostCheckinScreen>
     final p = _participants[i];
     final isPresent = _attendance[p.key] ?? true;
 
-    Widget row = CheckinParticipantRow(
-      participant: p,
-      isPresent: isPresent,
-      onToggle: (val) {
-        updateState(this, () {
-          _attendance[p.key] = val;
-        });
-      },
+    return AnimatedEntrance(
+      animationIndex: i,
+      child: CheckinParticipantRow(
+        participant: p,
+        isPresent: isPresent,
+        onToggle: (val) {
+          updateState(this, () {
+            _attendance[p.key] = val;
+          });
+        },
+      ),
     );
-
-    if (i < _fadeAnimations.length) {
-      row = AnimatedBuilder(
-        animation: _staggerController,
-        builder: (context, child) => Opacity(
-          opacity: _fadeAnimations[i].value,
-          child: SlideTransition(
-            position: _slideAnimations[i],
-            child: child,
-          ),
-        ),
-        child: row,
-      );
-    }
-
-    return row;
   }
 
   Widget _buildHeader() {
@@ -318,30 +309,34 @@ class _HostCheckinScreenState extends State<HostCheckinScreen>
         right: AppSpacing.xl,
         bottom: AppSpacing.xl,
       ),
-      child: Column(
-        children: [
-          PhosphorIcon(
-            AppPhosphorIcons.golfCourse,
-            color: AppColors.textSecondary,
-            size: AppIconSize.xxl,
-          ),
-          SizedBox(height: AppSpacing.md),
-          Text(
-            _courseName,
-            style: AppTypography.titleMedium.copyWith(
-              color: AppColors.textPrimary,
-            ),
-            textAlign: TextAlign.center,
-          ),
-          SizedBox(height: AppSpacing.xs),
-          Text(
-            'Who played today?',
-            style: AppTypography.bodyMedium.copyWith(
+      child: Semantics(
+        header: true,
+        label: 'Confirm attendance for $_courseName. Who played today?',
+        child: Column(
+          children: [
+            AppIcon(
+              icon: AppPhosphorIcons.golfCourse,
               color: AppColors.textSecondary,
+              size: AppIconSize.xxl,
             ),
-            textAlign: TextAlign.center,
-          ),
-        ],
+            SizedBox(height: AppSpacing.md),
+            Text(
+              _courseName,
+              style: AppTypography.titleMedium.copyWith(
+                color: AppColors.textPrimary,
+              ),
+              textAlign: TextAlign.center,
+            ),
+            SizedBox(height: AppSpacing.xs),
+            Text(
+              'Who played today?',
+              style: AppTypography.bodyMedium.copyWith(
+                color: AppColors.textSecondary,
+              ),
+              textAlign: TextAlign.center,
+            ),
+          ],
+        ),
       ),
     );
   }

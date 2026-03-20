@@ -56,24 +56,32 @@ class GameActionButtons extends StatelessWidget {
         if (!isOwner)
           Padding(
             padding: EdgeInsets.symmetric(horizontal: AppSpacing.md),
-            child: AppButtonEnhanced(
-              text: 'Leave game',
-              variant: AppButtonVariant.destructiveOutlined,
-              size: AppButtonSize.large,
-              fullWidth: true,
-              onPressed: () => _handleLeaveGame(context),
+            child: Semantics(
+              button: true,
+              label: 'Leave game',
+              child: AppButtonEnhanced(
+                text: 'Leave game',
+                variant: AppButtonVariant.destructiveOutlined,
+                size: AppButtonSize.large,
+                fullWidth: true,
+                onPressed: () => _handleLeaveGame(context),
+              ),
             ),
           ),
         // Cancel game button (for owner)
         if (isOwner)
           Padding(
             padding: EdgeInsets.symmetric(horizontal: AppSpacing.md),
-            child: AppButtonEnhanced(
-              text: 'Cancel game',
-              variant: AppButtonVariant.destructiveOutlined,
-              size: AppButtonSize.large,
-              fullWidth: true,
-              onPressed: () => _handleCancelGame(context),
+            child: Semantics(
+              button: true,
+              label: 'Cancel game',
+              child: AppButtonEnhanced(
+                text: 'Cancel game',
+                variant: AppButtonVariant.destructiveOutlined,
+                size: AppButtonSize.large,
+                fullWidth: true,
+                onPressed: () => _handleCancelGame(context),
+              ),
             ),
           ),
       ],

@@ -82,6 +82,12 @@ class MotionTokens {
   /// Dialog scale end value (1.0)
   static const double dialogScaleEnd = 1.0;
 
+  /// Standard press scale for interactive elements (0.96)
+  static const double pressScale = 0.96;
+
+  /// Subtle press scale for larger card-level elements (0.982)
+  static const double pressScaleSubtle = 0.982;
+
   // ============================================================================
   // STAGGER RULES
   // ============================================================================

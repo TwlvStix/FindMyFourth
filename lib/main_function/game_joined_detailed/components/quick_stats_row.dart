@@ -42,11 +42,20 @@ class QuickStatsRow extends StatelessWidget {
     final spotsLeft = game.maxPlayers - (game.joinedPlayers.length + game.guestPlayers.length);
     final isFull = spotsLeft <= 0;
 
+    final dateLabel = game.date != null
+        ? '${dateTimeFormat("MMM d", game.date)} at ${dateTimeFormat("jm", game.date)}'
+        : 'Date not set';
+    final spotsLabel = isFull
+        ? 'Full, ${game.joinedPlayers.length + game.guestPlayers.length} of ${game.maxPlayers} players'
+        : '$spotsLeft spots left, ${game.joinedPlayers.length + game.guestPlayers.length} of ${game.maxPlayers} players';
+
     return Row(
       children: [
         // Date Card
         Expanded(
-          child: Container(
+          child: Semantics(
+            label: 'Game date: $dateLabel',
+            child: Container(
             padding: EdgeInsets.all(AppSpacing.md),
             decoration: BoxDecoration(
               color: AppColors.navy.withValues(alpha: 0.3),
@@ -108,9 +117,12 @@ class QuickStatsRow extends StatelessWidget {
             ),
           ),
         ),
+        ),
         SizedBox(width: AppSpacing.sm),
         // Players Card
-        Container(
+        Semantics(
+          label: spotsLabel,
+          child: Container(
           padding: EdgeInsets.all(AppSpacing.md),
           decoration: BoxDecoration(
             color: AppColors.navy.withValues(alpha: 0.3),
@@ -158,6 +170,7 @@ class QuickStatsRow extends StatelessWidget {
               ),
             ],
           ),
+        ),
         ),
       ],
     );

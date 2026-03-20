@@ -17,6 +17,7 @@ class AppStreamBuilder<T> extends StatelessWidget {
   final Widget Function(BuildContext context, Object error)? errorBuilder;
   final VoidCallback? onRetry;
   final T? initialData;
+  final String loadingSemantics;
 
   const AppStreamBuilder({
     super.key,
@@ -26,6 +27,7 @@ class AppStreamBuilder<T> extends StatelessWidget {
     this.errorBuilder,
     this.onRetry,
     this.initialData,
+    this.loadingSemantics = 'Loading',
   });
 
   @override
@@ -58,7 +60,10 @@ class AppStreamBuilder<T> extends StatelessWidget {
 
   Widget _defaultLoading() {
     return Center(
-      child: CircularProgressIndicator(),
+      child: Semantics(
+        label: loadingSemantics,
+        child: CircularProgressIndicator(),
+      ),
     );
   }
 

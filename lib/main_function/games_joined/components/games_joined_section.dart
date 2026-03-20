@@ -35,9 +35,13 @@ class GamesJoinedSection extends StatelessWidget {
               horizontal: AppSpacing.md,
               vertical: AppSpacing.sm,
             ),
-            child: PremiumSectionHeader(
-              title: title,
-              subtitle: subtitle,
+            child: Semantics(
+              header: true,
+              label: title,
+              child: PremiumSectionHeader(
+                title: title,
+                subtitle: subtitle,
+              ),
             ),
           ),
         ),
@@ -45,6 +49,7 @@ class GamesJoinedSection extends StatelessWidget {
           delegate: SliverChildBuilderDelegate(
             (context, index) {
               return Padding(
+                key: ValueKey(games[index].reference.id),
                 padding: EdgeInsets.symmetric(
                   horizontal: AppSpacing.md,
                   vertical: AppSpacing.xs,
