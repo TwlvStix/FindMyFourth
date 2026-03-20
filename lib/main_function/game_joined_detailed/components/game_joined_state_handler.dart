@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '/backend/backend.dart';
 import '/core/design_tokens/colors.dart';
 import '/core/design_tokens/icon_size.dart';
+import '/core/design_tokens/opacity.dart';
 import '/core/design_tokens/spacing.dart';
 import '/core/design_tokens/typography.dart';
 import '/core/design_tokens/app_phosphor_icons.dart';
@@ -133,7 +134,7 @@ class GameJoinedStateHandler extends StatelessWidget {
               Text(
                 subtitle,
                 style: AppTypography.bodySmall.copyWith(
-                  color: Colors.white.withValues(alpha: 0.6), // Keep: no 60% token
+                  color: AppColors.pure.withValues(alpha: AppOpacity.prominent),
                 ),
               ),
               if (props.onRetry != null) ...[
@@ -202,7 +203,7 @@ class GameJoinedStateHandler extends StatelessWidget {
               Text(
                 'This game may have been removed.',
                 style: AppTypography.bodySmall.copyWith(
-                  color: Colors.white.withValues(alpha: 0.6), // Keep: no 60% token
+                  color: AppColors.pure.withValues(alpha: AppOpacity.prominent),
                 ),
               ),
               SizedBox(height: AppSpacing.lg),
