@@ -103,7 +103,17 @@ class _GamesJoinedWidgetState extends State<GamesJoinedWidget> {
                         .read<GameProvider>()
                         .userGamesStream(currentUserUid),
                 initialData: _cachedGames,
-                onRetry: () => updateState(this, () {}),
+                onRetry: () {
+                  // Force-creates a fresh BehaviorSubject + Firestore subscription
+                  // via performRequest(overrideCache: true), replacing the errored one.
+                  context.read<GameProvider>().userGamesStream(
+                        currentUserUid,
+                        overrideCache: true,
+                      );
+                  // Rebuild so build() calls userGamesStream() again and StreamBuilder
+                  // receives the new BehaviorSubject stream, triggering re-subscription.
+                  updateState(this, () {});
+                },
                 loadingBuilder: (context) => CustomScrollView(
                   physics: const AlwaysScrollableScrollPhysics(
                     parent: BouncingScrollPhysics(),
@@ -174,9 +184,6 @@ class _GamesJoinedWidgetState extends State<GamesJoinedWidget> {
                       context
                           .read<GameProvider>()
                           .invalidateUserGamesCache(currentUserUid);
-                      if (mounted) {
-                        updateState(this, () {});
-                      }
                     },
                     child: CustomScrollView(
                       physics: const AlwaysScrollableScrollPhysics(
