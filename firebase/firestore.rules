@@ -622,7 +622,9 @@ service cloud.firestore {
       // user document so that other authenticated users cannot read them via
       // direct Firestore queries (the main document allows any-auth reads).
       match /private/{doc} {
-        allow read, write: if isSignedIn() && request.auth.uid == document;
+        // apple_auth is server-managed (Admin SDK bypasses rules) — deny client access.
+        allow read, write: if isSignedIn() && request.auth.uid == document
+          && doc != 'apple_auth';
       }
 
       match /devices/{deviceId} {

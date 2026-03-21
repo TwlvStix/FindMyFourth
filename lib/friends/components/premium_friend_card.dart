@@ -2,8 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import '/core/motion/motion_tokens.dart';
-import '/core/motion/reduced_motion.dart';
-import '/core/utils/formatting_utils.dart';
+import '/core/motion/animated_scale_tap.dart';
 import '/backend/backend.dart';
 import '/core/design_tokens/spacing.dart';
 import '/core/design_tokens/colors.dart';
@@ -16,6 +15,7 @@ import 'friend_card_action_button.dart';
 import 'premium_friend_card/friend_card_background.dart';
 import 'premium_friend_card/vibe_ring_avatar.dart';
 import 'premium_friend_card/friend_card_footer.dart';
+import 'premium_friend_card/friend_card_user_info.dart';
 
 // Re-export for backwards compatibility
 export 'friend_card_action_button.dart' show ActionButtonVariant;
@@ -27,9 +27,6 @@ export 'friend_card_action_button.dart' show ActionButtonVariant;
 /// - Stats strip with vibe match percentage
 /// - Footer with Message + Action buttons
 class PremiumFriendCard extends StatefulWidget {
-  static final Color textPrimary = AppColors.sand;
-  static final Color textMuted = AppColors.glassTextTertiary;
-
   final UsersRecord user;
   final VoidCallback? onViewProfile;
   final VoidCallback? onMessage;
@@ -83,11 +80,7 @@ class PremiumFriendCard extends StatefulWidget {
   State<PremiumFriendCard> createState() => _PremiumFriendCardState();
 }
 
-class _PremiumFriendCardState extends State<PremiumFriendCard>
-    with SingleTickerProviderStateMixin {
-  late AnimationController _scaleController;
-  late Animation<double> _scaleAnimation;
-  bool _isPressed = false;
+class _PremiumFriendCardState extends State<PremiumFriendCard> {
   VibeMatchResult? _vibeMatch;
 
   // Stagger animation delay per card (24ms base, capped at 8 cards)
@@ -99,13 +92,6 @@ class _PremiumFriendCardState extends State<PremiumFriendCard>
   @override
   void initState() {
     super.initState();
-    _scaleController = AnimationController(
-      vsync: this,
-      duration: ReducedMotionService.adjust(MotionTokens.microInteraction),
-    );
-    _scaleAnimation = Tween<double>(begin: 1.0, end: 0.98).animate(
-      CurvedAnimation(parent: _scaleController, curve: MotionTokens.curveEnter),
-    );
     _calculateVibeMatch();
   }
 
@@ -117,12 +103,6 @@ class _PremiumFriendCardState extends State<PremiumFriendCard>
         oldWidget.currentUser?.vibeProfile != widget.currentUser?.vibeProfile) {
       _calculateVibeMatch();
     }
-  }
-
-  @override
-  void dispose() {
-    _scaleController.dispose();
-    super.dispose();
   }
 
   void _calculateVibeMatch() {
@@ -160,45 +140,24 @@ class _PremiumFriendCardState extends State<PremiumFriendCard>
     return null;
   }
 
-  void _onTapDown(TapDownDetails _) {
-    setState(() => _isPressed = true);
-    _scaleController.forward();
-    HapticFeedback.lightImpact();
-  }
-
-  void _onTapUp(TapUpDetails _) {
-    setState(() => _isPressed = false);
-    _scaleController.reverse();
-  }
-
-  void _onTapCancel() {
-    setState(() => _isPressed = false);
-    _scaleController.reverse();
-  }
-
   @override
   Widget build(BuildContext context) {
-    return ScaleTransition(
-      scale: _scaleAnimation,
-      child: GestureDetector(
-        onTapDown: _onTapDown,
-        onTapUp: _onTapUp,
-        onTapCancel: _onTapCancel,
-        onTap: widget.onViewProfile,
-        child: Container(
-          margin: EdgeInsets.symmetric(
-            horizontal: AppSpacing.md,
-            vertical: AppSpacing.xs,
-          ),
-          child: FriendCardBackground(
-            isPressed: _isPressed,
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                _buildMainContent(),
-                _buildFooter(),
-              ],
-            ),
+    return AnimatedScaleTap(
+      onTap: widget.onViewProfile,
+      onTapDown: (_) => HapticFeedback.lightImpact(),
+      scaleFactor: MotionTokens.pressScaleSubtle,
+      child: Container(
+        margin: EdgeInsets.symmetric(
+          horizontal: AppSpacing.md,
+          vertical: AppSpacing.xs,
+        ),
+        child: FriendCardBackground(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              _buildMainContent(),
+              _buildFooter(),
+            ],
           ),
         ),
       ),
@@ -224,117 +183,20 @@ class _PremiumFriendCardState extends State<PremiumFriendCard>
           ),
           SizedBox(width: AppSpacing.md),
           // User info
-          Expanded(child: _buildUserInfo()),
+          Expanded(
+            child: FriendCardUserInfo(
+              displayName: widget.user.displayName.isNotEmpty
+                  ? widget.user.displayName
+                  : 'Golfer',
+              archetype: _getArchetypeName(),
+              dateOfBirth: widget.user.dateOfBirth,
+              gender: widget.user.gender,
+              hometownName: widget.user.hometownName,
+              vibeMatchPercent: _vibeMatch?.myFitPercent.round(),
+            ),
+          ),
           // HCP display
           if (widget.user.hasHandicap()) _buildHandicapDisplay(),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildUserInfo() {
-    final displayName = widget.user.displayName.isNotEmpty
-        ? widget.user.displayName
-        : 'Golfer';
-    final archetype = _getArchetypeName();
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        // Archetype label
-        if (archetype != null) ...[
-          Text(
-            archetype.toUpperCase(),
-            style: AppTypography.labelMicro.copyWith(
-              color: AppColors.textMuted,
-              letterSpacing: 1.2,
-              fontWeight: FontWeight.w500,
-            ),
-          ),
-          SizedBox(height: 2),
-        ],
-        // Name
-        Text(
-          displayName,
-          style: AppTypography.titleMedium.copyWith(
-            color: PremiumFriendCard.textPrimary,
-            fontWeight: FontWeight.w600,
-          ),
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
-        ),
-        // Age + Hometown
-        _buildSecondaryInfo(),
-      ],
-    );
-  }
-
-  Widget _buildSecondaryInfo() {
-    final age = calculateAge(widget.user.dateOfBirth);
-    final hometown = widget.user.hometownName;
-    final vibePercent = _vibeMatch?.myFitPercent.round();
-
-    // Get gender letter: M for Male, F for Female
-    String? genderLetter;
-    final gender = widget.user.gender;
-    if (gender == 'Male') {
-      genderLetter = 'M';
-    } else if (gender == 'Female') {
-      genderLetter = 'F';
-    }
-
-    final locationParts = <String>[
-      if (age != null) '$age${genderLetter ?? ''}',
-      if (hometown.isNotEmpty) hometown
-    ];
-
-    if (locationParts.isEmpty && vibePercent == null) {
-      return const SizedBox.shrink();
-    }
-
-    return Padding(
-      padding: EdgeInsets.only(top: AppSpacing.xxs),
-      child: Row(
-        children: [
-          // Age · Town
-          if (locationParts.isNotEmpty)
-            Flexible(
-              child: Text(
-                locationParts.join(' · '),
-                style: AppTypography.labelSmall.copyWith(
-                  color: AppColors.textMuted,
-                  fontWeight: FontWeight.w400,
-                ),
-                overflow: TextOverflow.ellipsis,
-              ),
-            ),
-          // Vibe match chip
-          if (vibePercent != null) ...[
-            if (locationParts.isNotEmpty)
-              Padding(
-                padding: EdgeInsets.symmetric(horizontal: AppSpacing.xs),
-                child: Text(
-                  '·',
-                  style: AppTypography.labelSmall.copyWith(
-                    color: AppColors.textMuted,
-                  ),
-                ),
-              ),
-            Icon(
-              AppPhosphorIcons.heartFill,
-              size: 12,
-              color: AppColors.green,
-            ),
-            SizedBox(width: 4),
-            Text(
-              '$vibePercent% match',
-              style: AppTypography.labelSmall.copyWith(
-                color: AppColors.green,
-                fontWeight: FontWeight.w500,
-              ),
-            ),
-          ],
         ],
       ),
     );

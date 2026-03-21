@@ -13,6 +13,13 @@ class AppLog {
       RegExp(r'([?&](token|auth|password)=)[^&\s]+'),
       r'$1[REDACTED]',
     );
+    safe = safe.replaceAllMapped(
+      RegExp(r'[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}'),
+      (m) {
+        final email = m.group(0)!;
+        return '${email[0]}***@***.${email.split('.').last}';
+      },
+    );
     return safe;
   }
 

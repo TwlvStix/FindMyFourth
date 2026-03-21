@@ -50,6 +50,11 @@ Future<void> initFirebase() async {
     await Firebase.initializeApp();
   }
 
+  FirebaseFirestore.instance.settings = const Settings(
+    persistenceEnabled: true,
+    cacheSizeBytes: Settings.CACHE_SIZE_UNLIMITED,
+  );
+
   await _initAppCheck();
 
   if (kDebugMode && kUseFirebaseEmulator) {

@@ -484,7 +484,15 @@ exports.fetchReceiptants = functions
 
 exports.deleteAccount = functions
   .region("us-west2")
-  .runWith({ minInstances: 0 })
+  .runWith({
+    minInstances: 0,
+    secrets: [
+      "APPLE_TEAM_ID",
+      "APPLE_KEY_ID",
+      "APPLE_SERVICE_ID",
+      "APPLE_PRIVATE_KEY",
+    ],
+  })
   .https.onCall(async (data, context) => {
     const version = "deleteAccount-v3";
     let uid = context.auth?.uid;
@@ -938,6 +946,48 @@ async function performAccountDeletion(
   } catch (error) {
     // Storage cleanup is best-effort — don't fail the deletion
     console.warn("accountDeletion storageFailed", { uid, source, error: error.message });
+  }
+
+  // Revoke Apple Sign-In token (must happen before recursiveDelete destroys the token doc)
+  try {
+    const userRecord = await admin.auth().getUser(uid);
+    const isAppleUser = userRecord.providerData.some(
+      (p) => p.providerId === "apple.com",
+    );
+
+    if (isAppleUser) {
+      const appleAuthDoc = await firestore
+        .doc(`users/${uid}/private/apple_auth`)
+        .get();
+      const refreshToken = appleAuthDoc.exists
+        ? appleAuthDoc.data()?.refresh_token
+        : null;
+
+      if (refreshToken) {
+        const appleToken = require("./apple_token");
+        const clientSecret = appleToken.generateClientSecret(
+          process.env.APPLE_TEAM_ID,
+          process.env.APPLE_SERVICE_ID,
+          process.env.APPLE_KEY_ID,
+          process.env.APPLE_PRIVATE_KEY,
+        );
+        const revoked = await appleToken.revokeAppleToken(
+          refreshToken,
+          clientSecret,
+          process.env.APPLE_SERVICE_ID,
+        );
+        console.log("accountDeletion appleTokenRevoked", {
+          uid, source, revoked,
+        });
+      } else {
+        console.warn("accountDeletion appleUserNoToken", { uid, source });
+      }
+    }
+  } catch (error) {
+    // Apple revocation is best-effort — don't fail the deletion
+    console.warn("accountDeletion appleRevocationFailed", {
+      uid, source, error: error.message,
+    });
   }
 
   await firestore.recursiveDelete(userRef);
@@ -2931,4 +2981,62 @@ exports.challengeSeasonReset = functions
     } catch (error) {
       console.error("[challengeSeasonReset] failed:", error);
     }
+  });
+
+/**
+ * Stores an Apple refresh token server-side for future token revocation
+ * during account deletion. Called after each Apple Sign-In to keep the
+ * stored token current.
+ */
+exports.storeAppleRefreshToken = functions
+  .region("us-west2")
+  .runWith({
+    secrets: [
+      "APPLE_TEAM_ID",
+      "APPLE_KEY_ID",
+      "APPLE_SERVICE_ID",
+      "APPLE_PRIVATE_KEY",
+    ],
+  })
+  .https.onCall(async (data, context) => {
+    const uid = await resolveCallableUid(context, data, "storeAppleRefreshToken");
+    requireAppCheck(context, "storeAppleRefreshToken");
+
+    const authorizationCode = data?.authorizationCode;
+    if (typeof authorizationCode !== "string" || authorizationCode.length === 0) {
+      throw new functions.https.HttpsError(
+        "invalid-argument",
+        "authorizationCode must be a non-empty string.",
+      );
+    }
+
+    const appleToken = require("./apple_token");
+    const clientSecret = appleToken.generateClientSecret(
+      process.env.APPLE_TEAM_ID,
+      process.env.APPLE_SERVICE_ID,
+      process.env.APPLE_KEY_ID,
+      process.env.APPLE_PRIVATE_KEY,
+    );
+
+    const tokens = await appleToken.exchangeAuthCodeForTokens(
+      authorizationCode,
+      clientSecret,
+      process.env.APPLE_SERVICE_ID,
+    );
+
+    if (!tokens || !tokens.refresh_token) {
+      console.warn("storeAppleRefreshToken: token exchange failed", { uid });
+      return { status: "exchange_failed" };
+    }
+
+    await firestore.doc(`users/${uid}/private/apple_auth`).set(
+      {
+        refresh_token: tokens.refresh_token,
+        updated_at: admin.firestore.FieldValue.serverTimestamp(),
+      },
+      { merge: true },
+    );
+
+    console.log("storeAppleRefreshToken: stored successfully", { uid });
+    return { status: "stored" };
   });

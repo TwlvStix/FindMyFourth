@@ -23,14 +23,27 @@ String sha256ofString(String input) {
   return digest.toString();
 }
 
-Future<UserCredential> appleSignIn() async {
+/// Result of an Apple sign-in containing the Firebase credential and the
+/// Apple authorization code needed for server-side token revocation support.
+class AppleSignInResult {
+  final UserCredential userCredential;
+  final String? authorizationCode;
+
+  const AppleSignInResult({
+    required this.userCredential,
+    this.authorizationCode,
+  });
+}
+
+Future<AppleSignInResult> appleSignIn() async {
   if (kIsWeb) {
     final provider = OAuthProvider("apple.com")
       ..addScope('email')
       ..addScope('name');
 
-    // Sign in the user with Firebase.
-    return await FirebaseAuth.instance.signInWithPopup(provider);
+    // Web flow does not expose the authorization code.
+    final cred = await FirebaseAuth.instance.signInWithPopup(provider);
+    return AppleSignInResult(userCredential: cred);
   }
   // To prevent replay attacks with the credential returned from Apple, we
   // include a nonce in the credential request. When signing in in with
@@ -69,5 +82,8 @@ Future<UserCredential> appleSignIn() async {
     await user.user?.updateDisplayName(displayName);
   }
 
-  return user;
+  return AppleSignInResult(
+    userCredential: user,
+    authorizationCode: appleCredential.authorizationCode,
+  );
 }

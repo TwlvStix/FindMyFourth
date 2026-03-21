@@ -203,7 +203,17 @@ class FirebaseAuthManager extends AuthManager
 
   @override
   Future<BaseAuthUser?> signInWithApple(BuildContext context) =>
-      _signInOrCreateAccount(context, appleSignIn, 'APPLE');
+      _signInOrCreateAccount(
+        context,
+        () async {
+          final result = await appleSignIn();
+          if (result.authorizationCode != null) {
+            unawaited(_storeAppleRefreshToken(result.authorizationCode!));
+          }
+          return result.userCredential;
+        },
+        'APPLE',
+      );
 
   @override
   Future<BaseAuthUser?> signInWithGoogle(BuildContext context) =>
@@ -331,6 +341,24 @@ class FirebaseAuthManager extends AuthManager
         () => FirebaseAuth.instance.signInWithCredential(authCredential),
         'PHONE',
       );
+    }
+  }
+
+  /// Sends Apple authorization code to server for refresh token storage.
+  /// Server exchanges code for a refresh token and stores it for use during
+  /// account deletion (Apple token revocation). Fire-and-forget.
+  Future<void> _storeAppleRefreshToken(String authorizationCode) async {
+    try {
+      final callable = FirebaseFunctions.instanceFor(region: 'us-west2')
+          .httpsCallable('storeAppleRefreshToken');
+      final result = await callable.call<Map<String, dynamic>>({
+        'authorizationCode': authorizationCode,
+      });
+      final status = result.data['status'] as String?;
+      AppLog.d('✅ AUTH: Apple token store result: $status');
+    } catch (e) {
+      AppLog.d('⚠️ AUTH: Apple token store failed: $e');
+      // Non-blocking - don't rethrow. Token will be refreshed on next sign-in.
     }
   }
 

@@ -12,27 +12,21 @@ class FriendCardBackground extends StatelessWidget {
   const FriendCardBackground({
     super.key,
     required this.child,
-    this.isPressed = false,
   });
 
   final Widget child;
-  final bool isPressed;
 
   @override
   Widget build(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(AppBorderRadius.xl),
-        gradient: LinearGradient(
+        gradient: const LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
           colors: [
-            isPressed
-                ? AppColors.navyDark.withValues(alpha: 0.95)
-                : AppColors.navyDark,
-            isPressed
-                ? AppColors.navy.withValues(alpha: 0.95)
-                : AppColors.navy,
+            AppColors.navyDark,
+            AppColors.navy,
           ],
         ),
         border: Border.all(
