@@ -1,4 +1,8 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+
 import '/models/chat_message_view_model.dart';
+import '/providers/chat_provider.dart';
+import '/providers/profile_provider.dart';
 
 class LoadOlderStatus {
   final int newMessageCount;
@@ -229,5 +233,45 @@ class ChatDetailsController<TCursor> {
     _pageSize = 30;
     _visibleAfterCutoff = null;
     _sessionInitialized = false;
+  }
+}
+
+/// Convenience wrapper that builds the fetchPage callback from providers.
+extension ChatDetailsControllerFirestore
+    on ChatDetailsController<DocumentSnapshot> {
+  Future<LoadOlderStatus> loadOlderMessagesFromProviders({
+    required DocumentSnapshot? startAfterCursor,
+    required ChatProvider chatProvider,
+    required ProfileProvider profileProvider,
+  }) {
+    return loadOlderMessages(
+      startAfterCursor: startAfterCursor,
+      fetchPage: ({
+        required String chatId,
+        required int pageSize,
+        required DateTime? visibleAfter,
+        required DocumentSnapshot? startAfter,
+      }) async {
+        final page = await chatProvider.messagesPage(
+          chatId: chatId,
+          limit: pageSize,
+          startAfter: startAfter,
+          visibleAfter: visibleAfter,
+        );
+        final pageVMs = page.messages.map((message) {
+          final profile = profileProvider.getCachedProfile(message.senderId);
+          return ChatMessageViewModel(
+            message: message,
+            senderDisplayName: profile?.displayName ?? '',
+            senderPhotoUrl: profile?.photoUrl ?? '',
+          );
+        }).toList();
+        return OlderPageData<DocumentSnapshot>(
+          messages: pageVMs,
+          hasMore: page.messages.length >= pageSize,
+          lastCursor: page.lastDoc,
+        );
+      },
+    );
   }
 }

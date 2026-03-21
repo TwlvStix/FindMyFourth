@@ -2,13 +2,123 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 
+import '/core/content/report_copy.dart';
+import '/core/design_tokens/app_phosphor_icons.dart';
 import '/core/design_tokens/colors.dart';
 import '/core/utils/app_log.dart';
 import '/core/widgets/app_premium_dialog.dart';
 import '/core/motion/motion_helpers.dart';
+import '/models/chat.dart';
+import '/models/chat_message.dart';
+import '/providers/block_provider.dart';
 import '/providers/chat_provider.dart';
+import '/profile/profile_user/components/report_user_bottom_sheet.dart';
+import '../components/chat_reaction_picker.dart';
 
 class ChatDetailsSideEffects {
+  /// Get the other user's UID in a direct chat.
+  static String? otherUserIdInDirectChat(Chat? chat, String? currentUserId) {
+    if (chat == null || chat.type != 'direct') return null;
+    if (currentUserId == null) return null;
+    return chat.memberIds.firstWhere(
+      (id) => id != currentUserId,
+      orElse: () => '',
+    );
+  }
+
+  /// Shows the report user bottom sheet for a direct chat partner.
+  static void showReportUser({
+    required BuildContext context,
+    required String otherUid,
+    required String chatId,
+  }) {
+    showAppBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: AppColors.transparent,
+      enableDrag: true,
+      builder: (_) => ReportUserBottomSheet(
+        reportedUid: otherUid,
+        reportedDisplayName: '',
+        reportContext: 'chat',
+        chatId: chatId,
+      ),
+    );
+  }
+
+  /// Shows block confirmation dialog and handles blocking.
+  static Future<void> handleBlockUser({
+    required BuildContext context,
+    required String otherUid,
+    required String currentUid,
+    required BlockProvider blockProvider,
+  }) async {
+    final shouldBlock = await showPremiumDialog(
+      context: context,
+      variant: PremiumDialogVariant.destructive,
+      icon: AppPhosphorIcons.blocked,
+      title: ReportBlockCopy.blockTitle('this user'),
+      body: ReportBlockCopy.blockBody,
+      actionLabel: ReportBlockCopy.blockAction,
+    );
+
+    if (shouldBlock != true) return;
+    if (!context.mounted) return;
+
+    try {
+      await blockProvider.blockUser(
+        currentUid: currentUid,
+        blockedUid: otherUid,
+      );
+      if (!context.mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text(ReportBlockCopy.userBlocked)),
+      );
+      Navigator.of(context).maybePop();
+    } catch (_) {
+      if (!context.mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text(ReportBlockCopy.blockFailed)),
+      );
+    }
+  }
+
+  /// Shows the reaction picker bottom sheet for a message.
+  static void showReactionPicker({
+    required BuildContext context,
+    required BuildContext outerContext,
+    required ChatMessage message,
+    required String currentUserId,
+    required String chatId,
+    required Future<void> Function(ChatMessage, String, bool) onReactionToggled,
+  }) {
+    showAppBottomSheet(
+      context: context,
+      backgroundColor: AppColors.transparent,
+      builder: (BuildContext sheetContext) => ChatReactionPicker(
+        message: message,
+        currentUserId: currentUserId,
+        onReactionToggled: (emoji, hasReacted) =>
+            onReactionToggled(message, emoji, hasReacted),
+        onReportMessage: () {
+          showAppBottomSheet(
+            context: outerContext,
+            isScrollControlled: true,
+            backgroundColor: AppColors.transparent,
+            enableDrag: true,
+            builder: (_) => ReportUserBottomSheet(
+              reportedUid: message.senderId,
+              reportedDisplayName: '',
+              reportContext: 'chat',
+              chatId: chatId,
+              messageId: message.id,
+            ),
+          );
+        },
+      ),
+    );
+  }
+
   static Future<void> markChatSeen({
     required ChatProvider chatProvider,
     required String chatId,

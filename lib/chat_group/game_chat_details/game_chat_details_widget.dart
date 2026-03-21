@@ -1,5 +1,3 @@
-import 'dart:async';
-
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -7,18 +5,14 @@ import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 
 import '/auth/firebase_auth/auth_util.dart';
-import '/core/content/report_copy.dart';
-import '/core/design_tokens/app_phosphor_icons.dart';
 import '/core/design_tokens/colors.dart';
 import '/core/motion/motion_helpers.dart';
 import '/core/utils/app_log.dart';
 import '/core/utils/state_update.dart';
-import '/core/widgets/app_premium_dialog.dart';
 import '/core/widgets/app_text.dart';
 import '/core/widgets/fairway_background.dart';
 import '/core/widgets/premium_back_button.dart';
 import '/providers/block_provider.dart';
-import '/profile/profile_user/components/report_user_bottom_sheet.dart';
 import '/models/chat.dart';
 import '/models/chat_message.dart';
 import '/models/chat_message_view_model.dart';
@@ -28,10 +22,10 @@ import 'components/chat_details_actions.dart';
 import 'components/chat_details_body.dart';
 import 'components/chat_header_title.dart';
 import 'components/chat_image_viewer.dart';
-import 'components/chat_reaction_picker.dart';
 import 'controllers/chat_details_controller.dart';
 import 'controllers/chat_details_side_effects.dart';
 import 'controllers/chat_image_upload_controller.dart';
+import 'controllers/chat_stream_controller.dart';
 import 'helpers/chat_typing_helper.dart';
 
 class GameChatDetailsWidget extends StatefulWidget {
@@ -53,40 +47,21 @@ class _GameChatDetailsWidgetState extends State<GameChatDetailsWidget>
   final FocusNode _messageFocusNode = FocusNode();
   final ScrollController _scrollController = ScrollController();
 
-  // Stream state
-  late Stream<Chat?> _chatStream;
-  late Stream<Chat?> _chatUiStream;
-  Stream<QuerySnapshot>? _messagesStream;
-  Stream<List<ChatMessageViewModel>>? _messageViewModelsStream;
-  StreamSubscription<Chat?>? _chatUiSubscription;
-  StreamSubscription<QuerySnapshot>? _messagesSnapshotSubscription;
-  DateTime? _visibleAfter;
-  bool _streamsInitialized = false;
-
   // Pagination
   static const int _initialPageSize = 40;
-  static const int _pageSize = 30;
   final List<ChatMessageViewModel> _latestMessageVMs = [];
-  DocumentSnapshot? _lastStreamDoc;
   final ChatDetailsController<DocumentSnapshot> _detailsController =
       ChatDetailsController<DocumentSnapshot>();
 
   // UI state
   bool _showScrollToBottom = false;
   ChatMessage? _replyToMessage;
-  Chat? _chatUi;
-  bool _chatLoaded = false;
-  Object? _chatError;
-  bool _canSend = false;
-  bool _isArchived = false;
-  String _bannerText = '';
-  bool _didMarkSeen = false;
   bool _isLeavingChat = false;
-  bool _hasRetriedPermission = false;
 
   // Extracted controllers/helpers
   late ChatTypingHelper _typingHelper;
   late ChatImageUploadController _imageUploadController;
+  late ChatStreamController _streamController;
 
   String? get _currentUserId {
     final uid = currentUserUid;
@@ -100,8 +75,8 @@ class _GameChatDetailsWidgetState extends State<GameChatDetailsWidget>
     AppLog.d('📨 UI: Current user ID: $_currentUserId');
 
     final chatProvider = context.read<ChatProvider>();
+    final profileProvider = context.read<ProfileProvider>();
 
-    // Initialize extracted helpers
     _typingHelper = ChatTypingHelper(
       chatId: widget.chatId,
       chatProvider: chatProvider,
@@ -114,52 +89,19 @@ class _GameChatDetailsWidgetState extends State<GameChatDetailsWidget>
       isMounted: () => mounted,
       getCurrentUserId: () => _currentUserId,
     );
-
-    _chatStream = chatProvider.chatStream(widget.chatId);
-    _chatUiStream = _chatStream.distinct(_chatUiEquals);
-    // Message streams are initialized lazily in _updateChatUiState on the first
-    // chat event, so that we can read memberJoinedAt[uid] for fresh-start filtering.
-    _chatUiSubscription = _chatUiStream.listen(
-      (chat) {
-        if (!mounted) return;
-        _updateChatUiState(chat);
-      },
-      onError: (error) {
-        if (!mounted) return;
-
-        // Suppress errors during intentional leave operation
-        if (_isLeavingChat) {
-          AppLog.d('📱 UI: Ignoring chat stream error during leave operation');
-          return;
-        }
-
-        // Retry once on permission-denied — handles race condition where
-        // syncGameChatMembers Cloud Function hasn't completed yet.
-        if (!_hasRetriedPermission && _isPermissionDenied(error)) {
-          _hasRetriedPermission = true;
-          AppLog.d(
-              '📱 UI: Permission denied on chat stream, retrying in 2s');
-          Future.delayed(const Duration(seconds: 2), () {
-            if (!mounted) return;
-            _restartChatStream();
-          });
-          return;
-        }
-
-        if (kDebugMode) {
-          AppLog.d(
-              '❌ UI: Chat stream error for chatId=${widget.chatId}: $error');
-        }
-        updateState(this, () {
-          _chatError = error;
-          _chatLoaded = true;
-          _chatUi = null;
-          _canSend = false;
-          _bannerText = '';
-          _isArchived = false;
-        });
-      },
+    _streamController = ChatStreamController(
+      chatId: widget.chatId,
+      chatProvider: chatProvider,
+      profileProvider: profileProvider,
+      getCurrentUserId: () => _currentUserId,
+      onStateChanged: () => updateState(this, () {}),
+      isMounted: () => mounted,
+      isLeavingChat: () => _isLeavingChat,
+      initialPageSize: _initialPageSize,
+      detailsController: _detailsController,
     );
+    _streamController.initialize();
+
     _messageController.addListener(_onTextChanged);
     _scrollController.addListener(_onScroll);
   }
@@ -170,50 +112,12 @@ class _GameChatDetailsWidgetState extends State<GameChatDetailsWidget>
       AppLog.d('📨 UI: Disposing ChatDetails for chatId=${widget.chatId}');
     }
     _typingHelper.dispose();
-    _chatUiSubscription?.cancel();
-    _messagesSnapshotSubscription?.cancel();
+    _streamController.dispose();
     _detailsController.reset();
     _messageController.dispose();
     _messageFocusNode.dispose();
     _scrollController.dispose();
     super.dispose();
-  }
-
-  bool _isPermissionDenied(dynamic error) {
-    if (error is FirebaseException) {
-      return error.code == 'permission-denied';
-    }
-    return error.toString().contains('permission-denied');
-  }
-
-  void _restartChatStream() {
-    _chatUiSubscription?.cancel();
-    final chatProvider = context.read<ChatProvider>();
-    chatProvider.invalidateChatCache(widget.chatId);
-    _chatStream = chatProvider.chatStream(widget.chatId);
-    _chatUiStream = _chatStream.distinct(_chatUiEquals);
-    _chatUiSubscription = _chatUiStream.listen(
-      (chat) {
-        if (!mounted) return;
-        _updateChatUiState(chat);
-      },
-      onError: (error) {
-        if (!mounted) return;
-        if (_isLeavingChat) return;
-        if (kDebugMode) {
-          AppLog.d(
-              '❌ UI: Chat stream error for chatId=${widget.chatId}: $error');
-        }
-        updateState(this, () {
-          _chatError = error;
-          _chatLoaded = true;
-          _chatUi = null;
-          _canSend = false;
-          _bannerText = '';
-          _isArchived = false;
-        });
-      },
-    );
   }
 
   void _onTextChanged() {
@@ -224,15 +128,24 @@ class _GameChatDetailsWidgetState extends State<GameChatDetailsWidget>
     return _typingHelper.getTypingText(chat, context.read<ProfileProvider>());
   }
 
-  void _showImageFullscreen(String imageUrl) {
-    showAppDialog(
-      context: context,
-      barrierColor: Colors.black87, // Keep: no 87% token
-      builder: (BuildContext dialogContext) => ChatImageViewer(
-        imageUrl: imageUrl,
-        onClose: () => Navigator.of(dialogContext).pop(),
-      ),
-    );
+  void _onScroll() {
+    final showFab =
+        _scrollController.hasClients && _scrollController.offset > 200;
+    if (showFab != _showScrollToBottom) {
+      updateState(this, () {
+        _showScrollToBottom = showFab;
+      });
+    }
+  }
+
+  void _scrollToBottom() {
+    if (_scrollController.hasClients) {
+      _scrollController.animateTo(
+        0,
+        duration: Duration(milliseconds: 300),
+        curve: Curves.easeOut,
+      );
+    }
   }
 
   Future<void> _handleReaction(
@@ -261,242 +174,56 @@ class _GameChatDetailsWidgetState extends State<GameChatDetailsWidget>
     final currentUserId = _currentUserId;
     if (currentUserId == null) return;
 
-    showAppBottomSheet(
+    ChatDetailsSideEffects.showReactionPicker(
       context: context,
-      backgroundColor: AppColors.transparent,
-      builder: (BuildContext context) => ChatReactionPicker(
-        message: message,
-        currentUserId: currentUserId,
-        onReactionToggled: (emoji, hasReacted) =>
-            _handleReaction(message, emoji, hasReacted),
-        onReportMessage: () {
-          showAppBottomSheet(
-            context: this.context,
-            isScrollControlled: true,
-            backgroundColor: AppColors.transparent,
-            enableDrag: true,
-            builder: (_) => ReportUserBottomSheet(
-              reportedUid: message.senderId,
-              reportedDisplayName: '',
-              reportContext: 'chat',
-              chatId: widget.chatId,
-              messageId: message.id,
-            ),
-          );
-        },
+      outerContext: context,
+      message: message,
+      currentUserId: currentUserId,
+      chatId: widget.chatId,
+      onReactionToggled: _handleReaction,
+    );
+  }
+
+  void _showImageFullscreen(String imageUrl) {
+    showAppDialog(
+      context: context,
+      barrierColor: Colors.black87, // Keep: no 87% token
+      builder: (BuildContext dialogContext) => ChatImageViewer(
+        imageUrl: imageUrl,
+        onClose: () => Navigator.of(dialogContext).pop(),
       ),
-    );
-  }
-
-  void _onScroll() {
-    // Show FAB when scrolled up more than 200 pixels from bottom
-    final showFab =
-        _scrollController.hasClients && _scrollController.offset > 200;
-    if (showFab != _showScrollToBottom) {
-      updateState(this, () {
-        _showScrollToBottom = showFab;
-      });
-    }
-  }
-
-  void _scrollToBottom() {
-    if (_scrollController.hasClients) {
-      _scrollController.animateTo(
-        0,
-        duration: Duration(milliseconds: 300),
-        curve: Curves.easeOut,
-      );
-    }
-  }
-
-  bool _chatUiEquals(Chat? previous, Chat? next) {
-    if (identical(previous, next)) {
-      return true;
-    }
-    if (previous == null || next == null) {
-      return previous == next;
-    }
-    return previous.id == next.id &&
-        previous.type == next.type &&
-        previous.gameName == next.gameName &&
-        listEquals(previous.memberIds, next.memberIds) &&
-        previous.isReadOnly == next.isReadOnly &&
-        previous.pinnedMessage == next.pinnedMessage &&
-        previous.deletesAt == next.deletesAt;
-  }
-
-  void _updateChatUiState(Chat? chat) {
-    if (chat == null) {
-      _resetChatState();
-      return;
-    }
-
-    _initializeMessageStreamsIfNeeded(chat);
-    _applyChatUiState(chat);
-    _markSeenIfNeeded(chat);
-  }
-
-  /// Resets all chat state when chat becomes null.
-  void _resetChatState() {
-    _messagesSnapshotSubscription?.cancel();
-    _messagesSnapshotSubscription = null;
-    _detailsController.reset();
-    _lastStreamDoc = null;
-    _streamsInitialized = false;
-    updateState(this, () {
-      _chatLoaded = true;
-      _chatError = null;
-      _chatUi = null;
-      _canSend = false;
-      _bannerText = '';
-      _isArchived = false;
-    });
-  }
-
-  /// Initializes message streams on the first valid chat event.
-  /// Uses memberJoinedAt visibility cutoff for fresh-start-on-rejoin.
-  void _initializeMessageStreamsIfNeeded(Chat chat) {
-    if (_streamsInitialized) return;
-
-    _streamsInitialized = true;
-    final currentUserId = _currentUserId;
-    _visibleAfter =
-        currentUserId != null ? chat.memberJoinedAt[currentUserId] : null;
-
-    _detailsController.initializeSession(
-      chatId: widget.chatId,
-      pageSize: _pageSize,
-      visibleAfterCutoff: _visibleAfter,
-    );
-
-    final chatProvider = context.read<ChatProvider>();
-    final profileProvider = context.read<ProfileProvider>();
-
-    _messagesStream = chatProvider.messagesSnapshotStream(
-      chatId: widget.chatId,
-      limit: _initialPageSize,
-      visibleAfter: _visibleAfter,
-    );
-    _messagesSnapshotSubscription?.cancel();
-    _messagesSnapshotSubscription = _messagesStream!.listen(
-      (snapshot) {
-        _lastStreamDoc = snapshot.docs.isNotEmpty ? snapshot.docs.last : null;
-      },
-    );
-    _messageViewModelsStream = chatProvider.gameChatMessageViewModelsStream(
-      chatId: widget.chatId,
-      limit: _initialPageSize,
-      profileProvider: profileProvider,
-      visibleAfter: _visibleAfter,
-    );
-  }
-
-  /// Derives UI state from chat and updates widget state.
-  void _applyChatUiState(Chat chat) {
-    final isArchived = chat.isReadOnly;
-    final bannerText = chat.pinnedMessage.isNotEmpty
-        ? chat.pinnedMessage
-        : chat.isReadOnly
-            ? 'This chat is read-only.'
-            : '';
-    final canSend = !chat.isReadOnly;
-
-    updateState(this, () {
-      _chatLoaded = true;
-      _chatError = null;
-      _chatUi = chat;
-      _isArchived = isArchived;
-      _bannerText = bannerText;
-      _canSend = canSend;
-    });
-  }
-
-  /// Marks chat as seen once when user is a member.
-  void _markSeenIfNeeded(Chat chat) {
-    final currentUserId = _currentUserId;
-    if (!_didMarkSeen &&
-        currentUserId != null &&
-        chat.memberIds.contains(currentUserId)) {
-      _didMarkSeen = true;
-      _markChatSeen();
-    }
-  }
-
-  Future<void> _markChatSeen() async {
-    final currentUserId = _currentUserId;
-    if (currentUserId == null) return;
-    await ChatDetailsSideEffects.markChatSeen(
-      chatProvider: context.read<ChatProvider>(),
-      chatId: widget.chatId,
-      uid: currentUserId,
-      visibleAfter: _visibleAfter,
-      isMounted: () => mounted,
-    );
-  }
-
-  /// Get the other user's UID in a direct chat.
-  String? _otherUserIdInDirectChat() {
-    final chat = _chatUi;
-    if (chat == null || chat.type != 'direct') return null;
-    final currentId = _currentUserId;
-    if (currentId == null) return null;
-    return chat.memberIds.firstWhere(
-      (id) => id != currentId,
-      orElse: () => '',
     );
   }
 
   void _showReportUser() {
-    final otherUid = _otherUserIdInDirectChat();
+    final otherUid = ChatDetailsSideEffects.otherUserIdInDirectChat(
+      _streamController.chatUi,
+      _currentUserId,
+    );
     if (otherUid == null || otherUid.isEmpty) return;
-    showAppBottomSheet(
+    ChatDetailsSideEffects.showReportUser(
       context: context,
-      isScrollControlled: true,
-      backgroundColor: AppColors.transparent,
-      enableDrag: true,
-      builder: (_) => ReportUserBottomSheet(
-        reportedUid: otherUid,
-        reportedDisplayName: '',
-        reportContext: 'chat',
-        chatId: widget.chatId,
-      ),
+      otherUid: otherUid,
+      chatId: widget.chatId,
     );
   }
 
   Future<void> _handleBlockUser() async {
-    final otherUid = _otherUserIdInDirectChat();
+    final otherUid = ChatDetailsSideEffects.otherUserIdInDirectChat(
+      _streamController.chatUi,
+      _currentUserId,
+    );
     if (otherUid == null || otherUid.isEmpty) return;
     final currentUid = _currentUserId;
     if (currentUid == null) return;
 
-    final shouldBlock = await showPremiumDialog(
-      context: context,
-      variant: PremiumDialogVariant.destructive,
-      icon: AppPhosphorIcons.blocked,
-      title: ReportBlockCopy.blockTitle('this user'),
-      body: ReportBlockCopy.blockBody,
-      actionLabel: ReportBlockCopy.blockAction,
-    );
-
-    if (shouldBlock != true) return;
     if (!mounted) return;
-
-    try {
-      await context.read<BlockProvider>().blockUser(
-            currentUid: currentUid,
-            blockedUid: otherUid,
-          );
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text(ReportBlockCopy.userBlocked)),
-      );
-      Navigator.of(context).maybePop();
-    } catch (_) {
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text(ReportBlockCopy.blockFailed)),
-      );
-    }
+    await ChatDetailsSideEffects.handleBlockUser(
+      context: context,
+      otherUid: otherUid,
+      currentUid: currentUid,
+      blockProvider: context.read<BlockProvider>(),
+    );
   }
 
   Future<void> _showLeaveConfirmation() async {
@@ -565,34 +292,10 @@ class _GameChatDetailsWidgetState extends State<GameChatDetailsWidget>
   Future<void> _loadOlderMessages() async {
     final chatProvider = context.read<ChatProvider>();
     final profileProvider = context.read<ProfileProvider>();
-    final statusFuture = _detailsController.loadOlderMessages(
-      startAfterCursor: _lastStreamDoc,
-      fetchPage: ({
-        required String chatId,
-        required int pageSize,
-        required DateTime? visibleAfter,
-        required DocumentSnapshot? startAfter,
-      }) async {
-        final page = await chatProvider.messagesPage(
-          chatId: chatId,
-          limit: pageSize,
-          startAfter: startAfter,
-          visibleAfter: visibleAfter,
-        );
-        final pageVMs = page.messages.map((message) {
-          final profile = profileProvider.getCachedProfile(message.senderId);
-          return ChatMessageViewModel(
-            message: message,
-            senderDisplayName: profile?.displayName ?? '',
-            senderPhotoUrl: profile?.photoUrl ?? '',
-          );
-        }).toList();
-        return OlderPageData<DocumentSnapshot>(
-          messages: pageVMs,
-          hasMore: page.messages.length >= pageSize,
-          lastCursor: page.lastDoc,
-        );
-      },
+    final statusFuture = _detailsController.loadOlderMessagesFromProviders(
+      startAfterCursor: _streamController.lastStreamDoc,
+      chatProvider: chatProvider,
+      profileProvider: profileProvider,
     );
     if (!mounted) return;
     updateState(this, () {});
@@ -624,11 +327,11 @@ class _GameChatDetailsWidgetState extends State<GameChatDetailsWidget>
     if (kDebugMode) {
       AppLog.d(
         '🧱 UI: ChatDetails build chatId=${widget.chatId} '
-        'chatLoaded=$_chatLoaded chatUi=${_chatUi?.id} '
-        'chatError=${_chatError?.runtimeType} '
+        'chatLoaded=${_streamController.chatLoaded} chatUi=${_streamController.chatUi?.id} '
+        'chatError=${_streamController.chatError?.runtimeType} '
         'msgCtrl=${_messageController.hashCode} '
         'focus=${_messageFocusNode.hashCode} '
-        'msgStream=${identityHashCode(_messagesStream ?? this)}',
+        'msgStream=${identityHashCode(_streamController.messagesStream ?? this)}',
       );
     }
     return GestureDetector(
@@ -655,19 +358,19 @@ class _GameChatDetailsWidgetState extends State<GameChatDetailsWidget>
             leading: PremiumBackButton(
               onTap: () => Navigator.of(context).maybePop(),
             ),
-            title: _chatUi != null
+            title: _streamController.chatUi != null
                 ? ChatHeaderTitle(
-                    chat: _chatUi!,
+                    chat: _streamController.chatUi!,
                     currentUserId: _currentUserId,
                   )
                 : AppText.cardTitle('Chat'),
             centerTitle: false,
-            actions: _chatUi == null
+            actions: _streamController.chatUi == null
                 ? const []
                 : [
                     ChatDetailsActions(
                       onLeaveSelected: _showLeaveConfirmation,
-                      isDirect: _chatUi?.type == 'direct',
+                      isDirect: _streamController.chatUi?.type == 'direct',
                       onReportSelected: _showReportUser,
                       onBlockSelected: _handleBlockUser,
                     ),
@@ -676,21 +379,22 @@ class _GameChatDetailsWidgetState extends State<GameChatDetailsWidget>
           body: FairwayBackgroundDark(
             child: ChatDetailsBody(
               chatId: widget.chatId,
-              chatStream: _chatStream,
-              chatError: _chatError,
-              chatLoaded: _chatLoaded,
-              chatUi: _chatUi,
-              bannerText: _bannerText,
-              isArchived: _isArchived,
+              chatStream: _streamController.chatStream,
+              chatError: _streamController.chatError,
+              chatLoaded: _streamController.chatLoaded,
+              chatUi: _streamController.chatUi,
+              bannerText: _streamController.bannerText,
+              isArchived: _streamController.isArchived,
               currentUserId: _currentUserId,
               scrollController: _scrollController,
               messageController: _messageController,
               messageFocusNode: _messageFocusNode,
-              messageViewModelsStream: _messageViewModelsStream,
+              messageViewModelsStream:
+                  _streamController.messageViewModelsStream,
               cachedLatestMessageVMs: _latestMessageVMs,
               detailsController: _detailsController,
               pendingUploads: _imageUploadController.pendingUploads,
-              canSend: _canSend,
+              canSend: _streamController.canSend,
               replyToMessage: _replyToMessage,
               showScrollToBottom: _showScrollToBottom,
               onLoadOlderMessages: _loadOlderMessages,
@@ -710,7 +414,9 @@ class _GameChatDetailsWidgetState extends State<GameChatDetailsWidget>
                 });
               },
               onAttachImage:
-                  (_canSend && _chatUi != null) ? _showImageSourceSheet : null,
+                  (_streamController.canSend && _streamController.chatUi != null)
+                      ? _showImageSourceSheet
+                      : null,
               onScrollToBottom: _scrollToBottom,
               typingTextForChat: _typingTextForChat,
               onCacheLatestMessageVMs: (latestVMs) {
