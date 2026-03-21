@@ -52,14 +52,10 @@
 		<key>ITSAppUsesNonExemptEncryption</key>
 		<false/>
 		<key>NSCameraUsageDescription</key>
-		<string>In order to take a picture or video, this app requires permission to access the camera.</string>
-		<key>NSMicrophoneUsageDescription</key>
-		<string>In order to record audio for video, this app requires permission to access the microphone.</string>
+		<string>Find My Fourth uses the camera to take your profile photo.</string>
 		<key>NSPhotoLibraryUsageDescription</key>
-		<string>In order to upload data, this app requires permission to access the photo library.</string>
+		<string>Find My Fourth accesses your photo library so you can choose a profile photo.</string>
 		<key>NSLocationWhenInUseUsageDescription</key>
-		<string>Find My Fourth uses your location to show nearby games.</string>
-		<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
 		<string>Find My Fourth uses your location to show nearby games.</string>
 		<key>UIApplicationSceneManifest</key>
 		<dict>

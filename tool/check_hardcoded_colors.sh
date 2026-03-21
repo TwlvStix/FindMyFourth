@@ -34,21 +34,37 @@ echo "Checking for hardcoded colors in lib/..."
 echo ""
 
 # Check for Colors.* patterns (excluding AppColors, ArchetypeColors, appColors, AppThemeColors)
+# Also filters out:
+#   - Comments (lines starting with // or ///)
+#   - Variable names containing "Colors" (e.g., _avatarColors.length)
+#   - Debug infrastructure (lib/debug/)
 COLORS_VIOLATIONS=$(grep -rn "Colors\." "$PROJECT_ROOT/lib" --include="*.dart" 2>/dev/null \
   | grep -v "AppColors" \
   | grep -v "ArchetypeColors" \
   | grep -v "appColors" \
   | grep -v "AppThemeColors" \
+  | grep -v "/lib/debug/" \
+  | grep -vE "^\s*//|:\s*//" \
+  | grep -vE '[a-zA-Z0-9_]Colors\.' \
   || true)
 
 # Check for Color(0x...) patterns
-HEX_VIOLATIONS=$(grep -rn "Color(0x" "$PROJECT_ROOT/lib" --include="*.dart" 2>/dev/null || true)
+HEX_VIOLATIONS=$(grep -rn "Color(0x" "$PROJECT_ROOT/lib" --include="*.dart" 2>/dev/null \
+  | grep -v "/lib/debug/" \
+  | grep -vE "^\s*//|:\s*//" \
+  || true)
 
 # Check for Color.fromARGB patterns
-ARGB_VIOLATIONS=$(grep -rn "Color\.fromARGB" "$PROJECT_ROOT/lib" --include="*.dart" 2>/dev/null || true)
+ARGB_VIOLATIONS=$(grep -rn "Color\.fromARGB" "$PROJECT_ROOT/lib" --include="*.dart" 2>/dev/null \
+  | grep -v "/lib/debug/" \
+  | grep -vE "^\s*//|:\s*//" \
+  || true)
 
 # Check for Color.fromRGBO patterns
-RGBO_VIOLATIONS=$(grep -rn "Color\.fromRGBO" "$PROJECT_ROOT/lib" --include="*.dart" 2>/dev/null || true)
+RGBO_VIOLATIONS=$(grep -rn "Color\.fromRGBO" "$PROJECT_ROOT/lib" --include="*.dart" 2>/dev/null \
+  | grep -v "/lib/debug/" \
+  | grep -vE "^\s*//|:\s*//" \
+  || true)
 
 # Filter out allowlisted files
 if [[ -n "$ALLOWLIST_PATTERNS" ]]; then

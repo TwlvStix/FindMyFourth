@@ -221,16 +221,11 @@ class _GameChatDetailsWidgetState extends State<GameChatDetailsWidget>
               detailsController: _detailsController,
               pendingUploads: _imageUploadController.pendingUploads,
               canSend: _streamController.canSend,
-              replyToMessage: _messageActionsController.replyToMessage,
               showScrollToBottom: _showScrollToBottom,
               onLoadOlderMessages: () =>
                   _messageActionsController.loadOlderMessages(context),
               onMessageLongPress: (msg) =>
                   _messageActionsController.showReactionPicker(context, msg),
-              onReplySwipe: (message) {
-                _messageActionsController.setReplyTo(message);
-                _messageFocusNode.requestFocus();
-              },
               onImageTap: (url) =>
                   _messageActionsController.showImageFullscreen(context, url),
               onReactionTap: (msg, emoji, hasReacted) =>
@@ -238,7 +233,6 @@ class _GameChatDetailsWidgetState extends State<GameChatDetailsWidget>
                       context, msg, emoji, hasReacted),
               onSendMessage: () => _messageActionsController.sendMessage(
                   context, _messageController),
-              onCancelReply: _messageActionsController.clearReply,
               onAttachImage:
                   (_streamController.canSend && _streamController.chatUi != null)
                       ? () => _imageUploadController.showImageSourceSheet(context)

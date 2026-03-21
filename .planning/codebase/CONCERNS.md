@@ -32,7 +32,7 @@
 - Fix approach: Implement `replyToId` field in `ChatMessage` model; update `ChatService.sendMessage()` to accept optional `replyToId`; add UI affordance to display parent message context; add tests for reply persistence
 
 **Legacy AppTheme Bridge Still in Use:**
-- Issue: `AppTheme` is FlutterFlow-era adapter still referenced by some widgets; maintains parallel mapping to `AppColors` tokens
+- Issue: `AppTheme` is a legacy-era adapter still referenced by some widgets; maintains parallel mapping to `AppColors` tokens
 - Location: `lib/core/app_theme.dart` (ThemeExtension); no active usage found, but bridge exists
 - Impact: Creates two sources-of-truth for design; users may reference outdated `AppTheme.of(context)` in new code; cleanup blocked by unknown dependencies
 - Fix approach: Audit and remove all remaining `AppTheme.of(context)` references; remove bridge entirely; update CI lint to forbid new `AppTheme` usage

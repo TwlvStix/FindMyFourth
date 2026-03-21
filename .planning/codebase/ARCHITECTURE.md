@@ -45,7 +45,7 @@
 - Used by: Services (return domain models), providers (cache and expose domain models to widgets), widgets (display domain models)
 
 **Schema Layer (Firestore Records):**
-- Purpose: Represent raw Firestore document structure (legacy from FlutterFlow migration)
+- Purpose: Represent raw Firestore document structure (legacy from original code generation)
 - Location: `lib/backend/schema/` (`users_record.dart`, `games_record.dart`, `chats_record.dart`, etc.)
 - Contains: Classes extending `FirestoreRecord`, `_initializeFields()` methods, `hasX()` helper methods
 - Used by: Services (map Firestore snapshots to records), converted to domain models by `fromRecord()` factories

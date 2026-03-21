@@ -38,15 +38,12 @@ class ChatDetailsBody extends StatelessWidget {
     required this.detailsController,
     required this.pendingUploads,
     required this.canSend,
-    required this.replyToMessage,
     required this.showScrollToBottom,
     required this.onLoadOlderMessages,
     required this.onMessageLongPress,
-    required this.onReplySwipe,
     required this.onImageTap,
     required this.onReactionTap,
     required this.onSendMessage,
-    required this.onCancelReply,
     required this.onAttachImage,
     required this.onScrollToBottom,
     required this.typingTextForChat,
@@ -69,11 +66,9 @@ class ChatDetailsBody extends StatelessWidget {
   final ChatDetailsController<DocumentSnapshot> detailsController;
   final List<PendingUploadItem> pendingUploads;
   final bool canSend;
-  final ChatMessage? replyToMessage;
   final bool showScrollToBottom;
   final Future<void> Function() onLoadOlderMessages;
   final void Function(ChatMessage message) onMessageLongPress;
-  final void Function(ChatMessage message) onReplySwipe;
   final void Function(String imageUrl) onImageTap;
   final Future<void> Function(
     ChatMessage message,
@@ -81,7 +76,6 @@ class ChatDetailsBody extends StatelessWidget {
     bool hasReacted,
   ) onReactionTap;
   final Future<void> Function() onSendMessage;
-  final VoidCallback onCancelReply;
   final VoidCallback? onAttachImage;
   final VoidCallback onScrollToBottom;
   final String? Function(Chat chat) typingTextForChat;
@@ -124,8 +118,6 @@ class ChatDetailsBody extends StatelessWidget {
                   messageFocusNode: messageFocusNode,
                   enabled: canSend && chatUi != null && chatError == null,
                   onSendMessage: onSendMessage,
-                  replyToMessage: replyToMessage,
-                  onCancelReply: onCancelReply,
                   onAttachImage: onAttachImage,
                 ),
               ],
@@ -260,7 +252,6 @@ class ChatDetailsBody extends StatelessWidget {
           totalMembers: currentChat.memberIds.length,
           onLoadOlderMessages: onLoadOlderMessages,
           onMessageLongPress: onMessageLongPress,
-          onReplySwipe: onReplySwipe,
           onImageTap: onImageTap,
           onReactionTap: onReactionTap,
           showDateDivider: detailsController.showDateDivider,

@@ -25,7 +25,6 @@ import '/models/chat_message.dart';
 /// - Timestamps
 /// - Read receipts for sent messages
 /// - Reactions display
-/// - Swipe-to-reply gesture
 class ChatMessageBubble extends StatelessWidget {
   final bool isSentByCurrentUser;
   final String messageText;
@@ -43,7 +42,6 @@ class ChatMessageBubble extends StatelessWidget {
   final int totalMembers;
   final String? currentUserId;
   final VoidCallback? onLongPress;
-  final VoidCallback? onReplySwipe;
   final VoidCallback? onImageTap;
   final Function(String emoji, bool hasReacted)? onReactionTap;
 
@@ -65,7 +63,6 @@ class ChatMessageBubble extends StatelessWidget {
     this.totalMembers = 2,
     this.currentUserId,
     this.onLongPress,
-    this.onReplySwipe,
     this.onImageTap,
     this.onReactionTap,
   });
@@ -79,27 +76,7 @@ class ChatMessageBubble extends StatelessWidget {
         ? AppColors.pure
         : AppColors.pure;
 
-    return Dismissible(
-      key: Key('message_${message.id}'),
-      direction: isSentByCurrentUser
-          ? DismissDirection.endToStart
-          : DismissDirection.startToEnd,
-      confirmDismiss: (direction) async {
-        onReplySwipe?.call();
-        return false; // Don't actually dismiss
-      },
-      background: Container(
-        alignment: isSentByCurrentUser
-            ? Alignment.centerRight
-            : Alignment.centerLeft,
-        padding: EdgeInsets.symmetric(horizontal: AppSpacing.lg),
-        child: AppIcon(
-          icon: AppPhosphorIcons.reply,
-          color: AppColors.textSecondary,
-          size: AppIconSize.md,
-        ),
-      ),
-      child: Padding(
+    return Padding(
         padding: EdgeInsets.only(
           top: isLastInGroup ? AppSpacing.xs : 2,
           bottom: isFirstInGroup ? AppSpacing.xs : 2,
@@ -267,7 +244,6 @@ class ChatMessageBubble extends StatelessWidget {
             if (isSentByCurrentUser) SizedBox(width: AppSpacing.md),
           ],
         ),
-      ),
-    );
+      );
   }
 }

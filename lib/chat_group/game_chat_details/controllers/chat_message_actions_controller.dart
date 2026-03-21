@@ -13,7 +13,7 @@ import '../components/chat_image_viewer.dart';
 import 'chat_details_controller.dart';
 import 'chat_details_side_effects.dart';
 
-/// Controller for message interaction callbacks: reactions, replies,
+/// Controller for message interaction callbacks: reactions,
 /// sending, loading older messages, and user moderation actions.
 ///
 /// Follows the ChatImageUploadController callback-injection pattern.
@@ -37,21 +37,9 @@ class ChatMessageActionsController {
   final ChatDetailsController<DocumentSnapshot> detailsController;
 
   // State
-  ChatMessage? _replyToMessage;
   bool _isLeavingChat = false;
 
-  ChatMessage? get replyToMessage => _replyToMessage;
   bool get isLeavingChat => _isLeavingChat;
-
-  void setReplyTo(ChatMessage message) {
-    _replyToMessage = message;
-    onStateChanged();
-  }
-
-  void clearReply() {
-    _replyToMessage = null;
-    onStateChanged();
-  }
 
   // -- Reactions --
 
@@ -168,9 +156,6 @@ class ChatMessageActionsController {
     if (text.isEmpty) return;
 
     messageController.clear();
-    final replyTo = _replyToMessage;
-    _replyToMessage = null;
-    onStateChanged();
 
     try {
       await context.read<ChatProvider>().sendMessage(
@@ -178,8 +163,6 @@ class ChatMessageActionsController {
             senderId: currentUserId,
             text: text,
           );
-      // TODO: In a full implementation, we would store the replyTo message ID
-      // in the message document and display it in the message bubble
     } catch (error, stackTrace) {
       if (!context.mounted) return;
       context
@@ -187,8 +170,6 @@ class ChatMessageActionsController {
           .logError('sendMessage failed', error, stackTrace);
       if (!context.mounted) return;
       messageController.text = text;
-      _replyToMessage = replyTo;
-      onStateChanged();
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: const Text('Failed to send message. Please try again.'),

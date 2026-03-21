@@ -38,7 +38,7 @@ class _CinematicOnboardingWidgetState extends State<CinematicOnboardingWidget>
   // Slide configuration data
   static const _slideConfigs = [
     (
-      image: 'assets/images/Slide #1 - GameDetailed.png',
+      image: 'assets/images/slide_1_game_detailed.webp',
       title: 'Find the Game You Actually Want to Play',
       subtitle: 'Choose your format, stakes, and vibe - before you show up.',
       buttonText: 'Next',
@@ -48,7 +48,7 @@ class _CinematicOnboardingWidgetState extends State<CinematicOnboardingWidget>
       hasToastOverlay: false,
     ),
     (
-      image: 'assets/images/Slide #2 - Vibe Match.png',
+      image: 'assets/images/slide_2_vibe_match.webp',
       title: 'Golf Is Better When the Group Is Right',
       subtitle: 'Match with players who value the same kind of round you do.',
       buttonText: 'Next',
@@ -58,7 +58,7 @@ class _CinematicOnboardingWidgetState extends State<CinematicOnboardingWidget>
       hasToastOverlay: false,
     ),
     (
-      image: 'assets/images/Slide #3 -Notification.png',
+      image: 'assets/images/slide_3_notification.webp',
       title: 'The Right Game Finds You',
       subtitle:
           'Set your format, stakes, and vibe. When your game drops, you\'ll be the first to know — not the last to see it already full.',
@@ -69,7 +69,7 @@ class _CinematicOnboardingWidgetState extends State<CinematicOnboardingWidget>
       hasToastOverlay: false,
     ),
     (
-      image: 'assets/images/Slide #4 - GameList.png',
+      image: 'assets/images/slide_4_game_list.webp',
       title: 'Buddy Bailed? You are Covered.',
       subtitle:
           'Post your open spot and fill it fast with someone who actually fits your game.',

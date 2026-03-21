@@ -119,7 +119,7 @@ firebase deploy
 - `models/` - Domain models with business logic (Game, Chat, UserProfile, VibeProfile)
 - `services/` - Firestore operations and business logic
 - `providers/` - State management with ChangeNotifiers
-- `backend/schema/` - Legacy FlutterFlow Firestore record classes (UsersRecord, GamesRecord, etc.)
+- `backend/schema/` - Legacy Firestore record classes (UsersRecord, GamesRecord, etc.)
 - `services/` - Service and repository classes for Firestore/domain access
 - `core/` - Design system, widgets, utilities, navigation
 
@@ -233,7 +233,7 @@ Prefixed with `app_` and built on design tokens. Key widgets: `app_button_enhanc
 
 #### AppTheme Bridge (Legacy — `lib/core/app_theme.dart`)
 
-`AppTheme` is a `ThemeExtension` that maps design tokens to Flutter's theme system using FlutterFlow-era naming. It exists because some widget files still reference `AppTheme.of(context)`. The current mapping:
+`AppTheme` is a `ThemeExtension` that maps design tokens to Flutter's theme system using legacy naming. It exists because some widget files still reference `AppTheme.of(context)`. The current mapping:
 - `AppTheme.of(context).primary` → `AppColors.navyDark` (#0E1C26)
 - `AppTheme.of(context).secondary` → `AppColors.navy` (#142A36)
 - `AppTheme.of(context).accent1` → `AppColors.gold` (#C9A24D approximately)
@@ -270,7 +270,7 @@ Prefixed with `app_` and built on design tokens. Key widgets: `app_button_enhanc
 
 ### Data Models: Record Classes vs Model Classes
 
-The app has two layers of data representation (legacy from FlutterFlow migration):
+The app has two layers of data representation (legacy from original code generation):
 
 - **`backend/schema/*_record.dart`** (e.g., `GamesRecord`, `UsersRecord`) — Firestore record classes. These extend `FirestoreRecord`, use `_initializeFields()` and `hasX()` patterns. They are the primary Firestore data layer used by services and providers. **Do not remove these** — they are deeply embedded (UsersRecord: 29+ files, GamesRecord: 13+ files).
 

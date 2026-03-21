@@ -160,7 +160,7 @@ find_my_fourth/
 │   │   ├── firebase/
 │   │   │   ├── firebase_config.dart  # Firebase initialization, emulator config
 │   │   │   └── backend.dart     # Export barrel for all Firestore records
-│   │   ├── schema/              # Firestore record classes (legacy from FlutterFlow)
+│   │   ├── schema/              # Firestore record classes (legacy)
 │   │   │   ├── users_record.dart
 │   │   │   ├── games_record.dart
 │   │   │   ├── chats_record.dart
@@ -363,7 +363,7 @@ find_my_fourth/
 - Lightweight — most logic lives in services
 
 **lib/backend/schema/**
-- Legacy Firestore record classes from FlutterFlow; cannot be removed; only updated when adding new Firestore fields
+- Legacy Firestore record classes; cannot be removed; only updated when adding new Firestore fields
 
 **lib/main_function/**
 - Games (create, browse, join, detail, list) — primary feature area
@@ -502,9 +502,9 @@ find_my_fourth/
 ## Special Directories
 
 **lib/backend/schema/**
-- Firestore record classes (auto-generated from FlutterFlow, manually maintained)
+- Firestore record classes (originally auto-generated, now manually maintained)
 - Committed to git; cannot be removed
-- Updated when adding new Firestore fields (run `flutterflow` CLI or add manually)
+- Updated when adding new Firestore fields (add manually)
 - Example: `GamesRecord` is used by 13+ files; removing would break app
 
 **lib/custom_code/**

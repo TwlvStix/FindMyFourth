@@ -32,6 +32,7 @@ class ChallengeBoardWidget extends StatefulWidget {
 
 class _ChallengeBoardWidgetState extends State<ChallengeBoardWidget> {
   bool _analyticsLogged = false;
+  int _retryCount = 0;
   final ChallengeAnalyticsService _analytics = ChallengeAnalyticsService();
 
   @override
@@ -70,10 +71,13 @@ class _ChallengeBoardWidgetState extends State<ChallengeBoardWidget> {
         showTexture: true,
         child: SafeArea(
           child: AppStreamBuilder<Map<String, ChallengeProgress>?>(
+            key: ValueKey(_retryCount),
             stream: context.read<ChallengeProvider>().watchMyProgress(),
             initialData: context.read<ChallengeProvider>().currentProgress,
             loadingBuilder: (_) => const ChallengeBoardSkeleton(),
-            onRetry: () => setState(() {}),
+            onRetry: () => setState(() {
+              _retryCount++;
+            }),
             builder: (context, progressData) {
               final progress = progressData ?? {};
 

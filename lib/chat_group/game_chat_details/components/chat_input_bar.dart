@@ -2,7 +2,6 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import '/core/utils/app_log.dart';
 import '/core/utils/input_sanitizer.dart';
-import '/models/chat_message.dart';
 import '/core/design_tokens/app_phosphor_icons.dart';
 import '/core/design_tokens/spacing.dart';
 import '/core/design_tokens/colors.dart';
@@ -16,7 +15,6 @@ import '/core/widgets/app_icon.dart';
 /// Features:
 /// - Text input field with multiline support
 /// - Send button (disabled when empty)
-/// - Reply-to preview (optional)
 /// - Handles keyboard and focus
 ///
 /// Generic for any chat context - not game-specific.
@@ -25,8 +23,6 @@ class ChatInputBar extends StatelessWidget {
   final FocusNode messageFocusNode;
   final bool enabled;
   final VoidCallback onSendMessage;
-  final ChatMessage? replyToMessage;
-  final VoidCallback? onCancelReply;
   final String placeholder;
   final VoidCallback? onAttachImage;
 
@@ -36,8 +32,6 @@ class ChatInputBar extends StatelessWidget {
     required this.messageFocusNode,
     this.enabled = true,
     required this.onSendMessage,
-    this.replyToMessage,
-    this.onCancelReply,
     this.placeholder = 'Message...',
     this.onAttachImage,
   });
@@ -71,60 +65,6 @@ class ChatInputBar extends StatelessWidget {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          // Reply preview
-          if (replyToMessage != null)
-            Container(
-              margin: EdgeInsets.only(bottom: AppSpacing.sm),
-              padding: EdgeInsets.all(AppSpacing.sm),
-              decoration: BoxDecoration(
-                color: AppColors.navy,
-                borderRadius: BorderRadius.circular(AppBorderRadius.sm),
-                border: Border(
-                  left: BorderSide(
-                    color: AppColors.navyDark,
-                    width: 3,
-                  ),
-                ),
-              ),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'Replying to',
-                          style: AppTypography.labelSmall.copyWith(
-                            color: AppColors.navyDark,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                        AppSpacing.verticalXxs,
-                        Text(
-                          replyToMessage!.text.isNotEmpty
-                              ? replyToMessage!.text
-                              : 'Image',
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
-                          style: AppTypography.bodySmall.copyWith(
-                            color: AppColors.glassTextSecondary,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  IconButton(
-                    icon: AppIcon(
-                      icon: AppPhosphorIcons.close,
-                      size: AppIconSize.button,
-                      color: AppColors.pure.withValues(alpha: 0.6),
-                    ),
-                    onPressed: onCancelReply,
-                  ),
-                ],
-              ),
-            ),
-          // Input row
           Row(
             children: [
               // Image attachment button

@@ -130,7 +130,7 @@ class AppNavIcon extends StatelessWidget {
 /// AppIconBox(
 ///   icon: AppPhosphorIcons.trust,
 ///   backgroundColor: AppColors.gold,
-///   iconColor: Colors.white,
+///   iconColor: AppColors.pure,
 /// )
 /// ```
 class AppIconBox extends StatelessWidget {

@@ -20,7 +20,6 @@ class ChatMessageList extends StatelessWidget {
     required this.totalMembers,
     required this.onLoadOlderMessages,
     required this.onMessageLongPress,
-    required this.onReplySwipe,
     required this.onImageTap,
     required this.onReactionTap,
     required this.showDateDivider,
@@ -37,7 +36,6 @@ class ChatMessageList extends StatelessWidget {
   final int totalMembers;
   final Future<void> Function() onLoadOlderMessages;
   final void Function(ChatMessage message) onMessageLongPress;
-  final void Function(ChatMessage message) onReplySwipe;
   final void Function(String imageUrl) onImageTap;
   final Future<void> Function(
     ChatMessage message,
@@ -137,7 +135,6 @@ class ChatMessageList extends StatelessWidget {
               totalMembers: totalMembers,
               currentUserId: currentUserId,
               onLongPress: () => onMessageLongPress(message),
-              onReplySwipe: () => onReplySwipe(message),
               onImageTap: message.imageUrl.isNotEmpty
                   ? () => onImageTap(message.imageUrl)
                   : null,
