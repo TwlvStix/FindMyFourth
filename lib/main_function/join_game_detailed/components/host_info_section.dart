@@ -72,7 +72,7 @@ class HostInfoSection extends StatelessWidget {
                 Text(
                   'Hosted by',
                   style: AppTypography.labelSmall.copyWith(
-                    color: Colors.white.withValues(alpha: 0.6), // Keep: no 60% token
+                    color: AppColors.textSecondary,
                   ),
                 ),
                 Text(
@@ -111,13 +111,13 @@ class HostInfoSection extends StatelessWidget {
                   Text(
                     'View',
                     style: AppTypography.labelSmall.copyWith(
-                      color: Colors.white.withValues(alpha: 0.8), // Keep: no 80% token
+                      color: AppColors.textPrimary,
                     ),
                   ),
                   AppSpacing.horizontalXxs,
                   AppIcon(
                     icon: AppPhosphorIcons.chevronRight,
-                    color: Colors.white.withValues(alpha: 0.8), // Keep: no 80% token
+                    color: AppColors.textPrimary,
                     size: AppIconSize.xs,
                   ),
                 ],

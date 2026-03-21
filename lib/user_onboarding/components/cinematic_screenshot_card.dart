@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '/core/design_tokens/border_radius.dart';
+import '/core/design_tokens/colors.dart';
 
 class CinematicScreenshotCard extends StatelessWidget {
   final String imagePath;
@@ -22,7 +23,7 @@ class CinematicScreenshotCard extends StatelessWidget {
             borderRadius: BorderRadius.circular(AppBorderRadius.xl),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withValues(alpha: 0.12), // Keep: no 12% token
+                color: AppColors.shadowLight,
                 blurRadius: 40,
                 offset: const Offset(0, 12),
               ),

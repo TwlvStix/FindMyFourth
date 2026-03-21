@@ -1,8 +1,8 @@
 import 'dart:async';
 
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 
+import '/auth/firebase_auth/auth_util.dart';
 import '/core/utils/app_log.dart';
 import '/services/block_service.dart';
 
@@ -13,18 +13,16 @@ import '/services/block_service.dart';
 ///
 /// Auto-initializes on auth state changes via Firebase Auth listener.
 class BlockProvider extends ChangeNotifier {
-  BlockProvider({BlockService? service, FirebaseAuth? auth})
-      : _service = service ?? BlockService(),
-        _auth = auth ?? FirebaseAuth.instance {
-    _authSubscription = _auth.authStateChanges().listen(_onAuthChanged);
+  BlockProvider({BlockService? service})
+      : _service = service ?? BlockService() {
+    _authSubscription = authUidStream.listen(_onAuthChanged);
   }
 
   final BlockService _service;
-  final FirebaseAuth _auth;
 
   Set<String> _blockedUserIds = {};
   StreamSubscription<Set<String>>? _streamSubscription;
-  StreamSubscription<User?>? _authSubscription;
+  StreamSubscription<String?>? _authSubscription;
   Timer? _notifyTimer;
   bool _disposed = false;
   String? _currentUid;
@@ -35,9 +33,9 @@ class BlockProvider extends ChangeNotifier {
   /// Whether a specific user is blocked.
   bool isBlocked(String uid) => _blockedUserIds.contains(uid);
 
-  void _onAuthChanged(User? user) {
-    if (user != null) {
-      _loadBlockedUsers(user.uid);
+  void _onAuthChanged(String? uid) {
+    if (uid != null) {
+      _loadBlockedUsers(uid);
     } else {
       _clear();
     }

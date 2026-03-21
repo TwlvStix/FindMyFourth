@@ -12,3 +12,6 @@ core/app_theme.dart
 
 # Brand colors (official third-party brand guidelines)
 core/widgets/google_logo.dart
+
+# Random color generation for test/demo data (intentional)
+core/random_data_util.dart

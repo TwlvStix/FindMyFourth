@@ -57,7 +57,7 @@ class FriendCardBackground extends StatelessWidget {
                     colors: [
                       AppColors.gold.withValues(alpha: 0.08),
                       AppColors.gold.withValues(alpha: 0.02),
-                      Colors.transparent,
+                      AppColors.transparent,
                     ],
                     stops: const [0.0, 0.5, 1.0],
                   ),
@@ -74,11 +74,11 @@ class FriendCardBackground extends StatelessWidget {
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
                     colors: [
-                      Colors.transparent,
+                      AppColors.transparent,
                       AppColors.sand.withValues(alpha: 0.1),
                       AppColors.sand.withValues(alpha: 0.15),
                       AppColors.sand.withValues(alpha: 0.1),
-                      Colors.transparent,
+                      AppColors.transparent,
                     ],
                     stops: const [0.0, 0.3, 0.5, 0.7, 1.0],
                   ),

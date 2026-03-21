@@ -77,7 +77,7 @@ class _AlertCoursesPickerSheetState extends State<AlertCoursesPickerSheet> {
       width: 40,
       height: 4,
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.3), // Keep: no 30% token
+        color: AppColors.whiteHandle,
         borderRadius: BorderRadius.circular(AppBorderRadius.xxs),
       ),
     );

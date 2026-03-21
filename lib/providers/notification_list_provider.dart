@@ -1,9 +1,9 @@
 import 'dart:async';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 
+import '/auth/firebase_auth/auth_util.dart';
 import '/core/utils/app_log.dart';
 import '/core/utils/production_log.dart';
 import '/services/notification_crud_service.dart';
@@ -119,7 +119,7 @@ class NotificationListViewState {
 ///
 /// Features:
 /// - Lazy streaming: Widget calls [startListening]/[stopListening] in lifecycle
-/// - Auth-reactive: Clears state on UID change via FirebaseAuth.authStateChanges
+/// - Auth-reactive: Clears state on UID change via authUidStream
 /// - Dedupe: First page stream + load-more fetch are merged without duplicates
 /// - Domain model: Exposes [NotificationListItem] list, not Firestore types
 /// - Unread count: Separate lightweight stream for badge via [unreadCountStream]
@@ -127,27 +127,22 @@ class NotificationListViewState {
 class NotificationListProvider extends ChangeNotifier {
   NotificationListProvider({
     NotificationCrudService? service,
-    FirebaseAuth? auth,
     Duration initialLoadTimeout = const Duration(seconds: 12),
   })  : _service = service ?? NotificationCrudService(),
-        _auth = auth,
         _initialLoadTimeout = initialLoadTimeout {
     _init();
   }
 
   final NotificationCrudService _service;
-  final FirebaseAuth? _auth;
   final Duration _initialLoadTimeout;
-
-  FirebaseAuth get _resolvedAuth => _auth ?? FirebaseAuth.instance;
   bool _disposed = false;
   Timer? _notifyTimer;
 
   // ═══════════════════════════════════════════════════════════════════════════
-  // AUTH TRACKING (FirebaseAuth.authStateChanges only, NOT user doc stream)
+  // AUTH TRACKING (authUidStream only, NOT user doc stream)
   // ═══════════════════════════════════════════════════════════════════════════
   String? _activeUid;
-  StreamSubscription<User?>? _authSubscription;
+  StreamSubscription<String?>? _authSubscription;
 
   // ═══════════════════════════════════════════════════════════════════════════
   // LISTENING STATE (LAZY - only active when widget calls startListening)
@@ -253,9 +248,8 @@ class NotificationListProvider extends ChangeNotifier {
   // ═══════════════════════════════════════════════════════════════════════════
 
   void _init() {
-    _authSubscription = _resolvedAuth.authStateChanges().listen(
-      (user) {
-        final newUid = user?.uid;
+    _authSubscription = authUidStream.listen(
+      (newUid) {
         if (newUid == _activeUid) return;
 
         ProductionLog.log(

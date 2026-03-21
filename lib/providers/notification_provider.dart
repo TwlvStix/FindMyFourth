@@ -2,8 +2,8 @@ import 'dart:async';
 import 'dart:collection';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
+import '/auth/firebase_auth/auth_util.dart';
 import '/core/utils/app_log.dart';
 import '/models/notification_preferences.dart';
 import '/services/notification_crud_service.dart';
@@ -51,16 +51,11 @@ class NotificationError {
 class NotificationProvider extends ChangeNotifier {
   NotificationProvider({
     NotificationCrudService? service,
-    FirebaseAuth? auth,
-  })  : _service = service ?? NotificationCrudService(),
-        _auth = auth {
+  })  : _service = service ?? NotificationCrudService() {
     _init();
   }
 
   final NotificationCrudService _service;
-  final FirebaseAuth? _auth;
-
-  FirebaseAuth get _resolvedAuth => _auth ?? FirebaseAuth.instance;
 
   // State
   NotificationPreferences _prefs = NotificationPreferences.defaults();
@@ -79,7 +74,7 @@ class NotificationProvider extends ChangeNotifier {
   StreamSubscription<List<ConnectivityResult>>? _connectivitySub;
 
   // Auth state tracking
-  StreamSubscription<User?>? _authSubscription;
+  StreamSubscription<String?>? _authSubscription;
   String? _activeUid;
 
   // Getters
@@ -96,21 +91,20 @@ class NotificationProvider extends ChangeNotifier {
 
   /// Listen to auth state changes and manage UID transitions
   void _listenToAuthState() {
-    _authSubscription = _resolvedAuth.authStateChanges().listen(
-      (user) {
-        final newUid = user?.uid;
+    _authSubscription = authUidStream.listen(
+      (uid) {
         final oldUid = _activeUid;
 
         // No change in UID - nothing to do
-        if (newUid == oldUid) return;
+        if (uid == oldUid) return;
 
         // Update active UID
-        _activeUid = newUid;
+        _activeUid = uid;
 
-        if (newUid != null) {
+        if (uid != null) {
           // User logged in or switched - load their preferences
-          _loadPreferences(newUid);
-          _checkBackendErrors(newUid);
+          _loadPreferences(uid);
+          _checkBackendErrors(uid);
         } else {
           // User logged out - reset to defaults
           _clearState();

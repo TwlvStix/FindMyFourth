@@ -311,7 +311,7 @@ class BrandedGolfHeader extends StatelessWidget {
                             blurRadius: 8,
                           ),
                           Shadow(
-                            color: Colors.black.withValues(alpha: 0.3), // Keep: no 30% token
+                            color: AppColors.shadowMedium,
                             offset: Offset(0, 1),
                             blurRadius: 4,
                           ),
@@ -342,7 +342,7 @@ class BrandedGolfHeader extends StatelessWidget {
                             blurRadius: 6,
                           ),
                           Shadow(
-                            color: Colors.black.withValues(alpha: 0.3), // Keep: no 30% token
+                            color: AppColors.shadowMedium,
                             offset: Offset(0, 1),
                             blurRadius: 3,
                           ),

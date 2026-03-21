@@ -189,9 +189,9 @@ class TrustFlowService {
     Map<String, dynamic> attendanceRecords;
     try {
       attendanceRecords = await _loadAttendanceRecords(gameRef: gameRef);
-    } catch (e) {
+    } on FirebaseException catch (e) {
       AppLog.d(
-          '⚠️ loadPeerRatees: attendance load failed, proceeding without no-show filtering: $e');
+          '⚠️ loadPeerRatees: attendance load failed, proceeding without no-show filtering: ${e.code} - ${e.message}');
       attendanceRecords = <String, dynamic>{};
     }
     AppLog.d(
@@ -463,8 +463,8 @@ class TrustFlowService {
           photoUrl: photoUrl,
         );
       }
-    } catch (e) {
-      AppLog.d('⚠️ TrustFlowService._resolveProfile fallback: $e');
+    } on FirebaseException catch (e) {
+      AppLog.d('⚠️ TrustFlowService._resolveProfile fallback: ${e.code} - ${e.message}');
     }
 
     return const _ProfileProjection(

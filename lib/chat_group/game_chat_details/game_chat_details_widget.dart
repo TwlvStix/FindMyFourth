@@ -187,7 +187,7 @@ class _GameChatDetailsWidgetState extends State<GameChatDetailsWidget>
   void _showImageFullscreen(String imageUrl) {
     showAppDialog(
       context: context,
-      barrierColor: Colors.black87, // Keep: no 87% token
+      barrierColor: AppColors.dialogBarrier,
       builder: (BuildContext dialogContext) => ChatImageViewer(
         imageUrl: imageUrl,
         onClose: () => Navigator.of(dialogContext).pop(),

@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 import 'package:rxdart/rxdart.dart';
 import '/auth/firebase_auth/auth_util.dart';
@@ -24,18 +23,13 @@ class UserProvider extends ChangeNotifier {
   UserProvider({
     FriendService? friendService,
     ProfileService? profileService,
-    FirebaseAuth? auth,
   })  : _friendService = friendService ?? FriendService(),
-        _profileService = profileService ?? ProfileService(),
-        _auth = auth {
+        _profileService = profileService ?? ProfileService() {
     _init();
   }
 
   final FriendService _friendService;
   final ProfileService _profileService;
-  final FirebaseAuth? _auth;
-
-  FirebaseAuth get _resolvedAuth => _auth ?? FirebaseAuth.instance;
 
   // Current user data
   UsersRecord? _currentUser;
@@ -551,12 +545,12 @@ class UserProvider extends ChangeNotifier {
 
   /// Remove a friend (bidirectional - removes both users from each other's friends list)
   Future<void> removeFriend(DocumentReference friendRef) async {
-    final firebaseUser = _resolvedAuth.currentUser;
-    if (firebaseUser == null) return;
+    final uid = userIdOrNull;
+    if (uid == null) return;
 
     try {
       await _friendService.removeFriend(
-        currentUserId: firebaseUser.uid,
+        currentUserId: uid,
         friendRef: friendRef,
       );
       refreshFriends();
@@ -568,9 +562,9 @@ class UserProvider extends ChangeNotifier {
 
   /// Send friend request
   Future<void> sendFriendRequest(DocumentReference targetUserRef) async {
-    final authUser = _resolvedAuth.currentUser;
-    if (authUser == null) return;
-    final currentUserRef = UsersRecord.collection.doc(authUser.uid);
+    final uid = userIdOrNull;
+    if (uid == null) return;
+    final currentUserRef = UsersRecord.collection.doc(uid);
     if (targetUserRef.path == currentUserRef.path) return;
 
     // Check current user's lists for target
@@ -582,7 +576,7 @@ class UserProvider extends ChangeNotifier {
 
     try {
       final sent = await _friendService.sendFriendRequest(
-        currentUserId: authUser.uid,
+        currentUserId: uid,
         targetUserRef: targetUserRef,
       );
 
@@ -604,12 +598,12 @@ class UserProvider extends ChangeNotifier {
 
   /// Accept friend request
   Future<void> acceptFriendRequest(DocumentReference requesterRef) async {
-    final authUser = _resolvedAuth.currentUser;
-    if (authUser == null) return;
+    final uid = userIdOrNull;
+    if (uid == null) return;
 
     try {
       await _friendService.acceptFriendRequest(
-        currentUserId: authUser.uid,
+        currentUserId: uid,
         requesterRef: requesterRef,
       );
 
@@ -635,11 +629,11 @@ class UserProvider extends ChangeNotifier {
   /// Reject friend request
   Future<void> rejectFriendRequest(DocumentReference requesterRef) async {
     try {
-      final authUser = _resolvedAuth.currentUser;
-      if (authUser == null) return;
+      final uid = userIdOrNull;
+      if (uid == null) return;
 
       await _friendService.rejectFriendRequest(
-        currentUserId: authUser.uid,
+        currentUserId: uid,
         requesterRef: requesterRef,
       );
       refreshFriendRequests();
@@ -652,11 +646,11 @@ class UserProvider extends ChangeNotifier {
   /// Cancel a friend request that the current user previously sent
   Future<void> cancelFriendRequest(DocumentReference targetUserRef) async {
     try {
-      final authUser = _resolvedAuth.currentUser;
-      if (authUser == null) return;
+      final uid = userIdOrNull;
+      if (uid == null) return;
 
       await _friendService.cancelFriendRequest(
-        currentUserId: authUser.uid,
+        currentUserId: uid,
         targetUserRef: targetUserRef,
       );
       clearPendingOutgoingRequest(targetUserRef.id);

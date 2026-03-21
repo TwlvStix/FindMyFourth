@@ -101,8 +101,8 @@ class RebookService {
           } else {
             AppLog.d('📖 RebookService: Skipping deleted player $playerUid');
           }
-        } catch (e) {
-          AppLog.d('📖 RebookService: Skipping unreachable player $playerUid');
+        } on FirebaseException catch (e) {
+          AppLog.d('📖 RebookService: Skipping unreachable player $playerUid: ${e.code} - ${e.message}');
         }
       }
 
@@ -141,8 +141,8 @@ class RebookService {
           'rebooked': true,
           'rebooked_at': FieldValue.serverTimestamp(),
         });
-      } catch (e) {
-        AppLog.d('📖 RebookService: rebook marking failed (rules may not be deployed): $e');
+      } on FirebaseException catch (e) {
+        AppLog.d('📖 RebookService: rebook marking failed (rules may not be deployed): ${e.code} - ${e.message}');
       }
 
       // Create participant docs for pre-added players (non-critical)

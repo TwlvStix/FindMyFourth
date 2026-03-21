@@ -96,7 +96,7 @@ class AlertPermissionWarning extends StatelessWidget {
           Text(
             'Please enable notifications in Settings',
             style: AppTypography.bodySmall.copyWith(
-              color: Colors.white.withValues(alpha: 0.8), // Keep: no 80% token
+              color: AppColors.textPrimary,
             ),
             textAlign: TextAlign.center,
           ),

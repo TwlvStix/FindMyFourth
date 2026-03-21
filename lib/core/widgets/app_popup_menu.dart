@@ -105,7 +105,7 @@ class AppPopupMenu extends StatelessWidget {
     return PopupMenuButton<String>(
       icon: AppIcon(
         icon: icon ?? PhosphorIconsRegular.dotsThreeVertical,
-        color: enabled ? (iconColor ?? Colors.white) : AppColors.textMuted,
+        color: enabled ? (iconColor ?? AppColors.pure) : AppColors.textMuted,
         size: AppIconSize.md,
       ),
       tooltip: tooltip ?? 'More options',

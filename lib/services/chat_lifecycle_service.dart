@@ -175,8 +175,8 @@ class ChatLifecycleService {
       }, SetOptions(merge: true));
       AppLog.d(
           '✅ ChatLifecycleService.ensureGameChatMembership: Synced $uid → chat $chatId');
-    } catch (e) {
-      AppLog.d('⚠️ ChatLifecycleService.ensureGameChatMembership failed: $e');
+    } on FirebaseException catch (e) {
+      AppLog.d('⚠️ ChatLifecycleService.ensureGameChatMembership failed: ${e.code} - ${e.message}');
     }
   }
 

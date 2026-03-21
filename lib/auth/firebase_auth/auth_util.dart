@@ -79,6 +79,15 @@ final authenticatedUserStream = FirebaseAuth.instance
   return currentUserDocument;
 }).asBroadcastStream();
 
+/// Auth state stream that emits just the UID (or null on sign-out).
+/// Use this in providers that need to react to auth changes without
+/// loading the full user document.
+final authUidStream = FirebaseAuth.instance
+    .authStateChanges()
+    .map((user) => user?.uid)
+    .distinct()
+    .asBroadcastStream();
+
 Map<String, dynamic>? _currentUserPrivateData;
 final privateUserDataStream = FirebaseAuth.instance
     .authStateChanges()

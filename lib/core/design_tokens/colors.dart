@@ -211,6 +211,25 @@ class AppColors {
   /// White strong - 95% (near-opaque text on dark backgrounds)
   static const Color whiteStrong = Color(0xF2FFFFFF);
 
+  /// White handle - 30% (drag handles, bottom sheet indicators)
+  static const Color whiteHandle = Color(0x4DFFFFFF);
+
+  /// Shimmer highlight - 25% (shimmer animation peak)
+  static const Color shimmerHighlight = Color(0x40FFFFFF);
+
+  // ==========================================================================
+  // SHADOW VARIANTS (For text shadows and drop shadows)
+  // ==========================================================================
+
+  /// Light shadow - black at 12% (subtle card drop shadows)
+  static const Color shadowLight = Color(0x1F000000);
+
+  /// Medium shadow - black at 30% (text shadows on images)
+  static const Color shadowMedium = Color(0x4D000000);
+
+  /// Dialog barrier - black at 87% (modal/fullscreen backdrop)
+  static const Color dialogBarrier = Color(0xDE000000);
+
   // ==========================================================================
   // MUTUAL FRIEND CARD TOKENS (Gold-accented for friends-only exclusivity)
   // Navy structural base + gold accents for trust/premium access signal
@@ -491,6 +510,25 @@ class AppColorsDark {
 
   /// White strong - 95% (near-opaque text on dark backgrounds)
   static const Color whiteStrong = Color(0xF2FFFFFF);
+
+  /// White handle - 30% (drag handles, bottom sheet indicators)
+  static const Color whiteHandle = Color(0x4DFFFFFF);
+
+  /// Shimmer highlight - 25% (shimmer animation peak)
+  static const Color shimmerHighlight = Color(0x40FFFFFF);
+
+  // ==========================================================================
+  // SHADOW VARIANTS (For text shadows and drop shadows)
+  // ==========================================================================
+
+  /// Light shadow - black at 12% (subtle card drop shadows)
+  static const Color shadowLight = Color(0x1F000000);
+
+  /// Medium shadow - black at 30% (text shadows on images)
+  static const Color shadowMedium = Color(0x4D000000);
+
+  /// Dialog barrier - black at 87% (modal/fullscreen backdrop)
+  static const Color dialogBarrier = Color(0xDE000000);
 
   // ==========================================================================
   // GRADIENTS

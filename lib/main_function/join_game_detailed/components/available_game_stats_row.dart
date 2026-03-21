@@ -74,7 +74,7 @@ class AvailableGameStatsRow extends StatelessWidget {
                         Text(
                           dateTimeFormat("jm", game.date),
                           style: AppTypography.labelSmall.copyWith(
-                            color: Colors.white.withValues(alpha: 0.6), // Keep: no 60% token
+                            color: AppColors.textSecondary,
                           ),
                         ),
                       ],
@@ -153,7 +153,7 @@ class AvailableGameStatsRow extends StatelessWidget {
                     Text(
                       '${game.joinedPlayers.length + game.guestPlayers.length}/${game.maxPlayers}',
                       style: AppTypography.labelSmall.copyWith(
-                        color: Colors.white.withValues(alpha: 0.6), // Keep: no 60% token
+                        color: AppColors.textSecondary,
                       ),
                     ),
                   ],

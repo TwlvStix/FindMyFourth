@@ -160,7 +160,7 @@ class _FriendCardSkeletonState extends State<FriendCardSkeleton>
           end: Alignment.centerRight,
           colors: [
             AppColors.whiteMedium,
-            Colors.white.withValues(alpha: 0.25),
+            AppColors.shimmerHighlight,
             AppColors.whiteMedium,
           ],
           stops: [
@@ -195,7 +195,7 @@ class _FriendCardSkeletonState extends State<FriendCardSkeleton>
             end: Alignment.centerRight,
             colors: [
               AppColors.whiteMedium,
-              Colors.white.withValues(alpha: 0.25),
+              AppColors.shimmerHighlight,
               AppColors.whiteMedium,
             ],
             stops: [

@@ -89,7 +89,7 @@ class SegmentedControl extends StatelessWidget {
                             icon: option['phosphorIcon'] as PhosphorIconData,
                             color: isSelected
                                 ? AppColors.pure
-                                : Colors.white.withValues(alpha: 0.6), // Keep: no 60% token
+                                : AppColors.textSecondary,
                             size: iconSize,
                           )
                         else
@@ -97,7 +97,7 @@ class SegmentedControl extends StatelessWidget {
                             option['icon'] as IconData,
                             color: isSelected
                                 ? AppColors.pure
-                                : Colors.white.withValues(alpha: 0.6), // Keep: no 60% token
+                                : AppColors.textSecondary,
                             size: iconSize,
                           ),
                         SizedBox(width: spacing),
@@ -107,7 +107,7 @@ class SegmentedControl extends StatelessWidget {
                             style: AppTypography.labelMedium.copyWith(
                               color: isSelected
                                   ? AppColors.pure
-                                  : Colors.white.withValues(alpha: 0.6), // Keep: no 60% token
+                                  : AppColors.textSecondary,
                               fontSize: fontSize,
                               fontWeight:
                                   isSelected ? FontWeight.w700 : FontWeight.w500,
