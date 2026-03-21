@@ -1,38 +1,16 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/foundation.dart';
 
 import '/backend/schema/users_record.dart';
 import '/models/vibe_profile.dart';
 import '/services/friend_service.dart';
+import '/services/vibe_match_explanation.dart';
 import '/services/vibe_matcher.dart';
+import '/utils/vibe_archetypes.dart';
+import '/vibe/premium_vibe_page/premium_vibe_page_data.dart';
 import '/services/vibe_repository.dart';
 
-class MutualFriendsResult {
-  const MutualFriendsResult({
-    required this.friends,
-    required this.loaded,
-  });
-
-  final List<UsersRecord> friends;
-  final bool loaded;
-}
-
-class VibeMatchLoadResult {
-  const VibeMatchLoadResult({
-    required this.match,
-    required this.myVibes,
-    required this.theirVibes,
-    required this.isLoading,
-    required this.profileId,
-  });
-
-  final VibeMatchResult? match;
-  final VibeProfile? myVibes;
-  final VibeProfile? theirVibes;
-  final bool isLoading;
-  final String? profileId;
-}
-
-class ProfileUserController {
+class ProfileUserController extends ChangeNotifier {
   ProfileUserController({
     VibeRepository? vibeRepository,
     FriendService? friendService,
@@ -42,69 +20,182 @@ class ProfileUserController {
   final VibeRepository _vibeRepository;
   final FriendService _friendService;
 
-  bool shouldLoadVibeMatch({
-    required bool isLoading,
-    required VibeMatchResult? existingMatch,
-    required String? loadedUserId,
-    required DocumentSnapshot snapshot,
+  // ═══════════════════════════════════════════════════════════════════════════
+  // VIBE MATCH STATE
+  // ═══════════════════════════════════════════════════════════════════════════
+  VibeMatchResult? _vibeMatchResult;
+  VibeMatchResult? get vibeMatchResult => _vibeMatchResult;
+
+  VibeProfile? _myVibes;
+  VibeProfile? _theirVibes;
+  bool _isVibeMatchLoading = false;
+  bool get isVibeMatchLoading => _isVibeMatchLoading;
+
+  String? _vibeMatchUserId;
+
+  String _cachedUserName = '';
+  String _cachedUserPhotoUrl = '';
+
+  // ═══════════════════════════════════════════════════════════════════════════
+  // MUTUAL FRIENDS STATE
+  // ═══════════════════════════════════════════════════════════════════════════
+  List<UsersRecord> _mutualFriends = [];
+  List<UsersRecord> get mutualFriends => _mutualFriends;
+
+  bool _mutualFriendsLoaded = true;
+  bool get mutualFriendsLoaded => _mutualFriendsLoaded;
+
+  String? _lastMutualFriendsProfileId;
+
+  bool _disposed = false;
+
+  // ═══════════════════════════════════════════════════════════════════════════
+  // PUBLIC API
+  // ═══════════════════════════════════════════════════════════════════════════
+
+  void onProfileDataReceived(
+    UsersRecord userRecord,
+    DocumentReference userRef, {
+    required bool isSelf,
+    required List<DocumentReference> myFriends,
   }) {
-    if (isLoading) {
-      return false;
+    _cachedUserName = userRecord.displayName.isNotEmpty
+        ? userRecord.displayName
+        : 'Golfer';
+    _cachedUserPhotoUrl = userRecord.photoUrl.isNotEmpty
+        ? userRecord.photoUrl
+        : 'https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png';
+
+    if (!isSelf) {
+      _ensureVibeMatch(userRef);
+      _fetchMutualFriends(
+        userRef.id,
+        userRecord.friends,
+        myFriends,
+      );
     }
-    if (existingMatch != null && loadedUserId == snapshot.id) {
-      return false;
-    }
-    return true;
   }
 
-  Future<VibeMatchLoadResult> loadVibeMatch(DocumentSnapshot snapshot) async {
+  PremiumVibePageData? buildVibePageData(DocumentReference userRef) {
+    final result = _vibeMatchResult;
+    final myVibes = _myVibes;
+    final theirVibes = _theirVibes;
+    if (result == null || myVibes == null || theirVibes == null) {
+      return null;
+    }
+
+    final explanation = buildMatchExplanation(
+      matchResult: result,
+      a: myVibes,
+      b: theirVibes,
+    );
+
+    return PremiumVibePageData(
+      userId: userRef.id,
+      userName: _cachedUserName,
+      userPhotoUrl: _cachedUserPhotoUrl,
+      userRef: userRef,
+      matchResult: result,
+      explanation: explanation,
+      myProfile: myVibes,
+      theirProfile: theirVibes,
+      myArchetype: VibeArchetypes.classifyProfile(myVibes),
+      theirArchetype: VibeArchetypes.classifyProfile(theirVibes),
+    );
+  }
+
+  void reset() {
+    _vibeMatchResult = null;
+    _myVibes = null;
+    _theirVibes = null;
+    _isVibeMatchLoading = false;
+    _vibeMatchUserId = null;
+    _cachedUserName = '';
+    _cachedUserPhotoUrl = '';
+    _mutualFriends = [];
+    _mutualFriendsLoaded = true;
+    _lastMutualFriendsProfileId = null;
+    notifyListeners();
+  }
+
+  // ═══════════════════════════════════════════════════════════════════════════
+  // INTERNAL
+  // ═══════════════════════════════════════════════════════════════════════════
+
+  void _ensureVibeMatch(DocumentReference userRef) {
+    if (_isVibeMatchLoading) return;
+    if (_vibeMatchResult != null && _vibeMatchUserId == userRef.id) return;
+
+    _vibeMatchUserId = userRef.id;
+    _loadVibeMatch(userRef);
+  }
+
+  Future<void> _loadVibeMatch(DocumentReference userRef) async {
+    _isVibeMatchLoading = true;
+    _vibeMatchResult = null;
+    _safeNotify();
+
     try {
+      final snapshot = await userRef.get();
       final myVibes = await _vibeRepository.getMyVibesCached();
       final theirVibes = _vibeRepository.profileFromSnapshot(snapshot);
       final result = VibeMatcher.score(myVibes, theirVibes);
-      return VibeMatchLoadResult(
-        match: result,
-        myVibes: myVibes,
-        theirVibes: theirVibes,
-        isLoading: false,
-        profileId: snapshot.id,
-      );
+
+      _myVibes = myVibes;
+      _theirVibes = theirVibes;
+      _vibeMatchResult = result;
+      _vibeMatchUserId = snapshot.id;
+      _isVibeMatchLoading = false;
     } catch (_) {
-      return VibeMatchLoadResult(
-        match: null,
-        myVibes: null,
-        theirVibes: null,
-        isLoading: false,
-        profileId: snapshot.id,
-      );
+      _myVibes = null;
+      _theirVibes = null;
+      _vibeMatchResult = null;
+      _isVibeMatchLoading = false;
     }
+    _safeNotify();
   }
 
-  Future<MutualFriendsResult> fetchMutualFriends({
-    required List<DocumentReference> theirFriends,
-    required List<DocumentReference> myFriends,
-    void Function()? onRemoteFetchStart,
-  }) async {
+  Future<void> _fetchMutualFriends(
+    String profileUserId,
+    List<DocumentReference> theirFriends,
+    List<DocumentReference> myFriends,
+  ) async {
+    if (_lastMutualFriendsProfileId == profileUserId && _mutualFriendsLoaded) {
+      return;
+    }
+    _lastMutualFriendsProfileId = profileUserId;
+
     final myUids = myFriends.map((r) => r.id).toSet();
     final theirUids = theirFriends.map((r) => r.id).toSet();
     final mutualUids = myUids.intersection(theirUids);
 
     if (mutualUids.isEmpty) {
-      return const MutualFriendsResult(
-        friends: <UsersRecord>[],
-        loaded: true,
-      );
+      _mutualFriends = [];
+      _mutualFriendsLoaded = true;
+      _safeNotify();
+      return;
     }
 
-    onRemoteFetchStart?.call();
+    _mutualFriendsLoaded = false;
+    _safeNotify();
 
     final results = await _friendService.getMutualFriends(
       myFriends: myFriends,
       theirFriends: theirFriends,
     );
-    return MutualFriendsResult(
-      friends: results,
-      loaded: true,
-    );
+
+    _mutualFriends = results;
+    _mutualFriendsLoaded = true;
+    _safeNotify();
+  }
+
+  void _safeNotify() {
+    if (!_disposed) notifyListeners();
+  }
+
+  @override
+  void dispose() {
+    _disposed = true;
+    super.dispose();
   }
 }

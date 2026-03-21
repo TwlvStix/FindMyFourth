@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 import '/core/utils/app_log.dart';
+import '/main_function/create_game/create_game_constants.dart';
 import '/main_function/create_game/create_game_validator.dart';
 import '/main_function/create_game/models/create_game_form_data.dart';
 import '/services/create_game_draft_service.dart';
@@ -172,5 +173,52 @@ class CreateGameController {
       gameRef: gameRef,
       nextRoute: nextRoute,
     );
+  }
+
+  // -- Pure business logic (no widget dependencies) --
+
+  static const List<int> _mondayFirstDayOrder = [1, 2, 3, 4, 5, 6, 0];
+
+  void ensureValidEligibility(
+      CreateGameFormData formData, String? userGender) {
+    final validValues = getFilteredEligibilityOptions(userGender)
+        .map((o) => o['value'])
+        .toSet();
+    if (!validValues.contains(formData.playerEligibility)) {
+      formData.playerEligibility = 'open_to_all';
+    }
+  }
+
+  List<Map<String, dynamic>> getFilteredEligibilityOptions(
+      String? userGender) {
+    if (userGender == 'Male') {
+      return kCreateGameEligibilityOptions
+          .where((opt) => opt['value'] != 'women_only')
+          .toList();
+    } else if (userGender == 'Female') {
+      return kCreateGameEligibilityOptions
+          .where((opt) => opt['value'] != 'men_only')
+          .toList();
+    } else {
+      return kCreateGameEligibilityOptions
+          .where((opt) => opt['value'] == 'open_to_all')
+          .toList();
+    }
+  }
+
+  List<int> getAvailableDays(CreateGameFormData formData) {
+    final now = DateTime.now();
+    switch (formData.flexibleWeek) {
+      case 'this_week':
+        final todayDayIndex = now.weekday == DateTime.sunday ? 0 : now.weekday;
+        final todayPosition = _mondayFirstDayOrder.indexOf(todayDayIndex);
+        return _mondayFirstDayOrder.sublist(todayPosition);
+      case 'this_weekend':
+        return [6, 0];
+      case 'next_week':
+      case 'next_2_weeks':
+      default:
+        return [0, 1, 2, 3, 4, 5, 6];
+    }
   }
 }

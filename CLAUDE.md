@@ -430,7 +430,7 @@ When adding a new feature, the typical file set is:
 - **Don't catch generic exceptions in services** — catch `FirebaseException` specifically
 - **Don't hardcode design values** — use design tokens for colors, typography, spacing, border radius, shadows, icon sizes. Use `AppIcon` with `AppPhosphorIcons`, not raw `Icon()`. Use `AppBorderRadius`, not `BorderRadius.circular(12)`. Use `AppSpacing` tokens, not literal `EdgeInsets`.
 - **Don't hardcode colors** — never use `Colors.*`, `Color(0x...)`, `Color.fromARGB()`, or `Color.fromRGBO()` in `lib/`. Use `AppColors` tokens. CI enforces this via `tool/check_hardcoded_colors.sh`. Exceptions (brand colors, token definitions) go in `tool/hardcoded_color_allowlist.txt`.
-- **Don't create widgets over 300 lines** — decompose into sub-widgets in a `components/` subfolder
+- **Don't create widgets over 300 lines** — see `.claude/rules/widgets.md` for size policy and grace zone
 - **Don't use `setState` after `await` without a mounted check** — always add `if (!mounted) return;`
 - **Don't use empty `setState(() {})`** — use targeted state updates via Provider
 - **Don't forget to cancel `StreamSubscription`** — every subscription declared in a widget or provider must be cancelled in `dispose()`

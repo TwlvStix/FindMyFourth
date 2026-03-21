@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import '/core/motion/motion_tokens.dart';
 import '/core/motion/reduced_motion.dart';
+import '/core/utils/formatting_utils.dart';
 import '/backend/backend.dart';
 import '/core/design_tokens/spacing.dart';
 import '/core/design_tokens/colors.dart';
@@ -141,17 +142,6 @@ class _PremiumFriendCardState extends State<PremiumFriendCard>
     }
   }
 
-  int? _calculateAge(DateTime? dob) {
-    if (dob == null) return null;
-    final now = DateTime.now();
-    int age = now.year - dob.year;
-    if (now.month < dob.month ||
-        (now.month == dob.month && now.day < dob.day)) {
-      age--;
-    }
-    return age;
-  }
-
   String? _getArchetypeName() {
     // 1. Check denormalized field first (fast)
     if (widget.user.archetype.isNotEmpty) {
@@ -281,7 +271,7 @@ class _PremiumFriendCardState extends State<PremiumFriendCard>
   }
 
   Widget _buildSecondaryInfo() {
-    final age = _calculateAge(widget.user.dateOfBirth);
+    final age = calculateAge(widget.user.dateOfBirth);
     final hometown = widget.user.hometownName;
     final vibePercent = _vibeMatch?.myFitPercent.round();
 

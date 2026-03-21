@@ -64,8 +64,8 @@ class FriendService {
         });
 
         await batch.commit();
-      } catch (e) {
-        AppLog.d('FriendService: Bidirectional removal failed, using one-way fallback: $e');
+      } on FirebaseException catch (e) {
+        AppLog.d('FriendService: Bidirectional removal failed (${e.code}), using one-way fallback: ${e.message}');
         await currentUserRef.update({
           'friends': FieldValue.arrayRemove([
             friendRef,

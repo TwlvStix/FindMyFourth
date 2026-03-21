@@ -1,5 +1,4 @@
 import '/core/design_tokens/colors.dart';
-import '/core/motion/motion_tokens.dart';
 import '/core/utils/state_update.dart';
 import '/core/design_tokens/spacing.dart';
 import '/core/design_tokens/typography.dart';
@@ -15,7 +14,6 @@ import '/services/create_game_draft_service.dart';
 import '/services/create_game_service.dart';
 import '/utils/app_util.dart';
 import 'controllers/create_game_controller.dart';
-import 'create_game_constants.dart';
 import 'models/create_game_form_data.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -24,6 +22,7 @@ import 'package:provider/provider.dart';
 
 import '/providers/chat_provider.dart';
 import 'components/create_game_form_sections.dart';
+import 'components/create_game_submit_handler.dart';
 import 'components/draft_banner.dart';
 import 'components/rematch_banner.dart';
 
@@ -40,22 +39,17 @@ class CreateGameWidget extends StatefulWidget {
 }
 
 class _CreateGameWidgetState extends State<CreateGameWidget> {
-  static const List<int> _mondayFirstDayOrder = [1, 2, 3, 4, 5, 6, 0];
-
   final _courseService = CourseService();
   final _controller = CreateGameController(
     draftService: CreateGameDraftService(),
     gameService: CreateGameService(),
   );
-
   final formKey = GlobalKey<FormState>();
+  final scaffoldKey = GlobalKey<ScaffoldState>();
   late CreateGameFormData _formData;
   late FormFieldController<String> courseValueController;
-
   final TextEditingController _gameNameController = TextEditingController();
   final TextEditingController _otherGameController = TextEditingController();
-
-  final scaffoldKey = GlobalKey<ScaffoldState>();
 
   bool _isLoading = true;
   bool _hasDraft = false;
@@ -78,25 +72,15 @@ class _CreateGameWidgetState extends State<CreateGameWidget> {
 
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       await _loadDraft();
-      if (mounted) {
-        final userGender = context.read<UserProvider>().currentUser?.gender;
-        final validOptions = _getFilteredEligibilityOptions(userGender);
-        final validValues = validOptions.map((o) => o['value']).toSet();
-        if (!validValues.contains(_formData.playerEligibility)) {
-          _formData.playerEligibility = 'open_to_all';
+      if (!mounted) return;
+      final userGender = context.read<UserProvider>().currentUser?.gender;
+      _controller.ensureValidEligibility(_formData, userGender);
+      updateState(this, () => _isLoading = false);
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted && !_hasAnimated) {
+          updateState(this, () => _hasAnimated = true);
         }
-
-        updateState(this, () {
-          _isLoading = false;
-        });
-
-        // Let the form render one frame before triggering entrance animations
-        WidgetsBinding.instance.addPostFrameCallback((_) {
-          if (mounted && !_hasAnimated) {
-            updateState(this, () => _hasAnimated = true);
-          }
-        });
-      }
+      });
     });
   }
 
@@ -126,7 +110,6 @@ class _CreateGameWidgetState extends State<CreateGameWidget> {
       _otherGameController.text = _formData.otherGameText!;
     }
   }
-
   Future<void> _saveDraft() async {
     _formData.gameName = _gameNameController.text.trim();
     _formData.reconcileDerivedFields();
@@ -135,167 +118,48 @@ class _CreateGameWidgetState extends State<CreateGameWidget> {
 
   Future<void> _clearDraft() async {
     await _controller.clearDraft();
-    updateState(this, () {
-      _hasDraft = false;
-    });
+    updateState(this, () => _hasDraft = false);
   }
-
   void _updateFormState(VoidCallback mutation) {
-    if (!mounted) {
-      return;
-    }
+    if (!mounted) return;
     updateState(this, mutation);
   }
 
   Future<void> _submitGame() async {
     if (_submitting) return;
     updateState(this, () => _submitting = true);
-
     try {
-      await _submitGameInner();
+      final userProvider = context.userProvider;
+      final chatProvider = context.read<ChatProvider>();
+      final isFormValid = formKey.currentState?.validate() ?? false;
+
+      if (!isFormValid) scrollToFormErrors(formKey);
+
+      final result = await _controller.submitGame(
+        formData: _formData,
+        isFormValid: isFormValid,
+        currentUserRef: userProvider.currentUser?.reference,
+        createGameChat: chatProvider.createGameChat,
+        invalidateAvailableGamesCache:
+            context.gameProvider.invalidateAvailableGamesCache,
+        invalidateUserGamesCache: context.gameProvider.invalidateUserGamesCache,
+        userIdForCache: userProvider.userIdOrNull ?? '',
+      );
+
+      if (!mounted) return;
+      handleCreateGameSubmitResult(
+        context,
+        result: result,
+        onDraftCleared: () => updateState(this, () => _hasDraft = false),
+      );
     } finally {
-      if (mounted) {
-        updateState(this, () => _submitting = false);
-      }
+      if (mounted) updateState(this, () => _submitting = false);
     }
   }
-
-  Future<void> _submitGameInner() async {
-    final userProvider = context.userProvider;
-    final userId = userProvider.userIdOrNull;
-    if (!userProvider.isAuthReady || userId == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Signing you in... Please try again in a moment.'),
-          backgroundColor: AppColors.warning,
-        ),
-      );
-      return;
-    }
-
-    final chatProvider = context.read<ChatProvider>();
-    final isFormValid =
-        formKey.currentState != null && formKey.currentState!.validate();
-
-    if (!isFormValid) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (!mounted) return;
-        final formContext = formKey.currentContext;
-        if (formContext != null) {
-          Scrollable.ensureVisible(
-            formContext,
-            duration: const Duration(milliseconds: 300),
-            curve: MotionTokens.curveEnter,
-          );
-        }
-      });
-    }
-
-    final result = await _controller.submitGame(
-      formData: _formData,
-      isFormValid: isFormValid,
-      currentUserRef: userProvider.currentUser?.reference,
-      createGameChat: chatProvider.createGameChat,
-      invalidateAvailableGamesCache:
-          context.gameProvider.invalidateAvailableGamesCache,
-      invalidateUserGamesCache: context.gameProvider.invalidateUserGamesCache,
-      userIdForCache: userId,
-    );
-
-    if (!mounted) {
-      return;
-    }
-
-    if (!result.success) {
-      final message = result.message;
-      if (message != null && message.isNotEmpty) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(message),
-            duration: Duration(milliseconds: 4000),
-            backgroundColor: AppColors.error,
-          ),
-        );
-      }
-      return;
-    }
-
-    final gameRef = result.gameRef;
-    final nextRoute = result.nextRoute;
-    if (gameRef == null || nextRoute == null) {
-      return;
-    }
-
-    updateState(this, () {
-      _hasDraft = false;
-    });
-
-    final messenger = ScaffoldMessenger.of(context);
-
-    if (nextRoute == CreateGameNextRoute.gamesList) {
-      context.pushGamesList(
-        transition: TransitionStandards.modalTransition,
-      );
-    } else {
-      context.pushPlayerList(
-        gameRef: gameRef,
-      );
-    }
-
-    if (!mounted) return;
-    messenger.showSnackBar(
-      SnackBar(
-        content: Text(
-          'You have created a game!',
-          style: AppTypography.bodyMedium.copyWith(
-            color: AppColors.pure,
-            fontWeight: FontWeight.w500,
-          ),
-        ),
-        duration: Duration(milliseconds: 4000),
-        backgroundColor: AppColors.success,
-      ),
-    );
-  }
-
-  List<Map<String, dynamic>> _getFilteredEligibilityOptions(
-      String? userGender) {
-    if (userGender == 'Male') {
-      return kCreateGameEligibilityOptions
-          .where((opt) => opt['value'] != 'women_only')
-          .toList();
-    } else if (userGender == 'Female') {
-      return kCreateGameEligibilityOptions
-          .where((opt) => opt['value'] != 'men_only')
-          .toList();
-    } else {
-      return kCreateGameEligibilityOptions
-          .where((opt) => opt['value'] == 'open_to_all')
-          .toList();
-    }
-  }
-
-  List<int> _getAvailableDays() {
-    final now = DateTime.now();
-    switch (_formData.flexibleWeek) {
-      case 'this_week':
-        final todayDayIndex = now.weekday == DateTime.sunday ? 0 : now.weekday;
-        final todayPosition = _mondayFirstDayOrder.indexOf(todayDayIndex);
-        return _mondayFirstDayOrder.sublist(todayPosition);
-      case 'this_weekend':
-        return [6, 0];
-      case 'next_week':
-      case 'next_2_weeks':
-      default:
-        return [0, 1, 2, 3, 4, 5, 6];
-    }
-  }
-
   void _onWeekChanged(String weekValue) {
     updateState(this, () {
       _formData.flexibleWeek = weekValue;
-      final availableDays = _getAvailableDays();
-      _formData.selectedDays = availableDays.toSet();
+      _formData.selectedDays = _controller.getAvailableDays(_formData).toSet();
     });
     _saveDraft();
   }
@@ -416,7 +280,7 @@ class _CreateGameWidgetState extends State<CreateGameWidget> {
                                 submitGame: _submitGame,
                                 onWeekChanged: _onWeekChanged,
                                 getFilteredEligibilityOptions:
-                                    _getFilteredEligibilityOptions,
+                                    _controller.getFilteredEligibilityOptions,
                                 courseStreamKey: ValueKey(_courseRetryCount),
                                 onCourseRetry: () => updateState(
                                     this, () => _courseRetryCount++),

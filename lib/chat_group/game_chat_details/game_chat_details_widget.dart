@@ -6,25 +6,20 @@ import 'package:provider/provider.dart';
 
 import '/auth/firebase_auth/auth_util.dart';
 import '/core/design_tokens/colors.dart';
-import '/core/motion/motion_helpers.dart';
 import '/core/utils/app_log.dart';
 import '/core/utils/state_update.dart';
 import '/core/widgets/app_text.dart';
 import '/core/widgets/fairway_background.dart';
 import '/core/widgets/premium_back_button.dart';
-import '/providers/block_provider.dart';
-import '/models/chat.dart';
-import '/models/chat_message.dart';
 import '/models/chat_message_view_model.dart';
 import '/providers/chat_provider.dart';
 import '/providers/profile_provider.dart';
 import 'components/chat_details_actions.dart';
 import 'components/chat_details_body.dart';
 import 'components/chat_header_title.dart';
-import 'components/chat_image_viewer.dart';
 import 'controllers/chat_details_controller.dart';
-import 'controllers/chat_details_side_effects.dart';
 import 'controllers/chat_image_upload_controller.dart';
+import 'controllers/chat_message_actions_controller.dart';
 import 'controllers/chat_stream_controller.dart';
 import 'helpers/chat_typing_helper.dart';
 
@@ -55,12 +50,11 @@ class _GameChatDetailsWidgetState extends State<GameChatDetailsWidget>
 
   // UI state
   bool _showScrollToBottom = false;
-  ChatMessage? _replyToMessage;
-  bool _isLeavingChat = false;
 
   // Extracted controllers/helpers
   late ChatTypingHelper _typingHelper;
   late ChatImageUploadController _imageUploadController;
+  late ChatMessageActionsController _messageActionsController;
   late ChatStreamController _streamController;
 
   String? get _currentUserId {
@@ -89,6 +83,15 @@ class _GameChatDetailsWidgetState extends State<GameChatDetailsWidget>
       isMounted: () => mounted,
       getCurrentUserId: () => _currentUserId,
     );
+    _messageActionsController = ChatMessageActionsController(
+      chatId: widget.chatId,
+      getCurrentUserId: () => _currentUserId,
+      onStateChanged: () => updateState(this, () {}),
+      isMounted: () => mounted,
+      getChatUi: () => _streamController.chatUi,
+      getLastStreamDoc: () => _streamController.lastStreamDoc,
+      detailsController: _detailsController,
+    );
     _streamController = ChatStreamController(
       chatId: widget.chatId,
       chatProvider: chatProvider,
@@ -96,13 +99,14 @@ class _GameChatDetailsWidgetState extends State<GameChatDetailsWidget>
       getCurrentUserId: () => _currentUserId,
       onStateChanged: () => updateState(this, () {}),
       isMounted: () => mounted,
-      isLeavingChat: () => _isLeavingChat,
+      isLeavingChat: () => _messageActionsController.isLeavingChat,
       initialPageSize: _initialPageSize,
       detailsController: _detailsController,
     );
     _streamController.initialize();
 
-    _messageController.addListener(_onTextChanged);
+    _messageController.addListener(() =>
+        _typingHelper.onTextChanged(_messageController.text));
     _scrollController.addListener(_onScroll);
   }
 
@@ -118,14 +122,6 @@ class _GameChatDetailsWidgetState extends State<GameChatDetailsWidget>
     _messageFocusNode.dispose();
     _scrollController.dispose();
     super.dispose();
-  }
-
-  void _onTextChanged() {
-    _typingHelper.onTextChanged(_messageController.text);
-  }
-
-  String? _typingTextForChat(Chat chat) {
-    return _typingHelper.getTypingText(chat, context.read<ProfileProvider>());
   }
 
   void _onScroll() {
@@ -145,179 +141,6 @@ class _GameChatDetailsWidgetState extends State<GameChatDetailsWidget>
         duration: Duration(milliseconds: 300),
         curve: Curves.easeOut,
       );
-    }
-  }
-
-  Future<void> _handleReaction(
-      ChatMessage message, String emoji, bool hasReacted) async {
-    final currentUserId = _currentUserId;
-    if (currentUserId == null) return;
-
-    if (hasReacted) {
-      await context.read<ChatProvider>().removeReaction(
-            chatId: widget.chatId,
-            messageId: message.id,
-            emoji: emoji,
-            uid: currentUserId,
-          );
-    } else {
-      await context.read<ChatProvider>().addReaction(
-            chatId: widget.chatId,
-            messageId: message.id,
-            emoji: emoji,
-            uid: currentUserId,
-          );
-    }
-  }
-
-  void _showReactionPicker(ChatMessage message) {
-    final currentUserId = _currentUserId;
-    if (currentUserId == null) return;
-
-    ChatDetailsSideEffects.showReactionPicker(
-      context: context,
-      outerContext: context,
-      message: message,
-      currentUserId: currentUserId,
-      chatId: widget.chatId,
-      onReactionToggled: _handleReaction,
-    );
-  }
-
-  void _showImageFullscreen(String imageUrl) {
-    showAppDialog(
-      context: context,
-      barrierColor: AppColors.dialogBarrier,
-      builder: (BuildContext dialogContext) => ChatImageViewer(
-        imageUrl: imageUrl,
-        onClose: () => Navigator.of(dialogContext).pop(),
-      ),
-    );
-  }
-
-  void _showReportUser() {
-    final otherUid = ChatDetailsSideEffects.otherUserIdInDirectChat(
-      _streamController.chatUi,
-      _currentUserId,
-    );
-    if (otherUid == null || otherUid.isEmpty) return;
-    ChatDetailsSideEffects.showReportUser(
-      context: context,
-      otherUid: otherUid,
-      chatId: widget.chatId,
-    );
-  }
-
-  Future<void> _handleBlockUser() async {
-    final otherUid = ChatDetailsSideEffects.otherUserIdInDirectChat(
-      _streamController.chatUi,
-      _currentUserId,
-    );
-    if (otherUid == null || otherUid.isEmpty) return;
-    final currentUid = _currentUserId;
-    if (currentUid == null) return;
-
-    if (!mounted) return;
-    await ChatDetailsSideEffects.handleBlockUser(
-      context: context,
-      otherUid: otherUid,
-      currentUid: currentUid,
-      blockProvider: context.read<BlockProvider>(),
-    );
-  }
-
-  Future<void> _showLeaveConfirmation() async {
-    final currentUserId = _currentUserId;
-    if (currentUserId == null || !mounted) return;
-    await ChatDetailsSideEffects.showLeaveConfirmation(
-      context: context,
-      chatId: widget.chatId,
-      uid: currentUserId,
-      chatProvider: context.read<ChatProvider>(),
-      onLeaveStarted: () => _isLeavingChat = true,
-      onLeaveFailed: () => _isLeavingChat = false,
-    );
-  }
-
-  void _showImageSourceSheet() {
-    _imageUploadController.showImageSourceSheet(context);
-  }
-
-  Future<void> _sendMessage() async {
-    final currentUserId = _currentUserId;
-    if (currentUserId == null) {
-      return;
-    }
-    final text = _messageController.text.trim();
-    if (text.isEmpty) {
-      return;
-    }
-    _messageController.clear();
-    final replyTo = _replyToMessage;
-    updateState(this, () {
-      _replyToMessage = null;
-    });
-    try {
-      await context.read<ChatProvider>().sendMessage(
-            chatId: widget.chatId,
-            senderId: currentUserId,
-            text: text,
-          );
-      // TODO: In a full implementation, we would store the replyTo message ID
-      // in the message document and display it in the message bubble
-    } catch (error, stackTrace) {
-      if (!mounted) return;
-      context
-          .read<ChatProvider>()
-          .logError('sendMessage failed', error, stackTrace);
-      if (!mounted) {
-        return;
-      }
-      _messageController.text = text;
-      updateState(this, () {
-        _replyToMessage = replyTo;
-      });
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: const Text('Failed to send message. Please try again.'),
-          action: SnackBarAction(
-            label: 'Retry',
-            onPressed: _sendMessage,
-          ),
-        ),
-      );
-    }
-  }
-
-  Future<void> _loadOlderMessages() async {
-    final chatProvider = context.read<ChatProvider>();
-    final profileProvider = context.read<ProfileProvider>();
-    final statusFuture = _detailsController.loadOlderMessagesFromProviders(
-      startAfterCursor: _streamController.lastStreamDoc,
-      chatProvider: chatProvider,
-      profileProvider: profileProvider,
-    );
-    if (!mounted) return;
-    updateState(this, () {});
-
-    final status = await statusFuture;
-    if (!mounted) return;
-
-    if (status.isError) {
-      chatProvider.logError(
-        'loadOlderMessages failed',
-        status.error ?? Exception(status.errorMessage ?? 'Unknown error'),
-        status.stackTrace ?? StackTrace.current,
-      );
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Unable to load older messages.'),
-        ),
-      );
-    }
-
-    if (mounted) {
-      updateState(this, () {});
     }
   }
 
@@ -369,10 +192,13 @@ class _GameChatDetailsWidgetState extends State<GameChatDetailsWidget>
                 ? const []
                 : [
                     ChatDetailsActions(
-                      onLeaveSelected: _showLeaveConfirmation,
+                      onLeaveSelected: () =>
+                          _messageActionsController.showLeaveConfirmation(context),
                       isDirect: _streamController.chatUi?.type == 'direct',
-                      onReportSelected: _showReportUser,
-                      onBlockSelected: _handleBlockUser,
+                      onReportSelected: () =>
+                          _messageActionsController.showReportUser(context),
+                      onBlockSelected: () =>
+                          _messageActionsController.handleBlockUser(context),
                     ),
                   ],
           ),
@@ -395,30 +221,31 @@ class _GameChatDetailsWidgetState extends State<GameChatDetailsWidget>
               detailsController: _detailsController,
               pendingUploads: _imageUploadController.pendingUploads,
               canSend: _streamController.canSend,
-              replyToMessage: _replyToMessage,
+              replyToMessage: _messageActionsController.replyToMessage,
               showScrollToBottom: _showScrollToBottom,
-              onLoadOlderMessages: _loadOlderMessages,
-              onMessageLongPress: _showReactionPicker,
+              onLoadOlderMessages: () =>
+                  _messageActionsController.loadOlderMessages(context),
+              onMessageLongPress: (msg) =>
+                  _messageActionsController.showReactionPicker(context, msg),
               onReplySwipe: (message) {
-                updateState(this, () {
-                  _replyToMessage = message;
-                });
+                _messageActionsController.setReplyTo(message);
                 _messageFocusNode.requestFocus();
               },
-              onImageTap: _showImageFullscreen,
-              onReactionTap: _handleReaction,
-              onSendMessage: _sendMessage,
-              onCancelReply: () {
-                updateState(this, () {
-                  _replyToMessage = null;
-                });
-              },
+              onImageTap: (url) =>
+                  _messageActionsController.showImageFullscreen(context, url),
+              onReactionTap: (msg, emoji, hasReacted) =>
+                  _messageActionsController.handleReaction(
+                      context, msg, emoji, hasReacted),
+              onSendMessage: () => _messageActionsController.sendMessage(
+                  context, _messageController),
+              onCancelReply: _messageActionsController.clearReply,
               onAttachImage:
                   (_streamController.canSend && _streamController.chatUi != null)
-                      ? _showImageSourceSheet
+                      ? () => _imageUploadController.showImageSourceSheet(context)
                       : null,
               onScrollToBottom: _scrollToBottom,
-              typingTextForChat: _typingTextForChat,
+              typingTextForChat: (chat) => _typingHelper.getTypingText(
+                  chat, context.read<ProfileProvider>()),
               onCacheLatestMessageVMs: (latestVMs) {
                 _latestMessageVMs
                   ..clear()

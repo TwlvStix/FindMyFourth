@@ -8,20 +8,20 @@ import 'package:go_router/go_router.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
 
-import '/auth/firebase_auth/auth_util.dart' show currentUserReference;
 import '/core/design_tokens/colors.dart';
 import '/core/design_tokens/spacing.dart';
-import '/core/design_tokens/typography.dart';
-import '/core/design_tokens/app_phosphor_icons.dart';
-import '/core/motion/motion_tokens.dart';
 import '/core/motion/reduced_motion.dart';
 import '/core/navigation/transition_standards.dart';
 import '/core/utils/app_log.dart';
-import '/core/widgets/app_button_enhanced.dart';
+import '/providers/provider_extensions.dart';
 import '/core/widgets/fairway_background.dart';
-import '/user_onboarding/components/archetype_reveal_icon.dart';
-import '/user_onboarding/components/archetype_reveal_rarity.dart';
+import '/user_onboarding/components/archetype_reveal_animations.dart';
 import '/user_onboarding/components/archetype_reveal_compatibility.dart';
+import '/user_onboarding/components/archetype_reveal_cta.dart';
+import '/user_onboarding/components/archetype_reveal_description.dart';
+import '/user_onboarding/components/archetype_reveal_icon.dart';
+import '/user_onboarding/components/archetype_reveal_name.dart';
+import '/user_onboarding/components/archetype_reveal_rarity.dart';
 import '/user_onboarding/components/archetype_share_card.dart';
 import '/utils/vibe_archetypes.dart';
 import '/utils/vibe_archetype_metadata.dart';
@@ -50,16 +50,7 @@ class VibeArchetypeRevealWidget extends StatefulWidget {
 class _VibeArchetypeRevealWidgetState extends State<VibeArchetypeRevealWidget>
     with SingleTickerProviderStateMixin {
   late final AnimationController _controller;
-  late final Animation<double> _glowAnim;
-  late final Animation<double> _iconAnim;
-  late final Animation<double> _labelAnim;
-  late final Animation<double> _nameAnim;
-  late final Animation<double> _taglineAnim;
-  late final Animation<double> _rarityAnim;
-  late final Animation<double> _dividerAnim;
-  late final Animation<double> _descAnim;
-  late final Animation<double> _compatibilityAnim;
-  late final Animation<double> _ctaAnim;
+  late final ArchetypeRevealAnimations _anims;
 
   final GlobalKey _shareCardKey = GlobalKey();
   bool _hapticTriggered = false;
@@ -68,88 +59,13 @@ class _VibeArchetypeRevealWidgetState extends State<VibeArchetypeRevealWidget>
   @override
   void initState() {
     super.initState();
-    _initAnimations();
+    _controller = ArchetypeRevealAnimations.createController(this);
+    _anims = ArchetypeRevealAnimations(controller: _controller);
+    _controller.addListener(_checkHapticTrigger);
     _controller.forward();
   }
 
-  void _initAnimations() {
-    // Extended duration: 3000ms → 4500ms
-    final baseDuration = const Duration(milliseconds: 4500);
-    final totalDuration = ReducedMotionService.adjust(baseDuration);
-
-    _controller = AnimationController(
-      duration: totalDuration,
-      vsync: this,
-    );
-
-    // Add listener to trigger haptic at icon reveal completion
-    _controller.addListener(_checkHapticTrigger);
-
-    // Phase intervals (normalized 0.0-1.0) - Updated for 4.5s sequence
-
-    // Phase 1: Glow (0.0 - 0.10)
-    _glowAnim = CurvedAnimation(
-      parent: _controller,
-      curve: const Interval(0.0, 0.10, curve: MotionTokens.curveEnter),
-    );
-
-    // Phase 2: Icon (0.10 - 0.30) with elastic bounce
-    _iconAnim = CurvedAnimation(
-      parent: _controller,
-      curve: const Interval(0.10, 0.30, curve: Curves.elasticOut),
-    );
-
-    // Phase 3a: Label (0.30 - 0.45)
-    _labelAnim = CurvedAnimation(
-      parent: _controller,
-      curve: const Interval(0.30, 0.45, curve: MotionTokens.curveEnter),
-    );
-
-    // Phase 3b: Name (0.38 - 0.53)
-    _nameAnim = CurvedAnimation(
-      parent: _controller,
-      curve: const Interval(0.38, 0.53, curve: MotionTokens.curveEnter),
-    );
-
-    // Phase 3c: Tagline (0.50 - 0.58) - NEW
-    _taglineAnim = CurvedAnimation(
-      parent: _controller,
-      curve: const Interval(0.50, 0.58, curve: MotionTokens.curveEnter),
-    );
-
-    // Phase 4: Rarity (0.55 - 0.65) - NEW
-    _rarityAnim = CurvedAnimation(
-      parent: _controller,
-      curve: const Interval(0.55, 0.65, curve: MotionTokens.curveEnter),
-    );
-
-    // Phase 5a: Divider (0.60 - 0.70)
-    _dividerAnim = CurvedAnimation(
-      parent: _controller,
-      curve: const Interval(0.60, 0.70, curve: MotionTokens.curveEnter),
-    );
-
-    // Phase 5b: Description (0.65 - 0.77)
-    _descAnim = CurvedAnimation(
-      parent: _controller,
-      curve: const Interval(0.65, 0.77, curve: MotionTokens.curveEnter),
-    );
-
-    // Phase 6: Compatibility (0.72 - 0.82) - NEW
-    _compatibilityAnim = CurvedAnimation(
-      parent: _controller,
-      curve: const Interval(0.72, 0.82, curve: MotionTokens.curveEnter),
-    );
-
-    // Phase 7: CTAs (0.82 - 1.0)
-    _ctaAnim = CurvedAnimation(
-      parent: _controller,
-      curve: const Interval(0.82, 1.0, curve: MotionTokens.curveEnter),
-    );
-  }
-
   void _checkHapticTrigger() {
-    // Trigger haptic when icon animation completes (~30% progress)
     if (!_hapticTriggered && _controller.value >= 0.30) {
       _hapticTriggered = true;
       HapticFeedback.heavyImpact();
@@ -167,7 +83,6 @@ class _VibeArchetypeRevealWidgetState extends State<VibeArchetypeRevealWidget>
     final state = GoRouterState.of(context);
     final extra = state.extra;
 
-    // Extract match from route extra
     if (extra is Map<String, dynamic>) {
       final match = extra['match'];
       if (match is VibeArchetypeMatch) {
@@ -175,21 +90,14 @@ class _VibeArchetypeRevealWidgetState extends State<VibeArchetypeRevealWidget>
       }
     }
 
-    // Fallback: should not happen in normal flow
     return VibeArchetypes.everyman.withScore(100);
   }
 
   Future<void> _handleContinue() async {
-    // Mark onboarding as complete before navigating
-    // This is the final step of the onboarding flow - user has completed
-    // profile creation AND vibe selection
     try {
-      await currentUserReference?.update({'onboarding_completed': true});
-      AppLog.d('✅ VibeArchetypeReveal: onboarding_completed set to true');
+      await context.userProvider.markOnboardingCompleted();
     } catch (e) {
-      AppLog.d('❌ VibeArchetypeReveal: Failed to set onboarding_completed: $e');
-      // Continue anyway - the user shouldn't be stuck if this fails
-      // They'll just get redirected back to onboarding on next app launch
+      AppLog.d('❌ VibeArchetypeReveal: Failed to mark onboarding completed: $e');
     }
 
     if (!mounted) return;
@@ -217,7 +125,6 @@ class _VibeArchetypeRevealWidgetState extends State<VibeArchetypeRevealWidget>
     HapticFeedback.lightImpact();
 
     try {
-      // Capture the share card
       final boundary = _shareCardKey.currentContext?.findRenderObject()
           as RenderRepaintBoundary?;
 
@@ -226,7 +133,6 @@ class _VibeArchetypeRevealWidgetState extends State<VibeArchetypeRevealWidget>
         return;
       }
 
-      // Render at 3x for high quality
       final image = await boundary.toImage(pixelRatio: 3.0);
       final byteData = await image.toByteData(format: ui.ImageByteFormat.png);
 
@@ -235,12 +141,10 @@ class _VibeArchetypeRevealWidgetState extends State<VibeArchetypeRevealWidget>
         return;
       }
 
-      // Write to temp file
       final tempDir = await getTemporaryDirectory();
       final tempFile = File('${tempDir.path}/vibe_archetype.png');
       await tempFile.writeAsBytes(byteData.buffer.asUint8List());
 
-      // Share
       await Share.shareXFiles(
         [XFile(tempFile.path)],
         text: 'I\'m ${_getArchetypeMatch().name}! What\'s your golf vibe?',
@@ -265,7 +169,6 @@ class _VibeArchetypeRevealWidgetState extends State<VibeArchetypeRevealWidget>
     final rarity = VibeArchetypeMetadata.rarityFor(match.name);
     final percentage = VibeArchetypeMetadata.distributionFor(match.name);
 
-    // Compatibility uses base archetype for Wardens
     final compatibilityName = VibeArchetypeMetadata.compatibilityNameFor(match);
     final bestWith = VibeArchetypeMetadata.bestWithFor(compatibilityName);
     final watchOutFor = VibeArchetypeMetadata.watchOutForName(compatibilityName);
@@ -274,7 +177,6 @@ class _VibeArchetypeRevealWidgetState extends State<VibeArchetypeRevealWidget>
       backgroundColor: AppColors.navyDark,
       body: Stack(
         children: [
-          // Main content
           FairwayBackgroundDark(
             showOrganic: true,
             showTexture: true,
@@ -285,39 +187,50 @@ class _VibeArchetypeRevealWidgetState extends State<VibeArchetypeRevealWidget>
                   return Column(
                     children: [
                       const Spacer(flex: 2),
-                      // Icon with glow
                       ArchetypeRevealIcon(
                         accentColor: accentColor,
                         icon: icon,
-                        glowValue: _glowAnim.value,
+                        glowValue: _anims.glow.value,
                         iconValue: ReducedMotionService.shouldScale
-                            ? _iconAnim.value
+                            ? _anims.icon.value
                             : 1.0,
                       ),
                       SizedBox(height: AppSpacing.xl),
-                      // Label, name, and tagline
-                      _buildNameSection(match, tagline, accentColor),
+                      ArchetypeRevealName(
+                        match: match,
+                        tagline: tagline,
+                        accentColor: accentColor,
+                        labelValue: _anims.label.value,
+                        nameValue: _anims.name.value,
+                        taglineValue: _anims.tagline.value,
+                      ),
                       SizedBox(height: AppSpacing.sm),
-                      // Rarity stat
                       ArchetypeRevealRarity(
                         rarityLabel: rarity,
                         percentage: percentage,
                         accentColor: accentColor,
-                        animationValue: _rarityAnim.value,
+                        animationValue: _anims.rarity.value,
                       ),
                       SizedBox(height: AppSpacing.lg),
-                      // Divider and description
-                      _buildDescriptionSection(match, accentColor),
+                      ArchetypeRevealDescription(
+                        description: match.description,
+                        accentColor: accentColor,
+                        dividerValue: _anims.divider.value,
+                        descriptionValue: _anims.desc.value,
+                      ),
                       SizedBox(height: AppSpacing.md),
-                      // Compatibility teaser
                       ArchetypeRevealCompatibility(
                         bestWith: bestWith,
                         watchOutFor: watchOutFor,
-                        animationValue: _compatibilityAnim.value,
+                        animationValue: _anims.compatibility.value,
                       ),
                       const Spacer(flex: 3),
-                      // CTAs
-                      _buildCTASection(),
+                      ArchetypeRevealCTA(
+                        animationValue: _anims.cta.value,
+                        isSharing: _isSharing,
+                        onShare: _handleShare,
+                        onContinue: _handleContinue,
+                      ),
                       SizedBox(height: AppSpacing.lg),
                     ],
                   );
@@ -325,7 +238,6 @@ class _VibeArchetypeRevealWidgetState extends State<VibeArchetypeRevealWidget>
               ),
             ),
           ),
-          // Offscreen share card for capture
           Positioned(
             left: -2000,
             top: 0,
@@ -342,165 +254,6 @@ class _VibeArchetypeRevealWidgetState extends State<VibeArchetypeRevealWidget>
             ),
           ),
         ],
-      ),
-    );
-  }
-
-  Widget _buildNameSection(
-    VibeArchetypeMatch match,
-    String tagline,
-    Color accentColor,
-  ) {
-    final labelOffset = Offset(0, 12 * (1 - _labelAnim.value));
-    final nameOffset = Offset(0, 12 * (1 - _nameAnim.value));
-    final taglineOffset = Offset(0, 8 * (1 - _taglineAnim.value));
-
-    return Column(
-      children: [
-        // "Your vibe style" label
-        Transform.translate(
-          offset: labelOffset,
-          child: Opacity(
-            opacity: _labelAnim.value,
-            child: Text(
-              'Your vibe style',
-              style: AppTypography.labelSmall.copyWith(
-                color: AppColorsDark.textMuted,
-                letterSpacing: AppTypography.letterSpacingWide,
-              ),
-            ),
-          ),
-        ),
-        SizedBox(height: AppSpacing.xxs),
-        // Archetype name
-        Transform.translate(
-          offset: nameOffset,
-          child: Opacity(
-            opacity: _nameAnim.value,
-            child: Semantics(
-              header: true,
-              child: Text(
-                match.name,
-                style: AppTypography.displaySmall.copyWith(
-                  color: AppColorsDark.textPrimary,
-                ),
-                textAlign: TextAlign.center,
-              ),
-            ),
-          ),
-        ),
-        // Warden base archetype subtitle
-        if (match.isWarden && match.baseLabel != null) ...[
-          SizedBox(height: AppSpacing.xxs),
-          Transform.translate(
-            offset: nameOffset,
-            child: Opacity(
-              opacity: _nameAnim.value,
-              child: Text(
-                match.baseLabel!,
-                style: AppTypography.bodySmall.copyWith(
-                  color: AppColorsDark.textSecondary,
-                  fontStyle: FontStyle.italic,
-                ),
-                textAlign: TextAlign.center,
-              ),
-            ),
-          ),
-        ],
-        SizedBox(height: AppSpacing.sm),
-        // Tagline
-        Transform.translate(
-          offset: taglineOffset,
-          child: Opacity(
-            opacity: _taglineAnim.value,
-            child: Padding(
-              padding: EdgeInsets.symmetric(horizontal: AppSpacing.xl),
-              child: Text(
-                tagline,
-                style: AppTypography.titleSmall.copyWith(
-                  color: accentColor,
-                  fontStyle: FontStyle.italic,
-                ),
-                textAlign: TextAlign.center,
-              ),
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildDescriptionSection(VibeArchetypeMatch match, Color accentColor) {
-    final descOffset = Offset(0, 12 * (1 - _descAnim.value));
-    final dividerWidth = 200.0 * _dividerAnim.value;
-
-    return Padding(
-      padding: EdgeInsets.symmetric(horizontal: AppSpacing.xl),
-      child: Column(
-        children: [
-          // Animated divider
-          Opacity(
-            opacity: _dividerAnim.value,
-            child: Container(
-              width: dividerWidth,
-              height: 1,
-              color: accentColor.withValues(alpha: 0.5),
-            ),
-          ),
-          SizedBox(height: AppSpacing.lg),
-          // Description text
-          Transform.translate(
-            offset: descOffset,
-            child: Opacity(
-              opacity: _descAnim.value,
-              child: ConstrainedBox(
-                constraints: const BoxConstraints(maxWidth: 340),
-                child: Text(
-                  match.description,
-                  style: AppTypography.bodyMedium.copyWith(
-                    color: AppColorsDark.textSecondary,
-                    height: 1.6,
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildCTASection() {
-    return Opacity(
-      opacity: _ctaAnim.value,
-      child: Padding(
-        padding: EdgeInsets.symmetric(horizontal: AppSpacing.lg),
-        child: Row(
-          children: [
-            Expanded(
-              child: AppButtonEnhanced(
-                text: _isSharing ? 'Sharing...' : 'Share',
-                variant: AppButtonVariant.ghostDark,
-                size: AppButtonSize.large,
-                leadingIcon: AppPhosphorIcons.share,
-                onPressed: _handleShare,
-                enabled: _ctaAnim.value > 0.5 && !_isSharing,
-              ),
-            ),
-            SizedBox(width: AppSpacing.md),
-            Expanded(
-              child: AppButtonEnhanced(
-                text: 'Continue',
-                variant: AppButtonVariant.primary,
-                size: AppButtonSize.large,
-                leadingIcon: AppPhosphorIcons.arrowRight,
-                onPressed: _handleContinue,
-                enabled: _ctaAnim.value > 0.5,
-              ),
-            ),
-          ],
-        ),
       ),
     );
   }

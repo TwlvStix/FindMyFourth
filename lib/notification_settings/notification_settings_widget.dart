@@ -1,18 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
-import 'package:phosphor_flutter/phosphor_flutter.dart';
 import '/core/design_tokens/colors.dart';
 import '/core/design_tokens/typography.dart';
 import '/core/design_tokens/spacing.dart';
-import '/core/design_tokens/border_radius.dart';
-import '/core/design_tokens/icon_size.dart';
 import '/core/design_tokens/app_phosphor_icons.dart';
-import '/core/widgets/app_icon.dart';
 import '/core/widgets/premium_back_button.dart';
-import '/core/motion/motion_tokens.dart';
 import '/models/notification_preferences.dart';
 import '/providers/provider_extensions.dart';
 import '/notification_settings/components/notification_category_card.dart';
+import '/notification_settings/components/notification_profile_card.dart';
+import '/notification_settings/components/notification_summary_helpers.dart';
 import '/notification_settings/components/game_alerts_content.dart';
 import '/notification_settings/components/chat_content.dart';
 import '/notification_settings/components/trust_content.dart';
@@ -96,7 +93,7 @@ class _NotificationSettingsWidgetState
               shrinkWrap: true,
               physics: const NeverScrollableScrollPhysics(),
               children: [
-                _ProfileCard(
+                NotificationProfileCard(
                   profile: NotificationProfile.allIn,
                   icon: AppPhosphorIcons.notifications,
                   title: 'All in',
@@ -104,7 +101,7 @@ class _NotificationSettingsWidgetState
                   isActive: activeProfile == NotificationProfile.allIn,
                   onTap: () => _applyProfile(NotificationProfile.allIn),
                 ),
-                _ProfileCard(
+                NotificationProfileCard(
                   profile: NotificationProfile.gameDay,
                   icon: AppPhosphorIcons.teeTime,
                   title: 'Game day',
@@ -112,7 +109,7 @@ class _NotificationSettingsWidgetState
                   isActive: activeProfile == NotificationProfile.gameDay,
                   onTap: () => _applyProfile(NotificationProfile.gameDay),
                 ),
-                _ProfileCard(
+                NotificationProfileCard(
                   profile: NotificationProfile.essentials,
                   icon: AppPhosphorIcons.shield,
                   title: 'Essentials',
@@ -120,7 +117,7 @@ class _NotificationSettingsWidgetState
                   isActive: activeProfile == NotificationProfile.essentials,
                   onTap: () => _applyProfile(NotificationProfile.essentials),
                 ),
-                _ProfileCard(
+                NotificationProfileCard(
                   profile: NotificationProfile.quiet,
                   icon: AppPhosphorIcons.muted,
                   title: 'Quiet',
@@ -167,40 +164,6 @@ class _NotificationSettingsWidgetState
     });
   }
 
-  void _showUpdateConfirmation() {
-    ScaffoldMessenger.of(context).hideCurrentSnackBar();
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Row(
-          children: [
-            AppIcon(
-              icon: AppPhosphorIcons.success,
-              size: AppIconSize.md,
-              color: AppColors.green,
-            ),
-            SizedBox(width: AppSpacing.xs),
-            Text(
-              'Settings updated',
-              style: AppTypography.bodySmall.copyWith(
-                color: AppColors.textPrimary,
-              ),
-            ),
-          ],
-        ),
-        backgroundColor: AppColors.navy,
-        behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(AppBorderRadius.sm),
-          side: BorderSide(
-            color: AppColors.green.withValues(alpha: 0.15),
-          ),
-        ),
-        duration: const Duration(seconds: 2),
-        margin: EdgeInsets.all(AppSpacing.md),
-      ),
-    );
-  }
-
   List<Widget> _buildCategoryCards(NotificationPreferences prefs) {
     final cards = [
       _buildGameAlertsCard(prefs),
@@ -237,14 +200,14 @@ class _NotificationSettingsWidgetState
   Widget _buildGameAlertsCard(NotificationPreferences prefs) {
     return NotificationCategoryCard(
       title: 'Game alerts',
-      summary: _getGameAlertsSummary(prefs),
+      summary: getGameAlertsSummary(prefs),
       icon: AppPhosphorIcons.games,
       isEnabled: prefs.gameAlerts.enabled,
       isExpanded: _expandedIndex == 0,
       onToggle: () {
         context.notificationProvider
             .updateGameAlerts(enabled: !prefs.gameAlerts.enabled);
-        _showUpdateConfirmation();
+        showNotificationUpdateConfirmation(context);
       },
       onTap: () => _toggleExpanded(0),
       expandedContent: const GameAlertsContent(),
@@ -254,14 +217,14 @@ class _NotificationSettingsWidgetState
   Widget _buildChatMessagesCard(NotificationPreferences prefs) {
     return NotificationCategoryCard(
       title: 'Chat messages',
-      summary: _getChatAlertsSummary(prefs),
+      summary: getChatAlertsSummary(prefs),
       icon: AppPhosphorIcons.chat,
       isEnabled: prefs.chatAlerts.enabled,
       isExpanded: _expandedIndex == 1,
       onToggle: () {
         context.notificationProvider
             .updateChatAlerts(enabled: !prefs.chatAlerts.enabled);
-        _showUpdateConfirmation();
+        showNotificationUpdateConfirmation(context);
       },
       onTap: () => _toggleExpanded(1),
       expandedContent: const ChatContent(),
@@ -278,7 +241,7 @@ class _NotificationSettingsWidgetState
       onToggle: () {
         context.notificationProvider
             .updateSocialAlerts(enabled: !prefs.socialAlerts.enabled);
-        _showUpdateConfirmation();
+        showNotificationUpdateConfirmation(context);
       },
       onTap: () => _toggleExpanded(2),
       expandedContent: const SocialAlertsContent(),
@@ -286,17 +249,17 @@ class _NotificationSettingsWidgetState
   }
 
   Widget _buildTrustCard(NotificationPreferences prefs) {
-    final isEnabled = _isTrustEnabled(prefs);
+    final isEnabled = isTrustEnabled(prefs);
     return NotificationCategoryCard(
       title: 'Trust and reliability',
-      summary: _getTrustSummary(prefs),
+      summary: getTrustSummary(prefs),
       icon: AppPhosphorIcons.trust,
       isEnabled: isEnabled,
       isExpanded: _expandedIndex == 3,
       onToggle: () {
         context.notificationProvider
             .updateTrustCategories(enabled: !prefs.trustCategories.enabled);
-        _showUpdateConfirmation();
+        showNotificationUpdateConfirmation(context);
       },
       onTap: () => _toggleExpanded(3),
       expandedContent: const TrustContent(),
@@ -306,252 +269,18 @@ class _NotificationSettingsWidgetState
   Widget _buildQuietHoursCard(NotificationPreferences prefs) {
     return NotificationCategoryCard(
       title: 'Quiet hours',
-      summary: _getQuietHoursSummary(prefs),
+      summary: getQuietHoursSummary(prefs),
       icon: AppPhosphorIcons.moon,
       isEnabled: prefs.quietHours.enabled,
       isExpanded: _expandedIndex == 4,
       onToggle: () {
         context.notificationProvider
             .updateQuietHours(enabled: !prefs.quietHours.enabled);
-        _showUpdateConfirmation();
+        showNotificationUpdateConfirmation(context);
       },
       onTap: () => _toggleExpanded(4),
       expandedContent: const QuietHoursContent(),
     );
   }
 
-  // ============================================
-  // Summary Text Generation
-  // ============================================
-
-  String _getGameAlertsSummary(NotificationPreferences prefs) {
-    if (!prefs.gameAlerts.enabled) {
-      return 'Off';
-    }
-    return _formatFrequency(prefs.gameAlerts.deliveryFrequency);
-  }
-
-  String _getChatAlertsSummary(NotificationPreferences prefs) {
-    if (!prefs.chatAlerts.enabled) {
-      return 'Off';
-    }
-    return _formatFrequency(prefs.chatAlerts.deliveryFrequency);
-  }
-
-  String _getTrustSummary(NotificationPreferences prefs) {
-    final trust = prefs.trustCategories;
-
-    if (!trust.enabled) {
-      return 'Off';
-    }
-
-    // Count enabled sub-categories
-    int count = 0;
-    if (trust.postRound) count++;
-    if (trust.trustAlerts) count++;
-    if (trust.badges) count++;
-
-    if (count == 0) {
-      return 'Off';
-    }
-
-    final freq = _formatFrequency(trust.deliveryFrequency);
-    if (count == 3) {
-      return 'All on · $freq';
-    }
-    return '$count of 3 on · $freq';
-  }
-
-  bool _isTrustEnabled(NotificationPreferences prefs) {
-    final trust = prefs.trustCategories;
-    return trust.enabled &&
-        (trust.postRound || trust.trustAlerts || trust.badges);
-  }
-
-  String _getQuietHoursSummary(NotificationPreferences prefs) {
-    final qh = prefs.quietHours;
-    final status = qh.enabled ? 'On' : 'Off';
-    return '$status · ${_formatTime(qh.start)} – ${_formatTime(qh.end)}';
-  }
-
-  String _formatFrequency(DeliveryFrequency freq) {
-    switch (freq) {
-      case DeliveryFrequency.instant:
-        return 'Instant';
-      case DeliveryFrequency.hourly:
-        return 'Hourly';
-      case DeliveryFrequency.daily:
-        return 'Daily';
-    }
-  }
-
-  String _formatTime(String time24) {
-    final parts = time24.split(':');
-    if (parts.length != 2) return time24;
-
-    int hour = int.tryParse(parts[0]) ?? 0;
-    final minute = parts[1];
-    final period = hour >= 12 ? 'PM' : 'AM';
-
-    if (hour > 12) {
-      hour -= 12;
-    } else if (hour == 0) {
-      hour = 12;
-    }
-
-    return '$hour:$minute $period';
-  }
-}
-
-class _ProfileCard extends StatelessWidget {
-  const _ProfileCard({
-    required this.profile,
-    required this.icon,
-    required this.title,
-    required this.description,
-    required this.isActive,
-    required this.onTap,
-  });
-
-  final NotificationProfile profile;
-  final PhosphorIconData icon;
-  final String title;
-  final String description;
-  final bool isActive;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: AnimatedContainer(
-        duration: MotionTokens.routeEnter,
-        curve: MotionTokens.curveEnter,
-        decoration: BoxDecoration(
-          color: AppColors.navy,
-          borderRadius: BorderRadius.circular(AppBorderRadius.card),
-          border: Border.all(
-            color: isActive
-                ? AppColors.green.withValues(alpha: 0.3)
-                : AppColors.navyLight.withValues(alpha: 0.2),
-            width: 1,
-          ),
-          gradient: isActive
-              ? LinearGradient(
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                  colors: [
-                    AppColors.green.withValues(alpha: 0.08),
-                    AppColors.transparent,
-                  ],
-                  stops: const [0.0, 0.5],
-                )
-              : null,
-        ),
-        child: Stack(
-          children: [
-            // Card content
-            Padding(
-              padding: EdgeInsets.all(AppSpacing.md),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Icon container
-                  Container(
-                    width: 36,
-                    height: 36,
-                    decoration: BoxDecoration(
-                      color: AppColors.navyLight.withValues(alpha: 0.5),
-                      borderRadius: BorderRadius.circular(AppBorderRadius.sm),
-                    ),
-                    child: Center(
-                      child: AppIcon(
-                        icon: icon,
-                        size: AppIconSize.md,
-                        color: AppColors.textSecondary,
-                      ),
-                    ),
-                  ),
-                  SizedBox(height: AppSpacing.sm),
-                  // Title
-                  Text(
-                    title,
-                    style: AppTypography.labelLarge.copyWith(
-                      fontWeight: FontWeight.bold,
-                      color: AppColors.textPrimary,
-                    ),
-                  ),
-                  SizedBox(height: AppSpacing.xxs),
-                  // Description
-                  Text(
-                    description,
-                    style: AppTypography.labelSmall.copyWith(
-                      color: AppColors.textSecondary,
-                    ),
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ],
-              ),
-            ),
-
-            // Active checkmark badge
-            if (isActive)
-              Positioned(
-                top: 8,
-                right: 8,
-                child: _AnimatedCheckmark(),
-              ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _AnimatedCheckmark extends StatefulWidget {
-  @override
-  State<_AnimatedCheckmark> createState() => _AnimatedCheckmarkState();
-}
-
-class _AnimatedCheckmarkState extends State<_AnimatedCheckmark> {
-  bool _visible = false;
-
-  @override
-  void initState() {
-    super.initState();
-    // Trigger animation after first frame
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) {
-        setState(() => _visible = true);
-      }
-    });
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return AnimatedScale(
-      scale: _visible ? 1.0 : 0.0,
-      duration: MotionTokens.routeEnter,
-      curve: MotionTokens.curveEnter,
-      child: AnimatedOpacity(
-        opacity: _visible ? 1.0 : 0.0,
-        duration: MotionTokens.routeEnter,
-        curve: MotionTokens.curveEnter,
-        child: Container(
-          width: 20,
-          height: 20,
-          decoration: BoxDecoration(
-            color: AppColors.green,
-            shape: BoxShape.circle,
-          ),
-          child: AppIcon(
-            icon: AppPhosphorIcons.check,
-            size: AppIconSize.xs,
-            color: AppColors.textPrimary,
-          ),
-        ),
-      ),
-    );
-  }
 }

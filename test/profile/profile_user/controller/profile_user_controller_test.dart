@@ -56,8 +56,33 @@ class _FakeFriendService extends FriendService {
   }
 }
 
+Future<UsersRecord> _createUserRecord(
+  FakeFirebaseFirestore firestore,
+  String uid, {
+  List<DocumentReference>? friends,
+  Map<String, dynamic> extra = const {},
+}) async {
+  await firestore.collection('users').doc(uid).set({
+    'display_name': 'User $uid',
+    'uid': uid,
+    'photo_url': '',
+    'friends': friends ?? <DocumentReference>[],
+    'friend_requests': <String>[],
+    'first_name': '',
+    'last_name': '',
+    'home_course': '',
+    'handicap': 0,
+    'golf_canada_number': '',
+    'gender': '',
+    'hometown_name': '',
+    ...extra,
+  });
+  final doc = await firestore.collection('users').doc(uid).get();
+  return UsersRecord.fromSnapshot(doc);
+}
+
 void main() {
-  group('ProfileUserController.fetchMutualFriends', () {
+  group('ProfileUserController mutual friends', () {
     late FakeFirebaseFirestore firestore;
     late ProfileUserController controller;
 
@@ -69,48 +94,60 @@ void main() {
       );
     });
 
-    test('returns empty loaded result when there is no overlap', () async {
-      final result = await controller.fetchMutualFriends(
-        theirFriends: [firestore.collection('users').doc('u1')],
+    tearDown(() => controller.dispose());
+
+    test('mutualFriends is empty when there is no overlap', () async {
+      final userRecord = await _createUserRecord(firestore, 'them',
+        friends: [firestore.collection('users').doc('u1')],
+      );
+
+      controller.onProfileDataReceived(
+        userRecord,
+        firestore.collection('users').doc('them'),
+        isSelf: false,
         myFriends: [firestore.collection('users').doc('u2')],
       );
 
-      expect(result.loaded, isTrue);
-      expect(result.friends, isEmpty);
+      // Allow async work to complete
+      await Future<void>.delayed(Duration.zero);
+
+      expect(controller.mutualFriendsLoaded, isTrue);
+      expect(controller.mutualFriends, isEmpty);
     });
 
-    test('returns fetched mutual users when overlap exists', () async {
+    test('mutualFriends populates when overlap exists', () async {
       await firestore.collection('users').doc('u2').set({
         'display_name': 'Mutual Friend',
         'uid': 'u2',
       });
 
-      final result = await controller.fetchMutualFriends(
-        theirFriends: [
+      final userRecord = await _createUserRecord(firestore, 'them',
+        friends: [
           firestore.collection('users').doc('u2'),
           firestore.collection('users').doc('u3'),
         ],
+      );
+
+      controller.onProfileDataReceived(
+        userRecord,
+        firestore.collection('users').doc('them'),
+        isSelf: false,
         myFriends: [firestore.collection('users').doc('u2')],
       );
 
-      expect(result.loaded, isTrue);
-      expect(result.friends.length, 1);
-      expect(result.friends.first.reference.id, 'u2');
-      expect(result.friends.first.displayName, 'Mutual Friend');
+      // Allow async work to complete
+      await Future<void>.delayed(Duration.zero);
+      await Future<void>.delayed(Duration.zero);
+
+      expect(controller.mutualFriendsLoaded, isTrue);
+      expect(controller.mutualFriends.length, 1);
+      expect(controller.mutualFriends.first.reference.id, 'u2');
     });
   });
 
-  group('ProfileUserController.loadVibeMatch', () {
+  group('ProfileUserController vibe match', () {
     late FakeFirebaseFirestore firestore;
     late MockFirebaseAuth auth;
-
-    setUp(() {
-      firestore = FakeFirebaseFirestore();
-      auth = MockFirebaseAuth(
-        signedIn: true,
-        mockUser: MockUser(uid: 'me'),
-      );
-    });
 
     Map<String, dynamic> vibeData({required int pace}) {
       return {
@@ -135,66 +172,147 @@ void main() {
       };
     }
 
-    test('returns match and profiles on success', () async {
-      await firestore.collection('users').doc('me').set(vibeData(pace: 5));
-      await firestore.collection('users').doc('them').set(vibeData(pace: 4));
-      final snapshot = await firestore.collection('users').doc('them').get();
+    setUp(() {
+      firestore = FakeFirebaseFirestore();
+      auth = MockFirebaseAuth(
+        signedIn: true,
+        mockUser: MockUser(uid: 'me'),
+      );
+    });
+
+    test('loads vibe match on profile data received', () async {
+      await firestore
+          .collection('users')
+          .doc('me')
+          .set(vibeData(pace: 5));
+      await firestore.collection('users').doc('them').set({
+        ...vibeData(pace: 4),
+        'display_name': 'Them',
+        'uid': 'them',
+        'photo_url': '',
+        'friends': <String>[],
+        'friend_requests': <String>[],
+        'first_name': '',
+        'last_name': '',
+        'home_course': '',
+        'handicap': 0,
+        'golf_canada_number': '',
+        'gender': '',
+        'hometown_name': '',
+      });
+
+      final userRecord = await UsersRecord.getDocumentOnce(
+        firestore.collection('users').doc('them'),
+      );
 
       final controller = ProfileUserController(
         friendService: _FakeFriendService(firestore),
         vibeRepository: VibeRepository(firestore: firestore, auth: auth),
       );
 
-      final result = await controller.loadVibeMatch(snapshot);
+      controller.onProfileDataReceived(
+        userRecord,
+        firestore.collection('users').doc('them'),
+        isSelf: false,
+        myFriends: [],
+      );
 
-      expect(result.profileId, 'them');
-      expect(result.match, isNotNull);
-      expect(result.myVibes, isNotNull);
-      expect(result.theirVibes, isNotNull);
-      expect(result.isLoading, isFalse);
+      // Allow async vibe match loading to complete
+      await Future<void>.delayed(Duration.zero);
+      await Future<void>.delayed(Duration.zero);
+
+      expect(controller.vibeMatchResult, isNotNull);
+      expect(controller.isVibeMatchLoading, isFalse);
+
+      controller.dispose();
     });
 
-    test('returns null-safe result when repository throws', () async {
-      await firestore.collection('users').doc('them').set(vibeData(pace: 4));
-      final snapshot = await firestore.collection('users').doc('them').get();
+    test('vibeMatchResult is null when repository throws', () async {
+      await firestore.collection('users').doc('them').set({
+        ...vibeData(pace: 4),
+        'display_name': 'Them',
+        'uid': 'them',
+        'photo_url': '',
+        'friends': <String>[],
+        'friend_requests': <String>[],
+        'first_name': '',
+        'last_name': '',
+        'home_course': '',
+        'handicap': 0,
+        'golf_canada_number': '',
+        'gender': '',
+        'hometown_name': '',
+      });
+
+      final userRecord = await UsersRecord.getDocumentOnce(
+        firestore.collection('users').doc('them'),
+      );
 
       final controller = ProfileUserController(
         friendService: _FakeFriendService(firestore),
         vibeRepository: _ThrowingVibeRepository(),
       );
 
-      final result = await controller.loadVibeMatch(snapshot);
+      controller.onProfileDataReceived(
+        userRecord,
+        firestore.collection('users').doc('them'),
+        isSelf: false,
+        myFriends: [],
+      );
 
-      expect(result.profileId, 'them');
-      expect(result.match, isNull);
-      expect(result.myVibes, isNull);
-      expect(result.theirVibes, isNull);
-      expect(result.isLoading, isFalse);
+      // Allow async work to complete
+      await Future<void>.delayed(Duration.zero);
+      await Future<void>.delayed(Duration.zero);
+
+      expect(controller.vibeMatchResult, isNull);
+      expect(controller.isVibeMatchLoading, isFalse);
+
+      controller.dispose();
     });
   });
 
-  group('ProfileUserController.shouldLoadVibeMatch', () {
-    test('returns false when loading is in progress', () async {
+  group('ProfileUserController.reset', () {
+    test('clears all state', () {
       final firestore = FakeFirebaseFirestore();
       final controller = ProfileUserController(
         friendService: _FakeFriendService(firestore),
         vibeRepository: _StubVibeRepository(),
       );
-      await firestore
-          .collection('users')
-          .doc('them')
-          .set({'display_name': 'T'});
-      final snapshot = await firestore.collection('users').doc('them').get();
 
-      expect(
-        controller.shouldLoadVibeMatch(
-          isLoading: true,
-          existingMatch: null,
-          loadedUserId: null,
-          snapshot: snapshot,
-        ),
-        isFalse,
+      controller.reset();
+
+      expect(controller.vibeMatchResult, isNull);
+      expect(controller.mutualFriends, isEmpty);
+      expect(controller.mutualFriendsLoaded, isTrue);
+      expect(controller.isVibeMatchLoading, isFalse);
+
+      controller.dispose();
+    });
+  });
+
+  group('ProfileUserController skips work for self', () {
+    test('does not load vibes or mutual friends for own profile', () async {
+      final firestore = FakeFirebaseFirestore();
+      final userRecord = await _createUserRecord(firestore, 'me');
+
+      final controller = ProfileUserController(
+        friendService: _FakeFriendService(firestore),
+        vibeRepository: _StubVibeRepository(),
       );
+
+      controller.onProfileDataReceived(
+        userRecord,
+        firestore.collection('users').doc('me'),
+        isSelf: true,
+        myFriends: [],
+      );
+
+      await Future<void>.delayed(Duration.zero);
+
+      expect(controller.vibeMatchResult, isNull);
+      expect(controller.mutualFriends, isEmpty);
+
+      controller.dispose();
     });
   });
 }

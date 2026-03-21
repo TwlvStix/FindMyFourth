@@ -4,10 +4,14 @@ paths: lib/**/*_widget.dart
 # Widget Rules
 
 ## Size Limit
-Widget files MUST stay under 300 lines. If a widget is approaching this limit, decompose it:
+Widget files should target ≤300 lines, with a hard ceiling of 330. Decompose using:
 - Extract logical sections into sub-widgets in a `components/` subfolder
 - Extract form state and async logic into a ViewModel/Controller class
 - The screen-level widget should compose smaller widgets, not contain all logic
+
+**The 300–330 line grace zone:** If a widget lands between 300–330 lines after genuine decomposition (extracting helpers, components, constants), it is compliant — stop there. Do NOT force further reductions.
+
+**Never sacrifice readability to hit the target.** Removing blank lines between logical sections, cramming whitespace, collapsing spacing, or merging unrelated blocks just to shave lines is **prohibited**. The rule targets structural complexity, not formatting. Only pursue further decomposition above 330 lines.
 
 **Legacy exceptions** (tech debt — do NOT increase, only refactor):
 - `games_list_widget.dart` (731 lines)
@@ -15,9 +19,7 @@ Widget files MUST stay under 300 lines. If a widget is approaching this limit, d
 - `game_joined_detailed_widget.dart` (654 lines)
 - `game_joined_dashboard_content.dart` (647 lines)
 - `player_list_section.dart` (470 lines)
-- `profile_user_firebase_widget.dart` (387 lines)
 - `edit_profile_widget.dart` (366 lines)
-- `create_game_widget.dart` (361 lines)
 - `create_profile_widget.dart` (351 lines)
 - `progressive_onboarding_widget.dart` (324 lines)
 
