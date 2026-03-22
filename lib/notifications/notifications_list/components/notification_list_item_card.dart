@@ -186,7 +186,9 @@ class NotificationListItemCard extends StatelessWidget {
                       ),
                     ),
                   ),
-                if (type == 'host_pre_game_confirm' &&
+                if ((type == 'host_pre_game_confirm' ||
+                        type == 'host_checkin_fallback' ||
+                        type == 'player_fallback_confirm') &&
                     item.responseStatus != null)
                   Padding(
                     padding: EdgeInsetsDirectional.only(top: AppSpacing.xs),
@@ -214,7 +216,11 @@ class NotificationListItemCard extends StatelessWidget {
 
   Widget _buildResponseStatusBadge(String status) {
     final isConfirmed = status == 'confirmed';
-    final label = isConfirmed ? 'Confirmed' : 'Cancelled';
+    final label = isConfirmed
+        ? 'Confirmed'
+        : status == 'declined'
+            ? 'Declined'
+            : 'Cancelled';
     final color = isConfirmed ? AppColors.success : AppColors.textMuted;
 
     return Container(

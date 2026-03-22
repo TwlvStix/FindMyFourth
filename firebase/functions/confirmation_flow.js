@@ -916,6 +916,7 @@ async function _onGameStatusToPlayedHandler(change, context, db) {
         host_confirmation_data: null,
         attendance_records: {},
         confirmed_player_refs: [],
+        declined_player_refs: [],
         participant_refs: appUserRefs,
         created_at: now,
       };
@@ -1252,9 +1253,13 @@ async function _submitHostCheckinHandler(data, context, db) {
   }));
 
   // ── Stage 4: record host as a verification signal ─────────────────────
-  const { newCount: signalCount } = await _recordVerificationSignal(
-    db, roundRef, roundData, hostUid
-  );
+  let signalCount = 0;
+  if (roundRef) {
+    const result = await _recordVerificationSignal(
+      db, roundRef, roundData, hostUid
+    );
+    signalCount = result.newCount;
+  }
 
   // ── Update round_records with host confirmation data ──────────────────
   const hostConfirmationData = {
@@ -1511,47 +1516,58 @@ async function _submitPeerRatingsHandler(data, context, db) {
     await batch.commit();
   }
 
-  // ── Stage 4: record rater as a verification signal ────────────────────
-  // Read current round_records to check signals + pending_no_shows
-  let roundDataForStage4 = {};
-  if (roundRef) {
-    try {
-      const roundSnap = await roundRef.get();
-      if (roundSnap.exists) roundDataForStage4 = roundSnap.data();
-    } catch (err) {
-      console.warn("submitPeerRatings: could not read round_records for Stage 4:", err);
+  // ── Stage 4: post-commit operations (best-effort) ─────────────────────
+  // The ratings batch (above) is the critical write. If anything below
+  // fails, we still return success so the client knows ratings were saved.
+  let signalCount = 0;
+  try {
+    let roundDataForStage4 = {};
+    if (roundRef) {
+      try {
+        const roundSnap = await roundRef.get();
+        if (roundSnap.exists) roundDataForStage4 = roundSnap.data();
+      } catch (err) {
+        console.warn("submitPeerRatings: could not read round_records for Stage 4:", err);
+      }
     }
-  }
 
-  const { newCount: signalCount } = await _recordVerificationSignal(
-    db, roundRef, roundDataForStage4, context.auth.uid
-  );
+    if (roundRef) {
+      const result = await _recordVerificationSignal(
+        db, roundRef, roundDataForStage4, context.auth.uid
+      );
+      signalCount = result.newCount;
+    }
 
-  // ── Stage 4: dispute resolution — resolve pending no-shows the rater rated ──
-  // Only resolves if the rater explicitly submitted a rating for the disputed player.
-  // A rating entry for that uid (any value) proves the rater interacted with them → they were present.
-  const pendingNoShows = roundDataForStage4.pending_no_shows || {};
-  const pendingNoShowUids = Object.keys(pendingNoShows);
+    // Dispute resolution — resolve pending no-shows the rater rated
+    const pendingNoShows = roundDataForStage4.pending_no_shows || {};
+    const pendingNoShowUids = Object.keys(pendingNoShows);
 
-  if (pendingNoShowUids.length > 0 && roundRef) {
-    const courseName = typeof gameData.course_play === 'string' ? gameData.course_play : 'your course';
-    const gameDate = _formatGameDate(gameData.date);
+    if (pendingNoShowUids.length > 0 && roundRef) {
+      const courseName = typeof gameData.course_play === 'string' ? gameData.course_play : 'your course';
+      const gameDate = _formatGameDate(gameData.date);
 
-    await Promise.all(pendingNoShowUids
-      .filter(noShowUid => noShowUid !== context.auth.uid && Object.prototype.hasOwnProperty.call(ratings, noShowUid))
-      .map(noShowUid => _resolvePendingNoShow(db, roundRef, noShowUid, context.auth.uid, courseName, gameDate))
+      await Promise.all(pendingNoShowUids
+        .filter(noShowUid => noShowUid !== context.auth.uid && Object.prototype.hasOwnProperty.call(ratings, noShowUid))
+        .map(noShowUid => _resolvePendingNoShow(db, roundRef, noShowUid, context.auth.uid, courseName, gameDate))
+      );
+    }
+
+    // Check for early verification
+    if (signalCount >= 2 && roundRef) {
+      try {
+        const freshRoundSnap = await roundRef.get();
+        const freshRoundData = freshRoundSnap.exists ? freshRoundSnap.data() : roundDataForStage4;
+        await _finalizeRoundVerification(db, roundRef, freshRoundData, gameRef);
+      } catch (err) {
+        console.warn("submitPeerRatings: _finalizeRoundVerification error:", err);
+      }
+    }
+  } catch (stage4Err) {
+    console.error(
+      `submitPeerRatings: Stage 4 error (ratings already saved) for game ${gameId}, ` +
+        `user ${context.auth.uid}:`,
+      stage4Err
     );
-  }
-
-  // ── Stage 4: check for early verification ────────────────────────────
-  if (signalCount >= 2 && roundRef) {
-    try {
-      const freshRoundSnap = await roundRef.get();
-      const freshRoundData = freshRoundSnap.exists ? freshRoundSnap.data() : roundDataForStage4;
-      await _finalizeRoundVerification(db, roundRef, freshRoundData, gameRef);
-    } catch (err) {
-      console.warn("submitPeerRatings: _finalizeRoundVerification error:", err);
-    }
   }
 
   console.log(
@@ -1639,16 +1655,40 @@ async function _submitFallbackConfirmationHandler(data, context, db) {
     );
   }
 
+  const userRef = db.collection("users").doc(context.auth.uid);
+  const roundRef = job.round_ref;
+
+  // Guard: already responded (idempotency)
+  if (roundRef) {
+    try {
+      const roundSnap = await roundRef.get();
+      if (roundSnap.exists) {
+        const rd = roundSnap.data();
+        const confirmed = (rd.confirmed_player_refs || []).map(r => r.path);
+        const declined = (rd.declined_player_refs || []).map(r => r.path);
+        if (confirmed.includes(userRef.path) || declined.includes(userRef.path)) {
+          console.log(
+            `submitFallbackConfirmation: user ${context.auth.uid} already responded for game ${gameId} — skipping`
+          );
+          return { success: true, alreadyResponded: true };
+        }
+      }
+    } catch (err) {
+      console.warn("submitFallbackConfirmation: idempotency check failed, proceeding:", err);
+    }
+  }
+
   if (!didPlay) {
+    if (roundRef) {
+      await roundRef.update({
+        declined_player_refs: admin.firestore.FieldValue.arrayUnion(userRef),
+      });
+    }
     console.log(
-      `submitFallbackConfirmation: user ${context.auth.uid} said they did NOT play in game ${gameId}`
+      `submitFallbackConfirmation: user ${context.auth.uid} declined for game ${gameId}`
     );
     return { success: true };
   }
-
-  // Add user to confirmed_player_refs
-  const userRef = db.collection("users").doc(context.auth.uid);
-  const roundRef = job.round_ref;
 
   // Read round_records for Stage 4 signal tracking
   let roundData = {};
@@ -1672,9 +1712,13 @@ async function _submitFallbackConfirmationHandler(data, context, db) {
   // verification when the host never submits a check-in.
   // NOTE: fallback does NOT resolve pending no-shows. It only proves the
   // respondent was present, not any other player.
-  const { newCount: signalCount } = await _recordVerificationSignal(
-    db, roundRef, roundData, context.auth.uid
-  );
+  let signalCount = 0;
+  if (roundRef) {
+    const result = await _recordVerificationSignal(
+      db, roundRef, roundData, context.auth.uid
+    );
+    signalCount = result.newCount;
+  }
 
   // ── Stage 4: check for early verification ─────────────────────────────
   if (signalCount >= 2 && roundRef) {

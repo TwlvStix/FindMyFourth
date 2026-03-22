@@ -22,7 +22,7 @@ class JoinableGamesSliverList extends StatelessWidget {
   final DocumentReference? currentUserReference;
   final Map<String, double> vibeScores;
   final bool hasMutualGames;
-  final void Function(String gameRefId, String ownerUid)? onVibeScoreRequest;
+  final void Function(Game game)? onVibeScoreRequest;
 
   @override
   Widget build(BuildContext context) {
@@ -30,12 +30,11 @@ class JoinableGamesSliverList extends StatelessWidget {
       delegate: SliverChildBuilderDelegate(
         (context, index) {
           final game = games[index];
-          final ownerUid = game.userRef?.id ?? game.uid;
           final isLast = index == games.length - 1;
 
           // Request lazy vibe score computation for visible cards
           if (onVibeScoreRequest != null) {
-            onVibeScoreRequest!(game.reference.id, ownerUid);
+            onVibeScoreRequest!(game);
           }
 
           return Padding(
@@ -47,7 +46,7 @@ class JoinableGamesSliverList extends StatelessWidget {
             child: UnifiedGameCard(
               game: game,
               currentUserReference: currentUserReference,
-              vibeScore: vibeScores[ownerUid],
+              vibeScore: vibeScores[game.reference.id],
               animationIndex: index,
               showStatusBadge: true,
             ),

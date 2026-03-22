@@ -598,6 +598,7 @@ List<GoRoute> buildRoutes(AppStateNotifier appStateNotifier) => [
                 )
               : FallbackConfirmationScreen(
                   gameRef: gameRefFromState(state)!,
+                  notificationRef: notificationRefFromState(state),
                 ),
         ),
       ),

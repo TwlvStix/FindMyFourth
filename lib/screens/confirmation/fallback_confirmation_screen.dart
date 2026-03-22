@@ -11,6 +11,7 @@ import '/core/design_tokens/app_phosphor_icons.dart';
 import '/core/utils/app_log.dart';
 import '/core/widgets/app_button_enhanced.dart';
 import '/core/widgets/app_icon.dart';
+import '/services/notification_crud_service.dart';
 import '/services/trust_flow_service.dart';
 import 'components/fallback_header.dart';
 import 'components/fallback_status_view.dart';
@@ -22,14 +23,21 @@ import 'components/fallback_toggle.dart';
 /// A simple Yes/No question: "Did you play at [Course] today?"
 ///
 /// If Yes, adds the user to round_records.confirmed_player_refs.
-/// If No, records nothing.
+/// If No, adds the user to round_records.declined_player_refs.
 ///
 /// Route name: 'FallbackConfirmation'
-/// Parameters: gameRef (DocumentReference)
+/// Parameters: gameRef (DocumentReference), notificationRef (optional)
 class FallbackConfirmationScreen extends StatefulWidget {
-  const FallbackConfirmationScreen({super.key, required this.gameRef});
+  const FallbackConfirmationScreen({
+    super.key,
+    required this.gameRef,
+    this.notificationRef,
+  });
 
   final DocumentReference gameRef;
+
+  /// Optional notification reference to write responseStatus after action.
+  final DocumentReference? notificationRef;
 
   static const String routeName = 'FallbackConfirmation';
   static const String routePath = '/fallbackConfirmation';
@@ -136,6 +144,7 @@ class _FallbackConfirmationScreenState
       });
 
       if (result['success'] == true) {
+        _writeResponseStatus(_selection ? 'confirmed' : 'declined');
         if (mounted) updateState(this, () { _submitting = false; _submitted = true; });
       } else {
         if (mounted) updateState(this, () { _submitting = false; _error = 'Submission failed. Please try again.'; });
@@ -143,6 +152,17 @@ class _FallbackConfirmationScreenState
     } catch (e) {
       AppLog.d('FallbackConfirmationScreen submit error: $e');
       if (mounted) updateState(this, () { _submitting = false; _error = 'Something went wrong. Please try again.'; });
+    }
+  }
+
+  /// Writes responseStatus to the notification doc (fire-and-forget).
+  void _writeResponseStatus(String status) {
+    final ref = widget.notificationRef;
+    if (ref == null) return;
+    try {
+      NotificationCrudService().updateResponseStatus(ref, status);
+    } catch (e) {
+      AppLog.d('📖 FallbackConfirmationScreen: Failed to write responseStatus: $e');
     }
   }
 
@@ -166,7 +186,7 @@ class _FallbackConfirmationScreenState
       return FallbackStatusView(
         icon: AppPhosphorIcons.successFill,
         iconColor: AppColors.green,
-        message: 'Already confirmed for this round.',
+        message: 'Already responded for this round.',
         onDone: pop,
       );
     }

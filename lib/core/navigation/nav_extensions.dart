@@ -391,11 +391,15 @@ extension AppNavigationExtensions on BuildContext {
 
   void pushFallbackConfirmation({
     required DocumentReference gameRef,
+    DocumentReference? notificationRef,
     TransitionInfo transition = TransitionStandards.detailTransition,
   }) {
     pushWithTransition(
       AppRouteNames.fallbackConfirmation,
-      extra: <String, dynamic>{'gameRef': gameRef},
+      extra: <String, dynamic>{
+        'gameRef': gameRef,
+        if (notificationRef != null) 'notificationRef': notificationRef,
+      },
       transition: transition,
     );
   }

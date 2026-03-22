@@ -116,7 +116,19 @@ class NotificationTapRouter {
         context.pushPeerRating(gameRef: gameRef);
       } else {
         // host_checkin_fallback, player_fallback_confirm
-        context.pushFallbackConfirmation(gameRef: gameRef);
+        // If already responded, skip the form and navigate directly
+        if (item.responseStatus == 'confirmed') {
+          context.pushJoinGameDetailed(gameRef: gameRef);
+          return;
+        }
+        if (item.responseStatus == 'declined') {
+          context.pushGamesList();
+          return;
+        }
+        context.pushFallbackConfirmation(
+          gameRef: gameRef,
+          notificationRef: item.reference,
+        );
       }
       return;
     }

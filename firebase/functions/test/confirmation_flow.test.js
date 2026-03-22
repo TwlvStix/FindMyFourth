@@ -1549,6 +1549,27 @@ describe("submitPeerRatings", () => {
     expect(result2.alreadySubmitted).toBe(true);
     expect(Object.keys(mockDb.getDocs("pair_ratings") || {}).length).toBe(countAfterFirst);
   });
+
+  test("returns success even when round_ref is null on the job", async () => {
+    seedGame(mockDb, "g1");
+    seedRoundJob(mockDb, "job1", "g1", {
+      host_confirmed_at: MockTimestamp.fromMillis(Date.now()),
+      round_ref: null,
+    });
+
+    const result = await confirmationFlow._submitPeerRatingsHandler(
+      { gameId: "g1", ratings: { player_b: true } },
+      makeContext("player_a"),
+      mockDb
+    );
+
+    expect(result.success).toBe(true);
+    expect(result.ratingsWritten).toBe(1);
+
+    const ratings = Object.values(mockDb.getDocs("pair_ratings"));
+    expect(ratings).toHaveLength(1);
+    expect(ratings[0].round_ref).toBeNull();
+  });
 });
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -1595,7 +1616,7 @@ describe("submitFallbackConfirmation", () => {
     ).rejects.toMatchObject({ code: "permission-denied" });
   });
 
-  test("returns success without write when didPlay is false", async () => {
+  test("persists user to declined_player_refs when didPlay is false", async () => {
     seedGame(mockDb, "g1");
     seedRoundJob(mockDb, "job1", "g1");
     seedRoundRecord(mockDb, "round_g1");
@@ -1607,6 +1628,11 @@ describe("submitFallbackConfirmation", () => {
     );
 
     expect(result.success).toBe(true);
+    const round = mockDb.getDoc("round_records", "round_g1");
+    const declinedPaths = (round.declined_player_refs || []).map(r =>
+      typeof r === "object" && r.path ? r.path : r
+    );
+    expect(declinedPaths).toContainEqual(expect.stringContaining("player_a"));
   });
 
   test("returns success when didPlay is true", async () => {
@@ -1621,6 +1647,40 @@ describe("submitFallbackConfirmation", () => {
     );
 
     expect(result.success).toBe(true);
+  });
+
+  test("returns alreadyResponded when user already confirmed", async () => {
+    seedGame(mockDb, "g1");
+    seedRoundJob(mockDb, "job1", "g1");
+    seedRoundRecord(mockDb, "round_g1", {
+      confirmed_player_refs: [mockDb.collection("users").doc("player_a")],
+    });
+
+    const result = await confirmationFlow._submitFallbackConfirmationHandler(
+      { gameId: "g1", didPlay: true },
+      makeContext("player_a"),
+      mockDb
+    );
+
+    expect(result.success).toBe(true);
+    expect(result.alreadyResponded).toBe(true);
+  });
+
+  test("returns alreadyResponded when user already declined", async () => {
+    seedGame(mockDb, "g1");
+    seedRoundJob(mockDb, "job1", "g1");
+    seedRoundRecord(mockDb, "round_g1", {
+      declined_player_refs: [mockDb.collection("users").doc("player_a")],
+    });
+
+    const result = await confirmationFlow._submitFallbackConfirmationHandler(
+      { gameId: "g1", didPlay: false },
+      makeContext("player_a"),
+      mockDb
+    );
+
+    expect(result.success).toBe(true);
+    expect(result.alreadyResponded).toBe(true);
   });
 });
 

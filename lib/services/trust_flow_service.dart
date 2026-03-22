@@ -388,6 +388,13 @@ class TrustFlowService {
                 return ConfirmationStatus.completed;
               }
             }
+            final declinedRefs =
+                (roundData['declined_player_refs'] as List<dynamic>?) ?? [];
+            for (final ref in declinedRefs) {
+              if (ref is DocumentReference && ref.path == currentUserRef.path) {
+                return ConfirmationStatus.completed;
+              }
+            }
           }
         }
       }

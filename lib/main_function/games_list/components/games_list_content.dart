@@ -95,7 +95,7 @@ class GamesListContent extends StatefulWidget {
   final Future<void> Function()? onLoadMore;
 
   // Vibe score request (lazy computation)
-  final void Function(String gameRefId, String ownerUid)? onVibeScoreRequest;
+  final void Function(Game game)? onVibeScoreRequest;
 
   // Mutual friend data for amber cards
   final Set<String> mutualFriendHostIds;

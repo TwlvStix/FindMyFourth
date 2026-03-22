@@ -140,7 +140,7 @@ class TrustRepository {
         'gameId': gameId,
         'ratings': ratings,
       });
-      return result['ok'] == true || result.isNotEmpty;
+      return result['success'] == true;
       // Non-critical: makeCloudCall handles Firebase errors internally; this catches
       // response parsing failures. Fire-and-forget with safe fallback per services.md:28.
     } catch (e) {

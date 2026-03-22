@@ -3,18 +3,18 @@ import '/core/utils/state_update.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
-import '/backend/cloud_functions/cloud_functions.dart';
 import '/core/design_tokens/colors.dart';
 import '/core/design_tokens/icon_size.dart';
 import '/core/design_tokens/spacing.dart';
 import '/core/design_tokens/typography.dart';
 import '/core/design_tokens/app_phosphor_icons.dart';
-import '/core/motion/motion_tokens.dart';
+import '/core/motion/animated_entrance.dart';
 import '/core/utils/app_log.dart';
 import '/core/widgets/app_button_enhanced.dart';
 import '/core/widgets/app_icon.dart';
 import '/main_function/games_joined/games_joined_widget.dart';
 import '/services/trust_flow_service.dart';
+import '/services/trust_repository.dart';
 import 'components/peer_rating_header.dart';
 import 'components/peer_rating_row.dart';
 import 'components/peer_rating_status_views.dart';
@@ -41,9 +41,9 @@ class PeerRatingScreen extends StatefulWidget {
   State<PeerRatingScreen> createState() => _PeerRatingScreenState();
 }
 
-class _PeerRatingScreenState extends State<PeerRatingScreen>
-    with TickerProviderStateMixin {
+class _PeerRatingScreenState extends State<PeerRatingScreen> {
   final _trustFlowService = TrustFlowService();
+  final _trustRepository = TrustRepository();
 
   bool _loading = true;
   bool _submitting = false;
@@ -57,28 +57,13 @@ class _PeerRatingScreenState extends State<PeerRatingScreen>
   // Present app users to rate (excluding current user)
   final List<RateeEntry> _ratees = [];
 
-  // Ratings map: uid → wouldPlayAgain (bool)
+  // Ratings map: uid -> wouldPlayAgain (bool)
   final Map<String, bool?> _ratings = {};
-
-  // Staggered entrance animation
-  late AnimationController _staggerController;
-  final List<Animation<double>> _fadeAnimations = [];
-  final List<Animation<Offset>> _slideAnimations = [];
 
   @override
   void initState() {
     super.initState();
-    _staggerController = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 600),
-    );
     _loadRatees();
-  }
-
-  @override
-  void dispose() {
-    _staggerController.dispose();
-    super.dispose();
   }
 
   void _navigateToMyGames({String? message}) {
@@ -91,41 +76,6 @@ class _PeerRatingScreenState extends State<PeerRatingScreen>
         backgroundColor: AppColors.success,
         duration: const Duration(milliseconds: 3000),
       ));
-    }
-  }
-
-  void _buildStaggerAnimations() {
-    _fadeAnimations.clear();
-    _slideAnimations.clear();
-
-    final itemCount =
-        _ratees.length.clamp(0, MotionTokens.staggerMaxItems);
-    if (itemCount == 0) return;
-
-    for (int i = 0; i < _ratees.length; i++) {
-      final staggerIndex = i.clamp(0, MotionTokens.staggerMaxItems - 1);
-      final startFraction = (staggerIndex * 24) / 600;
-      final endFraction = (startFraction + 0.4).clamp(0.0, 1.0);
-
-      _fadeAnimations.add(
-        Tween<double>(begin: 0.0, end: 1.0).animate(
-          CurvedAnimation(
-            parent: _staggerController,
-            curve: Interval(startFraction, endFraction,
-                curve: MotionTokens.curveEnter),
-          ),
-        ),
-      );
-
-      _slideAnimations.add(
-        Tween<Offset>(begin: const Offset(0, 0.08), end: Offset.zero).animate(
-          CurvedAnimation(
-            parent: _staggerController,
-            curve: Interval(startFraction, endFraction,
-                curve: MotionTokens.curveEnter),
-          ),
-        ),
-      );
     }
   }
 
@@ -168,8 +118,6 @@ class _PeerRatingScreenState extends State<PeerRatingScreen>
           _ratings.addAll(data.initialRatings);
           _loading = false;
         });
-        _buildStaggerAnimations();
-        _staggerController.forward();
       }
     } on StateError catch (e) {
       final code = e.message;
@@ -215,25 +163,24 @@ class _PeerRatingScreenState extends State<PeerRatingScreen>
     });
 
     try {
-      final result = await makeCloudCall('submitPeerRatings', {
-        'gameId': widget.gameRef.id,
-        'ratings': ratedMap,
-      });
+      final success = await _trustRepository.submitPeerRatings(
+        widget.gameRef.id,
+        ratedMap,
+      );
+      if (!mounted) return;
 
-      if (result['success'] == true) {
-        if (mounted) {
-          updateState(this, () {
-            _submitting = false;
-            _submitted = true;
-          });
-        }
+      if (success) {
+        updateState(this, () {
+          _submitting = false;
+          _submitted = true;
+        });
       } else {
-        if (mounted) {
-          updateState(this, () {
-            _submitting = false;
-            _error = 'Submission failed. Please try again.';
-          });
-        }
+        AppLog.d('❌ PeerRatingScreen: submission returned false');
+        updateState(this, () {
+          _submitting = false;
+          _error = 'Could not reach the server. Please check your '
+              'connection and try again.';
+        });
       }
     } catch (e) {
       AppLog.d('❌ PeerRatingScreen submit error: $e');
@@ -363,30 +310,17 @@ class _PeerRatingScreenState extends State<PeerRatingScreen>
 
   Widget _buildRateeRow(int i) {
     final ratee = _ratees[i];
-    Widget row = RateeRow(
-      ratee: ratee,
-      rating: _ratings[ratee.uid],
-      onRate: (val) {
-        updateState(this, () {
-          _ratings[ratee.uid] = val;
-        });
-      },
+    return AnimatedEntrance(
+      animationIndex: i,
+      child: RateeRow(
+        ratee: ratee,
+        rating: _ratings[ratee.uid],
+        onRate: (val) {
+          updateState(this, () {
+            _ratings[ratee.uid] = val;
+          });
+        },
+      ),
     );
-
-    if (i < _fadeAnimations.length) {
-      row = AnimatedBuilder(
-        animation: _staggerController,
-        builder: (context, child) => Opacity(
-          opacity: _fadeAnimations[i].value,
-          child: SlideTransition(
-            position: _slideAnimations[i],
-            child: child,
-          ),
-        ),
-        child: row,
-      );
-    }
-
-    return row;
   }
 }

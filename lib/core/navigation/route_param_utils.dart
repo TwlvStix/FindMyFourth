@@ -92,6 +92,15 @@ DocumentReference? gameRefFromState(GoRouterState state) {
   return null;
 }
 
+/// Extracts a notification DocumentReference from route state extras.
+DocumentReference? notificationRefFromState(GoRouterState state) {
+  final extra = state.extra;
+  if (extra is Map && extra['notificationRef'] is DocumentReference) {
+    return extra['notificationRef'] as DocumentReference;
+  }
+  return null;
+}
+
 /// Extracts a user DocumentReference from route state.
 ///
 /// Checks in order:

@@ -182,8 +182,8 @@ class PlayerStanding {
   /// Raw requirements map from cloud function for badge progress bars
   final Map<String, dynamic>? nextBadgeRequirements;
 
-  /// Next strike count that triggers a restriction (e.g. 2, 3, 4, 5)
-  final int? nextThreshold;
+  /// Next restriction threshold from cloud function (strikes, restriction, strikesNeeded)
+  final Map<String, dynamic>? nextThreshold;
 
   /// Shown once after a restriction ends
   final String? comebackMessage;
@@ -227,7 +227,7 @@ class PlayerStanding {
           : null,
       nextBadgeRequirements:
           map['nextBadgeRequirements'] as Map<String, dynamic>?,
-      nextThreshold: (map['nextThreshold'] as num?)?.toInt(),
+      nextThreshold: map['nextThreshold'] as Map<String, dynamic>?,
       comebackMessage: map['comebackMessage'] as String?,
     );
   }
