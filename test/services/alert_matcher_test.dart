@@ -147,24 +147,175 @@ void main() {
           isFalse);
     });
 
-    test('requires all enabled special filters to pass', () {
+    test('matches when any enabled special filter passes (OR)', () {
       final sub = makeSub(
         special:
             AlertSpecialOptions(games: true, twoVTwo: true, discount: true),
       );
-      final matchingGame = makeGame(
-        hasSideGames: true,
-        is2v2: true,
-        memberDiscount: 'Yes',
-      );
-      final nonMatchingGame = makeGame(
-        hasSideGames: true,
-        is2v2: false,
-        memberDiscount: 'Yes',
-      );
 
-      expect(AlertMatcher.doesAlertSubMatchGame(sub, matchingGame), isTrue);
-      expect(AlertMatcher.doesAlertSubMatchGame(sub, nonMatchingGame), isFalse);
+      // Only side games matches — should still pass (OR)
+      expect(
+          AlertMatcher.doesAlertSubMatchGame(
+              sub, makeGame(hasSideGames: true, is2v2: false, memberDiscount: 'No')),
+          isTrue);
+
+      // Only 2v2 matches
+      expect(
+          AlertMatcher.doesAlertSubMatchGame(
+              sub, makeGame(hasSideGames: false, is2v2: true, memberDiscount: 'No')),
+          isTrue);
+
+      // Only discount matches
+      expect(
+          AlertMatcher.doesAlertSubMatchGame(
+              sub, makeGame(hasSideGames: false, is2v2: false, memberDiscount: 'Yes')),
+          isTrue);
+
+      // All match
+      expect(
+          AlertMatcher.doesAlertSubMatchGame(
+              sub, makeGame(hasSideGames: true, is2v2: true, memberDiscount: 'Yes')),
+          isTrue);
+
+      // None match — should fail
+      expect(
+          AlertMatcher.doesAlertSubMatchGame(
+              sub, makeGame(hasSideGames: false, is2v2: false, memberDiscount: 'No')),
+          isFalse);
+    });
+  });
+
+  group('AlertMatcher OR across categories', () {
+    AlertSubscription makeFullSub({
+      List<String> gameVibes = const [],
+      List<String> stakes = const [],
+      List<String> formats = const [],
+      List<String> handicapUses = const [],
+      List<String> courses = const [],
+      AlertSpecialOptions? special,
+    }) {
+      return AlertSubscription(
+        userId: 'user-1',
+        enabled: true,
+        gameVibes: gameVibes,
+        stakes: stakes,
+        formats: formats,
+        handicapUses: handicapUses,
+        courses: courses,
+        special: special ?? AlertSpecialOptions.defaults(),
+      );
+    }
+
+    Game makeFullGame({
+      String rulesSetting = 'Casual',
+      String styleGame = 'No Money',
+      String gameType = 'Stroke Play',
+      String scoring = 'Net',
+      String? courseId,
+      bool hasSideGames = false,
+      bool is2v2 = false,
+      String memberDiscount = 'No',
+    }) {
+      return Game(
+        reference: _FakeDocumentReference('games/game-1'),
+        nameGame: 'Test Game',
+        coursePlay: 'Test Course',
+        gameType: gameType,
+        styleGame: styleGame,
+        rulesSetting: rulesSetting,
+        scoring: scoring,
+        memberDiscount: memberDiscount,
+        friendGame: 'Public',
+        hasSideGames: hasSideGames,
+        is2v2: is2v2,
+        numPlayers: 1,
+        maxPlayers: 4,
+        joinedPlayers: const [],
+        guestPlayers: const [],
+        isCancelled: false,
+        status: 'active',
+        date: null,
+        createdTime: null,
+        chatRef: null,
+        courseRef: courseId != null
+            ? _FakeDocumentReference('course/$courseId')
+            : _FakeDocumentReference('course/course-1'),
+        userRef: _FakeDocumentReference('users/user-1'),
+        uid: 'user-1',
+        scheduleType: 'confirmed',
+        isFunGame: false,
+        playerEligibility: PlayerEligibility.openToAll,
+      );
+    }
+
+    test('zero filters matches all games', () {
+      final sub = makeFullSub();
+      final game = makeFullGame();
+      expect(AlertMatcher.doesAlertSubMatchGame(sub, game), isTrue);
+    });
+
+    test('matches when stakes filter matches but vibe does not', () {
+      final sub = makeFullSub(
+        stakes: ['Low Stakes'],
+        gameVibes: ['Competitive'],
+      );
+      // Game is Casual (not Competitive) but Low Stakes — should match via stakes
+      final game = makeFullGame(
+        rulesSetting: 'Casual',
+        styleGame: 'Low Stakes',
+      );
+      expect(AlertMatcher.doesAlertSubMatchGame(sub, game), isTrue);
+    });
+
+    test('matches when vibe filter matches but stakes does not', () {
+      final sub = makeFullSub(
+        stakes: ['Low Stakes'],
+        gameVibes: ['Competitive'],
+      );
+      // Game is Competitive (matches vibe) but No Money (not Low Stakes)
+      final game = makeFullGame(
+        rulesSetting: 'Competitive',
+        styleGame: 'No Money',
+      );
+      expect(AlertMatcher.doesAlertSubMatchGame(sub, game), isTrue);
+    });
+
+    test('does not match when no categories match', () {
+      final sub = makeFullSub(
+        stakes: ['High Stakes'],
+        gameVibes: ['Competitive'],
+      );
+      // Game is Casual + No Money — neither matches
+      final game = makeFullGame(
+        rulesSetting: 'Casual',
+        styleGame: 'No Money',
+      );
+      expect(AlertMatcher.doesAlertSubMatchGame(sub, game), isFalse);
+    });
+
+    test('matches when discount filter matches but stakes does not', () {
+      final sub = makeFullSub(
+        stakes: ['Low Stakes'],
+        special: AlertSpecialOptions(games: false, twoVTwo: false, discount: true),
+      );
+      // Game is No Money (not Low Stakes) but has discount
+      final game = makeFullGame(
+        styleGame: 'No Money',
+        memberDiscount: 'Yes',
+      );
+      expect(AlertMatcher.doesAlertSubMatchGame(sub, game), isTrue);
+    });
+
+    test('matches when multiple categories match', () {
+      final sub = makeFullSub(
+        stakes: ['Low Stakes'],
+        gameVibes: ['Casual'],
+      );
+      final game = makeFullGame(
+        rulesSetting: 'Casual',
+        styleGame: 'Low Stakes',
+      );
+      expect(AlertMatcher.doesAlertSubMatchGame(sub, game), isTrue);
     });
   });
 }

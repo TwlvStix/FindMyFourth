@@ -308,6 +308,14 @@ class NotificationTapRouter {
     }
 
     if (!context.mounted) return;
+
+    // Route participant notification types to GameJoinedDetailed
+    if (notificationType != null &&
+        NotificationTypeHelpers.isParticipantNotification(notificationType)) {
+      context.pushGameJoinedDetailed(gameRef: gameRef);
+      return;
+    }
+
     context.pushJoinGameDetailed(
       gameRef: gameRef,
       skipFriendsOnlyCheck: isHostNotification,

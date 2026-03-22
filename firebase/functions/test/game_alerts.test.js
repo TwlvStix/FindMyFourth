@@ -603,22 +603,82 @@ describe('doesAlertSubMatchGame', () => {
     expect(doesAlertSubMatchGame(sub, game)).toBe(false);
   });
 
-  it('requires all enabled special filters to pass', () => {
+  it('matches when any enabled special filter passes (OR)', () => {
     const sub = {
       ...baseSubscription,
       special: { games: true, twoVTwo: true, discount: true },
     };
 
-    const fullMatchGame = {
-      ...baseGame,
-      has_side_games: true,
-      is_2v2: true,
-      member_discount: 'Yes',
-    };
-    expect(doesAlertSubMatchGame(sub, fullMatchGame)).toBe(true);
+    // Only side games matches
+    expect(doesAlertSubMatchGame(sub, {
+      ...baseGame, has_side_games: true, is_2v2: false, member_discount: 'No',
+    })).toBe(true);
 
-    const missingOne = { ...fullMatchGame, is_2v2: false };
-    expect(doesAlertSubMatchGame(sub, missingOne)).toBe(false);
+    // Only 2v2 matches
+    expect(doesAlertSubMatchGame(sub, {
+      ...baseGame, has_side_games: false, is_2v2: true, member_discount: 'No',
+    })).toBe(true);
+
+    // Only discount matches
+    expect(doesAlertSubMatchGame(sub, {
+      ...baseGame, has_side_games: false, is_2v2: false, member_discount: 'Yes',
+    })).toBe(true);
+
+    // All match
+    expect(doesAlertSubMatchGame(sub, {
+      ...baseGame, has_side_games: true, is_2v2: true, member_discount: 'Yes',
+    })).toBe(true);
+
+    // None match
+    expect(doesAlertSubMatchGame(sub, {
+      ...baseGame, has_side_games: false, is_2v2: false, member_discount: 'No',
+    })).toBe(false);
+  });
+
+  // ── OR across categories ──────────────────────────────────────────────────
+
+  it('matches when stakes filter matches but vibe does not (OR across categories)', () => {
+    const sub = {
+      ...baseSubscription,
+      stakes: ['Low Stakes'],
+      gameVibes: ['Competitive'],
+    };
+    // Game is Casual (not Competitive) but Low Stakes — should match via stakes
+    const game = { ...baseGame, rules_setting: 'Casual', style_game: 'Low Stakes' };
+    expect(doesAlertSubMatchGame(sub, game)).toBe(true);
+  });
+
+  it('matches when vibe filter matches but stakes does not (OR across categories)', () => {
+    const sub = {
+      ...baseSubscription,
+      stakes: ['Low Stakes'],
+      gameVibes: ['Competitive'],
+    };
+    // Game is Competitive (matches vibe) but No Money (not Low Stakes)
+    const game = { ...baseGame, rules_setting: 'Competitive', style_game: 'No Money' };
+    expect(doesAlertSubMatchGame(sub, game)).toBe(true);
+  });
+
+  it('does not match when no categories match (OR across categories)', () => {
+    const sub = {
+      ...baseSubscription,
+      stakes: ['High Stakes'],
+      gameVibes: ['Competitive'],
+    };
+    // Game is Casual + No Money — neither matches
+    const game = { ...baseGame, rules_setting: 'Casual', style_game: 'No Money' };
+    expect(doesAlertSubMatchGame(sub, game)).toBe(false);
+  });
+
+  it('matches when discount filter matches but stakes does not (OR across categories)', () => {
+    const sub = {
+      ...baseSubscription,
+      stakes: ['Low Stakes'],
+      special: { games: false, twoVTwo: false, discount: true },
+    };
+    // Game is No Money (not Low Stakes) but has discount
+    const game = { ...baseGame, style_game: 'No Money', member_discount: 'Yes' };
+    expect(doesAlertSubMatchGame(sub, game)).toBe(true);
   });
 });
 

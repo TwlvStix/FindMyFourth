@@ -237,6 +237,117 @@ void main() {
     });
   });
 
+  group('attemptCallWithAppCheckRetry', () {
+    test('returns result on first successful attempt without refresh', () async {
+      var refreshCount = 0;
+      final result = await attemptCallWithAppCheckRetry(
+        callFunc: () async => {'success': true},
+        onRefreshAppCheck: () async {
+          refreshCount++;
+        },
+      );
+      expect(result, {'success': true});
+      expect(refreshCount, 0);
+    });
+
+    test('retries once on App Check failed-precondition and succeeds', () async {
+      var attempts = 0;
+      var refreshCount = 0;
+      final result = await attemptCallWithAppCheckRetry(
+        callFunc: () async {
+          attempts++;
+          if (attempts == 1) {
+            throw FirebaseFunctionsException(
+              code: 'failed-precondition',
+              message: 'App Check token required.',
+            );
+          }
+          return {'success': true};
+        },
+        onRefreshAppCheck: () async {
+          refreshCount++;
+        },
+      );
+      expect(result, {'success': true});
+      expect(attempts, 2);
+      expect(refreshCount, 1);
+    });
+
+    test('throws after retry on persistent App Check failure', () async {
+      var attempts = 0;
+      await expectLater(
+        () => attemptCallWithAppCheckRetry(
+          callFunc: () async {
+            attempts++;
+            throw FirebaseFunctionsException(
+              code: 'failed-precondition',
+              message: 'App Check token required.',
+            );
+          },
+          onRefreshAppCheck: () async {},
+        ),
+        throwsA(isA<FirebaseFunctionsException>()),
+      );
+      expect(attempts, 2);
+    });
+
+    test('does not retry on non-App-Check failed-precondition', () async {
+      var attempts = 0;
+      await expectLater(
+        () => attemptCallWithAppCheckRetry(
+          callFunc: () async {
+            attempts++;
+            throw FirebaseFunctionsException(
+              code: 'failed-precondition',
+              message: 'Some other precondition.',
+            );
+          },
+          onRefreshAppCheck: () async {},
+        ),
+        throwsA(isA<FirebaseFunctionsException>()),
+      );
+      expect(attempts, 1);
+    });
+
+    test('does not retry on other error codes', () async {
+      var attempts = 0;
+      await expectLater(
+        () => attemptCallWithAppCheckRetry(
+          callFunc: () async {
+            attempts++;
+            throw FirebaseFunctionsException(
+              code: 'internal',
+              message: 'Server error',
+            );
+          },
+          onRefreshAppCheck: () async {},
+        ),
+        throwsA(isA<FirebaseFunctionsException>()),
+      );
+      expect(attempts, 1);
+    });
+
+    test('preserves exception details on final throw', () async {
+      FirebaseFunctionsException? caught;
+      try {
+        await attemptCallWithAppCheckRetry(
+          callFunc: () async {
+            throw FirebaseFunctionsException(
+              code: 'failed-precondition',
+              message: 'App Check token required.',
+            );
+          },
+          onRefreshAppCheck: () async {},
+        );
+      } on FirebaseFunctionsException catch (e) {
+        caught = e;
+      }
+      expect(caught, isNotNull);
+      expect(caught!.code, 'failed-precondition');
+      expect(caught.message, 'App Check token required.');
+    });
+  });
+
   group('callAuthenticatedCloudFunction - behavior documentation', () {
     // These tests document expected behavior without actually calling Firebase.
     // Full integration testing requires Firebase emulator setup.

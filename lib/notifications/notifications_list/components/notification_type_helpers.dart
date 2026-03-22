@@ -105,6 +105,17 @@ class NotificationTypeHelpers {
     }.contains(type);
   }
 
+  /// Returns true for notification types where the recipient is a
+  /// confirmed game participant (should route to GameJoinedDetailed).
+  static bool isParticipantNotification(String type) {
+    return const {
+      'player_added_by_host',
+      'join_request_approved',
+      'join_request_new',
+      'player_declined_spot',
+    }.contains(type);
+  }
+
   /// Returns true for game alert notification types (deferred alerts).
   static bool isGameAlertNotification(String type) {
     return type == 'game_alert_deferred';

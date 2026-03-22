@@ -1,10 +1,13 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
+import 'package:cloud_functions/cloud_functions.dart';
+
 import '/auth/firebase_auth/auth_util.dart';
 import '/backend/cloud_functions/cloud_functions.dart';
 import '/backend/schema/player_standing.dart';
 import '/backend/schema/trust_profile.dart';
 import '/backend/schema/util/firestore_util.dart';
+import '/core/exceptions/app_exceptions.dart';
 import '/core/utils/app_log.dart';
 
 /// TrustRepository — data access layer for trust system.
@@ -141,10 +144,18 @@ class TrustRepository {
         'ratings': ratings,
       });
       return result['success'] == true;
-      // Non-critical: makeCloudCall handles Firebase errors internally; this catches
-      // response parsing failures. Fire-and-forget with safe fallback per services.md:28.
+    } on FirebaseFunctionsException catch (e) {
+      AppLog.d('❌ TrustRepository.submitPeerRatings error: ${e.code} - ${e.message}');
+      if (e.code == 'failed-precondition') {
+        throw AppException(
+          'Unable to verify this device. Please restart the app and try again.',
+          code: 'app-check-failed',
+          cause: e,
+        );
+      }
+      return false;
     } catch (e) {
-      AppLog.d('TrustRepository.submitPeerRatings error: $e');
+      AppLog.d('❌ TrustRepository.submitPeerRatings error: $e');
       return false;
     }
   }

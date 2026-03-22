@@ -148,6 +148,14 @@ class _GameAlertsPageWidgetState extends State<GameAlertsPageWidget> {
             120, // Space for sticky bottom bar
           ),
           children: [
+            Text(
+              "You'll be notified when a game matches any of your selected filters.",
+              style: AppTypography.bodySmall.copyWith(
+                color: AppColors.textMuted,
+              ),
+            ),
+            SizedBox(height: AppSpacing.md),
+
             // Status banners
             if (_controller.errorMessage != null)
               AlertErrorBanner(message: _controller.errorMessage!),

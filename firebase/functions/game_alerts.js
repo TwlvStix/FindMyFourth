@@ -12,7 +12,7 @@
  * Matching contract:
  * - Notifications triggered by GAME CREATION
  * - ONE notification per game per user max
- * - AND across categories (all selected must match)
+ * - OR across categories (any selected category match triggers)
  * - OR within category (any value matches)
  * - Empty category = match-all
  */
@@ -144,68 +144,65 @@ function doesAlertSubMatchGame(subscription, gameData) {
     return true;
   }
 
+  // Check each category with OR logic across categories
+  // (any non-empty category matching is enough)
+
   // 1. Game Vibe (rules_setting)
   if (gameVibes.length > 0) {
     const gameRulesSetting = gameData.rules_setting || "";
-    if (!matchesAny(gameVibes, gameRulesSetting)) {
-      return false;
+    if (matchesAny(gameVibes, gameRulesSetting)) {
+      return true;
     }
   }
 
   // 2. Stakes (style_game)
   if (stakes.length > 0) {
     const gameStyleGame = gameData.style_game || "";
-    if (!matchesAny(stakes, gameStyleGame)) {
-      return false;
+    if (matchesAny(stakes, gameStyleGame)) {
+      return true;
     }
   }
 
   // 3. Format (game_type)
   if (formats.length > 0) {
     const gameType = gameData.game_type || "";
-    if (!matchesAny(formats, gameType)) {
-      return false;
+    if (matchesAny(formats, gameType)) {
+      return true;
     }
   }
 
   // 4. Handicap Use (scoring)
   if (handicapUses.length > 0) {
     const gameScoring = gameData.scoring || "";
-    if (!matchesAny(handicapUses, gameScoring)) {
-      return false;
+    if (matchesAny(handicapUses, gameScoring)) {
+      return true;
     }
   }
 
   // 5. Course (courseRef ID)
   if (courses.length > 0) {
     const gameCourseId = gameData.courseRef?.id || null;
-    if (!gameCourseId || !courses.includes(gameCourseId)) {
-      return false;
+    if (gameCourseId && courses.includes(gameCourseId)) {
+      return true;
     }
   }
 
   // 6. Special options
-  if (special.games) {
-    if (gameData.has_side_games !== true) {
-      return false;
-    }
+  if (special.games && gameData.has_side_games === true) {
+    return true;
   }
 
-  if (special.twoVTwo) {
-    if (gameData.is_2v2 !== true) {
-      return false;
-    }
+  if (special.twoVTwo && gameData.is_2v2 === true) {
+    return true;
   }
 
   // 7. Discount
-  if (special.discount) {
-    if (!hasMemberDiscount(gameData.member_discount)) {
-      return false;
-    }
+  if (special.discount && hasMemberDiscount(gameData.member_discount)) {
+    return true;
   }
 
-  // All categories matched
-  return true;
+  // No category matched
+  return false;
 }
 
 /**

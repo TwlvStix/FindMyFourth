@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 import '/core/design_tokens/colors.dart';
+import '/core/exceptions/app_exceptions.dart';
 import '/core/design_tokens/icon_size.dart';
 import '/core/design_tokens/spacing.dart';
 import '/core/design_tokens/typography.dart';
@@ -180,6 +181,14 @@ class _PeerRatingScreenState extends State<PeerRatingScreen> {
           _submitting = false;
           _error = 'Could not reach the server. Please check your '
               'connection and try again.';
+        });
+      }
+    } on AppException catch (e) {
+      AppLog.d('❌ PeerRatingScreen submit error: ${e.code}');
+      if (mounted) {
+        updateState(this, () {
+          _submitting = false;
+          _error = e.message;
         });
       }
     } catch (e) {

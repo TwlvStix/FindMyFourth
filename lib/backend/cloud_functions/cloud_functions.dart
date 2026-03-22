@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:cloud_functions/cloud_functions.dart';
+import 'package:firebase_app_check/firebase_app_check.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/foundation.dart' show visibleForTesting;
@@ -65,6 +66,38 @@ Future<Map<String, dynamic>> attemptAuthenticatedCallWithRetries({
     code: 'internal',
     message: 'Max retries exceeded',
   );
+}
+
+/// Retries a cloud function call once on App Check `failed-precondition` errors.
+///
+/// On the first `failed-precondition` error whose message contains "App Check",
+/// forces an App Check token refresh via [onRefreshAppCheck], then retries once.
+///
+/// Throws [FirebaseFunctionsException] if the retry also fails or if the
+/// error is not App Check related.
+@visibleForTesting
+Future<Map<String, dynamic>> attemptCallWithAppCheckRetry({
+  required Future<Map<String, dynamic>> Function() callFunc,
+  required Future<void> Function() onRefreshAppCheck,
+}) async {
+  try {
+    return await callFunc();
+  } on FirebaseFunctionsException catch (e) {
+    final isAppCheckError = e.code == 'failed-precondition' &&
+        (e.message?.contains('App Check') ?? false);
+
+    if (!isAppCheckError) rethrow;
+
+    AppLog.d(
+      '🔄 APP CHECK RETRY: Call failed with ${e.code}, '
+      'refreshing token and retrying once...',
+    );
+
+    await onRefreshAppCheck();
+    await Future<void>.delayed(const Duration(milliseconds: 200));
+
+    return await callFunc();
+  }
 }
 
 /// Makes an authenticated cloud function call with idToken in payload and retry logic.
@@ -165,24 +198,37 @@ Future<Map<String, dynamic>> makeCloudCall(
   Map<String, dynamic> input,
 ) async {
   try {
-    final response = await FirebaseFunctions.instanceFor(region: 'us-west2')
-        .httpsCallable(callName, options: HttpsCallableOptions())
-        .call(input);
-    return response.data is Map
-        ? _deepCast(response.data) as Map<String, dynamic>
-        : {};
+    return await attemptCallWithAppCheckRetry(
+      callFunc: () async {
+        final response = await FirebaseFunctions.instanceFor(region: 'us-west2')
+            .httpsCallable(callName, options: HttpsCallableOptions())
+            .call(input);
+        return response.data is Map
+            ? _deepCast(response.data) as Map<String, dynamic>
+            : {};
+      },
+      onRefreshAppCheck: () async {
+        try {
+          await FirebaseAppCheck.instance.getToken(true);
+          AppLog.d('✅ App Check token refreshed for $callName');
+        } catch (e) {
+          AppLog.d('⚠️ App Check token refresh failed for $callName: $e');
+        }
+      },
+    );
   } on FirebaseFunctionsException catch (e) {
     AppLog.d(
-      'Cloud call error!\n'
+      '❌ Cloud call error!\n'
       'Call: $callName\n'
       'Code: ${e.code}\n'
       'Details: ${e.details}\n'
       'Message: ${e.message}',
     );
+    rethrow;
   } catch (e) {
-    AppLog.d('Cloud call error:$callName $e');
+    AppLog.d('❌ Cloud call error: $callName $e');
+    rethrow;
   }
-  return {};
 }
 
 Future<bool> deleteAccount() async {
