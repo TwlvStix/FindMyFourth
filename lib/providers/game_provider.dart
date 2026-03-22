@@ -336,15 +336,15 @@ class GameProvider extends ChangeNotifier {
     try {
       await _service.leaveGame(gameId, userId);
 
-      // Await strike recording so standing data is accurate for subsequent reads
-      await _trustRepository.recordCancellation(gameId, userId);
+      // Fire-and-forget: recordCancellation is fault-tolerant (returns {} on error)
+      // and its result is never used in this flow. Standing cache is invalidated
+      // separately by the caller via TrustProvider.invalidateStanding().
+      unawaited(_trustRepository.recordCancellation(gameId, userId));
 
       // Invalidate game cache to force refresh
       invalidateGameCache(gameId);
       // Invalidate user games cache to refresh joined games list
       invalidateUserGamesCache(userId);
-      // Refresh the game data
-      await getGame(gameId);
     } catch (e) {
       AppLog.d('❌ GameProvider.leaveGame error: $e');
       rethrow;

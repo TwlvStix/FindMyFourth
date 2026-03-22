@@ -1145,7 +1145,15 @@ async function _submitHostCheckinHandler(data, context, db) {
 
   const gameRef = db.collection("games").doc(gameId);
 
-  const gameSnap = await gameRef.get();
+  // Parallel-fetch game + round_jobs (independent reads)
+  const [gameSnap, jobsSnap] = await Promise.all([
+    gameRef.get(),
+    db.collection("round_jobs")
+      .where("game_ref", "==", gameRef)
+      .limit(1)
+      .get(),
+  ]);
+
   if (!gameSnap.exists) {
     throw new HttpsError("not-found", `Game ${gameId} not found.`);
   }
@@ -1160,13 +1168,6 @@ async function _submitHostCheckinHandler(data, context, db) {
       "Only the game host can submit attendance."
     );
   }
-
-  // Find the round_jobs doc for this game
-  const jobsSnap = await db
-    .collection("round_jobs")
-    .where("game_ref", "==", gameRef)
-    .limit(1)
-    .get();
 
   if (jobsSnap.empty) {
     throw new HttpsError(
@@ -1362,7 +1363,7 @@ async function _submitHostCheckinHandler(data, context, db) {
  */
 const submitHostCheckin = functions
   .region("us-west2")
-  .runWith({ minInstances: 0 })
+  .runWith({ minInstances: 1 })
   .https.onCall(async (data, context) => {
     requireAppCheck(context, 'submitHostCheckin');
     const db = admin.firestore();
@@ -1406,7 +1407,15 @@ async function _submitPeerRatingsHandler(data, context, db) {
   const gameRef = db.collection("games").doc(gameId);
   const raterRef = db.collection("users").doc(context.auth.uid);
 
-  const gameSnap = await gameRef.get();
+  // Phase 1: parallel-fetch game + round_jobs (independent reads)
+  const [gameSnap, jobsSnap] = await Promise.all([
+    gameRef.get(),
+    db.collection("round_jobs")
+      .where("game_ref", "==", gameRef)
+      .limit(1)
+      .get(),
+  ]);
+
   if (!gameSnap.exists) {
     throw new HttpsError("not-found", `Game ${gameId} not found.`);
   }
@@ -1430,13 +1439,6 @@ async function _submitPeerRatingsHandler(data, context, db) {
     );
   }
 
-  // Find round_jobs doc
-  const jobsSnap = await db
-    .collection("round_jobs")
-    .where("game_ref", "==", gameRef)
-    .limit(1)
-    .get();
-
   if (jobsSnap.empty) {
     throw new HttpsError("not-found", "No confirmation job found for this game.");
   }
@@ -1459,30 +1461,30 @@ async function _submitPeerRatingsHandler(data, context, db) {
     );
   }
 
-  // Guard: rater must be marked present
+  // Phase 2: parallel-fetch round doc + idempotency check (independent reads)
   const roundRef = job.round_ref;
-  if (roundRef) {
-    const roundSnap = await roundRef.get();
-    if (roundSnap.exists) {
-      const attendanceRecords = roundSnap.data().attendance_records || {};
-      const raterStatus = attendanceRecords[context.auth.uid];
-      if (raterStatus === "no_show") {
-        throw new HttpsError(
-          "failed-precondition",
-          "You were marked as a no-show and cannot submit ratings."
-        );
-      }
+  const [roundSnap, existingRatingsSnap] = await Promise.all([
+    roundRef ? roundRef.get() : Promise.resolve(null),
+    db.collection("pair_ratings")
+      .where("rater_ref", "==", raterRef)
+      .where("game_ref", "==", gameRef)
+      .limit(1)
+      .get(),
+  ]);
+
+  // Guard: rater must be marked present
+  if (roundSnap && roundSnap.exists) {
+    const attendanceRecords = roundSnap.data().attendance_records || {};
+    const raterStatus = attendanceRecords[context.auth.uid];
+    if (raterStatus === "no_show") {
+      throw new HttpsError(
+        "failed-precondition",
+        "You were marked as a no-show and cannot submit ratings."
+      );
     }
   }
 
   // Idempotency: check for existing ratings by this rater for this game
-  const existingRatingsSnap = await db
-    .collection("pair_ratings")
-    .where("rater_ref", "==", raterRef)
-    .where("game_ref", "==", gameRef)
-    .limit(1)
-    .get();
-
   if (!existingRatingsSnap.empty) {
     return { success: true, ratingsWritten: 0, alreadySubmitted: true };
   }
