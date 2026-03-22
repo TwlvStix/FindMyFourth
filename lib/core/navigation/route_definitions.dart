@@ -560,6 +560,7 @@ List<GoRoute> buildRoutes(AppStateNotifier appStateNotifier) => [
                 )
               : HostCheckinScreen(
                   gameRef: gameRefFromState(state)!,
+                  notificationRef: notificationRefFromState(state),
                 ),
         ),
       ),
@@ -579,6 +580,7 @@ List<GoRoute> buildRoutes(AppStateNotifier appStateNotifier) => [
                 )
               : PeerRatingScreen(
                   gameRef: gameRefFromState(state)!,
+                  notificationRef: notificationRefFromState(state),
                 ),
         ),
       ),

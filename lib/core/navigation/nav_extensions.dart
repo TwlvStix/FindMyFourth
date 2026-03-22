@@ -369,22 +369,30 @@ extension AppNavigationExtensions on BuildContext {
 
   void pushHostCheckin({
     required DocumentReference gameRef,
+    DocumentReference? notificationRef,
     TransitionInfo transition = TransitionStandards.detailTransition,
   }) {
     pushWithTransition(
       AppRouteNames.hostCheckin,
-      extra: <String, dynamic>{'gameRef': gameRef},
+      extra: <String, dynamic>{
+        'gameRef': gameRef,
+        if (notificationRef != null) 'notificationRef': notificationRef,
+      },
       transition: transition,
     );
   }
 
   void pushPeerRating({
     required DocumentReference gameRef,
+    DocumentReference? notificationRef,
     TransitionInfo transition = TransitionStandards.detailTransition,
   }) {
     pushWithTransition(
       AppRouteNames.peerRating,
-      extra: <String, dynamic>{'gameRef': gameRef},
+      extra: <String, dynamic>{
+        'gameRef': gameRef,
+        if (notificationRef != null) 'notificationRef': notificationRef,
+      },
       transition: transition,
     );
   }

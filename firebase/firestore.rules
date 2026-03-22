@@ -645,7 +645,7 @@ service cloud.firestore {
         allow read: if request.auth.uid == document;
         allow update: if request.auth.uid == document &&
           request.resource.data.diff(resource.data).changedKeys()
-            .hasOnly(['read']);
+            .hasOnly(['read', 'responseStatus']);
         allow delete: if request.auth.uid == document;
       }
 

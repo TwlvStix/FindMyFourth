@@ -17,6 +17,7 @@ import '/core/widgets/app_premium_dialog.dart';
 import '/notifications/components/player_added_bottom_sheet.dart';
 import '/notifications/components/pre_game_confirm_bottom_sheet.dart';
 import '/services/app_badge_service.dart';
+import '/services/notification_crud_service.dart';
 
 /// Handle notification navigation from both background taps and foreground taps.
 ///
@@ -117,12 +118,28 @@ Future<void> handleNotificationNavigation(
         return;
       }
 
+      // Look up the in-app notification doc so responseStatus can be written
+      DocumentReference? notificationRef;
+      final currentUid = FirebaseAuth.instance.currentUser?.uid;
+      if (currentUid != null) {
+        try {
+          notificationRef = await NotificationCrudService().findNotificationRef(
+            userId: currentUid,
+            type: 'host_pre_game_confirm',
+            gameId: gameId,
+          );
+        } catch (_) {
+          AppLog.d('🔔 [DIAG-NAV] host_pre_game_confirm: failed to find notification ref');
+        }
+      }
+
       final shown = await showBottomSheetWithRetry(
         showSheet: (ctx) => showPreGameConfirmBottomSheet(
           context: ctx,
           gameId: gameId,
           courseName: courseName.toString(),
           gameDate: gameDate.toString(),
+          notificationRef: notificationRef,
           onConfirmed: () {
             final navContext = appNavigatorKey.currentContext;
             if (navContext != null && navContext.mounted) {
@@ -145,6 +162,49 @@ Future<void> handleNotificationNavigation(
       if (shown) return; // Exit after handling bottom sheet
       AppLog.d('🔔 [DIAG-NAV] host_pre_game_confirm bottom sheet failed, falling back to game detail page');
       // Fall through to resolveRouteFromType → GameJoinedDetailed
+    }
+  }
+
+  // Intercept host_checkin_due / player_rate_due to look up notificationRef
+  if (type == 'host_checkin_due' || type == 'player_rate_due') {
+    final gameId = data['game_id'] ?? data['gameId'];
+    final gameRefStr = data['game_ref'] ?? data['gameRef'];
+    final hasGameRef = gameRefStr is String && gameRefStr.isNotEmpty;
+    final hasGameId = gameId is String && gameId.isNotEmpty;
+    if (hasGameRef || hasGameId) {
+      final gameRef = hasGameRef
+          ? FirebaseFirestore.instance.doc(gameRefStr)
+          : FirebaseFirestore.instance.collection('games').doc(gameId as String);
+
+      DocumentReference? notificationRef;
+      final currentUid = FirebaseAuth.instance.currentUser?.uid;
+      if (currentUid != null) {
+        try {
+          notificationRef = await NotificationCrudService().findNotificationRef(
+            userId: currentUid,
+            type: type as String,
+            gameId: gameRef.id,
+          );
+        } catch (_) {
+          AppLog.d('🔔 [DIAG-NAV] $type: failed to find notification ref');
+        }
+      }
+
+      final navContext = context.mounted ? context : appNavigatorKey.currentContext;
+      if (navContext != null && navContext.mounted) {
+        if (type == 'host_checkin_due') {
+          navContext.pushHostCheckin(
+            gameRef: gameRef,
+            notificationRef: notificationRef,
+          );
+        } else {
+          navContext.pushPeerRating(
+            gameRef: gameRef,
+            notificationRef: notificationRef,
+          );
+        }
+        return;
+      }
     }
   }
 

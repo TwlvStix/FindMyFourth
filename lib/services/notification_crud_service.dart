@@ -209,6 +209,36 @@ class NotificationCrudService {
     }
   }
 
+  /// Finds a notification document reference by type and gameId.
+  ///
+  /// Queries the user's notifications subcollection for a matching document.
+  /// Returns null if not found or on error (fail-open for non-critical lookup).
+  Future<DocumentReference?> findNotificationRef({
+    required String userId,
+    required String type,
+    required String gameId,
+  }) async {
+    try {
+      final snapshot = await _resolvedFirestore
+          .collection('users')
+          .doc(userId)
+          .collection('notifications')
+          .where('type', isEqualTo: type)
+          .where('data.gameId', isEqualTo: gameId)
+          .limit(1)
+          .get();
+
+      if (snapshot.docs.isEmpty) return null;
+      return snapshot.docs.first.reference;
+    } on FirebaseException catch (e) {
+      AppLog.d(
+          '❌ NotificationCrudService.findNotificationRef: ${e.code} - ${e.message}');
+      return null;
+    } catch (_) {
+      return null;
+    }
+  }
+
   /// Resolves a game reference from notification payload fields.
   DocumentReference? resolveGameRefFromPayload(Map<String, dynamic> payload) {
     final gameRefPath = payload['gameRef'];

@@ -119,11 +119,9 @@ class _PreGameConfirmBottomSheetState extends State<PreGameConfirmBottomSheet> {
   void _writeResponseStatus(String status) {
     final ref = widget.notificationRef;
     if (ref == null) return;
-    try {
-      NotificationCrudService().updateResponseStatus(ref, status);
-    } catch (e) {
+    NotificationCrudService().updateResponseStatus(ref, status).catchError((e) {
       AppLog.d('📖 PreGameConfirmBottomSheet: Failed to write responseStatus: $e');
-    }
+    });
   }
 
   String _buildBodyMessage() {

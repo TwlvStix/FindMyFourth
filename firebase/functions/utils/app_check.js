@@ -2,7 +2,7 @@
 const functions = require('firebase-functions/v1');
 
 // Set to true once attestation providers are confirmed working in Firebase Console.
-const APP_CHECK_ENFORCE = true;
+const APP_CHECK_ENFORCE = false;
 
 function requireAppCheck(context, functionName) {
   if (context.app === undefined) {

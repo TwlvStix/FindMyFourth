@@ -14,6 +14,7 @@ import '/core/utils/app_log.dart';
 import '/core/widgets/app_button_enhanced.dart';
 import '/core/widgets/app_icon.dart';
 import '/main_function/games_joined/games_joined_widget.dart';
+import '/services/notification_crud_service.dart';
 import '/services/trust_flow_service.dart';
 import '/services/trust_repository.dart';
 import 'components/peer_rating_header.dart';
@@ -31,9 +32,12 @@ import 'components/peer_rating_status_views.dart';
 /// Route name: 'PeerRating'
 /// Parameters: gameRef (DocumentReference)
 class PeerRatingScreen extends StatefulWidget {
-  const PeerRatingScreen({super.key, required this.gameRef});
+  const PeerRatingScreen({super.key, required this.gameRef, this.notificationRef});
 
   final DocumentReference gameRef;
+
+  /// Optional notification reference to write responseStatus after action.
+  final DocumentReference? notificationRef;
 
   static const String routeName = 'PeerRating';
   static const String routePath = '/peerRating';
@@ -171,6 +175,7 @@ class _PeerRatingScreenState extends State<PeerRatingScreen> {
       if (!mounted) return;
 
       if (success) {
+        _writeResponseStatus('confirmed');
         updateState(this, () {
           _submitting = false;
           _submitted = true;
@@ -200,6 +205,15 @@ class _PeerRatingScreenState extends State<PeerRatingScreen> {
         });
       }
     }
+  }
+
+  /// Writes responseStatus to the notification doc (fire-and-forget).
+  void _writeResponseStatus(String status) {
+    final ref = widget.notificationRef;
+    if (ref == null) return;
+    NotificationCrudService().updateResponseStatus(ref, status).catchError((e) {
+      AppLog.d('📖 PeerRatingScreen: Failed to write responseStatus: $e');
+    });
   }
 
   @override

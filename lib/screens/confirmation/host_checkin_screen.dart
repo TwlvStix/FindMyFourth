@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import '/core/utils/app_log.dart';
 import '/core/utils/state_update.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
@@ -12,6 +13,7 @@ import '/core/motion/animated_entrance.dart';
 import '/core/widgets/app_button_enhanced.dart';
 import '/core/widgets/app_icon.dart';
 import '/main_function/games_joined/games_joined_widget.dart';
+import '/services/notification_crud_service.dart';
 import 'components/checkin_participant_entry.dart';
 import 'components/checkin_participant_row.dart';
 import 'components/checkin_status_view.dart';
@@ -26,9 +28,12 @@ import 'controllers/host_checkin_controller.dart';
 /// Route name: 'HostCheckin'
 /// Parameters: gameRef (DocumentReference)
 class HostCheckinScreen extends StatefulWidget {
-  const HostCheckinScreen({super.key, required this.gameRef});
+  const HostCheckinScreen({super.key, required this.gameRef, this.notificationRef});
 
   final DocumentReference gameRef;
+
+  /// Optional notification reference to write responseStatus after action.
+  final DocumentReference? notificationRef;
 
   static const String routeName = 'HostCheckin';
   static const String routePath = '/hostCheckin';
@@ -121,6 +126,7 @@ class _HostCheckinScreenState extends State<HostCheckinScreen> {
 
     switch (result) {
       case HostCheckinSubmitSuccess():
+        _writeResponseStatus('confirmed');
         updateState(this, () {
           _submitting = false;
           _successMessage = 'Attendance confirmed. Thanks!';
@@ -143,6 +149,15 @@ class _HostCheckinScreenState extends State<HostCheckinScreen> {
     _loadParticipants();
   }
 
+  /// Writes responseStatus to the notification doc (fire-and-forget).
+  void _writeResponseStatus(String status) {
+    final ref = widget.notificationRef;
+    if (ref == null) return;
+    NotificationCrudService().updateResponseStatus(ref, status).catchError((e) {
+      AppLog.d('📖 HostCheckinScreen: Failed to write responseStatus: $e');
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     if (_loading) {
@@ -159,7 +174,7 @@ class _HostCheckinScreenState extends State<HostCheckinScreen> {
 
     if (_alreadyCompleted) {
       return CheckinStatusView(
-        icon: AppPhosphorIcons.successFill,
+        icon: AppPhosphorIcons.thumbsUp,
         iconColor: AppColors.green,
         message: 'Attendance already confirmed.',
         onDone: () => _navigateToMyGames(),
@@ -177,7 +192,7 @@ class _HostCheckinScreenState extends State<HostCheckinScreen> {
 
     if (_successMessage != null) {
       return CheckinStatusView(
-        icon: AppPhosphorIcons.successFill,
+        icon: AppPhosphorIcons.thumbsUp,
         iconColor: AppColors.green,
         message: _successMessage!,
         onDone: () => _navigateToMyGames(),

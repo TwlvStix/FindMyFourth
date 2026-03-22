@@ -159,11 +159,9 @@ class _FallbackConfirmationScreenState
   void _writeResponseStatus(String status) {
     final ref = widget.notificationRef;
     if (ref == null) return;
-    try {
-      NotificationCrudService().updateResponseStatus(ref, status);
-    } catch (e) {
+    NotificationCrudService().updateResponseStatus(ref, status).catchError((e) {
       AppLog.d('📖 FallbackConfirmationScreen: Failed to write responseStatus: $e');
-    }
+    });
   }
 
   @override

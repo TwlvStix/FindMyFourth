@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 
 import '/core/navigation/nav_extensions.dart';
+import '/core/utils/app_log.dart';
 import '/core/widgets/app_premium_dialog.dart';
 import '/notifications/components/pre_game_confirm_bottom_sheet.dart';
 import '/providers/notification_list_provider.dart';
@@ -78,11 +79,41 @@ class NotificationTapRouter {
         return;
       }
 
+      // Defensive: check game document for already-resolved confirmation
+      // in case responseStatus was never written (e.g., confirmed from push)
+      if (gameId is String && gameId.isNotEmpty) {
+        final gameRef = provider.resolveGameRefFromPayload(payload);
+        if (gameRef != null) {
+          try {
+            final gameSnap = await gameRef.get();
+            final gameData = gameSnap.data() as Map<String, dynamic>?;
+            final hostConfirmation =
+                gameData?['hostConfirmation'] as String?;
+            if (hostConfirmation != null && hostConfirmation != 'pending') {
+              if (!context.mounted) return;
+              if (hostConfirmation == 'confirmed' ||
+                  hostConfirmation == 'timeout') {
+                context.pushJoinGameDetailed(gameRef: gameRef);
+              } else {
+                context.pushGamesList();
+              }
+              return;
+            }
+          } on FirebaseException catch (e) {
+            AppLog.d(
+                '❌ NotificationTapRouter: game check failed: ${e.code}');
+          } catch (_) {
+            // Fail-open: proceed to show bottom sheet
+          }
+        }
+      }
+
       // Parse course name: prefer data fields, fall back to body text
       final courseName = _resolveCourseName(payload, item.body);
       final gameDate =
           payload['game_date'] ?? payload['gameDate'] ?? '';
 
+      if (!context.mounted) return;
       if (gameId is String && gameId.isNotEmpty) {
         await showPreGameConfirmBottomSheet(
           context: context,
@@ -111,9 +142,19 @@ class NotificationTapRouter {
       if (!context.mounted) return;
 
       if (type == 'host_checkin_due') {
-        context.pushHostCheckin(gameRef: gameRef);
+        context.pushHostCheckin(
+          gameRef: gameRef,
+          notificationRef: item.reference,
+        );
       } else if (type == 'player_rate_due') {
-        context.pushPeerRating(gameRef: gameRef);
+        if (item.responseStatus == 'confirmed') {
+          context.pushJoinGameDetailed(gameRef: gameRef);
+          return;
+        }
+        context.pushPeerRating(
+          gameRef: gameRef,
+          notificationRef: item.reference,
+        );
       } else {
         // host_checkin_fallback, player_fallback_confirm
         // If already responded, skip the form and navigate directly
